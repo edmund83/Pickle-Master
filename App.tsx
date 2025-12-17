@@ -12,13 +12,14 @@ import MoveSummaryReport from './components/MoveSummaryReport';
 import TransactionsReport from './components/TransactionsReport';
 import UserActivityReport from './components/UserActivityReport';
 import HistoryView from './components/HistoryView';
+import ItemFlowReport from './components/ItemFlowReport';
 import AdvancedSearchView from './components/AdvancedSearchView';
 import TagsView from './components/TagsView';
 import HelpView from './components/HelpView';
 import WorkflowsHub from './components/WorkflowsHub';
 import OnboardingWizard from './components/OnboardingWizard';
 import PlanManagementView from './components/PlanManagementView';
-import FeatureGatedView from './components/FeatureGatedView';
+import ManagePlanView from './components/ManagePlanView';
 import { InventoryItem } from './types';
 import { MOCK_ITEMS } from './constants';
 
@@ -27,7 +28,6 @@ const App: React.FC = () => {
   const [subView, setSubView] = useState('low-stock');
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [showOnboarding, setShowOnboarding] = useState(false);
-  const [showPremiumGate, setShowPremiumGate] = useState(false);
   
   // Tags State
   const [tags, setTags] = useState<string[]>([]);
@@ -41,13 +41,6 @@ const App: React.FC = () => {
     }
   }, []);
 
-  // Fix: Handle premium gate as a side effect instead of during render
-  useEffect(() => {
-    if (activeView === 'settings' && subView === 'team' && !showPremiumGate) {
-      setShowPremiumGate(true);
-    }
-  }, [activeView, subView, showPremiumGate]);
-
   const handleSelectItem = (id: string) => {
     setSelectedItemId(id);
     setActiveView('inventory');
@@ -56,7 +49,6 @@ const App: React.FC = () => {
   const renderView = () => {
     if (activeView === 'help') return <HelpView />;
     if (activeView === 'picking') return <WorkflowsHub subView={subView} />;
-    if (activeView === 'billing-page') return <PlanManagementView />;
     
     if (activeView === 'reports') {
       switch (subView) {
@@ -65,6 +57,7 @@ const App: React.FC = () => {
         case 'inventory-summary': return <InventorySummaryReport />;
         case 'move-summary': return <MoveSummaryReport />;
         case 'transactions': return <TransactionsReport />;
+        case 'item-flow': return <ItemFlowReport />;
         case 'user-activity': return <UserActivityReport />;
         case 'history': return <HistoryView />;
         default: return <ReportsHub onSelectReport={setSubView} />;
@@ -72,9 +65,8 @@ const App: React.FC = () => {
     }
     
     if (activeView === 'settings') {
-      if (subView === 'billing') return <PlanManagementView />;
-      // Fix: Removed inline state update that caused 'void' ReactNode error.
-      // The logic is now handled by the useEffect hook above.
+      if (subView === 'billing') return <PlanManagementView onManagePlan={() => setSubView('manage-plan')} />;
+      if (subView === 'manage-plan') return <ManagePlanView onBack={() => setSubView('billing')} />;
       return <SettingsView subView={subView} />;
     }
 
@@ -145,10 +137,6 @@ const App: React.FC = () => {
           setShowOnboarding(false);
           localStorage.setItem('zen_onboarded', 'true');
         }} />
-      )}
-
-      {showPremiumGate && (
-        <FeatureGatedView onClose={() => setShowPremiumGate(false)} />
       )}
     </div>
   );

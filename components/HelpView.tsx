@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 const HelpView: React.FC = () => {
@@ -6,7 +5,7 @@ const HelpView: React.FC = () => {
     {
       title: 'Getting Started',
       icon: 'fa-rocket',
-      desc: 'Get the basics on Sortly best practices, adding and updating items, setting up inventory, and more.',
+      desc: 'Get the basics on Pickle best practices, adding and updating items, setting up inventory, and more.',
       color: 'text-rose-500'
     },
     {
@@ -18,13 +17,13 @@ const HelpView: React.FC = () => {
     {
       title: 'Barcodes & Labels',
       icon: 'fa-qrcode',
-      desc: 'Sortly inventory software comes with built-in barcode and QR code capabilities, making it easy to scan, track, and manage your inventory.',
+      desc: 'Pickle inventory software comes with built-in barcode and QR code capabilities, making it easy to scan, track, and manage your inventory.',
       color: 'text-rose-600'
     },
     {
       title: 'FAQ',
       icon: 'fa-lightbulb',
-      desc: 'Commonly asked questions including plan information, accessing Sortly, and upcoming features.',
+      desc: 'Commonly asked questions including plan information, accessing Pickle, and upcoming features.',
       color: 'text-amber-400'
     }
   ];

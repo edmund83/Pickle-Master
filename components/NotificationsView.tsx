@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 const NotificationsView: React.FC = () => {
@@ -6,7 +5,7 @@ const NotificationsView: React.FC = () => {
     <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-12 animate-in fade-in duration-700">
       <div className="text-center space-y-2">
         <h1 className="text-2xl font-black text-slate-800">You don't have any alerts.</h1>
-        <p className="text-xl font-bold text-slate-800">Stay on top of your stuff with Sortly Alerts:</p>
+        <p className="text-xl font-bold text-slate-800">Stay on top of your stuff with Pickle Alerts:</p>
       </div>
 
       <div className="max-w-2xl w-full space-y-16">

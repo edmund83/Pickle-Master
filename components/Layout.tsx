@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { MOCK_TENANTS } from '../constants';
 import ProductNewsPanel from './ProductNewsPanel';
 
@@ -15,6 +14,18 @@ interface LayoutProps {
 const Layout: React.FC<LayoutProps> = ({ children, activeView, setActiveView, subView, setSubView, tags = [] }) => {
   const [selectedTenant] = useState(MOCK_TENANTS[0]);
   const [isNewsOpen, setIsNewsOpen] = useState(false);
+  const [isAccountMenuOpen, setIsAccountMenuOpen] = useState(false);
+  const accountMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (accountMenuRef.current && !accountMenuRef.current.contains(event.target as Node)) {
+        setIsAccountMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const primaryNav = [
     { id: 'dashboard', icon: 'fa-table-cells-large', label: 'Dashboard' },
@@ -74,12 +85,18 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, setActiveView, su
 
   const currentSecondary = secondaryNavs[activeView];
 
+  const handleAccountAction = (view: string, sub?: string) => {
+    setActiveView(view);
+    if (sub) setSubView?.(sub);
+    setIsAccountMenuOpen(false);
+  };
+
   return (
     <div className="flex h-screen w-full overflow-hidden font-['Inter'] bg-[#f5f6f8]">
-      {/* Primary Sidebar - Sortly Red */}
+      {/* Primary Sidebar - Pickle Red */}
       <aside className="w-[85px] bg-[#de4a4a] flex flex-col items-center py-6 shrink-0 z-40 shadow-xl">
         <div className="mb-10">
-          <span className="text-white text-3xl font-black italic tracking-tighter">S</span>
+          <span className="text-white text-3xl font-black italic tracking-tighter">P</span>
         </div>
         <nav className="flex-1 w-full space-y-2">
           {primaryNav.map((item) => (
@@ -103,13 +120,13 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, setActiveView, su
             </button>
           ))}
         </nav>
-        <div className="mt-auto flex flex-col items-center w-full">
+        <div className="mt-auto flex flex-col items-center w-full relative">
            <button 
             onClick={() => setIsNewsOpen(true)}
             className={`flex flex-col items-center gap-1.5 w-full py-4 hover:bg-white/5 transition-all text-white/70 hover:text-white ${isNewsOpen ? 'bg-white/10' : ''}`}
            >
              <i className="fa-solid fa-bullhorn text-lg"></i>
-             <span className="text-[9px] font-bold uppercase tracking-tight">News</span>
+             <span className="text-[9px] font-bold uppercase tracking-tight">Product News</span>
            </button>
            <button 
             onClick={() => setActiveView('help')}
@@ -131,15 +148,60 @@ const Layout: React.FC<LayoutProps> = ({ children, activeView, setActiveView, su
              <span className="text-[9px] font-bold uppercase tracking-tight">Notifications</span>
              {activeView === 'notifications' && <div className="absolute left-0 top-0 bottom-0 w-1 bg-white"></div>}
            </button>
-           <button 
-            onClick={() => setActiveView('settings')}
-            className={`flex flex-col items-center gap-1.5 w-full py-4 transition-all ${
-              activeView === 'settings' ? 'bg-white/10' : 'hover:bg-white/5 text-white/70 hover:text-white'
-            }`}
-           >
-             <i className="fa-solid fa-gear text-xl"></i>
-             <span className="text-[9px] font-bold uppercase tracking-tight">Settings</span>
-           </button>
+           
+           <div className="w-full">
+             <button 
+              onClick={() => setIsAccountMenuOpen(!isAccountMenuOpen)}
+              className={`flex flex-col items-center gap-1.5 w-full py-4 transition-all relative ${
+                activeView === 'settings' ? 'bg-white/20' : 'hover:bg-white/5 text-white/70 hover:text-white'
+              }`}
+             >
+               <i className="fa-solid fa-gear text-xl"></i>
+               <span className="text-[9px] font-bold uppercase tracking-tight">Settings</span>
+               {activeView === 'settings' && <div className="absolute left-0 top-0 bottom-0 w-1 bg-white"></div>}
+             </button>
+
+             {/* Account Context Menu Popover */}
+             {isAccountMenuOpen && (
+               <div 
+                ref={accountMenuRef}
+                className="absolute bottom-4 left-24 w-64 bg-white rounded-2xl shadow-[0_10px_50px_rgba(0,0,0,0.15)] border border-slate-100 py-2 z-[100] animate-in slide-in-from-bottom-2 duration-200"
+               >
+                 <div className="px-5 py-4 flex items-center gap-4 border-b border-slate-50 mb-1">
+                   <div className="w-9 h-9 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 font-bold text-sm">E</div>
+                   <span className="font-bold text-slate-800 text-sm">Edmund</span>
+                 </div>
+                 <button 
+                  onClick={() => handleAccountAction('settings', 'profile')}
+                  className="w-full px-5 py-3 text-left text-xs font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-colors"
+                 >
+                   <i className="fa-solid fa-gear text-slate-400 w-4"></i>
+                   Settings
+                 </button>
+                 <button 
+                  onClick={() => handleAccountAction('settings', 'preferences')}
+                  className="w-full px-5 py-3 text-left text-xs font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-colors"
+                 >
+                   <i className="fa-solid fa-sliders text-slate-400 w-4"></i>
+                   Preferences
+                 </button>
+                 <button 
+                  onClick={() => handleAccountAction('settings', 'billing')}
+                  className="w-full px-5 py-3 text-left text-xs font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-colors"
+                 >
+                   <i className="fa-solid fa-credit-card text-slate-400 w-4"></i>
+                   Plan & Billing
+                 </button>
+                 <div className="h-px bg-slate-50 my-1"></div>
+                 <button 
+                  className="w-full px-5 py-3 text-left text-xs font-medium text-slate-600 hover:bg-slate-50 flex items-center gap-3 transition-colors"
+                 >
+                   <i className="fa-solid fa-power-off text-slate-400 w-4"></i>
+                   Sign Out
+                 </button>
+               </div>
+             )}
+           </div>
         </div>
       </aside>
 

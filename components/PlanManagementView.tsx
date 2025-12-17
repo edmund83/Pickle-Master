@@ -1,95 +1,181 @@
-
 import React from 'react';
 
-const PlanManagementView: React.FC = () => {
-  const plans = [
-    { id: 'free', name: 'Free', price: '0.00', icon: 'fa-paper-plane', items: '100', users: '1', customFields: '1', current: false, color: 'text-slate-400' },
-    { id: 'advanced', name: 'Advanced', price: '49.00', icon: 'fa-parachute-box', items: '500', users: '2', customFields: '5', current: false, color: 'text-sky-500' },
-    { id: 'ultra', name: 'Ultra', price: '149.00', icon: 'fa-plane', items: '2,000', users: '5', customFields: '10', current: true, color: 'text-[#de4a4a]' },
-    { id: 'premium', name: 'Premium', price: '299.00', icon: 'fa-rocket', items: '5,000', users: '8', customFields: '20', current: false, color: 'text-amber-500' },
-    { id: 'enterprise', name: 'Enterprise Custom', price: 'Custom', icon: 'fa-user-astronaut', items: '10,000+', users: '12+', customFields: 'Unlimited', current: false, color: 'text-indigo-600' },
-  ];
+interface PlanManagementViewProps {
+  onManagePlan: () => void;
+}
 
+const PlanManagementView: React.FC<PlanManagementViewProps> = ({ onManagePlan }) => {
   return (
-    <div className="max-w-6xl mx-auto py-12 space-y-16 animate-in fade-in duration-700">
-      <div className="flex items-center justify-between">
-         <h1 className="text-4xl font-black text-slate-800 tracking-tight">Manage plan</h1>
-         <button className="text-[#de4a4a] font-black text-sm hover:underline uppercase tracking-widest">Compare all features</button>
-      </div>
+    <div className="max-w-7xl mx-auto space-y-10 animate-in fade-in duration-500 pb-20">
+      <h1 className="text-[40px] font-black text-[#333c4d] tracking-tight">Plan & Billing</h1>
 
-      <div className="space-y-4">
-        {plans.map((plan) => (
-          <div key={plan.id} className={`bg-white border-2 rounded-[2.5rem] p-10 flex items-center gap-12 transition-all ${plan.current ? 'border-[#de4a4a] shadow-2xl shadow-rose-50' : 'border-slate-50 shadow-sm'}`}>
-            <div className={`w-20 h-20 rounded-full flex items-center justify-center text-4xl bg-slate-50 ${plan.color}`}>
-              <i className={`fa-solid ${plan.icon}`}></i>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Current Plan Card */}
+        <div className="bg-white rounded-[1rem] border border-slate-100 shadow-sm p-10 flex flex-col justify-between relative overflow-hidden h-[400px]">
+          <div className="space-y-8 relative z-10">
+            <h3 className="text-[1.1rem] font-bold text-slate-500 opacity-80">Current Plan</h3>
+            <div className="space-y-1">
+              <p className="text-xl font-black text-[#333c4d]">Ultra <span className="font-medium text-slate-400 text-lg">(Monthly)</span></p>
             </div>
-            <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-8 items-center">
-              <div>
-                <h3 className="text-2xl font-black text-slate-800">{plan.name}</h3>
-                <p className="text-xl font-black text-slate-800 mt-1">${plan.price} <span className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">/mo</span></p>
-                <button className="mt-4 text-[#de4a4a] text-[10px] font-black uppercase underline">See all features</button>
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-[2.5rem] font-black text-[#333c4d] leading-none">$149.00</span>
+                <i className="fa-solid fa-circle-info text-slate-300 text-sm mt-2"></i>
               </div>
-              
-              <div className="space-y-3">
-                 <div className="flex items-center gap-3">
-                    <div className="w-1.5 h-1.5 bg-slate-200 rounded-full"></div>
-                    <span className="text-sm font-bold text-slate-600"><span className="text-slate-900">{plan.items}</span> Items</span>
-                 </div>
-                 <div className="flex items-center gap-3">
-                    <div className="w-1.5 h-1.5 bg-slate-200 rounded-full"></div>
-                    <span className="text-sm font-bold text-slate-600"><span className="text-slate-900">{plan.users}</span> User License</span>
-                 </div>
-              </div>
-
-              <div className="space-y-3">
-                 <div className="flex items-center gap-3">
-                    <div className="w-1.5 h-1.5 bg-slate-200 rounded-full"></div>
-                    <span className="text-sm font-bold text-slate-600">All Sortly <span className="text-[#de4a4a]">{plan.name === 'Free' ? 'Free' : 'Ultra'}</span> features</span>
-                 </div>
-                 <div className="flex items-center gap-3">
-                    <div className="w-1.5 h-1.5 bg-slate-200 rounded-full"></div>
-                    <span className="text-sm font-bold text-slate-600"><span className="text-slate-900">{plan.customFields}</span> Custom Field</span>
-                 </div>
-              </div>
-
-              <div className="text-right">
-                {plan.current ? (
-                  <div className="space-y-3">
-                    <button className="w-full py-4 bg-[#de4a4a] text-white rounded-2xl font-black text-xs uppercase tracking-widest shadow-xl shadow-rose-100 hover:scale-105 active:scale-95 transition-all">RESUBSCRIBE</button>
-                    <p className="text-[9px] text-slate-400 font-bold leading-tight">Your account will change to Free Plan on <span className="text-slate-800">Oct 26, 2025</span></p>
-                  </div>
-                ) : (
-                  <button className="w-full py-4 bg-white border border-slate-100 text-slate-300 rounded-2xl font-black text-xs uppercase tracking-widest hover:border-slate-800 hover:text-slate-800 transition-all">
-                    {plan.id === 'enterprise' ? 'TALK TO SALES' : 'UPGRADE'}
-                  </button>
-                )}
-              </div>
+              <p className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">per month</p>
+            </div>
+            <div className="space-y-1 pt-4">
+              <p className="text-sm font-medium text-slate-500 leading-relaxed">
+                Your free trial ends on <span className="font-bold text-[#333c4d]">Oct 26, 2025</span>
+              </p>
+              <p className="text-sm font-medium text-slate-500 leading-relaxed">
+                You will be charged for $149.00 on trial end
+              </p>
             </div>
           </div>
-        ))}
+
+          <div className="pt-8">
+            <button className="px-10 py-3.5 bg-white border border-slate-200 rounded-xl font-black text-[#333c4d] text-[10px] uppercase tracking-widest hover:border-slate-800 transition-all shadow-sm">
+              SWITCH TO YEARLY
+            </button>
+          </div>
+
+          {/* Illustration Overlay */}
+          <div className="absolute top-20 right-10 w-40 opacity-90 pointer-events-none">
+             <div className="relative">
+                <img src="https://img.icons8.com/bubbles/400/box.png" className="w-full" alt="illustration" />
+                <div className="absolute -top-4 -right-2 transform rotate-12">
+                   <img src="https://img.icons8.com/bubbles/200/box.png" className="w-16 h-16" alt="box" />
+                </div>
+             </div>
+          </div>
+        </div>
+
+        {/* Usage Card */}
+        <div className="bg-white rounded-[1rem] border border-slate-100 shadow-sm p-10 flex flex-col justify-between h-[400px]">
+          <div className="space-y-8">
+            <h3 className="text-[1.1rem] font-bold text-slate-500 opacity-80">Usage</h3>
+            
+            <div className="space-y-10">
+              {/* Items Usage */}
+              <div className="space-y-3">
+                <div className="flex justify-between text-[11px] font-black uppercase tracking-widest text-slate-400">
+                  <span>Items</span>
+                  <span className="text-[#333c4d]">3 / 2000</span>
+                </div>
+                <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-slate-300 w-[1%]" style={{ width: '0.15%' }}></div>
+                </div>
+              </div>
+
+              {/* Custom Fields Usage */}
+              <div className="space-y-3">
+                <div className="flex justify-between text-[11px] font-black uppercase tracking-widest text-slate-400">
+                  <span>Custom Fields</span>
+                  <span className="text-[#333c4d]">0 / 10</span>
+                </div>
+                <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-slate-300 w-0"></div>
+                </div>
+              </div>
+
+              {/* User Licenses Usage */}
+              <div className="space-y-3">
+                <div className="flex justify-between text-[11px] font-black uppercase tracking-widest text-slate-400">
+                  <span>User Licenses</span>
+                  <span className="text-[#333c4d]">1 / 5</span>
+                </div>
+                <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full bg-slate-300 w-[20%]"></div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-3 pt-2">
+               <i className="fa-regular fa-comment-dots text-slate-300 mt-0.5 text-lg"></i>
+               <p className="text-sm font-medium text-slate-500 leading-relaxed italic">
+                 Your business is growing - please take advantage of the plan upgrade.
+               </p>
+            </div>
+          </div>
+
+          <div className="flex gap-4 pt-6">
+            <button 
+              onClick={onManagePlan}
+              className="flex-1 py-3.5 bg-[#de4a4a] text-white rounded-xl font-black text-[10px] uppercase tracking-widest shadow-xl shadow-rose-100 hover:bg-[#c33b3b] transition-all"
+            >
+              MANAGE PLAN
+            </button>
+            <button className="flex-1 py-3.5 bg-white border border-slate-200 text-slate-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:border-slate-800 transition-all shadow-sm">
+              ADD SEATS
+            </button>
+          </div>
+        </div>
       </div>
 
-      <section className="bg-slate-50 rounded-[3rem] p-16 space-y-12">
-        <h2 className="text-2xl font-black text-slate-800">Manage plan options</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-16">
-          <div className="space-y-4">
-             <h4 className="font-black text-slate-800">Upgrading</h4>
-             <p className="text-sm text-slate-500 font-medium leading-relaxed">You can upgrade your plan at anytime by clicking the "Purchase now" or "14-day free trial" buttons. If you are upgrading from the free plan, you will need a valid credit card to start the trial.</p>
+      {/* Payment Method Card */}
+      <div className="bg-white rounded-[1rem] border border-slate-100 shadow-sm p-12">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-12">
+          <div className="space-y-8 flex-1">
+            <h3 className="text-[1.1rem] font-bold text-slate-500 opacity-80">Payment Method</h3>
+            <div className="space-y-2">
+               <p className="text-xl font-black text-[#333c4d]">Mastercard ending 2075</p>
+               <p className="text-sm font-medium text-slate-400 uppercase tracking-widest">Expiration: <span className="text-slate-600 font-bold">05 / 2029</span></p>
+            </div>
+            <button className="px-10 py-3.5 bg-white border border-slate-200 rounded-xl font-black text-[#333c4d] text-[10px] uppercase tracking-widest hover:border-slate-800 transition-all shadow-sm">
+              UPDATE BILLING DETAILS
+            </button>
           </div>
-          <div className="space-y-4">
-             <h4 className="font-black text-slate-800">Downgrading</h4>
-             <p className="text-sm text-slate-500 font-medium leading-relaxed">To downgrade your plan, you will need to meet the limits of the lower plan to which you wish to downgrade. A downgrade button will only be available to click on if you meet the plan limits for a lower tier.</p>
-          </div>
-          <div className="space-y-4">
-             <h4 className="font-black text-slate-800">Cancelling your subscription</h4>
-             <p className="text-sm text-slate-500 font-medium leading-relaxed">If you no longer wish to utilize your Sortly subscription, you have the option to cancel your subscription. The cancellation will take effect at your next renewal date, and you will have access to your account and data until then.</p>
+
+          {/* Credit Card Visual */}
+          <div className="relative w-full max-w-[380px] aspect-[1.58/1] bg-[#333c4d] rounded-2xl p-8 shadow-2xl overflow-hidden group">
+             {/* Card texture/abstract circle */}
+             <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -mr-32 -mt-32 transition-transform duration-700 group-hover:scale-110"></div>
+             
+             <div className="relative z-10 h-full flex flex-col justify-between">
+                <div className="flex items-start justify-between">
+                   <span className="text-[10px] font-black text-white uppercase tracking-widest opacity-60">mastercard</span>
+                   <span className="text-xs font-black text-white tracking-widest opacity-80">05 / 2029</span>
+                </div>
+
+                <div className="space-y-1">
+                   <div className="flex gap-1">
+                      {[1, 2, 3, 4].map(i => (
+                        <div key={i} className="flex gap-1.5 mr-2">
+                           {[1, 2, 3, 4].map(j => <div key={j} className="w-1 h-1 bg-white rounded-full opacity-60"></div>)}
+                        </div>
+                      ))}
+                   </div>
+                </div>
+
+                <div className="flex items-end justify-end">
+                   <span className="text-xl font-black text-white/90 tracking-widest">2075</span>
+                </div>
+             </div>
           </div>
         </div>
-        <div className="pt-12 border-t border-slate-100 flex flex-col items-center gap-6">
-           <h3 className="text-lg font-black text-slate-800">Account settings</h3>
-           <button className="px-12 py-4 bg-white border border-slate-200 rounded-2xl font-black text-[10px] uppercase tracking-widest text-slate-500 hover:text-[#de4a4a] hover:border-[#de4a4a] transition-all">MANAGE ACCOUNT SETTINGS</button>
+      </div>
+
+      {/* Payment History Card */}
+      <div className="bg-white rounded-[1rem] border border-slate-100 shadow-sm p-12">
+        <h3 className="text-[1.1rem] font-bold text-slate-500 opacity-80 mb-10">Payment History</h3>
+        
+        <div className="space-y-4">
+           <div className="grid grid-cols-4 gap-8 py-6 border-b border-slate-50 group hover:bg-slate-50/50 -mx-6 px-6 rounded-xl transition-all">
+              <div className="text-sm font-bold text-[#333c4d]">
+                 Oct 26, 2025 <span className="ml-3 font-medium text-slate-400 uppercase text-[10px]">Scheduled</span>
+              </div>
+              <div className="col-span-2 text-sm font-medium text-slate-500">
+                 Ultra Plan (Monthly)
+              </div>
+              <div className="text-right text-sm font-black text-[#333c4d]">
+                 $149.00
+              </div>
+           </div>
         </div>
-      </section>
+      </div>
+
+      <div className="text-[11px] font-bold text-slate-300 mt-12 pl-4">Version: v10.84.0-R193.0.0</div>
     </div>
   );
 };

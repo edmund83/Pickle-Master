@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { InventoryItem } from '../types';
 import LabelWizard from './LabelWizard';
@@ -27,7 +26,7 @@ const ItemDetailView: React.FC<ItemDetailViewProps> = ({ item, onBack }) => {
           <div className="flex items-center gap-4">
             <h1 className="text-4xl font-black text-slate-800">{item.name}</h1>
             <div className="flex items-center gap-4 text-[10px] font-black">
-              <span className="text-slate-400">Sortly ID: <span className="text-[#de4a4a] uppercase">{item.id.padStart(8, '0')}</span></span>
+              <span className="text-slate-400">Pickle ID: <span className="text-[#de4a4a] uppercase">{item.id.padStart(8, '0')}</span></span>
               <span className="text-slate-400">Updated at: {new Date(item.lastUpdated).toLocaleDateString()} {new Date(item.lastUpdated).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
             </div>
           </div>
@@ -143,7 +142,7 @@ const ItemDetailView: React.FC<ItemDetailViewProps> = ({ item, onBack }) => {
             <p className="text-sm text-slate-400 font-medium">You can use QR codes or barcodes to track the inventory of your products or assets.</p>
             <div className="bg-slate-50 rounded-3xl p-8 flex items-center justify-center border border-slate-100">
               <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col items-center gap-2">
-                 <div className="text-[10px] font-black text-slate-400 mb-2">Created via <span className="text-[#de4a4a] italic">Sortly</span></div>
+                 <div className="text-[10px] font-black text-slate-400 mb-2">Created via <span className="text-[#de4a4a] italic">Pickle</span></div>
                  <div className="w-48 h-16 bg-slate-900 flex items-center justify-center">
                    {/* Mock Barcode */}
                    <div className="w-full h-full flex items-center justify-between px-2 gap-0.5">
@@ -176,7 +175,7 @@ const ItemDetailView: React.FC<ItemDetailViewProps> = ({ item, onBack }) => {
                ))
             ) : (
               <p className="text-sm text-slate-400 font-medium leading-relaxed">
-                These custom fields can be used to track unique information that does not fit into any of the default fields provided by Sortly.
+                These custom fields can be used to track unique information that does not fit into any of the default fields provided by Pickle.
               </p>
             )}
           </div>

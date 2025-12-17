@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface GoalModalProps {
@@ -24,7 +23,7 @@ const GoalModal: React.FC<GoalModalProps> = ({ onClose }) => {
         
         <div className="space-y-8 text-center">
           <h2 className="text-xl font-black text-slate-800 leading-tight">
-            Great progress! What's your #1 goal with Sortly?
+            Great progress! What's your #1 goal with Pickle?
           </h2>
           
           <div className="flex flex-col gap-3">

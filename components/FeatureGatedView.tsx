@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 interface FeatureGatedViewProps {
@@ -34,7 +33,7 @@ const FeatureGatedView: React.FC<FeatureGatedViewProps> = ({ onClose }) => {
           </button>
           
           <div className="space-y-2">
-            <h2 className="text-3xl font-black text-slate-800 tracking-tight leading-tight">Role Permissions are now available in Sortly</h2>
+            <h2 className="text-3xl font-black text-slate-800 tracking-tight leading-tight">Role Permissions are now available in Pickle</h2>
             <p className="text-2xl font-black text-[#de4a4a]">Premium Plan</p>
           </div>
 
