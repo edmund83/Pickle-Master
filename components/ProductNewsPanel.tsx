@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 
 interface ProductNewsPanelProps {
@@ -12,8 +11,8 @@ const ProductNewsPanel: React.FC<ProductNewsPanelProps> = ({ isOpen, onClose }) 
   const featureRequests = [
     {
       votes: 23,
-      title: 'Work Orders/Jobs in Sortly',
-      description: 'Ability to create work orders or jobs in Sortly. Assign inventory to be consumed at a job. Once the job is...',
+      title: 'Work Orders/Jobs in Pickle',
+      description: 'Ability to create work orders or jobs in Pickle. Assign inventory to be consumed at a job. Once the job is...',
       author: 'Hassaan Shahid',
       tags: ['#New Feature 🆕'],
       comments: 2
@@ -37,7 +36,7 @@ const ProductNewsPanel: React.FC<ProductNewsPanelProps> = ({ isOpen, onClose }) 
     {
       votes: 210,
       title: 'Multilinguality',
-      description: 'Possibility, to translate Sortly App and Web app into multiple languages.',
+      description: 'Possibility, to translate Pickle App and Web app into multiple languages.',
       author: 'Andreas K',
       tags: ['#New Feature 🆕', '#Mobile 📱', '#Deal Breaker 💔'],
       comments: 32
@@ -55,8 +54,8 @@ const ProductNewsPanel: React.FC<ProductNewsPanelProps> = ({ isOpen, onClose }) 
         <div className="p-6 border-b flex flex-col gap-4 bg-white sticky top-0 z-10">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 bg-[#de4a4a] rounded flex items-center justify-center text-white font-black text-sm">S</div>
-              <span className="font-black text-slate-800 text-lg">Sortly</span>
+              <div className="w-8 h-8 bg-[#de4a4a] rounded flex items-center justify-center text-white font-black text-sm">P</div>
+              <span className="font-black text-slate-800 text-lg">Pickle</span>
             </div>
             <div className="flex items-center gap-4 text-slate-400">
               <button className="hover:text-slate-800 transition-colors"><i className="fa-solid fa-magnifying-glass"></i></button>
