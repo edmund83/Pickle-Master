@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --pickle-primary: 222 74 74;
+    --pickle-primary-foreground: 255 255 255;
+
+    --background: 255 255 255;
+    --foreground: 23 23 23;
+
+    --muted: 245 245 245;
+    --muted-foreground: 115 115 115;
+
+    --border: 229 229 229;
+    --input: 229 229 229;
+
+    --ring: 222 74 74;
+
+    --radius: 0.5rem;
+  }
+
+  * {
+    border-color: rgb(229 229 229);
+  }
+
+  body {
+    background-color: rgb(255 255 255);
+    color: rgb(23 23 23);
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Status colors */
+.status-in-stock {
+  @apply text-green-600 bg-green-50;
+}
+
+.status-low-stock {
+  @apply text-yellow-600 bg-yellow-50;
+}
+
+.status-out-of-stock {
+  @apply text-red-600 bg-red-50;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: rgb(245 245 245);
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgb(115 115 115 / 0.2);
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(115 115 115 / 0.4);
+}

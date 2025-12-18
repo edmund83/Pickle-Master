@@ -1,8 +1,0 @@
-{
-  "name": "ZenInventory AI",
-  "description": "A modern, multi-tenant inventory management SaaS with AI-powered insights, barcode labeling, and logistics planning, designed for small businesses to simplify their supply chain.",
-  "requestFramePermissions": [
-    "camera",
-    "geolocation"
-  ]
-}
