@@ -1,3 +1,5 @@
+> **📌 Master Note:** This repository is a fork of another project.
+
 # Pickle - Product Requirements Document (PRD)
 
 **Version:** 1.0
