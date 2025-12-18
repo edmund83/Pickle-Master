@@ -1,4 +1,4 @@
-> **📌 Master Note:** This repository is a fork of another project.
+> **📌 Master Note:** This repo is belongs to Edmund Tong Kwan Kiat
 
 # Pickle - Product Requirements Document (PRD)
 
