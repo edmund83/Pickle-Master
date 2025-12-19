@@ -89,11 +89,11 @@ export default async function TeamSettingsPage() {
                 <div className="flex items-center gap-3">
                   <span
                     className={`flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium capitalize ${
-                      roleColors[member.role] || roleColors.viewer
+                      roleColors[member.role || 'viewer'] || roleColors.viewer
                     }`}
                   >
                     <Shield className="h-3 w-3" />
-                    {member.role}
+                    {member.role || 'viewer'}
                   </span>
                   {isOwner && member.role !== 'owner' && (
                     <Button variant="ghost" size="sm">

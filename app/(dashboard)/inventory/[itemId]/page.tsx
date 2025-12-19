@@ -165,10 +165,10 @@ export default async function ItemDetailPage({ params }: PageProps) {
                   <span className="text-sm text-neutral-500">Status</span>
                   <span
                     className={`rounded-full px-3 py-1 text-xs font-medium ${
-                      statusColors[item.status] || statusColors.in_stock
+                      statusColors[item.status || 'in_stock'] || statusColors.in_stock
                     }`}
                   >
-                    {statusLabels[item.status] || 'In Stock'}
+                    {statusLabels[item.status || 'in_stock'] || 'In Stock'}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
@@ -177,7 +177,7 @@ export default async function ItemDetailPage({ params }: PageProps) {
                     {item.quantity} {item.unit}
                   </span>
                 </div>
-                {item.min_quantity > 0 && (
+                {(item.min_quantity ?? 0) > 0 && (
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-neutral-500">Min. Quantity</span>
                     <span className="text-neutral-900">{item.min_quantity} {item.unit}</span>
@@ -187,7 +187,7 @@ export default async function ItemDetailPage({ params }: PageProps) {
             </Card>
 
             {/* Pricing */}
-            {item.price > 0 && (
+            {(item.price ?? 0) > 0 && (
               <Card>
                 <CardHeader>
                   <CardTitle>Pricing</CardTitle>
@@ -196,7 +196,7 @@ export default async function ItemDetailPage({ params }: PageProps) {
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-neutral-500">Price</span>
                     <span className="font-medium text-neutral-900">
-                      RM {item.price.toFixed(2)} / {item.unit}
+                      RM {(item.price ?? 0).toFixed(2)} / {item.unit}
                     </span>
                   </div>
                 </CardContent>
@@ -221,14 +221,18 @@ export default async function ItemDetailPage({ params }: PageProps) {
                 <CardTitle>Details</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
-                <div className="flex items-center gap-2 text-neutral-500">
-                  <Clock className="h-4 w-4" />
-                  <span>Created {format(new Date(item.created_at), 'MMM d, yyyy')}</span>
-                </div>
-                <div className="flex items-center gap-2 text-neutral-500">
-                  <Clock className="h-4 w-4" />
-                  <span>Updated {format(new Date(item.updated_at), 'MMM d, yyyy')}</span>
-                </div>
+                {item.created_at && (
+                  <div className="flex items-center gap-2 text-neutral-500">
+                    <Clock className="h-4 w-4" />
+                    <span>Created {format(new Date(item.created_at), 'MMM d, yyyy')}</span>
+                  </div>
+                )}
+                {item.updated_at && (
+                  <div className="flex items-center gap-2 text-neutral-500">
+                    <Clock className="h-4 w-4" />
+                    <span>Updated {format(new Date(item.updated_at), 'MMM d, yyyy')}</span>
+                  </div>
+                )}
                 {creator && (
                   <div className="flex items-center gap-2 text-neutral-500">
                     <User className="h-4 w-4" />

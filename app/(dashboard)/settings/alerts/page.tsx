@@ -87,7 +87,7 @@ export default function AlertsSettingsPage() {
         .from('alerts')
         .insert({
           tenant_id: tenantId,
-          name: newAlert.name.trim(),
+          target_id: 'global', // Using target_id to store the name/description
           target_type: 'item',
           alert_type: 'low_stock',
           threshold: newAlert.threshold,
@@ -283,10 +283,10 @@ export default function AlertsSettingsPage() {
                     </div>
                     <div>
                       <p className={`font-medium ${alert.is_active ? 'text-neutral-900' : 'text-neutral-500'}`}>
-                        {alert.name}
+                        {alert.alert_type?.replace('_', ' ') || 'Alert'} - {alert.target_type}
                       </p>
                       <p className="text-sm text-neutral-500">
-                        Threshold: {alert.threshold} • Type: {alert.alert_type?.replace('_', ' ')}
+                        Threshold: {alert.threshold ?? 'N/A'} • Target: {alert.target_id?.slice(0, 8) || 'Global'}
                       </p>
                     </div>
                   </div>
@@ -294,8 +294,8 @@ export default function AlertsSettingsPage() {
                     <label className="relative inline-flex cursor-pointer items-center">
                       <input
                         type="checkbox"
-                        checked={alert.is_active}
-                        onChange={() => toggleAlert(alert.id, alert.is_active)}
+                        checked={alert.is_active ?? false}
+                        onChange={() => toggleAlert(alert.id, alert.is_active ?? false)}
                         className="peer sr-only"
                       />
                       <div className="peer h-6 w-11 rounded-full bg-neutral-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-pickle-500 peer-checked:after:translate-x-full"></div>

@@ -45,7 +45,7 @@ async function getDashboardData(): Promise<DashboardData> {
 
   const stats = {
     totalItems: itemsList.length,
-    totalValue: itemsList.reduce((sum, item) => sum + (item.price * item.quantity), 0),
+    totalValue: itemsList.reduce((sum, item) => sum + ((item.price || 0) * item.quantity), 0),
     lowStock: itemsList.filter(item => item.status === 'low_stock').length,
     outOfStock: itemsList.filter(item => item.status === 'out_of_stock').length,
   }
@@ -128,7 +128,7 @@ export default async function DashboardPage() {
                         </p>
                       </div>
                       <span className="text-xs text-neutral-400">
-                        {new Date(activity.created_at).toLocaleDateString()}
+                        {activity.created_at ? new Date(activity.created_at).toLocaleDateString() : ''}
                       </span>
                     </div>
                   </li>

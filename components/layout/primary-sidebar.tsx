@@ -14,6 +14,7 @@ import {
   HelpCircle,
   Bell,
   LogOut,
+  ScanLine,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -21,6 +22,7 @@ import { useRouter } from 'next/navigation'
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Inventory', href: '/inventory', icon: Package },
+  { name: 'Scan', href: '/scan', icon: ScanLine },
   { name: 'Search', href: '/search', icon: Search },
   { name: 'Tags', href: '/tags', icon: Tags },
   { name: 'Workflows', href: '/workflows', icon: ClipboardList },

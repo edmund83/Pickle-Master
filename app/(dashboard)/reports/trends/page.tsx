@@ -63,7 +63,7 @@ export default async function TrendsPage() {
 
   const activityByDay = last7Days.map(day => ({
     date: day,
-    count: activities.filter(a => a.created_at.split('T')[0] === day).length,
+    count: activities.filter(a => a.created_at?.split('T')[0] === day).length,
   }))
 
   // Action type breakdown
@@ -89,6 +89,7 @@ export default async function TrendsPage() {
 
   // Calculate week-over-week change
   const thisWeekActivities = activities.filter(a => {
+    if (!a.created_at) return false
     const date = new Date(a.created_at)
     const weekAgo = new Date()
     weekAgo.setDate(weekAgo.getDate() - 7)
@@ -96,6 +97,7 @@ export default async function TrendsPage() {
   }).length
 
   const lastWeekActivities = activities.filter(a => {
+    if (!a.created_at) return false
     const date = new Date(a.created_at)
     const weekAgo = new Date()
     weekAgo.setDate(weekAgo.getDate() - 7)

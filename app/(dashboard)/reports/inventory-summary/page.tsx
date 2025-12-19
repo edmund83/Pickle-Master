@@ -61,7 +61,7 @@ async function getSummaryData(): Promise<SummaryData> {
     items: itemsList,
     folders: (folders || []) as FolderType[],
     totalItems: itemsList.length,
-    totalValue: itemsList.reduce((sum, item) => sum + item.quantity * item.price, 0),
+    totalValue: itemsList.reduce((sum, item) => sum + item.quantity * (item.price ?? 0), 0),
     byStatus: {
       in_stock: itemsList.filter((i) => i.status === 'in_stock').length,
       low_stock: itemsList.filter((i) => i.status === 'low_stock').length,
@@ -78,12 +78,12 @@ export default async function InventorySummaryPage() {
     items: data.items.filter((item) => item.folder_id === folder.id),
     value: data.items
       .filter((item) => item.folder_id === folder.id)
-      .reduce((sum, item) => sum + item.quantity * item.price, 0),
+      .reduce((sum, item) => sum + item.quantity * (item.price ?? 0), 0),
   }))
 
   const uncategorized = data.items.filter((item) => !item.folder_id)
   const uncategorizedValue = uncategorized.reduce(
-    (sum, item) => sum + item.quantity * item.price,
+    (sum, item) => sum + item.quantity * (item.price ?? 0),
     0
   )
 
@@ -147,9 +147,9 @@ export default async function InventorySummaryPage() {
                   <div className="flex items-center gap-3">
                     <div
                       className="flex h-8 w-8 items-center justify-center rounded-lg"
-                      style={{ backgroundColor: folder.color + '20' }}
+                      style={{ backgroundColor: (folder.color || '#6b7280') + '20' }}
                     >
-                      <Folder className="h-4 w-4" style={{ color: folder.color }} />
+                      <Folder className="h-4 w-4" style={{ color: folder.color || '#6b7280' }} />
                     </div>
                     <div>
                       <p className="font-medium text-neutral-900">{folder.name}</p>

@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Plus, Search, Filter, Package } from 'lucide-react'
+import { Plus, Search, Filter, Package, ScanLine } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { InventoryItem, Folder } from '@/types/database.types'
 
@@ -72,7 +72,7 @@ export default async function InventoryPage() {
             >
               <div
                 className="h-3 w-3 rounded-full"
-                style={{ backgroundColor: folder.color }}
+                style={{ backgroundColor: folder.color || '#6b7280' }}
               />
               {folder.name}
             </Link>
@@ -104,12 +104,20 @@ export default async function InventoryPage() {
               Filter
             </Button>
           </div>
-          <Link href="/inventory/new">
-            <Button size="sm">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Item
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link href="/scan">
+              <Button variant="outline" size="sm">
+                <ScanLine className="mr-2 h-4 w-4" />
+                Scan
+              </Button>
+            </Link>
+            <Link href="/inventory/new">
+              <Button size="sm">
+                <Plus className="mr-2 h-4 w-4" />
+                Add Item
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Items Grid */}
@@ -174,16 +182,16 @@ function ItemCard({ item }: { item: InventoryItem }) {
         </span>
         <span
           className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-            statusColors[item.status] || statusColors.in_stock
+            statusColors[item.status || 'in_stock'] || statusColors.in_stock
           }`}
         >
-          {statusLabels[item.status] || 'In Stock'}
+          {statusLabels[item.status || 'in_stock'] || 'In Stock'}
         </span>
       </div>
 
-      {item.price > 0 && (
+      {(item.price ?? 0) > 0 && (
         <p className="mt-1 text-sm text-neutral-500">
-          RM {item.price.toFixed(2)} / {item.unit}
+          RM {(item.price ?? 0).toFixed(2)} / {item.unit}
         </p>
       )}
     </Link>
