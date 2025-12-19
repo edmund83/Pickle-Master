@@ -115,6 +115,182 @@ export type Database = {
           updated_at?: string | null
         }
       }
+      locations: {
+        Row: {
+          id: string
+          tenant_id: string
+          name: string
+          type: 'warehouse' | 'van' | 'store' | 'job_site'
+          description: string | null
+          is_active: boolean
+          created_by: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          name: string
+          type?: 'warehouse' | 'van' | 'store' | 'job_site'
+          description?: string | null
+          is_active?: boolean
+          created_by?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          name?: string
+          type?: 'warehouse' | 'van' | 'store' | 'job_site'
+          description?: string | null
+          is_active?: boolean
+          created_by?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+      }
+      location_stock: {
+        Row: {
+          id: string
+          tenant_id: string
+          item_id: string
+          location_id: string
+          quantity: number
+          min_quantity: number
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          item_id: string
+          location_id: string
+          quantity?: number
+          min_quantity?: number
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          item_id?: string
+          location_id?: string
+          quantity?: number
+          min_quantity?: number
+          created_at?: string | null
+          updated_at?: string | null
+        }
+      }
+      stock_transfers: {
+        Row: {
+          id: string
+          tenant_id: string
+          item_id: string
+          quantity: number
+          from_location_id: string
+          to_location_id: string
+          status: 'pending' | 'in_transit' | 'completed' | 'cancelled'
+          is_ai_suggested: boolean
+          ai_suggestion_reason: string | null
+          requested_by: string | null
+          requested_at: string | null
+          completed_by: string | null
+          completed_at: string | null
+          notes: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          item_id: string
+          quantity: number
+          from_location_id: string
+          to_location_id: string
+          status?: 'pending' | 'in_transit' | 'completed' | 'cancelled'
+          is_ai_suggested?: boolean
+          ai_suggestion_reason?: string | null
+          requested_by?: string | null
+          requested_at?: string | null
+          completed_by?: string | null
+          completed_at?: string | null
+          notes?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          item_id?: string
+          quantity?: number
+          from_location_id?: string
+          to_location_id?: string
+          status?: 'pending' | 'in_transit' | 'completed' | 'cancelled'
+          is_ai_suggested?: boolean
+          ai_suggestion_reason?: string | null
+          requested_by?: string | null
+          requested_at?: string | null
+          completed_by?: string | null
+          completed_at?: string | null
+          notes?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+      }
+      lots: {
+        Row: {
+          id: string
+          tenant_id: string
+          item_id: string
+          location_id: string | null
+          lot_number: string | null
+          batch_code: string | null
+          expiry_date: string | null
+          manufactured_date: string | null
+          received_at: string | null
+          quantity: number
+          status: 'active' | 'expired' | 'depleted' | 'blocked'
+          notes: string | null
+          created_by: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          item_id: string
+          location_id?: string | null
+          lot_number?: string | null
+          batch_code?: string | null
+          expiry_date?: string | null
+          manufactured_date?: string | null
+          received_at?: string | null
+          quantity?: number
+          status?: 'active' | 'expired' | 'depleted' | 'blocked'
+          notes?: string | null
+          created_by?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          item_id?: string
+          location_id?: string | null
+          lot_number?: string | null
+          batch_code?: string | null
+          expiry_date?: string | null
+          manufactured_date?: string | null
+          received_at?: string | null
+          quantity?: number
+          status?: 'active' | 'expired' | 'depleted' | 'blocked'
+          notes?: string | null
+          created_by?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+      }
       activity_logs: {
         Row: {
           action_type: string
@@ -451,6 +627,15 @@ export type Database = {
           tenant_id: string
           unit: string | null
           updated_at: string | null
+          // Tracking mode
+          tracking_mode: 'none' | 'serialized' | 'lot_expiry' | null
+          // Shipping dimensions
+          weight: number | null
+          weight_unit: string | null
+          length: number | null
+          width: number | null
+          height: number | null
+          dimension_unit: string | null
         }
         Insert: {
           barcode?: string | null
@@ -481,6 +666,15 @@ export type Database = {
           tenant_id: string
           unit?: string | null
           updated_at?: string | null
+          // Tracking mode
+          tracking_mode?: 'none' | 'serialized' | 'lot_expiry' | null
+          // Shipping dimensions
+          weight?: number | null
+          weight_unit?: string | null
+          length?: number | null
+          width?: number | null
+          height?: number | null
+          dimension_unit?: string | null
         }
         Update: {
           barcode?: string | null
@@ -511,6 +705,15 @@ export type Database = {
           tenant_id?: string
           unit?: string | null
           updated_at?: string | null
+          // Tracking mode
+          tracking_mode?: 'none' | 'serialized' | 'lot_expiry' | null
+          // Shipping dimensions
+          weight?: number | null
+          weight_unit?: string | null
+          length?: number | null
+          width?: number | null
+          height?: number | null
+          dimension_unit?: string | null
         }
       }
       item_tags: {
@@ -1335,6 +1538,10 @@ export type PurchaseOrder = Tables<'purchase_orders'>
 export type PurchaseOrderItem = Tables<'purchase_order_items'>
 export type Checkout = Tables<'checkouts'>
 export type Job = Tables<'jobs'>
+export type Location = Tables<'locations'>
+export type LocationStock = Tables<'location_stock'>
+export type StockTransfer = Tables<'stock_transfers'>
+export type Lot = Tables<'lots'>
 
 // Enum types
 export type ItemStatus = Database['public']['Enums']['item_status_enum']
@@ -1361,4 +1568,111 @@ export interface CheckoutWithItem extends Checkout {
   item_image?: string
   checked_out_by_name?: string
   days_overdue?: number
+}
+
+// Location-related types
+export type LocationType = 'warehouse' | 'van' | 'store' | 'job_site'
+export type TransferStatus = 'pending' | 'in_transit' | 'completed' | 'cancelled'
+
+// Extended location type with stats (for list views)
+export interface LocationWithStats extends Location {
+  item_count?: number
+  total_quantity?: number
+}
+
+// Extended stock transfer type with details (for list views)
+export interface StockTransferWithDetails extends StockTransfer {
+  item_name?: string
+  item_sku?: string
+  item_image?: string
+  from_location_name?: string
+  from_location_type?: LocationType
+  to_location_name?: string
+  to_location_type?: LocationType
+  requested_by_name?: string
+}
+
+// AI Transfer Suggestion type
+export interface TransferSuggestion {
+  item_id: string
+  item_name: string
+  item_sku?: string
+  item_image?: string
+  to_location_id: string
+  to_location_name: string
+  to_location_type: LocationType
+  current_qty: number
+  min_quantity: number
+  from_location_id: string
+  from_location_name: string
+  from_location_type: LocationType
+  available_qty: number
+  suggested_qty: number
+  reason: string
+}
+
+// Location inventory item type
+export interface LocationInventoryItem {
+  item_id: string
+  item_name: string
+  sku?: string
+  quantity: number
+  min_quantity: number
+  item_image?: string
+  location_status: 'in_stock' | 'low_stock' | 'out_of_stock'
+}
+
+// Item location distribution type
+export interface ItemLocationDistribution {
+  location_id: string
+  location_name: string
+  location_type: LocationType
+  quantity: number
+  min_quantity: number
+  status: 'in_stock' | 'low_stock' | 'out_of_stock'
+}
+
+// Lot-related types
+export type LotStatus = 'active' | 'expired' | 'depleted' | 'blocked'
+export type ItemTrackingMode = 'none' | 'serialized' | 'lot_expiry'
+export type ExpiryUrgency = 'expired' | 'critical' | 'warning' | 'upcoming' | 'ok' | 'no_expiry'
+
+// Extended lot type with computed fields
+export interface LotWithDetails extends Lot {
+  location_name?: string
+  days_until_expiry?: number | null
+  expiry_status?: ExpiryUrgency
+  item_name?: string
+  item_sku?: string
+  item_image?: string
+}
+
+// Expiring lots summary for dashboard
+export interface ExpiringLotsSummary {
+  expired_count: number
+  expiring_7_days: number
+  expiring_30_days: number
+  total_value_at_risk: number
+}
+
+// FEFO picking suggestion
+export interface FEFOSuggestion {
+  lot_id: string
+  lot_number: string | null
+  batch_code: string | null
+  expiry_date: string | null
+  available_quantity: number
+  location_id: string | null
+  location_name: string | null
+  pick_quantity: number
+}
+
+// Shipping dimensions type
+export interface ShippingDimensions {
+  weight: number | null
+  weight_unit: string
+  length: number | null
+  width: number | null
+  height: number | null
+  dimension_unit: string
 }

@@ -3,13 +3,19 @@
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Save, Package, Loader2, ImageIcon } from 'lucide-react'
+import { ArrowLeft, Save, Package, Loader2, ImageIcon, Truck, Calendar, ChevronDown, ChevronUp } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PhotoUpload } from '@/components/inventory/PhotoUpload'
 import { createClient } from '@/lib/supabase/client'
-import type { InventoryItem } from '@/types/database.types'
+import type { InventoryItem, ItemTrackingMode } from '@/types/database.types'
+
+interface FeaturesEnabled {
+  multi_location?: boolean
+  shipping_dimensions?: boolean
+  lot_tracking?: boolean
+}
 
 export default function EditItemPage() {
   const router = useRouter()
@@ -21,6 +27,9 @@ export default function EditItemPage() {
   const [error, setError] = useState<string | null>(null)
   const [item, setItem] = useState<InventoryItem | null>(null)
   const [images, setImages] = useState<string[]>([])
+  const [features, setFeatures] = useState<FeaturesEnabled>({})
+  const [shippingExpanded, setShippingExpanded] = useState(false)
+  const [lotExpanded, setLotExpanded] = useState(false)
 
   const [formData, setFormData] = useState({
     name: '',
@@ -36,6 +45,15 @@ export default function EditItemPage() {
     currency: 'RM',
     location: '',
     notes: '',
+    // Shipping dimensions
+    weight: 0,
+    weight_unit: 'kg',
+    length: 0,
+    width: 0,
+    height: 0,
+    dimension_unit: 'cm',
+    // Tracking mode
+    tracking_mode: 'none' as ItemTrackingMode,
   })
 
   useEffect(() => {
@@ -60,6 +78,18 @@ export default function EditItemPage() {
           throw new Error('No tenant found')
         }
 
+        // Load tenant features
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: tenant } = await (supabase as any)
+          .from('tenants')
+          .select('settings')
+          .eq('id', profile.tenant_id)
+          .single()
+
+        const settings = tenant?.settings as Record<string, unknown> | null
+        const enabledFeatures = settings?.features_enabled as FeaturesEnabled | undefined
+        setFeatures(enabledFeatures || {})
+
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { data, error: fetchError } = await (supabase as any)
           .from('inventory_items')
@@ -75,6 +105,13 @@ export default function EditItemPage() {
         const itemData = data as InventoryItem
         setItem(itemData)
         setImages(itemData.image_urls || [])
+
+        // Auto-expand sections if they have data
+        const hasShippingData = itemData.weight || itemData.length || itemData.width || itemData.height
+        const hasLotData = itemData.tracking_mode && itemData.tracking_mode !== 'none'
+        setShippingExpanded(!!hasShippingData)
+        setLotExpanded(!!hasLotData)
+
         setFormData({
           name: itemData.name || '',
           sku: itemData.sku || '',
@@ -89,6 +126,15 @@ export default function EditItemPage() {
           currency: itemData.currency || 'RM',
           location: itemData.location || '',
           notes: itemData.notes || '',
+          // Shipping dimensions
+          weight: itemData.weight || 0,
+          weight_unit: itemData.weight_unit || 'kg',
+          length: itemData.length || 0,
+          width: itemData.width || 0,
+          height: itemData.height || 0,
+          dimension_unit: itemData.dimension_unit || 'cm',
+          // Tracking mode
+          tracking_mode: (itemData.tracking_mode as ItemTrackingMode) || 'none',
         })
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load item')
@@ -143,6 +189,19 @@ export default function EditItemPage() {
           status,
           last_modified_by: user.id,
           updated_at: new Date().toISOString(),
+          // Shipping dimensions (only if feature enabled)
+          ...(features.shipping_dimensions && {
+            weight: formData.weight || null,
+            weight_unit: formData.weight_unit,
+            length: formData.length || null,
+            width: formData.width || null,
+            height: formData.height || null,
+            dimension_unit: formData.dimension_unit,
+          }),
+          // Tracking mode (only if lot tracking feature enabled)
+          ...(features.lot_tracking && {
+            tracking_mode: formData.tracking_mode,
+          }),
         })
         .eq('id', itemId)
 
@@ -454,6 +513,206 @@ export default function EditItemPage() {
               )}
             </CardContent>
           </Card>
+
+          {/* Shipping Dimensions - Only show if feature enabled */}
+          {features.shipping_dimensions && (
+            <Card>
+              <CardHeader
+                className="cursor-pointer select-none"
+                onClick={() => setShippingExpanded(!shippingExpanded)}
+              >
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Truck className="h-5 w-5" />
+                    Shipping Dimensions
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    {!shippingExpanded && (formData.weight > 0 || formData.length > 0) && (
+                      <span className="text-xs text-pickle-600 bg-pickle-50 px-2 py-1 rounded-full">
+                        Has data
+                      </span>
+                    )}
+                    {shippingExpanded ? (
+                      <ChevronUp className="h-5 w-5 text-neutral-400" />
+                    ) : (
+                      <ChevronDown className="h-5 w-5 text-neutral-400" />
+                    )}
+                  </div>
+                </div>
+              </CardHeader>
+              {shippingExpanded && (
+                <CardContent className="space-y-4">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                        Weight
+                      </label>
+                      <div className="flex gap-2">
+                        <Input
+                          type="number"
+                          name="weight"
+                          value={formData.weight || ''}
+                          onChange={handleChange}
+                          min="0"
+                          step="0.001"
+                          placeholder="0.000"
+                          className="flex-1"
+                        />
+                        <select
+                          name="weight_unit"
+                          value={formData.weight_unit}
+                          onChange={handleChange}
+                          className="w-20 rounded-lg border border-neutral-300 px-2 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                        >
+                          <option value="kg">kg</option>
+                          <option value="g">g</option>
+                          <option value="lb">lb</option>
+                          <option value="oz">oz</option>
+                        </select>
+                      </div>
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                        Dimension Unit
+                      </label>
+                      <select
+                        name="dimension_unit"
+                        value={formData.dimension_unit}
+                        onChange={handleChange}
+                        className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                      >
+                        <option value="cm">Centimeters (cm)</option>
+                        <option value="in">Inches (in)</option>
+                        <option value="mm">Millimeters (mm)</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-3">
+                    <div>
+                      <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                        Length
+                      </label>
+                      <Input
+                        type="number"
+                        name="length"
+                        value={formData.length || ''}
+                        onChange={handleChange}
+                        min="0"
+                        step="0.01"
+                        placeholder="0.00"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                        Width
+                      </label>
+                      <Input
+                        type="number"
+                        name="width"
+                        value={formData.width || ''}
+                        onChange={handleChange}
+                        min="0"
+                        step="0.01"
+                        placeholder="0.00"
+                      />
+                    </div>
+                    <div>
+                      <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                        Height
+                      </label>
+                      <Input
+                        type="number"
+                        name="height"
+                        value={formData.height || ''}
+                        onChange={handleChange}
+                        min="0"
+                        step="0.01"
+                        placeholder="0.00"
+                      />
+                    </div>
+                  </div>
+                  {formData.length > 0 && formData.width > 0 && formData.height > 0 && (
+                    <div className="rounded-lg bg-neutral-50 p-3">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-neutral-600">Volume</span>
+                        <span className="font-medium text-pickle-600">
+                          {(formData.length * formData.width * formData.height).toFixed(2)} {formData.dimension_unit}³
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              )}
+            </Card>
+          )}
+
+          {/* Lot/Expiry Tracking - Only show if feature enabled */}
+          {features.lot_tracking && (
+            <Card>
+              <CardHeader
+                className="cursor-pointer select-none"
+                onClick={() => setLotExpanded(!lotExpanded)}
+              >
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5" />
+                    Tracking Mode
+                  </CardTitle>
+                  <div className="flex items-center gap-2">
+                    {!lotExpanded && formData.tracking_mode !== 'none' && (
+                      <span className="text-xs text-pickle-600 bg-pickle-50 px-2 py-1 rounded-full capitalize">
+                        {formData.tracking_mode.replace('_', ' ')}
+                      </span>
+                    )}
+                    {lotExpanded ? (
+                      <ChevronUp className="h-5 w-5 text-neutral-400" />
+                    ) : (
+                      <ChevronDown className="h-5 w-5 text-neutral-400" />
+                    )}
+                  </div>
+                </div>
+              </CardHeader>
+              {lotExpanded && (
+                <CardContent className="space-y-4">
+                  <p className="text-sm text-neutral-500">
+                    Choose how to track this item. Lot/Expiry tracking allows multiple lots with different expiry dates.
+                  </p>
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    {[
+                      { value: 'none', label: 'None', desc: 'Simple quantity tracking' },
+                      { value: 'serialized', label: 'Serialized', desc: 'Each unit has a serial number' },
+                      { value: 'lot_expiry', label: 'Lot/Expiry', desc: 'Track by lot number and expiry date' },
+                    ].map((mode) => (
+                      <button
+                        key={mode.value}
+                        type="button"
+                        onClick={() => setFormData({ ...formData, tracking_mode: mode.value as ItemTrackingMode })}
+                        className={`flex flex-col items-start rounded-lg border p-3 text-left transition-colors ${
+                          formData.tracking_mode === mode.value
+                            ? 'border-pickle-500 bg-pickle-50'
+                            : 'border-neutral-200 hover:bg-neutral-50'
+                        }`}
+                      >
+                        <span className={`text-sm font-medium ${
+                          formData.tracking_mode === mode.value ? 'text-pickle-900' : 'text-neutral-700'
+                        }`}>
+                          {mode.label}
+                        </span>
+                        <span className="mt-0.5 text-xs text-neutral-500">{mode.desc}</span>
+                      </button>
+                    ))}
+                  </div>
+                  {formData.tracking_mode === 'lot_expiry' && (
+                    <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
+                      <p className="text-sm text-amber-800">
+                        <strong>Note:</strong> Lot details (lot number, expiry date, batch code) are managed when receiving inventory. Go to the item detail page to add or manage lots.
+                      </p>
+                    </div>
+                  )}
+                </CardContent>
+              )}
+            </Card>
+          )}
 
           {/* Notes */}
           <Card>
