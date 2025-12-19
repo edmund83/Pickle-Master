@@ -1,11 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import { Search, Package, Plus, Filter, ChevronRight } from 'lucide-react'
+import { Search, Package, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { InventoryItem, Folder } from '@/types/database.types'
-import { FloatingActionButton } from '@/components/layout/mobile/FloatingActionButton'
+import { MultiFAB } from '@/components/layout/mobile/MultiFAB'
+import { WarehouseSelector } from './warehouse-selector'
 
 interface MobileInventoryViewProps {
   items: InventoryItem[]
@@ -36,6 +37,39 @@ const statusConfig = {
 export function MobileInventoryView({ items, folders }: MobileInventoryViewProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [activeFilter, setActiveFilter] = useState<'all' | 'low' | 'out'>('all')
+  const [selectedWarehouseId, setSelectedWarehouseId] = useState<string | null>(null)
+
+  // Get warehouses (top-level folders only)
+  const warehouses = useMemo(() =>
+    folders.filter(f => f.parent_id === null), [folders])
+
+  // Map each folder to its root warehouse using the path array
+  const folderToWarehouse = useMemo(() => {
+    const map = new Map<string, string>()
+    folders.forEach(folder => {
+      if (folder.parent_id === null) {
+        map.set(folder.id, folder.id) // warehouse maps to itself
+      } else if (folder.path && folder.path.length > 0) {
+        map.set(folder.id, folder.path[0]) // first element is root warehouse
+      }
+    })
+    return map
+  }, [folders])
+
+  // Calculate warehouse counts (including sub-folder items)
+  const warehouseCounts = useMemo(() => {
+    const counts = new Map<string | null, number>()
+    counts.set(null, items.length) // "All" count
+
+    warehouses.forEach(wh => {
+      const count = items.filter(item => {
+        if (!item.folder_id) return false
+        return folderToWarehouse.get(item.folder_id) === wh.id
+      }).length
+      counts.set(wh.id, count)
+    })
+    return counts
+  }, [items, warehouses, folderToWarehouse])
 
   // Filter items
   const filteredItems = items.filter((item) => {
@@ -51,15 +85,34 @@ export function MobileInventoryView({ items, folders }: MobileInventoryViewProps
       (activeFilter === 'low' && item.status === 'low_stock') ||
       (activeFilter === 'out' && item.status === 'out_of_stock')
 
-    return matchesSearch && matchesStatus
+    // Warehouse filter
+    const matchesWarehouse =
+      selectedWarehouseId === null ||
+      (item.folder_id && folderToWarehouse.get(item.folder_id) === selectedWarehouseId)
+
+    return matchesSearch && matchesStatus && matchesWarehouse
   })
 
-  // Count by status
-  const lowStockCount = items.filter((i) => i.status === 'low_stock').length
-  const outOfStockCount = items.filter((i) => i.status === 'out_of_stock').length
+  // Count by status (from filtered by warehouse items)
+  const warehouseFilteredItems = selectedWarehouseId === null
+    ? items
+    : items.filter(item => item.folder_id && folderToWarehouse.get(item.folder_id) === selectedWarehouseId)
+
+  const lowStockCount = warehouseFilteredItems.filter((i) => i.status === 'low_stock').length
+  const outOfStockCount = warehouseFilteredItems.filter((i) => i.status === 'out_of_stock').length
 
   return (
     <div className="flex flex-col h-full bg-neutral-50">
+      {/* Warehouse Selector */}
+      <div className="bg-white px-4 py-3 border-b border-neutral-100">
+        <WarehouseSelector
+          warehouses={warehouses}
+          selectedWarehouseId={selectedWarehouseId}
+          onWarehouseChange={setSelectedWarehouseId}
+          itemCounts={warehouseCounts}
+        />
+      </div>
+
       {/* Search Bar */}
       <div className="bg-white px-4 py-3 border-b border-neutral-100">
         <div className="relative">
@@ -87,7 +140,7 @@ export function MobileInventoryView({ items, folders }: MobileInventoryViewProps
       <div className="flex gap-2 px-4 py-3 bg-white border-b border-neutral-100 overflow-x-auto">
         <FilterPill
           label="All"
-          count={items.length}
+          count={warehouseFilteredItems.length}
           active={activeFilter === 'all'}
           onClick={() => setActiveFilter('all')}
         />
@@ -123,13 +176,8 @@ export function MobileInventoryView({ items, folders }: MobileInventoryViewProps
         )}
       </div>
 
-      {/* Floating Action Button */}
-      <FloatingActionButton
-        icon={Plus}
-        onClick={() => {
-          window.location.href = '/inventory/new'
-        }}
-      />
+      {/* Multi-purpose Floating Action Button */}
+      <MultiFAB />
     </div>
   )
 }
