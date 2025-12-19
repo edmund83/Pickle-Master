@@ -1,8 +1,16 @@
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ClipboardList, ShoppingCart, ArrowRightLeft, PackageOpen } from 'lucide-react'
+import { ClipboardList, ShoppingCart, ArrowRightLeft, PackageOpen, UserCheck } from 'lucide-react'
 
 const workflows = [
+  {
+    href: '/workflows/checkouts',
+    title: 'Check-In / Check-Out',
+    description: 'Track items assigned to people, jobs, and locations',
+    icon: UserCheck,
+    color: 'text-amber-500',
+    bgColor: 'bg-amber-50',
+  },
   {
     href: '/workflows/pick-lists',
     title: 'Pick Lists',

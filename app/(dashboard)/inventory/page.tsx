@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Plus, Search, Filter, Package, ScanLine } from 'lucide-react'
+import { Plus, Search, Filter, Package, ScanLine, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { InventoryItem, Folder } from '@/types/database.types'
 
@@ -105,6 +105,12 @@ export default async function InventoryPage() {
             </Button>
           </div>
           <div className="flex items-center gap-2">
+            <Link href="/import">
+              <Button variant="outline" size="sm">
+                <Upload className="mr-2 h-4 w-4" />
+                Import
+              </Button>
+            </Link>
             <Link href="/scan">
               <Button variant="outline" size="sm">
                 <ScanLine className="mr-2 h-4 w-4" />
