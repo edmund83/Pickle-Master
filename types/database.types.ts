@@ -424,6 +424,7 @@ export type Database = {
       inventory_items: {
         Row: {
           barcode: string | null
+          cost_price: number | null
           created_at: string | null
           created_by: string | null
           currency: string | null
@@ -453,6 +454,7 @@ export type Database = {
         }
         Insert: {
           barcode?: string | null
+          cost_price?: number | null
           created_at?: string | null
           created_by?: string | null
           currency?: string | null
@@ -482,6 +484,7 @@ export type Database = {
         }
         Update: {
           barcode?: string | null
+          cost_price?: number | null
           created_at?: string | null
           created_by?: string | null
           currency?: string | null

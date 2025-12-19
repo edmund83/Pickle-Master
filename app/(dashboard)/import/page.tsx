@@ -29,6 +29,7 @@ const IMPORTABLE_FIELDS = [
   { key: 'unit', label: 'Unit', required: false },
   { key: 'min_quantity', label: 'Min Quantity', required: false },
   { key: 'price', label: 'Price', required: false },
+  { key: 'cost_price', label: 'Cost Price', required: false },
   { key: 'location', label: 'Location', required: false },
   { key: 'notes', label: 'Notes', required: false },
 ] as const
@@ -226,6 +227,11 @@ export default function ImportPage() {
         errors.push('Price must be a number')
       }
 
+      // Validate cost_price is a number
+      if (data.cost_price && isNaN(parseFloat(data.cost_price))) {
+        errors.push('Cost Price must be a number')
+      }
+
       return {
         data,
         errors,
@@ -323,6 +329,7 @@ export default function ImportPage() {
               unit: row.data.unit || 'pcs',
               min_quantity: minQuantity,
               price: parseFloat(row.data.price || '0') || 0,
+              cost_price: row.data.cost_price ? parseFloat(row.data.cost_price) : null,
               location: row.data.location || null,
               notes: row.data.notes || null,
               status,
@@ -358,7 +365,7 @@ export default function ImportPage() {
   // Download sample CSV
   const downloadSample = () => {
     const headers = IMPORTABLE_FIELDS.map((f) => f.label).join(',')
-    const sampleRow = 'Sample Item,SKU-001,123456789,A sample product,10,pcs,5,19.99,Warehouse A,Some notes'
+    const sampleRow = 'Sample Item,SKU-001,123456789,A sample product,10,pcs,5,19.99,12.50,Warehouse A,Some notes'
     const csv = `${headers}\n${sampleRow}`
     const blob = new Blob([csv], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
