@@ -1,25 +1,80 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useCallback, useEffect } from 'react'
 import Link from 'next/link'
 import { Plus, Filter, Package, ScanLine, Upload } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import type { InventoryItem, Folder } from '@/types/database.types'
 import { SearchInput } from '@/components/ui/search-input'
 import { InventoryTable } from './inventory-table'
 import { ViewToggle } from './view-toggle'
 import { WarehouseSelector } from './warehouse-selector'
+import { FolderTreeView, type FolderStats } from './folder-tree-view'
+import { Breadcrumbs } from './breadcrumbs'
+import { FolderSummaryStats } from './folder-summary-stats'
+import { InlineFolderForm } from './inline-folder-form'
+
+const EXPANDED_FOLDERS_KEY = 'pickle-expanded-folders'
 
 interface InventoryDesktopViewProps {
   items: InventoryItem[]
   folders: Folder[]
   view: string
+  folderStatsObj: Record<string, FolderStats>
 }
 
-export function InventoryDesktopView({ items, folders, view }: InventoryDesktopViewProps) {
-  const [selectedWarehouseId, setSelectedWarehouseId] = useState<string | null>(null)
+export function InventoryDesktopView({ items, folders, view, folderStatsObj }: InventoryDesktopViewProps) {
+  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null)
+  const [isCreatingFolder, setIsCreatingFolder] = useState(false)
+  const [createFolderParentId, setCreateFolderParentId] = useState<string | null>(null)
 
-  // Get warehouses (top-level folders only)
+  // Convert folderStatsObj back to Map
+  const folderStats = useMemo(() => new Map(Object.entries(folderStatsObj)), [folderStatsObj])
+
+  // Track if we've loaded from localStorage (to avoid hydration mismatch)
+  const [isHydrated, setIsHydrated] = useState(false)
+
+  // Initialize with empty Set to match server render, then load from localStorage after hydration
+  const [expandedFolderIds, setExpandedFolderIds] = useState<Set<string>>(() => new Set())
+
+  // Load expanded folders from localStorage after hydration
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(EXPANDED_FOLDERS_KEY)
+      if (stored) {
+        setExpandedFolderIds(new Set(JSON.parse(stored)))
+      }
+    } catch {
+      // Ignore storage errors
+    }
+    setIsHydrated(true)
+  }, [])
+
+  // Persist expanded state to localStorage (only after hydration)
+  useEffect(() => {
+    if (!isHydrated) return
+    try {
+      localStorage.setItem(EXPANDED_FOLDERS_KEY, JSON.stringify([...expandedFolderIds]))
+    } catch {
+      // Ignore storage errors
+    }
+  }, [expandedFolderIds, isHydrated])
+
+  // Toggle folder expand/collapse
+  const toggleExpand = useCallback((folderId: string) => {
+    setExpandedFolderIds(prev => {
+      const next = new Set(prev)
+      if (next.has(folderId)) {
+        next.delete(folderId)
+      } else {
+        next.add(folderId)
+      }
+      return next
+    })
+  }, [])
+
+  // Get warehouses (top-level folders only) - still needed for warehouse selector
   const warehouses = useMemo(() =>
     folders.filter(f => f.parent_id === null), [folders])
 
@@ -28,9 +83,9 @@ export function InventoryDesktopView({ items, folders, view }: InventoryDesktopV
     const map = new Map<string, string>()
     folders.forEach(folder => {
       if (folder.parent_id === null) {
-        map.set(folder.id, folder.id) // warehouse maps to itself
+        map.set(folder.id, folder.id)
       } else if (folder.path && folder.path.length > 0) {
-        map.set(folder.id, folder.path[0]) // first element is root warehouse
+        map.set(folder.id, folder.path[0])
       }
     })
     return map
@@ -39,8 +94,7 @@ export function InventoryDesktopView({ items, folders, view }: InventoryDesktopV
   // Calculate warehouse counts (including sub-folder items)
   const warehouseCounts = useMemo(() => {
     const counts = new Map<string | null, number>()
-    counts.set(null, items.length) // "All" count
-
+    counts.set(null, items.length)
     warehouses.forEach(wh => {
       const count = items.filter(item => {
         if (!item.folder_id) return false
@@ -51,46 +105,134 @@ export function InventoryDesktopView({ items, folders, view }: InventoryDesktopV
     return counts
   }, [items, warehouses, folderToWarehouse])
 
-  // Filter items by selected warehouse
+  // Filter items by selected folder (including children)
   const filteredItems = useMemo(() => {
-    if (selectedWarehouseId === null) return items
-    return items.filter(item =>
-      item.folder_id && folderToWarehouse.get(item.folder_id) === selectedWarehouseId
-    )
-  }, [items, selectedWarehouseId, folderToWarehouse])
+    if (selectedFolderId === null) return items
+
+    // Get the selected folder
+    const selectedFolder = folders.find(f => f.id === selectedFolderId)
+    if (!selectedFolder) return items
+
+    // Include items directly in this folder
+    // OR items in any sub-folder (where path includes selectedFolderId)
+    return items.filter(item => {
+      if (!item.folder_id) return false
+      if (item.folder_id === selectedFolderId) return true
+
+      // Check if item's folder is a descendant
+      const itemFolder = folders.find(f => f.id === item.folder_id)
+      if (itemFolder?.path?.includes(selectedFolderId)) return true
+
+      return false
+    })
+  }, [items, selectedFolderId, folders])
+
+  // Calculate summary stats for current view
+  const summaryStats = useMemo(() => {
+    const currentItems = filteredItems
+    const currentFolders = selectedFolderId === null
+      ? folders
+      : folders.filter(f =>
+          f.id === selectedFolderId ||
+          f.path?.includes(selectedFolderId)
+        )
+
+    return {
+      folderCount: currentFolders.length,
+      itemCount: currentItems.length,
+      totalQuantity: currentItems.reduce((sum, item) => sum + (item.quantity || 0), 0),
+      totalValue: currentItems.reduce((sum, item) => sum + ((item.quantity || 0) * (item.price || 0)), 0),
+    }
+  }, [filteredItems, folders, selectedFolderId])
+
+  // Handle starting folder creation
+  const handleStartCreateFolder = useCallback((parentId: string | null = null) => {
+    setCreateFolderParentId(parentId)
+    setIsCreatingFolder(true)
+    // Auto-expand parent if creating subfolder
+    if (parentId) {
+      setExpandedFolderIds(prev => {
+        const next = new Set(prev)
+        next.add(parentId)
+        return next
+      })
+    }
+  }, [])
+
+  // Handle folder creation success
+  const handleFolderCreated = useCallback(() => {
+    setIsCreatingFolder(false)
+    setCreateFolderParentId(null)
+  }, [])
+
+  // Handle add subfolder from tree context menu
+  const handleAddSubfolder = useCallback((parentId: string) => {
+    handleStartCreateFolder(parentId)
+  }, [handleStartCreateFolder])
 
   return (
     <>
       {/* Secondary Sidebar - Folders */}
-      <div className="flex w-56 flex-col border-r border-neutral-200 bg-white">
+      <div className="flex w-64 flex-col border-r border-neutral-200 bg-white">
         <div className="flex h-16 items-center justify-between border-b border-neutral-200 px-4">
           <h2 className="text-lg font-semibold text-neutral-900">Inventory</h2>
         </div>
         <nav className="flex-1 overflow-y-auto p-2">
-          <Link
-            href="/inventory"
-            className="flex items-center gap-3 rounded-lg bg-pickle-50 px-3 py-2 text-sm font-medium text-pickle-600"
+          {/* All Items Link */}
+          <button
+            onClick={() => setSelectedFolderId(null)}
+            className={cn(
+              'group flex w-full items-center rounded-md py-1.5 pl-3 pr-2 text-[13px] transition-all duration-150',
+              'hover:bg-neutral-100/80',
+              selectedFolderId === null
+                ? 'bg-pickle-50/80 font-medium text-pickle-700'
+                : 'text-neutral-700'
+            )}
           >
-            <Package className="h-4 w-4" />
-            All Items
-            <span className="ml-auto text-xs text-pickle-400">{items.length}</span>
-          </Link>
-          {folders.map((folder) => (
-            <Link
-              key={folder.id}
-              href={`/inventory/folder/${folder.id}`}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-50"
-            >
-              <div
-                className="h-3 w-3 rounded-full"
-                style={{ backgroundColor: folder.color || '#6b7280' }}
-              />
-              {folder.name}
-            </Link>
-          ))}
+            <Package className="mr-2 h-4 w-4 flex-shrink-0 text-neutral-500" />
+            <span className="flex-1 text-left">All Items</span>
+            <span className={cn(
+              'min-w-5 text-right text-xs tabular-nums',
+              selectedFolderId === null ? 'text-pickle-400' : 'text-neutral-400'
+            )}>
+              {items.length}
+            </span>
+          </button>
+
+          {/* Folder Tree */}
+          <div className="mt-2">
+            <FolderTreeView
+              folders={folders}
+              folderStats={folderStats}
+              selectedFolderId={selectedFolderId}
+              onFolderSelect={setSelectedFolderId}
+              expandedFolderIds={expandedFolderIds}
+              onToggleExpand={toggleExpand}
+              onAddSubfolder={handleAddSubfolder}
+            />
+          </div>
+
+          {/* Inline Folder Form (when creating at root level) */}
+          {isCreatingFolder && createFolderParentId === null && (
+            <InlineFolderForm
+              parentId={null}
+              onSuccess={handleFolderCreated}
+              onCancel={() => {
+                setIsCreatingFolder(false)
+                setCreateFolderParentId(null)
+              }}
+              className="mt-2"
+            />
+          )}
         </nav>
         <div className="border-t border-neutral-200 p-2">
-          <Button variant="ghost" className="w-full justify-start" size="sm">
+          <Button
+            variant="ghost"
+            className="w-full justify-start"
+            size="sm"
+            onClick={() => handleStartCreateFolder(null)}
+            disabled={isCreatingFolder}
+          >
             <Plus className="mr-2 h-4 w-4" />
             New Folder
           </Button>
@@ -98,7 +240,24 @@ export function InventoryDesktopView({ items, folders, view }: InventoryDesktopV
       </div>
 
       {/* Main Content */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex flex-1 flex-col overflow-hidden">
+        {/* Breadcrumbs */}
+        <div className="border-b border-neutral-100 bg-white px-6 py-2">
+          <Breadcrumbs
+            folders={folders}
+            currentFolderId={selectedFolderId}
+            onNavigate={setSelectedFolderId}
+          />
+        </div>
+
+        {/* Summary Stats Bar */}
+        <FolderSummaryStats
+          folderCount={summaryStats.folderCount}
+          itemCount={summaryStats.itemCount}
+          totalQuantity={summaryStats.totalQuantity}
+          totalValue={summaryStats.totalValue}
+        />
+
         {/* Header */}
         <div className="flex items-center justify-between border-b border-neutral-200 bg-white px-6 py-4">
           <div className="flex items-center gap-4">
@@ -113,8 +272,8 @@ export function InventoryDesktopView({ items, folders, view }: InventoryDesktopV
             <div className="w-56">
               <WarehouseSelector
                 warehouses={warehouses}
-                selectedWarehouseId={selectedWarehouseId}
-                onWarehouseChange={setSelectedWarehouseId}
+                selectedWarehouseId={selectedFolderId}
+                onWarehouseChange={setSelectedFolderId}
                 itemCounts={warehouseCounts}
               />
             </div>
@@ -142,7 +301,7 @@ export function InventoryDesktopView({ items, folders, view }: InventoryDesktopV
         </div>
 
         {/* Items Grid/Table */}
-        <div className="p-6">
+        <div className="flex-1 overflow-y-auto p-6">
           {filteredItems.length > 0 ? (
             view === 'table' ? (
               <InventoryTable items={filteredItems} folders={folders} />
@@ -154,10 +313,26 @@ export function InventoryDesktopView({ items, folders, view }: InventoryDesktopV
               </div>
             )
           ) : (
-            <EmptyState selectedWarehouseId={selectedWarehouseId} onClearFilter={() => setSelectedWarehouseId(null)} />
+            <EmptyState selectedFolderId={selectedFolderId} onClearFilter={() => setSelectedFolderId(null)} />
           )}
         </div>
       </div>
+
+      {/* Inline Folder Form (when creating subfolder - shown as modal overlay for subfolders) */}
+      {isCreatingFolder && createFolderParentId !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
+          <div className="w-64">
+            <InlineFolderForm
+              parentId={createFolderParentId}
+              onSuccess={handleFolderCreated}
+              onCancel={() => {
+                setIsCreatingFolder(false)
+                setCreateFolderParentId(null)
+              }}
+            />
+          </div>
+        </div>
+      )}
     </>
   )
 }
@@ -223,19 +398,19 @@ function ItemCard({ item }: { item: InventoryItem }) {
 }
 
 interface EmptyStateProps {
-  selectedWarehouseId: string | null
+  selectedFolderId: string | null
   onClearFilter: () => void
 }
 
-function EmptyState({ selectedWarehouseId, onClearFilter }: EmptyStateProps) {
-  if (selectedWarehouseId) {
+function EmptyState({ selectedFolderId, onClearFilter }: EmptyStateProps) {
+  if (selectedFolderId) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100">
           <Package className="h-8 w-8 text-neutral-400" />
         </div>
-        <h3 className="mt-4 text-lg font-medium text-neutral-900">No items in this location</h3>
-        <p className="mt-1 text-neutral-500">This warehouse doesn't have any items yet.</p>
+        <h3 className="mt-4 text-lg font-medium text-neutral-900">No items in this folder</h3>
+        <p className="mt-1 text-neutral-500">This folder doesn&apos;t have any items yet.</p>
         <Button variant="outline" className="mt-4" onClick={onClearFilter}>
           View all items
         </Button>

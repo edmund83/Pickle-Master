@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { SyncStatusBadge } from '@/components/ui/SyncStatusIndicator'
 import { cn } from '@/lib/utils'
 import { useOfflineSync } from '@/lib/hooks/useOfflineSync'
+import { useIsDesktop } from '@/lib/hooks/useMediaQuery'
 import {
   getActiveSession,
   createScanSession,
@@ -25,8 +26,16 @@ type ViewState = 'scanning' | 'result' | 'adjust' | 'batch-list'
 
 export default function ScanPage() {
   const router = useRouter()
+  const isDesktop = useIsDesktop()
   const [mode, setMode] = useState<ScanMode>('single')
   const [viewState, setViewState] = useState<ViewState>('scanning')
+
+  // Redirect desktop users - scan is mobile/tablet only
+  useEffect(() => {
+    if (isDesktop) {
+      router.replace('/dashboard')
+    }
+  }, [isDesktop, router])
 
   // Scan result state
   const [lastBarcode, setLastBarcode] = useState<string | null>(null)
