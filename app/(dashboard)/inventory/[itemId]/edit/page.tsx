@@ -1,57 +1,115 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useParams } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, Save, Package, ImageIcon } from 'lucide-react'
+import { ArrowLeft, Save, Package, Loader2, ImageIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PhotoUpload } from '@/components/inventory/PhotoUpload'
 import { createClient } from '@/lib/supabase/client'
+import type { InventoryItem } from '@/types/database.types'
 
-export default function NewItemPage() {
+export default function EditItemPage() {
   const router = useRouter()
-  const [loading, setLoading] = useState(false)
+  const params = useParams()
+  const itemId = params.itemId as string
+
+  const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [item, setItem] = useState<InventoryItem | null>(null)
   const [images, setImages] = useState<string[]>([])
 
   const [formData, setFormData] = useState({
     name: '',
     sku: '',
+    barcode: '',
+    serial_number: '',
     description: '',
     quantity: 0,
     unit: 'pcs',
     min_quantity: 0,
     price: 0,
+    currency: 'RM',
     location: '',
     notes: '',
   })
 
+  useEffect(() => {
+    async function fetchItem() {
+      try {
+        const supabase = createClient()
+
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) {
+          router.push('/login')
+          return
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: profile } = await (supabase as any)
+          .from('profiles')
+          .select('tenant_id')
+          .eq('id', user.id)
+          .single()
+
+        if (!profile?.tenant_id) {
+          throw new Error('No tenant found')
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data, error: fetchError } = await (supabase as any)
+          .from('inventory_items')
+          .select('*')
+          .eq('id', itemId)
+          .eq('tenant_id', profile.tenant_id)
+          .is('deleted_at', null)
+          .single()
+
+        if (fetchError) throw fetchError
+        if (!data) throw new Error('Item not found')
+
+        const itemData = data as InventoryItem
+        setItem(itemData)
+        setImages(itemData.image_urls || [])
+        setFormData({
+          name: itemData.name || '',
+          sku: itemData.sku || '',
+          barcode: itemData.barcode || '',
+          serial_number: itemData.serial_number || '',
+          description: itemData.description || '',
+          quantity: itemData.quantity || 0,
+          unit: itemData.unit || 'pcs',
+          min_quantity: itemData.min_quantity || 0,
+          price: itemData.price || 0,
+          currency: itemData.currency || 'RM',
+          location: itemData.location || '',
+          notes: itemData.notes || '',
+        })
+      } catch (err) {
+        setError(err instanceof Error ? err.message : 'Failed to load item')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchItem()
+  }, [itemId, router])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
+    setSaving(true)
     setError(null)
 
     try {
       const supabase = createClient()
 
-      // Get current user and their tenant
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) {
         router.push('/login')
         return
-      }
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: profile } = await (supabase as any)
-        .from('profiles')
-        .select('tenant_id')
-        .eq('id', user.id)
-        .single()
-
-      if (!profile?.tenant_id) {
-        throw new Error('No tenant found')
       }
 
       // Determine status based on quantity and min_quantity
@@ -62,35 +120,37 @@ export default function NewItemPage() {
         status = 'low_stock'
       }
 
-      // Create the item
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: insertError } = await (supabase as any)
+      const { error: updateError } = await (supabase as any)
         .from('inventory_items')
-        .insert({
-          tenant_id: profile.tenant_id,
+        .update({
           name: formData.name,
           sku: formData.sku || null,
+          barcode: formData.barcode || null,
+          serial_number: formData.serial_number || null,
           description: formData.description || null,
           quantity: formData.quantity,
           unit: formData.unit,
           min_quantity: formData.min_quantity,
           price: formData.price,
+          currency: formData.currency,
           location: formData.location || null,
           notes: formData.notes || null,
           image_urls: images.length > 0 ? images : null,
           status,
-          created_by: user.id,
           last_modified_by: user.id,
+          updated_at: new Date().toISOString(),
         })
+        .eq('id', itemId)
 
-      if (insertError) throw insertError
+      if (updateError) throw updateError
 
-      router.push('/inventory')
+      router.push(`/inventory/${itemId}`)
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create item')
+      setError(err instanceof Error ? err.message : 'Failed to update item')
     } finally {
-      setLoading(false)
+      setSaving(false)
     }
   }
 
@@ -104,23 +164,56 @@ export default function NewItemPage() {
     }))
   }
 
+  if (loading) {
+    return (
+      <div className="flex flex-1 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-pickle-500" />
+      </div>
+    )
+  }
+
+  if (!item) {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-4">
+        <p className="text-neutral-500">Item not found</p>
+        <Link href="/inventory">
+          <Button variant="outline">Back to Inventory</Button>
+        </Link>
+      </div>
+    )
+  }
+
   return (
     <div className="flex-1 overflow-y-auto">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-neutral-200 bg-white px-6 py-4">
         <div className="flex items-center gap-4">
-          <Link href="/inventory">
+          <Link href={`/inventory/${itemId}`}>
             <Button variant="ghost" size="sm">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back
             </Button>
           </Link>
-          <h1 className="text-xl font-semibold text-neutral-900">Add New Item</h1>
+          <div>
+            <h1 className="text-xl font-semibold text-neutral-900">Edit Item</h1>
+            <p className="text-sm text-neutral-500">{item.name}</p>
+          </div>
         </div>
-        <Button type="submit" form="item-form" loading={loading}>
-          <Save className="mr-2 h-4 w-4" />
-          Save Item
-        </Button>
+        <div className="flex items-center gap-2">
+          <Link href={`/inventory/${itemId}`}>
+            <Button variant="outline" size="sm">
+              Cancel
+            </Button>
+          </Link>
+          <Button type="submit" form="item-form" disabled={saving}>
+            {saving ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="mr-2 h-4 w-4" />
+            )}
+            Save Changes
+          </Button>
+        </div>
       </div>
 
       {/* Form */}
@@ -145,7 +238,7 @@ export default function NewItemPage() {
                 images={images}
                 onImagesChange={setImages}
                 maxImages={5}
-                disabled={loading}
+                disabled={saving}
               />
             </CardContent>
           </Card>
@@ -182,6 +275,31 @@ export default function NewItemPage() {
                     value={formData.sku}
                     onChange={handleChange}
                     placeholder="e.g., PRD-001"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                    Barcode
+                  </label>
+                  <Input
+                    name="barcode"
+                    value={formData.barcode}
+                    onChange={handleChange}
+                    placeholder="e.g., 1234567890123"
+                  />
+                </div>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                    Serial Number
+                  </label>
+                  <Input
+                    name="serial_number"
+                    value={formData.serial_number}
+                    onChange={handleChange}
+                    placeholder="e.g., SN-12345"
                   />
                 </div>
                 <div>
@@ -276,18 +394,36 @@ export default function NewItemPage() {
               <CardTitle>Pricing</CardTitle>
             </CardHeader>
             <CardContent>
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-                  Price (RM)
-                </label>
-                <Input
-                  type="number"
-                  name="price"
-                  value={formData.price}
-                  onChange={handleChange}
-                  min="0"
-                  step="0.01"
-                />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                    Price
+                  </label>
+                  <Input
+                    type="number"
+                    name="price"
+                    value={formData.price}
+                    onChange={handleChange}
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                    Currency
+                  </label>
+                  <select
+                    name="currency"
+                    value={formData.currency}
+                    onChange={handleChange}
+                    className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                  >
+                    <option value="RM">RM (Malaysian Ringgit)</option>
+                    <option value="USD">USD (US Dollar)</option>
+                    <option value="SGD">SGD (Singapore Dollar)</option>
+                    <option value="EUR">EUR (Euro)</option>
+                  </select>
+                </div>
               </div>
             </CardContent>
           </Card>

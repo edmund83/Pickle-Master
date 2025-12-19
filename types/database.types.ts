@@ -9,6 +9,112 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      checkouts: {
+        Row: {
+          id: string
+          tenant_id: string
+          item_id: string
+          quantity: number
+          assignee_type: 'person' | 'job' | 'location'
+          assignee_id: string | null
+          assignee_name: string | null
+          checked_out_at: string
+          checked_out_by: string | null
+          due_date: string | null
+          status: 'checked_out' | 'returned' | 'overdue'
+          returned_at: string | null
+          returned_by: string | null
+          return_condition: 'good' | 'damaged' | 'needs_repair' | 'lost' | null
+          return_notes: string | null
+          notes: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          item_id: string
+          quantity?: number
+          assignee_type: 'person' | 'job' | 'location'
+          assignee_id?: string | null
+          assignee_name?: string | null
+          checked_out_at?: string
+          checked_out_by?: string | null
+          due_date?: string | null
+          status?: 'checked_out' | 'returned' | 'overdue'
+          returned_at?: string | null
+          returned_by?: string | null
+          return_condition?: 'good' | 'damaged' | 'needs_repair' | 'lost' | null
+          return_notes?: string | null
+          notes?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          item_id?: string
+          quantity?: number
+          assignee_type?: 'person' | 'job' | 'location'
+          assignee_id?: string | null
+          assignee_name?: string | null
+          checked_out_at?: string
+          checked_out_by?: string | null
+          due_date?: string | null
+          status?: 'checked_out' | 'returned' | 'overdue'
+          returned_at?: string | null
+          returned_by?: string | null
+          return_condition?: 'good' | 'damaged' | 'needs_repair' | 'lost' | null
+          return_notes?: string | null
+          notes?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+      }
+      jobs: {
+        Row: {
+          id: string
+          tenant_id: string
+          name: string
+          description: string | null
+          status: string | null
+          start_date: string | null
+          end_date: string | null
+          location: string | null
+          notes: string | null
+          created_by: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          name: string
+          description?: string | null
+          status?: string | null
+          start_date?: string | null
+          end_date?: string | null
+          location?: string | null
+          notes?: string | null
+          created_by?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          name?: string
+          description?: string | null
+          status?: string | null
+          start_date?: string | null
+          end_date?: string | null
+          location?: string | null
+          notes?: string | null
+          created_by?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+      }
       activity_logs: {
         Row: {
           action_type: string
@@ -1224,6 +1330,8 @@ export type PickList = Tables<'pick_lists'>
 export type PickListItem = Tables<'pick_list_items'>
 export type PurchaseOrder = Tables<'purchase_orders'>
 export type PurchaseOrderItem = Tables<'purchase_order_items'>
+export type Checkout = Tables<'checkouts'>
+export type Job = Tables<'jobs'>
 
 // Enum types
 export type ItemStatus = Database['public']['Enums']['item_status_enum']
@@ -1237,3 +1345,17 @@ export type ActivityAction = Database['public']['Enums']['activity_action_enum']
 export type EntityType = Database['public']['Enums']['entity_type_enum']
 export type AlertType = Database['public']['Enums']['alert_type_enum']
 export type FieldType = Database['public']['Enums']['field_type_enum']
+
+// Checkout-related types
+export type CheckoutAssigneeType = 'person' | 'job' | 'location'
+export type CheckoutStatus = 'checked_out' | 'returned' | 'overdue'
+export type ItemCondition = 'good' | 'damaged' | 'needs_repair' | 'lost'
+
+// Extended checkout type with item details (for list views)
+export interface CheckoutWithItem extends Checkout {
+  item_name?: string
+  item_sku?: string
+  item_image?: string
+  checked_out_by_name?: string
+  days_overdue?: number
+}
