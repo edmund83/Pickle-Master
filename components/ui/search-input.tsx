@@ -9,9 +9,10 @@ import { cn } from '@/lib/utils'
 interface SearchInputProps {
   className?: string
   placeholder?: string
+  id?: string
 }
 
-export function SearchInput({ className, placeholder = 'Search...' }: SearchInputProps) {
+export function SearchInput({ className, placeholder = 'Search...', id = 'search-input' }: SearchInputProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [value, setValue] = useState(searchParams.get('q') || '')
@@ -53,6 +54,7 @@ export function SearchInput({ className, placeholder = 'Search...' }: SearchInpu
       <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
       <Input
         type="text"
+        id={id}
         placeholder={placeholder}
         value={value}
         onChange={(e) => setValue(e.target.value)}
