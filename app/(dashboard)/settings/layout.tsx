@@ -14,6 +14,8 @@ import {
   Truck,
   Upload,
   Settings2,
+  Zap,
+  MapPin,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -23,6 +25,8 @@ const settingsNavItems = [
   { href: '/settings/team', label: 'Team', icon: Users },
   { href: '/settings/billing', label: 'Billing', icon: CreditCard },
   { href: '/settings/preferences', label: 'Preferences', icon: Palette },
+  { href: '/settings/features', label: 'Features', icon: Zap },
+  { href: '/settings/locations', label: 'Locations', icon: MapPin },
   { href: '/settings/alerts', label: 'Alerts', icon: Bell },
   { href: '/settings/custom-fields', label: 'Custom Fields', icon: Database },
   { href: '/settings/tags', label: 'Tags', icon: Tag },
