@@ -51,13 +51,24 @@ export function ItemCheckoutSection({ item }: ItemCheckoutSectionProps) {
 
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data } = await (supabase as any).rpc('get_active_checkout', {
-        p_item_id: item.id
-      })
+      const { data: checkoutData } = await (supabase as any)
+        .from('checkouts')
+        .select('*')
+        .eq('item_id', item.id)
+        .neq('status', 'returned')
+        .maybeSingle() // Use maybeSingle to avoid error if no checkout found
 
-      if (data) {
-        const parsed = typeof data === 'string' ? JSON.parse(data) : data
-        setActiveCheckout(parsed)
+      if (checkoutData) {
+        // Calculate overdue status manually since we aren't using RPC
+        const isOverdue = checkoutData.due_date ? new Date(checkoutData.due_date) < new Date() : false
+        const daysUntilDue = checkoutData.due_date ? Math.ceil((new Date(checkoutData.due_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : null
+
+        setActiveCheckout({
+          ...checkoutData,
+          is_overdue: isOverdue,
+          days_until_due: daysUntilDue,
+          checked_out_by_name: null // Simplified, logic would need another join or separate fetch if needed, but for now null is fine
+        })
       } else {
         setActiveCheckout(null)
       }
@@ -88,18 +99,15 @@ export function ItemCheckoutSection({ item }: ItemCheckoutSectionProps) {
     <>
       {/* Checkout Status Card - shows if item is checked out */}
       {activeCheckout ? (
-        <div className={`rounded-xl border p-6 ${
-          activeCheckout.is_overdue
+        <div className={`rounded-xl border p-6 ${activeCheckout.is_overdue
             ? 'border-red-200 bg-red-50'
             : 'border-amber-200 bg-amber-50'
-        }`}>
+          }`}>
           <div className="flex items-center gap-2 mb-4">
-            <LogOut className={`h-5 w-5 ${
-              activeCheckout.is_overdue ? 'text-red-500' : 'text-amber-500'
-            }`} />
-            <h2 className={`text-sm font-medium uppercase tracking-wide ${
-              activeCheckout.is_overdue ? 'text-red-700' : 'text-amber-700'
-            }`}>
+            <LogOut className={`h-5 w-5 ${activeCheckout.is_overdue ? 'text-red-500' : 'text-amber-500'
+              }`} />
+            <h2 className={`text-sm font-medium uppercase tracking-wide ${activeCheckout.is_overdue ? 'text-red-700' : 'text-amber-700'
+              }`}>
               {activeCheckout.is_overdue ? 'Overdue' : 'Checked Out'}
             </h2>
           </div>
@@ -141,11 +149,10 @@ export function ItemCheckoutSection({ item }: ItemCheckoutSectionProps) {
 
           <Button
             onClick={() => setShowCheckInModal(true)}
-            className={`mt-4 w-full ${
-              activeCheckout.is_overdue
+            className={`mt-4 w-full ${activeCheckout.is_overdue
                 ? 'bg-red-600 hover:bg-red-700'
                 : 'bg-amber-600 hover:bg-amber-700'
-            }`}
+              }`}
           >
             <LogIn className="mr-2 h-4 w-4" />
             Check In

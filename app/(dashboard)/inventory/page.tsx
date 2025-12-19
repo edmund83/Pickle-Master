@@ -1,11 +1,15 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { Plus, Search, Filter, Package, ScanLine, Upload } from 'lucide-react'
+import { Plus, Filter, Package, ScanLine, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { InventoryItem, Folder } from '@/types/database.types'
+import { SearchInput } from '@/components/ui/search-input'
+import { InventoryTable } from './components/inventory-table'
+import { ViewToggle } from './components/view-toggle'
+import { MobileInventoryView } from './components/mobile-inventory-view'
 
-async function getInventoryData(): Promise<{ items: InventoryItem[], folders: Folder[] }> {
+async function getInventoryData(query?: string): Promise<{ items: InventoryItem[], folders: Folder[] }> {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -25,12 +29,18 @@ async function getInventoryData(): Promise<{ items: InventoryItem[], folders: Fo
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: items } = await (supabase as any)
+  let queryBuilder = (supabase as any)
     .from('inventory_items')
     .select('*')
     .eq('tenant_id', profile.tenant_id)
     .is('deleted_at', null)
     .order('updated_at', { ascending: false })
+
+  if (query) {
+    queryBuilder = queryBuilder.or(`name.ilike.%${query}%,sku.ilike.%${query}%,barcode.eq.${query}`)
+  }
+
+  const { data: items } = await queryBuilder
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: folders } = await (supabase as any)
@@ -45,101 +55,112 @@ async function getInventoryData(): Promise<{ items: InventoryItem[], folders: Fo
   }
 }
 
-export default async function InventoryPage() {
-  const { items, folders } = await getInventoryData()
+export default async function InventoryPage(props: { searchParams?: Promise<{ q?: string; view?: string }> }) {
+  const searchParams = await props.searchParams
+  const query = searchParams?.q
+  const view = searchParams?.view || 'grid'
+  const { items, folders } = await getInventoryData(query)
 
   return (
-    <div className="flex flex-1 overflow-hidden">
-      {/* Secondary Sidebar - Folders */}
-      <div className="flex w-56 flex-col border-r border-neutral-200 bg-white">
-        <div className="flex h-16 items-center justify-between border-b border-neutral-200 px-4">
-          <h2 className="text-lg font-semibold text-neutral-900">Inventory</h2>
-        </div>
-        <nav className="flex-1 overflow-y-auto p-2">
-          <Link
-            href="/inventory"
-            className="flex items-center gap-3 rounded-lg bg-pickle-50 px-3 py-2 text-sm font-medium text-pickle-600"
-          >
-            <Package className="h-4 w-4" />
-            All Items
-            <span className="ml-auto text-xs text-pickle-400">{items.length}</span>
-          </Link>
-          {folders.map((folder) => (
+    <>
+      {/* Desktop View */}
+      <div className="hidden lg:flex flex-1 overflow-hidden">
+        {/* Secondary Sidebar - Folders */}
+        <div className="flex w-56 flex-col border-r border-neutral-200 bg-white">
+          <div className="flex h-16 items-center justify-between border-b border-neutral-200 px-4">
+            <h2 className="text-lg font-semibold text-neutral-900">Inventory</h2>
+          </div>
+          <nav className="flex-1 overflow-y-auto p-2">
             <Link
-              key={folder.id}
-              href={`/inventory/folder/${folder.id}`}
-              className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-50"
+              href="/inventory"
+              className="flex items-center gap-3 rounded-lg bg-pickle-50 px-3 py-2 text-sm font-medium text-pickle-600"
             >
-              <div
-                className="h-3 w-3 rounded-full"
-                style={{ backgroundColor: folder.color || '#6b7280' }}
-              />
-              {folder.name}
+              <Package className="h-4 w-4" />
+              All Items
+              <span className="ml-auto text-xs text-pickle-400">{items.length}</span>
             </Link>
-          ))}
-        </nav>
-        <div className="border-t border-neutral-200 p-2">
-          <Button variant="ghost" className="w-full justify-start" size="sm">
-            <Plus className="mr-2 h-4 w-4" />
-            New Folder
-          </Button>
-        </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="flex-1 overflow-y-auto">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-neutral-200 bg-white px-6 py-4">
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
-              <input
-                type="text"
-                placeholder="Search items..."
-                className="h-9 w-64 rounded-lg border border-neutral-300 pl-9 pr-3 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
-              />
-            </div>
-            <Button variant="outline" size="sm">
-              <Filter className="mr-2 h-4 w-4" />
-              Filter
+            {folders.map((folder) => (
+              <Link
+                key={folder.id}
+                href={`/inventory/folder/${folder.id}`}
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-neutral-600 hover:bg-neutral-50"
+              >
+                <div
+                  className="h-3 w-3 rounded-full"
+                  style={{ backgroundColor: folder.color || '#6b7280' }}
+                />
+                {folder.name}
+              </Link>
+            ))}
+          </nav>
+          <div className="border-t border-neutral-200 p-2">
+            <Button variant="ghost" className="w-full justify-start" size="sm">
+              <Plus className="mr-2 h-4 w-4" />
+              New Folder
             </Button>
           </div>
-          <div className="flex items-center gap-2">
-            <Link href="/import">
-              <Button variant="outline" size="sm">
-                <Upload className="mr-2 h-4 w-4" />
-                Import
-              </Button>
-            </Link>
-            <Link href="/scan">
-              <Button variant="outline" size="sm">
-                <ScanLine className="mr-2 h-4 w-4" />
-                Scan
-              </Button>
-            </Link>
-            <Link href="/inventory/new">
-              <Button size="sm">
-                <Plus className="mr-2 h-4 w-4" />
-                Add Item
-              </Button>
-            </Link>
-          </div>
         </div>
 
-        {/* Items Grid */}
-        <div className="p-6">
-          {items.length > 0 ? (
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {items.map((item) => (
-                <ItemCard key={item.id} item={item} />
-              ))}
+        {/* Main Content */}
+        <div className="flex-1 overflow-y-auto">
+          {/* Header */}
+          <div className="flex items-center justify-between border-b border-neutral-200 bg-white px-6 py-4">
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <SearchInput placeholder="Search items..." className="w-64" />
+              </div>
+              <ViewToggle />
+              <Button variant="outline" size="sm">
+                <Filter className="mr-2 h-4 w-4" />
+                Filter
+              </Button>
             </div>
-          ) : (
-            <EmptyState />
-          )}
+            <div className="flex items-center gap-2">
+              <Link href="/import">
+                <Button variant="outline" size="sm">
+                  <Upload className="mr-2 h-4 w-4" />
+                  Import
+                </Button>
+              </Link>
+              <Link href="/scan">
+                <Button variant="outline" size="sm">
+                  <ScanLine className="mr-2 h-4 w-4" />
+                  Scan
+                </Button>
+              </Link>
+              <Link href="/inventory/new">
+                <Button size="sm">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Item
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          {/* Items Grid/Table */}
+          <div className="p-6">
+            {items.length > 0 ? (
+              view === 'table' ? (
+                <InventoryTable items={items} folders={folders} />
+              ) : (
+                <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {items.map((item) => (
+                    <ItemCard key={item.id} item={item} />
+                  ))}
+                </div>
+              )
+            ) : (
+              <EmptyState />
+            )}
+          </div>
         </div>
       </div>
-    </div>
+
+      {/* Mobile View */}
+      <div className="lg:hidden flex flex-col flex-1 overflow-hidden">
+        <MobileInventoryView items={items} folders={folders} />
+      </div>
+    </>
   )
 }
 
@@ -187,9 +208,8 @@ function ItemCard({ item }: { item: InventoryItem }) {
           {item.quantity} {item.unit}
         </span>
         <span
-          className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-            statusColors[item.status || 'in_stock'] || statusColors.in_stock
-          }`}
+          className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[item.status || 'in_stock'] || statusColors.in_stock
+            }`}
         >
           {statusLabels[item.status || 'in_stock'] || 'In Stock'}
         </span>

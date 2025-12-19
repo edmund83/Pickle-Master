@@ -1,8 +1,17 @@
 {
   "mcpServers": {
     "supabase": {
-      "type": "http",
-      "url": "https://mcp.supabase.com/mcp?project_ref=rarwjeeutwivntttmxpu"
+      "command": "npx",
+      "args": [
+        "-y",
+        "dotenv-cli",
+        "-e",
+        ".env.local",
+        "--",
+        "sh",
+        "-c",
+        "npx -y @supabase/mcp-server-supabase --access-token $SUPABASE_SERVICE_ROLE_KEY"
+      ]
     }
   }
 }

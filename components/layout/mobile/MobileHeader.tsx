@@ -1,0 +1,94 @@
+'use client'
+
+import { usePathname } from 'next/navigation'
+import { Bell, Wifi, WifiOff } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { SyncStatusIndicator } from '@/components/ui/SyncStatusIndicator'
+
+// Page title mapping
+const pageTitles: Record<string, string> = {
+  '/dashboard': 'Home',
+  '/inventory': 'Inventory',
+  '/scan': 'Scanner',
+  '/settings': 'Settings',
+  '/search': 'Search',
+  '/tags': 'Tags',
+  '/reports': 'Reports',
+  '/import': 'Import',
+}
+
+function getPageTitle(pathname: string): string {
+  // Check exact match first
+  if (pageTitles[pathname]) {
+    return pageTitles[pathname]
+  }
+
+  // Check for item detail page
+  if (pathname.startsWith('/inventory/')) {
+    return 'Item Details'
+  }
+
+  // Check for nested routes
+  for (const [path, title] of Object.entries(pageTitles)) {
+    if (pathname.startsWith(path)) {
+      return title
+    }
+  }
+
+  return 'Pickle'
+}
+
+export function MobileHeader() {
+  const pathname = usePathname()
+  const title = getPageTitle(pathname)
+
+  return (
+    <header
+      className={cn(
+        'sticky top-0 z-40',
+        'bg-white/95 backdrop-blur-md',
+        'border-b border-neutral-100',
+        'flex items-center justify-between',
+        'px-4',
+        'shadow-sm'
+      )}
+      style={{
+        height: 'calc(56px + env(safe-area-inset-top, 0px))',
+        paddingTop: 'env(safe-area-inset-top, 0px)',
+      }}
+    >
+      {/* Logo / Brand */}
+      <div className="flex items-center gap-3">
+        <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-pickle-500">
+          <span className="text-white font-bold text-lg">P</span>
+        </div>
+        <h1 className="text-lg font-semibold text-neutral-900">
+          {title}
+        </h1>
+      </div>
+
+      {/* Right actions */}
+      <div className="flex items-center gap-2">
+        {/* Sync Status */}
+        <SyncStatusIndicator size="sm" />
+
+        {/* Notifications */}
+        <button
+          className={cn(
+            'relative flex items-center justify-center',
+            'w-10 h-10 rounded-xl',
+            'text-neutral-500 hover:text-neutral-700',
+            'hover:bg-neutral-100',
+            'transition-colors duration-200',
+            'active:scale-95'
+          )}
+          aria-label="Notifications"
+        >
+          <Bell className="h-5 w-5" />
+          {/* Notification badge */}
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-pickle-500 rounded-full" />
+        </button>
+      </div>
+    </header>
+  )
+}
