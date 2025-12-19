@@ -12,6 +12,7 @@ import {
   Package,
   Plus
 } from 'lucide-react'
+import { checkoutItem } from '@/app/actions/checkouts'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import type { Profile, Job, Folder, InventoryItem } from '@/types/database.types'
@@ -89,14 +90,15 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
 
       // Load jobs
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: jobsData } = await (supabase as any).rpc('get_jobs', {
-        p_status: 'active'
-      })
+      const { data: jobsData } = await (supabase as any)
+        .from('jobs')
+        .select('id, name')
+        .eq('status', 'active')
+        .order('name')
 
       if (jobsData) {
-        const parsed = typeof jobsData === 'string' ? JSON.parse(jobsData) : jobsData
         setJobs(
-          (parsed || []).map((j: Job) => ({
+          (jobsData || []).map((j: Job) => ({
             id: j.id,
             name: j.name
           }))
@@ -125,6 +127,7 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
     }
   }
 
+  // Helper to get current assignee options based on type
   function getAssigneeOptions(): AssigneeOption[] {
     switch (assigneeType) {
       case 'person':
@@ -138,34 +141,41 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
     }
   }
 
+  // Handle assignee selection change
   function handleAssigneeChange(id: string) {
     setAssigneeId(id)
     const options = getAssigneeOptions()
-    const selected = options.find((o) => o.id === id)
+    const selected = options.find(opt => opt.id === id)
     setAssigneeName(selected?.name || '')
   }
 
+  // Create a new job
   async function handleCreateJob() {
     if (!newJobName.trim()) return
 
     const supabase = createClient()
+
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data } = await (supabase as any).rpc('create_job', {
-        p_name: newJobName.trim()
-      })
+      const { data, error } = await (supabase as any)
+        .from('jobs')
+        .insert({ name: newJobName.trim(), status: 'active' })
+        .select('id, name')
+        .single()
 
-      if (data?.job_id) {
-        // Add to jobs list and select it
-        const newJob = { id: data.job_id, name: newJobName.trim() }
-        setJobs((prev) => [...prev, newJob])
-        setAssigneeId(data.job_id)
-        setAssigneeName(newJobName.trim())
+      if (error) throw error
+
+      if (data) {
+        const newJob = { id: data.id, name: data.name }
+        setJobs(prev => [...prev, newJob])
+        setAssigneeId(data.id)
+        setAssigneeName(data.name)
         setNewJobName('')
         setShowNewJob(false)
       }
     } catch (err) {
       console.error('Error creating job:', err)
+      setError('Failed to create job')
     }
   }
 
@@ -178,29 +188,20 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
     setSubmitting(true)
     setError(null)
 
-    const supabase = createClient()
-
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error: rpcError } = await (supabase as any).rpc('perform_checkout', {
-        p_item_id: item.id,
-        p_quantity: quantity,
-        p_assignee_type: assigneeType,
-        p_assignee_id: assigneeId || null,
-        p_assignee_name: assigneeName,
-        p_due_date: dueDate || null,
-        p_notes: notes || null
-      })
+      const result = await checkoutItem(
+        item.id,
+        quantity,
+        assigneeName,
+        notes,
+        dueDate
+      )
 
-      if (rpcError) throw rpcError
-
-      const result = typeof data === 'string' ? JSON.parse(data) : data
-
-      if (result?.success) {
+      if (result.success) {
         onSuccess()
         onClose()
       } else {
-        setError(result?.error || 'Failed to check out item')
+        setError(result.error || 'Failed to check out item')
       }
     } catch (err) {
       console.error('Checkout error:', err)
@@ -250,11 +251,10 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
                 setAssigneeId('')
                 setAssigneeName('')
               }}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
-                assigneeType === 'person'
-                  ? 'border-pickle-500 bg-pickle-50 text-pickle-700'
-                  : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50'
-              }`}
+              className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${assigneeType === 'person'
+                ? 'border-pickle-500 bg-pickle-50 text-pickle-700'
+                : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50'
+                }`}
             >
               <User className="h-4 w-4" />
               Person
@@ -265,11 +265,10 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
                 setAssigneeId('')
                 setAssigneeName('')
               }}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
-                assigneeType === 'job'
-                  ? 'border-pickle-500 bg-pickle-50 text-pickle-700'
-                  : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50'
-              }`}
+              className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${assigneeType === 'job'
+                ? 'border-pickle-500 bg-pickle-50 text-pickle-700'
+                : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50'
+                }`}
             >
               <Briefcase className="h-4 w-4" />
               Job
@@ -280,11 +279,10 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
                 setAssigneeId('')
                 setAssigneeName('')
               }}
-              className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${
-                assigneeType === 'location'
-                  ? 'border-pickle-500 bg-pickle-50 text-pickle-700'
-                  : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50'
-              }`}
+              className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${assigneeType === 'location'
+                ? 'border-pickle-500 bg-pickle-50 text-pickle-700'
+                : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50'
+                }`}
             >
               <MapPin className="h-4 w-4" />
               Location

@@ -1,5 +1,6 @@
 'use client'
 
+import readXlsxFile from 'read-excel-file'
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -62,8 +63,39 @@ export default function ImportPage() {
   const [error, setError] = useState<string | null>(null)
   const [importing, setImporting] = useState(false)
 
+
+
+  // ... existing imports ...
+
+  // Parse Excel file
+  const parseExcel = useCallback(async (file: File) => {
+    try {
+      const rows = await readXlsxFile(file)
+      if (rows.length < 2) {
+        throw new Error('File must have at least a header row and one data row')
+      }
+
+      // Convert all values to strings for consistency with CSV logic
+      const stringRows = rows.map(row =>
+        row.map(cell => {
+          if (cell === null || cell === undefined) return ''
+          if (cell instanceof Date) return cell.toISOString() // Or format as needed
+          return String(cell).trim()
+        })
+      )
+
+      const headers = stringRows[0]
+      const dataRows = stringRows.slice(1)
+
+      return { headers, rows: dataRows }
+    } catch (err) {
+      throw new Error('Failed to parse Excel file: ' + (err instanceof Error ? err.message : String(err)))
+    }
+  }, [])
+
   // Parse CSV file
   const parseCSV = useCallback((text: string) => {
+    // ... existing CSV logic ...
     const lines = text.split('\n').filter((line) => line.trim())
     if (lines.length < 2) {
       throw new Error('File must have at least a header row and one data row')
@@ -99,8 +131,11 @@ export default function ImportPage() {
   const handleFile = useCallback(async (selectedFile: File) => {
     setError(null)
 
-    if (!selectedFile.name.endsWith('.csv')) {
-      setError('Only CSV files are supported')
+    const isCSV = selectedFile.name.endsWith('.csv')
+    const isExcel = selectedFile.name.endsWith('.xlsx') || selectedFile.name.endsWith('.xls')
+
+    if (!isCSV && !isExcel) {
+      setError('Only CSV and Excel (.xlsx, .xls) files are supported')
       return
     }
 
@@ -110,8 +145,19 @@ export default function ImportPage() {
     }
 
     try {
-      const text = await selectedFile.text()
-      const { headers: parsedHeaders, rows: parsedRows } = parseCSV(text)
+      let parsedHeaders: string[] = []
+      let parsedRows: string[][] = []
+
+      if (isExcel) {
+        const result = await parseExcel(selectedFile)
+        parsedHeaders = result.headers
+        parsedRows = result.rows
+      } else {
+        const text = await selectedFile.text()
+        const result = parseCSV(text)
+        parsedHeaders = result.headers
+        parsedRows = result.rows
+      }
 
       setFile(selectedFile)
       setHeaders(parsedHeaders)
@@ -137,7 +183,7 @@ export default function ImportPage() {
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to parse file')
     }
-  }, [parseCSV])
+  }, [parseCSV, parseExcel])
 
   // Handle drop
   const handleDrop = useCallback((e: React.DragEvent) => {
@@ -354,21 +400,19 @@ export default function ImportPage() {
           {(['upload', 'mapping', 'preview', 'complete'] as const).map((s, i) => (
             <div key={s} className="flex items-center">
               <div
-                className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium ${
-                  step === s
-                    ? 'bg-pickle-500 text-white'
-                    : ['upload', 'mapping', 'preview', 'importing', 'complete'].indexOf(step) >
-                      ['upload', 'mapping', 'preview', 'complete'].indexOf(s)
+                className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium ${step === s
+                  ? 'bg-pickle-500 text-white'
+                  : ['upload', 'mapping', 'preview', 'importing', 'complete'].indexOf(step) >
+                    ['upload', 'mapping', 'preview', 'complete'].indexOf(s)
                     ? 'bg-pickle-100 text-pickle-600'
                     : 'bg-neutral-100 text-neutral-400'
-                }`}
+                  }`}
               >
                 {i + 1}
               </div>
               <span
-                className={`ml-2 text-sm ${
-                  step === s ? 'font-medium text-neutral-900' : 'text-neutral-500'
-                }`}
+                className={`ml-2 text-sm ${step === s ? 'font-medium text-neutral-900' : 'text-neutral-500'
+                  }`}
               >
                 {s === 'upload' && 'Upload'}
                 {s === 'mapping' && 'Map Columns'}
@@ -400,7 +444,7 @@ export default function ImportPage() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <FileSpreadsheet className="h-5 w-5" />
-                  Upload CSV File
+                  Upload CSV or Excel File
                 </CardTitle>
               </CardHeader>
               <CardContent>
@@ -414,11 +458,10 @@ export default function ImportPage() {
                     e.preventDefault()
                     setDragOver(false)
                   }}
-                  className={`flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 text-center transition-colors ${
-                    dragOver
-                      ? 'border-pickle-500 bg-pickle-50'
-                      : 'border-neutral-300 hover:border-neutral-400'
-                  }`}
+                  className={`flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 text-center transition-colors ${dragOver
+                    ? 'border-pickle-500 bg-pickle-50'
+                    : 'border-neutral-300 hover:border-neutral-400'
+                    }`}
                 >
                   <Upload className="h-12 w-12 text-neutral-400" />
                   <p className="mt-4 text-lg font-medium text-neutral-900">
@@ -428,8 +471,7 @@ export default function ImportPage() {
                   <label className="mt-3">
                     <Button variant="outline">Browse Files</Button>
                     <input
-                      type="file"
-                      accept=".csv"
+                      accept=".csv, .xlsx, .xls"
                       onChange={(e) => {
                         const selectedFile = e.target.files?.[0]
                         if (selectedFile) handleFile(selectedFile)
@@ -438,7 +480,7 @@ export default function ImportPage() {
                     />
                   </label>
                   <p className="mt-4 text-xs text-neutral-400">
-                    Only CSV files up to 5MB are supported
+                    Only CSV and Excel files up to 5MB are supported
                   </p>
                 </div>
               </CardContent>

@@ -1,4 +1,5 @@
-import { PrimarySidebar } from '@/components/layout/primary-sidebar'
+import { MobileLayoutWrapper } from '@/components/layout/mobile/MobileLayoutWrapper'
+import { OfflineProvider } from '@/components/providers/OfflineProvider'
 
 export default function DashboardLayout({
   children,
@@ -6,14 +7,10 @@ export default function DashboardLayout({
   children: React.ReactNode
 }) {
   return (
-    <div className="flex h-screen bg-neutral-50">
-      {/* Primary Sidebar - Always visible */}
-      <PrimarySidebar />
-
-      {/* Main Content Area */}
-      <div className="flex flex-1 overflow-hidden">
+    <OfflineProvider>
+      <MobileLayoutWrapper>
         {children}
-      </div>
-    </div>
+      </MobileLayoutWrapper>
+    </OfflineProvider>
   )
 }

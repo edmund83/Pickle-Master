@@ -1,0 +1,210 @@
+'use server'
+
+import { createClient } from '@/lib/supabase/server'
+import { revalidatePath } from 'next/cache'
+import { sendLowStockAlert } from './email'
+
+export type ActionResult<T> = {
+    success: boolean
+    data?: T
+    error?: string
+}
+
+export async function updateItemQuantity(
+    itemId: string,
+    newQuantity: number,
+    changeSource: string = 'manual_update'
+): Promise<ActionResult<void>> {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        return { success: false, error: 'Unauthorized' }
+    }
+
+    // 1. Get current item for checks
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: item, error: fetchError } = await (supabase as any)
+        .from('inventory_items')
+        .select('*')
+        .eq('id', itemId)
+        .single()
+
+    if (fetchError || !item) {
+        return { success: false, error: 'Item not found' }
+    }
+
+    const oldQuantity = item.quantity
+    const minQuantity = item.min_quantity || 0
+
+    // 2. Determine Status
+    let status = 'in_stock'
+    if (newQuantity <= 0) {
+        status = 'out_of_stock'
+    } else if (minQuantity > 0 && newQuantity <= minQuantity) {
+        status = 'low_stock'
+    }
+
+    // 3. Update Item
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: updateError } = await (supabase as any)
+        .from('inventory_items')
+        .update({
+            quantity: newQuantity,
+            status,
+            updated_at: new Date().toISOString(),
+            last_modified_by: user.id
+        })
+        .eq('id', itemId)
+
+    if (updateError) {
+        return { success: false, error: updateError.message }
+    }
+
+    // 4. Log Activity (fire-and-forget, don't block on failure)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase as any).from('activity_logs').insert({
+        tenant_id: item.tenant_id,
+        user_id: user.id,
+        user_name: user.email,
+        action_type: 'quantity_adjustment',
+        entity_type: 'item',
+        entity_id: itemId,
+        entity_name: item.name,
+        quantity_before: oldQuantity,
+        quantity_after: newQuantity,
+        quantity_delta: newQuantity - oldQuantity,
+        changes: { source: changeSource }
+    }).then(({ error }: { error: Error | null }) => {
+        if (error) console.error('Activity log error:', error.message)
+    })
+
+    // 5. Check & Create Alerts
+    if (status === 'low_stock' || status === 'out_of_stock') {
+        // Create in-app notification (fire-and-forget)
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase as any).from('notifications').insert({
+            tenant_id: item.tenant_id,
+            user_id: user.id,
+            notification_type: status,
+            title: status === 'out_of_stock' ? 'Item Out of Stock' : 'Low Stock Alert',
+            message: `${item.name} is ${status === 'out_of_stock' ? 'out of stock' : 'running low'}. Current: ${newQuantity} ${item.unit}`,
+            entity_type: 'item',
+            entity_id: itemId,
+            is_read: false
+        }).then(({ error }: { error: Error | null }) => {
+            if (error) console.error('Notification insert error:', error.message)
+        })
+
+        // Send email alert (fire-and-forget, don't block response)
+        if (user.email) {
+            sendLowStockAlert(
+                user.email,
+                item.name,
+                newQuantity,
+                minQuantity || 0,
+                item.unit || 'units'
+            ).catch((err) => console.error('Email send error:', err))
+        }
+    }
+
+    revalidatePath('/inventory')
+    revalidatePath(`/inventory/${itemId}`)
+
+    return { success: true }
+}
+
+export async function updateItemField(
+    itemId: string,
+    field: 'name' | 'sku' | 'location' | 'price' | 'min_quantity' | 'quantity',
+    value: string | number
+): Promise<ActionResult<void>> {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        return { success: false, error: 'Unauthorized' }
+    }
+
+    // 1. Get current item to check previous state and needed fields
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: item, error: fetchError } = await (supabase as any)
+        .from('inventory_items')
+        .select('*')
+        .eq('id', itemId)
+        .single()
+
+    if (fetchError || !item) {
+        return { success: false, error: 'Item not found' }
+    }
+
+    const updates: Record<string, any> = {
+        [field]: value,
+        updated_at: new Date().toISOString(),
+        last_modified_by: user.id
+    }
+
+    // 2. Re-evaluate status if related fields change
+    let status = item.status
+    if (field === 'quantity' || field === 'min_quantity') {
+        const qty = field === 'quantity' ? Number(value) : item.quantity
+        const minQty = field === 'min_quantity' ? Number(value) : (item.min_quantity || 0)
+
+        if (qty <= 0) {
+            status = 'out_of_stock'
+        } else if (minQty > 0 && qty <= minQty) {
+            status = 'low_stock'
+        } else {
+            status = 'in_stock'
+        }
+        updates.status = status
+    }
+
+    // 3. Update Item
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: updateError } = await (supabase as any)
+        .from('inventory_items')
+        .update(updates)
+        .eq('id', itemId)
+
+    if (updateError) {
+        return { success: false, error: updateError.message }
+    }
+
+    // 4. Log Activity (fire-and-forget, don't block on failure)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase as any).from('activity_logs').insert({
+        tenant_id: item.tenant_id,
+        user_id: user.id,
+        user_name: user.email,
+        action_type: 'update',
+        entity_type: 'item',
+        entity_id: itemId,
+        entity_name: item.name,
+        changes: { field, from: item[field], to: value, source: 'inline_edit' }
+    }).then(({ error }: { error: Error | null }) => {
+        if (error) console.error('Activity log error:', error.message)
+    })
+
+    // 5. Trigger Alerts if status changed to low/out of stock
+    if ((field === 'quantity' || field === 'min_quantity') && (status === 'low_stock' || status === 'out_of_stock')) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase as any).from('notifications').insert({
+            tenant_id: item.tenant_id,
+            user_id: user.id,
+            notification_type: status,
+            title: status === 'out_of_stock' ? 'Item Out of Stock' : 'Low Stock Alert',
+            message: `${item.name} is ${status === 'out_of_stock' ? 'out of stock' : 'running low'}. Current: ${field === 'quantity' ? value : item.quantity} ${item.unit}`,
+            entity_type: 'item',
+            entity_id: itemId,
+            is_read: false
+        }).then(({ error }: { error: Error | null }) => {
+            if (error) console.error('Notification insert error:', error.message)
+        })
+    }
+
+    revalidatePath('/inventory')
+    revalidatePath(`/inventory/${itemId}`)
+
+    return { success: true }
+}

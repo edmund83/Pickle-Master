@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { returnItem } from '@/app/actions/checkouts'
 import { createClient } from '@/lib/supabase/client'
 import {
   X,
@@ -41,35 +42,35 @@ const conditionOptions: {
   color: string
   bgColor: string
 }[] = [
-  {
-    value: 'good',
-    label: 'Good',
-    icon: <CheckCircle className="h-5 w-5" />,
-    color: 'text-green-600',
-    bgColor: 'bg-green-50 border-green-200 hover:bg-green-100'
-  },
-  {
-    value: 'damaged',
-    label: 'Damaged',
-    icon: <AlertTriangle className="h-5 w-5" />,
-    color: 'text-yellow-600',
-    bgColor: 'bg-yellow-50 border-yellow-200 hover:bg-yellow-100'
-  },
-  {
-    value: 'needs_repair',
-    label: 'Needs Repair',
-    icon: <Wrench className="h-5 w-5" />,
-    color: 'text-orange-600',
-    bgColor: 'bg-orange-50 border-orange-200 hover:bg-orange-100'
-  },
-  {
-    value: 'lost',
-    label: 'Lost',
-    icon: <XCircle className="h-5 w-5" />,
-    color: 'text-red-600',
-    bgColor: 'bg-red-50 border-red-200 hover:bg-red-100'
-  }
-]
+    {
+      value: 'good',
+      label: 'Good',
+      icon: <CheckCircle className="h-5 w-5" />,
+      color: 'text-green-600',
+      bgColor: 'bg-green-50 border-green-200 hover:bg-green-100'
+    },
+    {
+      value: 'damaged',
+      label: 'Damaged',
+      icon: <AlertTriangle className="h-5 w-5" />,
+      color: 'text-yellow-600',
+      bgColor: 'bg-yellow-50 border-yellow-200 hover:bg-yellow-100'
+    },
+    {
+      value: 'needs_repair',
+      label: 'Needs Repair',
+      icon: <Wrench className="h-5 w-5" />,
+      color: 'text-orange-600',
+      bgColor: 'bg-orange-50 border-orange-200 hover:bg-orange-100'
+    },
+    {
+      value: 'lost',
+      label: 'Lost',
+      icon: <XCircle className="h-5 w-5" />,
+      color: 'text-red-600',
+      bgColor: 'bg-red-50 border-red-200 hover:bg-red-100'
+    }
+  ]
 
 export function CheckInModal({ checkout, isOpen, onClose, onSuccess }: CheckInModalProps) {
   const [condition, setCondition] = useState<ItemCondition>('good')
@@ -77,29 +78,24 @@ export function CheckInModal({ checkout, isOpen, onClose, onSuccess }: CheckInMo
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
+
+
   async function handleSubmit() {
     setSubmitting(true)
     setError(null)
 
-    const supabase = createClient()
-
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, error: rpcError } = await (supabase as any).rpc('perform_checkin', {
-        p_checkout_id: checkout.id,
-        p_condition: condition,
-        p_notes: notes || null
-      })
+      const result = await returnItem(
+        checkout.id,
+        notes,
+        condition
+      )
 
-      if (rpcError) throw rpcError
-
-      const result = typeof data === 'string' ? JSON.parse(data) : data
-
-      if (result?.success) {
+      if (result.success) {
         onSuccess()
         onClose()
       } else {
-        setError(result?.error || 'Failed to check in item')
+        setError(result.error || 'Failed to check in item')
       }
     } catch (err) {
       console.error('Check-in error:', err)
@@ -174,24 +170,21 @@ export function CheckInModal({ checkout, isOpen, onClose, onSuccess }: CheckInMo
               <button
                 key={option.value}
                 onClick={() => setCondition(option.value)}
-                className={`flex items-center gap-3 rounded-lg border p-3 transition-all ${
-                  condition === option.value
-                    ? `${option.bgColor} border-2 ring-2 ring-offset-1 ${
-                        option.value === 'good' ? 'ring-green-300' :
-                        option.value === 'damaged' ? 'ring-yellow-300' :
-                        option.value === 'needs_repair' ? 'ring-orange-300' :
+                className={`flex items-center gap-3 rounded-lg border p-3 transition-all ${condition === option.value
+                  ? `${option.bgColor} border-2 ring-2 ring-offset-1 ${option.value === 'good' ? 'ring-green-300' :
+                    option.value === 'damaged' ? 'ring-yellow-300' :
+                      option.value === 'needs_repair' ? 'ring-orange-300' :
                         'ring-red-300'
-                      }`
-                    : 'border-neutral-200 bg-white hover:bg-neutral-50'
-                }`}
+                  }`
+                  : 'border-neutral-200 bg-white hover:bg-neutral-50'
+                  }`}
               >
                 <span className={condition === option.value ? option.color : 'text-neutral-400'}>
                   {option.icon}
                 </span>
                 <span
-                  className={`text-sm font-medium ${
-                    condition === option.value ? option.color : 'text-neutral-600'
-                  }`}
+                  className={`text-sm font-medium ${condition === option.value ? option.color : 'text-neutral-600'
+                    }`}
                 >
                   {option.label}
                 </span>

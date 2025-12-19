@@ -72,14 +72,15 @@ export function CheckoutHistory({ itemId, limit = 10 }: CheckoutHistoryProps) {
 
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data } = await (supabase as any).rpc('get_item_checkout_history', {
-        p_item_id: itemId,
-        p_limit: limit
-      })
+      const { data: historyData } = await (supabase as any)
+        .from('checkouts')
+        .select('*')
+        .eq('item_id', itemId)
+        .order('created_at', { ascending: false })
+        .limit(limit)
 
-      if (data) {
-        const parsed = typeof data === 'string' ? JSON.parse(data) : data
-        setHistory(parsed || [])
+      if (historyData) {
+        setHistory(historyData)
       }
     } catch (err) {
       console.error('Error loading checkout history:', err)
@@ -118,24 +119,21 @@ export function CheckoutHistory({ itemId, limit = 10 }: CheckoutHistoryProps) {
 
           {/* Timeline dot */}
           <div
-            className={`relative z-10 mt-1 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full ${
-              item.status === 'returned'
+            className={`relative z-10 mt-1 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full ${item.status === 'returned'
                 ? 'bg-green-100'
                 : item.status === 'overdue'
-                ? 'bg-red-100'
-                : 'bg-amber-100'
-            }`}
+                  ? 'bg-red-100'
+                  : 'bg-amber-100'
+              }`}
           >
             {item.status === 'returned' ? (
-              <LogIn className={`h-3 w-3 ${
-                item.return_condition === 'good' ? 'text-green-600' :
-                item.return_condition === 'lost' ? 'text-red-600' :
-                'text-yellow-600'
-              }`} />
+              <LogIn className={`h-3 w-3 ${item.return_condition === 'good' ? 'text-green-600' :
+                  item.return_condition === 'lost' ? 'text-red-600' :
+                    'text-yellow-600'
+                }`} />
             ) : (
-              <LogOut className={`h-3 w-3 ${
-                item.status === 'overdue' ? 'text-red-600' : 'text-amber-600'
-              }`} />
+              <LogOut className={`h-3 w-3 ${item.status === 'overdue' ? 'text-red-600' : 'text-amber-600'
+                }`} />
             )}
           </div>
 
@@ -152,19 +150,18 @@ export function CheckoutHistory({ itemId, limit = 10 }: CheckoutHistoryProps) {
                     {item.assignee_name || 'Unknown'}
                   </span>
                   <span
-                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                      item.status === 'returned'
+                    className={`rounded-full px-2 py-0.5 text-xs font-medium ${item.status === 'returned'
                         ? 'bg-green-100 text-green-700'
                         : item.status === 'overdue'
-                        ? 'bg-red-100 text-red-700'
-                        : 'bg-amber-100 text-amber-700'
-                    }`}
+                          ? 'bg-red-100 text-red-700'
+                          : 'bg-amber-100 text-amber-700'
+                      }`}
                   >
                     {item.status === 'returned'
                       ? 'Returned'
                       : item.status === 'overdue'
-                      ? 'Overdue'
-                      : 'Checked Out'}
+                        ? 'Overdue'
+                        : 'Checked Out'}
                   </span>
                 </div>
                 <span className="text-xs text-neutral-500">
@@ -197,9 +194,8 @@ export function CheckoutHistory({ itemId, limit = 10 }: CheckoutHistoryProps) {
                 ) : item.due_date ? (
                   <div>
                     <span className="text-neutral-500">Due date:</span>
-                    <p className={`${
-                      item.status === 'overdue' ? 'font-medium text-red-600' : 'text-neutral-700'
-                    }`}>
+                    <p className={`${item.status === 'overdue' ? 'font-medium text-red-600' : 'text-neutral-700'
+                      }`}>
                       {format(new Date(item.due_date), 'MMM d, yyyy')}
                     </p>
                   </div>

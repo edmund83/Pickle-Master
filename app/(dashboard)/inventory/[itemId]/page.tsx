@@ -24,6 +24,7 @@ import { Button } from '@/components/ui/button'
 import type { InventoryItem, Folder, Tag as TagType } from '@/types/database.types'
 import { format } from 'date-fns'
 import { ItemCheckoutSection } from './item-checkout-section'
+import { ItemQuickActions } from './components/item-quick-actions'
 
 interface PageProps {
   params: Promise<{ itemId: string }>
@@ -168,9 +169,8 @@ export default async function ItemDetailPage({ params }: PageProps) {
             )}
           </div>
           <span
-            className={`rounded-full border px-3 py-1 text-sm font-medium ${
-              statusColors[item.status || 'in_stock'] || statusColors.in_stock
-            }`}
+            className={`rounded-full border px-3 py-1 text-sm font-medium ${statusColors[item.status || 'in_stock'] || statusColors.in_stock
+              }`}
           >
             {statusLabels[item.status || 'in_stock'] || 'In Stock'}
           </span>
@@ -215,9 +215,8 @@ export default async function ItemDetailPage({ params }: PageProps) {
                   {item.image_urls.map((url, index) => (
                     <button
                       key={index}
-                      className={`h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all ${
-                        index === 0 ? 'border-pickle-500 ring-2 ring-pickle-200' : 'border-neutral-200 hover:border-neutral-300'
-                      }`}
+                      className={`h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all ${index === 0 ? 'border-pickle-500 ring-2 ring-pickle-200' : 'border-neutral-200 hover:border-neutral-300'
+                        }`}
                     >
                       <img
                         src={url}
@@ -233,38 +232,11 @@ export default async function ItemDetailPage({ params }: PageProps) {
             {/* Quick Actions & Stock Info */}
             <div className="space-y-4">
               {/* Quick Actions */}
-              <div className="rounded-xl border border-neutral-200 bg-white p-6">
-                <h2 className="mb-4 text-sm font-medium uppercase tracking-wide text-neutral-500">
-                  Quick Actions
-                </h2>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-neutral-50 p-2">
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-neutral-200">
-                      <Minus className="h-4 w-4" />
-                    </Button>
-                    <span className="w-16 text-center text-2xl font-bold text-neutral-900">
-                      {item.quantity}
-                    </span>
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-neutral-200">
-                      <Plus className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <span className="text-neutral-500">{item.unit || 'units'}</span>
-                </div>
-                <div className="mt-4 flex gap-2">
-                  <Button variant="outline" size="sm" className="flex-1">
-                    <FolderInput className="mr-2 h-4 w-4" />
-                    Move
-                  </Button>
-                  <Button variant="outline" size="sm" className="flex-1">
-                    <Tag className="mr-2 h-4 w-4" />
-                    Tag
-                  </Button>
-                  <Button variant="outline" size="sm" className="text-red-600 hover:bg-red-50 hover:text-red-700">
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
+              <ItemQuickActions
+                itemId={item.id}
+                currentQuantity={item.quantity}
+                unit={item.unit || 'units'}
+              />
 
               {/* Stock Card */}
               <div className="rounded-xl border border-neutral-200 bg-white p-6">
@@ -290,9 +262,8 @@ export default async function ItemDetailPage({ params }: PageProps) {
                   <div>
                     <p className="text-sm text-neutral-500">Status</p>
                     <span
-                      className={`inline-block rounded-full border px-2 py-0.5 text-xs font-medium ${
-                        statusColors[item.status || 'in_stock']
-                      }`}
+                      className={`inline-block rounded-full border px-2 py-0.5 text-xs font-medium ${statusColors[item.status || 'in_stock']
+                        }`}
                     >
                       {statusLabels[item.status || 'in_stock']}
                     </span>

@@ -1,6 +1,45 @@
 import type { NextConfig } from 'next'
+import withPWAInit from '@ducanh2912/next-pwa'
+
+const withPWA = withPWAInit({
+  dest: 'public',
+  cacheOnFrontEndNav: true,
+  aggressiveFrontEndNavCaching: true,
+  reloadOnOnline: true,
+  disable: process.env.NODE_ENV === 'development',
+  workboxOptions: {
+    disableDevLogs: true,
+    runtimeCaching: [
+      {
+        urlPattern: /^https:\/\/.*\.supabase\.co\/storage\/v1\/object\/public\/.*/i,
+        handler: 'CacheFirst',
+        options: {
+          cacheName: 'supabase-images',
+          expiration: {
+            maxEntries: 100,
+            maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+          },
+        },
+      },
+      {
+        urlPattern: /^https:\/\/.*\.supabase\.co\/rest\/v1\/.*/i,
+        handler: 'NetworkFirst',
+        options: {
+          cacheName: 'supabase-api',
+          networkTimeoutSeconds: 10,
+          expiration: {
+            maxEntries: 50,
+            maxAgeSeconds: 60 * 5, // 5 minutes
+          },
+        },
+      },
+    ],
+  },
+})
 
 const nextConfig: NextConfig = {
+  // Add empty turbopack config to satisfy Next.js 16
+  turbopack: {},
   images: {
     remotePatterns: [
       {
@@ -12,4 +51,4 @@ const nextConfig: NextConfig = {
   },
 }
 
-export default nextConfig
+export default withPWA(nextConfig)

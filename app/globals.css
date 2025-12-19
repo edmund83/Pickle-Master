@@ -86,3 +86,286 @@
 ::-webkit-scrollbar-thumb:hover {
   background-color: rgb(115 115 115 / 0.4);
 }
+
+/* ============================================
+   Kid-Friendly Mobile Animations
+   ============================================ */
+
+/* Bounce-in animation for success checkmarks and modals */
+@keyframes bounce-in {
+  0% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.15);
+  }
+  70% {
+    transform: scale(0.95);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.animate-bounce-in {
+  animation: bounce-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Slide-up animation for FAB and bottom elements */
+@keyframes slide-up {
+  0% {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.3s ease-out;
+}
+
+/* Slide-down animation for toasts and headers */
+@keyframes slide-down {
+  0% {
+    transform: translateX(-50%) translateY(-100%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-down {
+  animation: slide-down 0.3s ease-out;
+}
+
+/* Expanding ring animation for success */
+@keyframes ring-expand {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+.animate-ring-expand {
+  animation: ring-expand 0.6s ease-out forwards;
+}
+
+/* Checkmark drawing animation */
+@keyframes check-draw {
+  0% {
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+  }
+  100% {
+    stroke-dasharray: 100;
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-check-draw {
+  animation: check-draw 0.4s ease-out 0.2s forwards;
+}
+
+/* Confetti particle animation */
+@keyframes confetti {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(
+      calc(cos(var(--angle, 0)) * 120px),
+      calc(sin(var(--angle, 0)) * 120px - 50px)
+    ) rotate(720deg);
+    opacity: 0;
+  }
+}
+
+.animate-confetti {
+  animation: confetti 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+}
+
+/* Shake animation for errors */
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-8px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(8px);
+  }
+}
+
+.animate-shake {
+  animation: shake 0.6s ease-in-out;
+}
+
+/* Pulse ring animation for FAB */
+@keyframes pulse-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1.5);
+    opacity: 0;
+  }
+}
+
+.animate-pulse-ring {
+  animation: pulse-ring 1.5s ease-out infinite;
+}
+
+/* Pop animation for buttons */
+@keyframes pop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.animate-pop {
+  animation: pop 0.2s ease-out;
+}
+
+/* ============================================
+   Touch Feedback Utilities
+   ============================================ */
+
+.touch-feedback {
+  transition: transform 0.1s ease-out;
+}
+
+.touch-feedback:active {
+  transform: scale(0.97);
+}
+
+/* Larger touch feedback for kid-friendly elements */
+.touch-feedback-kid {
+  transition: transform 0.15s ease-out;
+}
+
+.touch-feedback-kid:active {
+  transform: scale(0.95);
+}
+
+/* ============================================
+   Safe Area Utilities for Mobile
+   ============================================ */
+
+.pt-safe {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
+.pb-safe {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.pl-safe {
+  padding-left: env(safe-area-inset-left, 0px);
+}
+
+.pr-safe {
+  padding-right: env(safe-area-inset-right, 0px);
+}
+
+/* Bottom nav spacing */
+.mb-nav {
+  margin-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+}
+
+.pb-nav {
+  padding-bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Top header spacing */
+.mt-header {
+  margin-top: calc(56px + env(safe-area-inset-top, 0px));
+}
+
+.pt-header {
+  padding-top: calc(56px + env(safe-area-inset-top, 0px));
+}
+
+/* ============================================
+   Kid-Friendly Color Utilities
+   ============================================ */
+
+/* Large quantity display */
+.quantity-display {
+  @apply text-4xl font-bold tabular-nums;
+}
+
+.quantity-display-lg {
+  @apply text-5xl font-bold tabular-nums;
+}
+
+/* Status badges - large and readable */
+.status-badge {
+  @apply px-4 py-1.5 rounded-full text-sm font-semibold;
+}
+
+.status-badge-lg {
+  @apply px-5 py-2 rounded-full text-base font-semibold;
+}
+
+/* ============================================
+   Mobile-First Grid Utilities
+   ============================================ */
+
+/* Hide on mobile, show on desktop */
+.desktop-only {
+  @apply hidden lg:flex;
+}
+
+/* Show on mobile, hide on desktop */
+.mobile-only {
+  @apply flex lg:hidden;
+}
+
+/* ============================================
+   Center Button Pulse Animation (TikTok Style)
+   ============================================ */
+
+@keyframes center-pulse {
+  0%, 100% {
+    box-shadow:
+      0 10px 25px -3px rgba(222, 74, 74, 0.4),
+      0 0 0 0 rgba(222, 74, 74, 0.3);
+  }
+  50% {
+    box-shadow:
+      0 10px 25px -3px rgba(222, 74, 74, 0.4),
+      0 0 0 12px rgba(222, 74, 74, 0);
+  }
+}
+
+.center-button-pulse {
+  animation: center-pulse 2s ease-in-out infinite;
+}
+
+/* Glow effect on hover/focus */
+.center-button-pulse:hover {
+  animation: none;
+  box-shadow:
+    0 10px 25px -3px rgba(222, 74, 74, 0.5),
+    0 0 20px 4px rgba(222, 74, 74, 0.25);
+}
