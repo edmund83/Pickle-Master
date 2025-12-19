@@ -244,7 +244,7 @@ export default function StockMovesPage() {
                   >
                     <div
                       className="h-4 w-4 rounded-full"
-                      style={{ backgroundColor: folder.color }}
+                      style={{ backgroundColor: folder.color || '#6b7280' }}
                     />
                     <span className="font-medium text-neutral-900">{folder.name}</span>
                   </button>

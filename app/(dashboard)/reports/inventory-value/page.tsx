@@ -70,7 +70,7 @@ async function getInventoryValueData() {
     const existing = folderMap.get(folderId) || folderMap.get(null)!
     existing.itemCount++
     existing.totalQuantity += item.quantity
-    existing.totalValue += item.quantity * item.price
+    existing.totalValue += item.quantity * (item.price ?? 0)
   })
 
   const valueByFolder = Array.from(folderMap.values())
@@ -83,14 +83,14 @@ async function getInventoryValueData() {
 export default async function InventoryValuePage() {
   const { items, valueByFolder } = await getInventoryValueData()
 
-  const totalValue = items.reduce((sum, item) => sum + item.quantity * item.price, 0)
+  const totalValue = items.reduce((sum, item) => sum + item.quantity * (item.price ?? 0), 0)
   const totalItems = items.length
   const totalQuantity = items.reduce((sum, item) => sum + item.quantity, 0)
   const avgValuePerItem = totalItems > 0 ? totalValue / totalItems : 0
 
   // Top 10 valuable items
   const topItems = [...items]
-    .map(item => ({ ...item, value: item.quantity * item.price }))
+    .map(item => ({ ...item, value: item.quantity * (item.price ?? 0) }))
     .sort((a, b) => b.value - a.value)
     .slice(0, 10)
 
@@ -151,7 +151,7 @@ export default async function InventoryValuePage() {
                           {entry.folder ? (
                             <div
                               className="h-4 w-4 rounded-full"
-                              style={{ backgroundColor: entry.folder.color }}
+                              style={{ backgroundColor: entry.folder.color || '#6b7280' }}
                             />
                           ) : (
                             <FolderOpen className="h-4 w-4 text-neutral-400" />
@@ -203,7 +203,7 @@ export default async function InventoryValuePage() {
                       <div>
                         <p className="font-medium text-neutral-900">{item.name}</p>
                         <p className="text-xs text-neutral-500">
-                          {item.quantity} × RM {item.price.toFixed(2)}
+                          {item.quantity} × RM {(item.price ?? 0).toFixed(2)}
                         </p>
                       </div>
                     </div>

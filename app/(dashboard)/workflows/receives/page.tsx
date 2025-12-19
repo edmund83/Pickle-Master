@@ -67,7 +67,7 @@ export default function ReceivingPage() {
     // Initialize received quantities with remaining quantities
     const quantities: Record<string, number> = {}
     po.purchase_order_items.forEach(item => {
-      const remaining = item.quantity - (item.received_quantity || 0)
+      const remaining = item.ordered_quantity - (item.received_quantity || 0)
       quantities[item.id] = remaining
     })
     setReceivedQuantities(quantities)
@@ -78,7 +78,7 @@ export default function ReceivingPage() {
     const item = selectedPO?.purchase_order_items.find(i => i.id === itemId)
     if (!item) return
 
-    const remaining = item.quantity - (item.received_quantity || 0)
+    const remaining = item.ordered_quantity - (item.received_quantity || 0)
     const current = receivedQuantities[itemId] || 0
     const newValue = Math.max(0, Math.min(remaining, current + delta))
 
@@ -134,7 +134,7 @@ export default function ReceivingPage() {
       // Check if PO is fully received
       const allReceived = selectedPO.purchase_order_items.every(item => {
         const newReceived = (item.received_quantity || 0) + (receivedQuantities[item.id] || 0)
-        return newReceived >= item.quantity
+        return newReceived >= item.ordered_quantity
       })
 
       // Update PO status
@@ -186,10 +186,10 @@ export default function ReceivingPage() {
               <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-lg font-semibold text-neutral-900">
-                    PO #{selectedPO.po_number}
+                    PO #{selectedPO.order_number || selectedPO.id.slice(0, 8)}
                   </h2>
                   <p className="text-sm text-neutral-500">
-                    {selectedPO.vendor_name || 'Unknown Vendor'} • {new Date(selectedPO.created_at).toLocaleDateString()}
+                    {selectedPO.vendor_id ? `Vendor ID: ${selectedPO.vendor_id.slice(0, 8)}` : 'Unknown Vendor'} • {selectedPO.created_at ? new Date(selectedPO.created_at).toLocaleDateString() : ''}
                   </p>
                 </div>
                 <Button variant="outline" onClick={() => setSelectedPO(null)}>
@@ -202,7 +202,7 @@ export default function ReceivingPage() {
               {/* Items */}
               <div className="mb-6 space-y-4">
                 {selectedPO.purchase_order_items.map((item) => {
-                  const remaining = item.quantity - (item.received_quantity || 0)
+                  const remaining = item.ordered_quantity - (item.received_quantity || 0)
                   const receiving = receivedQuantities[item.id] || 0
 
                   return (
@@ -217,7 +217,7 @@ export default function ReceivingPage() {
                             {item.inventory_items?.name || item.item_name || 'Unknown Item'}
                           </p>
                           <p className="text-sm text-neutral-500">
-                            Ordered: {item.quantity} • Received: {item.received_quantity || 0} • Remaining: {remaining}
+                            Ordered: {item.ordered_quantity} • Received: {item.received_quantity || 0} • Remaining: {remaining}
                           </p>
                         </div>
                       </div>
@@ -290,7 +290,7 @@ export default function ReceivingPage() {
             </div>
             <ul className="divide-y divide-neutral-200">
               {purchaseOrders.map((po) => {
-                const totalOrdered = po.purchase_order_items.reduce((sum, item) => sum + item.quantity, 0)
+                const totalOrdered = po.purchase_order_items.reduce((sum, item) => sum + item.ordered_quantity, 0)
                 const totalReceived = po.purchase_order_items.reduce((sum, item) => sum + (item.received_quantity || 0), 0)
                 const progress = totalOrdered > 0 ? (totalReceived / totalOrdered) * 100 : 0
 
@@ -305,9 +305,9 @@ export default function ReceivingPage() {
                         <ClipboardList className="h-5 w-5" />
                       </div>
                       <div>
-                        <p className="font-medium text-neutral-900">PO #{po.po_number}</p>
+                        <p className="font-medium text-neutral-900">PO #{po.order_number || po.id.slice(0, 8)}</p>
                         <p className="text-sm text-neutral-500">
-                          {po.vendor_name || 'Unknown Vendor'} • {po.purchase_order_items.length} items
+                          {po.vendor_id ? `Vendor ID: ${po.vendor_id.slice(0, 8)}` : 'Unknown Vendor'} • {po.purchase_order_items.length} items
                         </p>
                       </div>
                     </div>

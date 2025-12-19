@@ -88,7 +88,7 @@ export default function ActivityReportPage() {
   function exportCSV() {
     const headers = ['Date', 'User', 'Action', 'Entity Type', 'Entity Name', 'Details']
     const rows = activities.map(a => [
-      new Date(a.created_at).toLocaleString(),
+      a.created_at ? new Date(a.created_at).toLocaleString() : '',
       a.user_name || 'System',
       a.action_type,
       a.entity_type,
@@ -233,7 +233,7 @@ export default function ActivityReportPage() {
                           </div>
                         </div>
                         <span className="flex-shrink-0 text-xs text-neutral-400">
-                          {new Date(activity.created_at).toLocaleString()}
+                          {activity.created_at ? new Date(activity.created_at).toLocaleString() : ''}
                         </span>
                       </div>
                     </div>

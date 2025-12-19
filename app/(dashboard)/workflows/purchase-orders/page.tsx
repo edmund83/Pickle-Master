@@ -60,7 +60,7 @@ export default async function PurchaseOrdersPage() {
   const orders = await getPurchaseOrders()
 
   const grouped = {
-    active: orders.filter((o) => ['draft', 'submitted', 'confirmed'].includes(o.status)),
+    active: orders.filter((o) => ['draft', 'submitted', 'confirmed'].includes(o.status || '')),
     received: orders.filter((o) => o.status === 'received'),
   }
 
@@ -144,7 +144,7 @@ function OrderRow({ order }: { order: PurchaseOrder }) {
   return (
     <div className="flex items-center justify-between py-4">
       <div className="flex items-center gap-3">
-        {statusIcons[order.status]}
+        {statusIcons[order.status || 'draft']}
         <div>
           <p className="font-medium text-neutral-900">
             {order.order_number || `PO-${order.id.slice(0, 8)}`}
@@ -152,20 +152,20 @@ function OrderRow({ order }: { order: PurchaseOrder }) {
           <p className="text-sm text-neutral-500">
             {order.expected_date
               ? `Expected ${format(new Date(order.expected_date), 'MMM d, yyyy')}`
-              : `Created ${format(new Date(order.created_at), 'MMM d, yyyy')}`}
+              : order.created_at ? `Created ${format(new Date(order.created_at), 'MMM d, yyyy')}` : ''}
           </p>
         </div>
       </div>
       <div className="flex items-center gap-3">
-        {order.total_amount > 0 && (
+        {(order.total_amount ?? 0) > 0 && (
           <span className="font-medium text-neutral-900">
-            RM {order.total_amount.toFixed(2)}
+            RM {(order.total_amount ?? 0).toFixed(2)}
           </span>
         )}
         <span
-          className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[order.status]}`}
+          className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[order.status || 'draft']}`}
         >
-          {statusLabels[order.status]}
+          {statusLabels[order.status || 'draft']}
         </span>
         <Button variant="ghost" size="sm">
           View

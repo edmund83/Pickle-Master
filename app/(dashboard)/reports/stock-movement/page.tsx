@@ -54,7 +54,7 @@ export default function StockMovementPage() {
   function exportCSV() {
     const headers = ['Date', 'User', 'Item', 'Action', 'From', 'To', 'Quantity Change']
     const rows = movements.map(m => [
-      new Date(m.created_at).toLocaleString(),
+      m.created_at ? new Date(m.created_at).toLocaleString() : '',
       m.user_name || 'System',
       m.entity_name || '',
       m.action_type,
@@ -181,7 +181,7 @@ export default function StockMovementPage() {
                   </div>
 
                   <span className="flex-shrink-0 text-sm text-neutral-400">
-                    {new Date(movement.created_at).toLocaleString()}
+                    {movement.created_at ? new Date(movement.created_at).toLocaleString() : ''}
                   </span>
                 </li>
               ))}

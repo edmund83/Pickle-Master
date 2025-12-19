@@ -1,6 +1,23 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@plugin "flyonui";
+@import "../node_modules/flyonui/variants.css";
+
+@theme {
+  --font-family-sans: 'Inter', system-ui, sans-serif;
+
+  /* Pickle brand colors */
+  --color-pickle-50: #fef2f2;
+  --color-pickle-100: #fee2e2;
+  --color-pickle-200: #fecaca;
+  --color-pickle-300: #fca5a5;
+  --color-pickle-400: #f87171;
+  --color-pickle-500: #de4a4a;
+  --color-pickle-600: #c73e3e;
+  --color-pickle-700: #a13232;
+  --color-pickle-800: #862929;
+  --color-pickle-900: #6f2525;
+  --color-pickle-950: #3c1111;
+}
 
 @layer base {
   :root {

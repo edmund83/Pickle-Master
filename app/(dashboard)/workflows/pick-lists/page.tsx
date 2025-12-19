@@ -57,7 +57,7 @@ export default async function PickListsPage() {
   const pickLists = await getPickLists()
 
   const grouped = {
-    active: pickLists.filter((p) => ['draft', 'in_progress'].includes(p.status)),
+    active: pickLists.filter((p) => ['draft', 'in_progress'].includes(p.status || '')),
     completed: pickLists.filter((p) => p.status === 'completed'),
     cancelled: pickLists.filter((p) => p.status === 'cancelled'),
   }
@@ -142,19 +142,19 @@ function PickListRow({ list }: { list: PickList }) {
   return (
     <div className="flex items-center justify-between py-4">
       <div className="flex items-center gap-3">
-        {statusIcons[list.status]}
+        {statusIcons[list.status || 'draft']}
         <div>
           <p className="font-medium text-neutral-900">{list.name || `Pick List #${list.id.slice(0, 8)}`}</p>
           <p className="text-sm text-neutral-500">
-            Created {format(new Date(list.created_at), 'MMM d, yyyy')}
+            Created {list.created_at ? format(new Date(list.created_at), 'MMM d, yyyy') : ''}
           </p>
         </div>
       </div>
       <div className="flex items-center gap-3">
         <span
-          className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[list.status]}`}
+          className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[list.status || 'draft']}`}
         >
-          {statusLabels[list.status]}
+          {statusLabels[list.status || 'draft']}
         </span>
         <Button variant="ghost" size="sm">
           View

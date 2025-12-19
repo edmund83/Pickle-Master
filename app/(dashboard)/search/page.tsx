@@ -308,10 +308,10 @@ function SearchResultCard({ item }: { item: InventoryItem }) {
         </span>
         <span
           className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-            statusColors[item.status] || statusColors.in_stock
+            statusColors[item.status || 'in_stock'] || statusColors.in_stock
           }`}
         >
-          {statusLabels[item.status] || 'In Stock'}
+          {statusLabels[item.status || 'in_stock'] || 'In Stock'}
         </span>
       </div>
     </Link>

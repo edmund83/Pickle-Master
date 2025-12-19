@@ -134,7 +134,7 @@ export default function TagsPage() {
 
   function startEdit(tag: Tag) {
     setEditingId(tag.id)
-    setFormData({ name: tag.name, color: tag.color })
+    setFormData({ name: tag.name, color: tag.color || '#3b82f6' })
     setShowCreateForm(false)
   }
 
@@ -246,7 +246,7 @@ export default function TagsPage() {
                       <div className="flex items-center gap-3">
                         <div
                           className="h-4 w-4 rounded-full"
-                          style={{ backgroundColor: tag.color }}
+                          style={{ backgroundColor: tag.color || '#6b7280' }}
                         />
                         <span className="font-medium text-neutral-900">{tag.name}</span>
                         <span className="text-sm text-neutral-500">

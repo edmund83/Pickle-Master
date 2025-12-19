@@ -178,7 +178,7 @@ export default function NotificationsPage() {
                             </p>
                           )}
                           <p className="mt-1 text-xs text-neutral-400">
-                            {new Date(notification.created_at).toLocaleString()}
+                            {notification.created_at ? new Date(notification.created_at).toLocaleString() : ''}
                           </p>
                         </div>
                         <div className="flex items-center gap-1">
