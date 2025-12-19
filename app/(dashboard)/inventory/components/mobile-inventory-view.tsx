@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { Search, Package, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { InventoryItem, Folder } from '@/types/database.types'
-import { MultiFAB } from '@/components/layout/mobile/MultiFAB'
+import { FloatingActionButton } from '@/components/layout/mobile/FloatingActionButton'
 import { WarehouseSelector } from './warehouse-selector'
 
 interface MobileInventoryViewProps {
@@ -176,8 +176,13 @@ export function MobileInventoryView({ items, folders }: MobileInventoryViewProps
         )}
       </div>
 
-      {/* Multi-purpose Floating Action Button */}
-      <MultiFAB />
+      {/* Floating Action Button - Add new item */}
+      <FloatingActionButton
+        icon={Package}
+        onClick={() => {
+          window.location.href = '/inventory/new'
+        }}
+      />
     </div>
   )
 }
