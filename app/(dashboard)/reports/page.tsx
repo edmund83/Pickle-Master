@@ -8,6 +8,7 @@ import {
   Activity,
   DollarSign,
   Calendar,
+  Percent,
 } from 'lucide-react'
 
 const reports = [
@@ -34,6 +35,14 @@ const reports = [
     icon: DollarSign,
     color: 'text-green-500',
     bgColor: 'bg-green-50',
+  },
+  {
+    href: '/reports/profit-margin',
+    title: 'Profit Margin',
+    description: 'Analyze margins and potential profit',
+    icon: Percent,
+    color: 'text-pickle-500',
+    bgColor: 'bg-pickle-50',
   },
   {
     href: '/reports/activity',

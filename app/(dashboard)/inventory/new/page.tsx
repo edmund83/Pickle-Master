@@ -24,6 +24,7 @@ export default function NewItemPage() {
     unit: 'pcs',
     min_quantity: 0,
     price: 0,
+    cost_price: 0,
     location: '',
     notes: '',
   })
@@ -75,6 +76,7 @@ export default function NewItemPage() {
           unit: formData.unit,
           min_quantity: formData.min_quantity,
           price: formData.price,
+          cost_price: formData.cost_price || null,
           location: formData.location || null,
           notes: formData.notes || null,
           image_urls: images.length > 0 ? images : null,
@@ -275,20 +277,46 @@ export default function NewItemPage() {
             <CardHeader>
               <CardTitle>Pricing</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-                  Price (RM)
-                </label>
-                <Input
-                  type="number"
-                  name="price"
-                  value={formData.price}
-                  onChange={handleChange}
-                  min="0"
-                  step="0.01"
-                />
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                    Selling Price (RM)
+                  </label>
+                  <Input
+                    type="number"
+                    name="price"
+                    value={formData.price}
+                    onChange={handleChange}
+                    min="0"
+                    step="0.01"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                    Cost Price (RM)
+                  </label>
+                  <Input
+                    type="number"
+                    name="cost_price"
+                    value={formData.cost_price}
+                    onChange={handleChange}
+                    min="0"
+                    step="0.01"
+                  />
+                  <p className="mt-1 text-xs text-neutral-500">For margin calculation</p>
+                </div>
               </div>
+              {formData.price > 0 && formData.cost_price > 0 && (
+                <div className="rounded-lg bg-neutral-50 p-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-neutral-600">Margin</span>
+                    <span className="font-medium text-pickle-600">
+                      {(((formData.price - formData.cost_price) / formData.cost_price) * 100).toFixed(1)}% / RM {(formData.price - formData.cost_price).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 

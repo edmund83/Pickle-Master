@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { Package, AlertTriangle, XCircle, TrendingUp, PieChart, BarChart3 } from 'lucide-react'
+import { Package, AlertTriangle, XCircle, TrendingUp, PieChart, BarChart3, Percent } from 'lucide-react'
 import type { Profile, InventoryItem, ActivityLog, Folder } from '@/types/database.types'
 import { InventorySummaryChart } from '@/components/dashboard/inventory-summary-chart'
 import { InventoryValueChart } from '@/components/dashboard/inventory-value-chart'
@@ -12,6 +12,7 @@ interface DashboardData {
   stats: {
     totalItems: number
     totalValue: number
+    totalProfit: number
     lowStock: number
     outOfStock: number
   } | null
@@ -50,11 +51,11 @@ async function getDashboardData(): Promise<DashboardData> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: items } = await (supabase as any)
     .from('inventory_items')
-    .select('id, quantity, status, price, folder_id')
+    .select('id, quantity, status, price, cost_price, folder_id')
     .eq('tenant_id', profile.tenant_id)
     .is('deleted_at', null)
 
-  const itemsList = (items || []) as Pick<InventoryItem, 'id' | 'quantity' | 'status' | 'price' | 'folder_id'>[]
+  const itemsList = (items || []) as Pick<InventoryItem, 'id' | 'quantity' | 'status' | 'price' | 'cost_price' | 'folder_id'>[]
 
   // Get folders for mapping
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -72,6 +73,13 @@ async function getDashboardData(): Promise<DashboardData> {
   const stats = {
     totalItems: itemsList.length,
     totalValue: itemsList.reduce((sum, item) => sum + ((item.price || 0) * item.quantity), 0),
+    totalProfit: itemsList.reduce((sum, item) => {
+      if (item.cost_price && item.cost_price > 0) {
+        const margin = (item.price || 0) - item.cost_price
+        return sum + (margin * item.quantity)
+      }
+      return sum
+    }, 0),
     lowStock: itemsList.filter(item => item.status === 'low_stock').length,
     outOfStock: itemsList.filter(item => item.status === 'out_of_stock').length,
   }
@@ -134,7 +142,7 @@ export default async function DashboardPage() {
 
       {/* Stats Grid - Larger on mobile for kid-friendly design */}
       <div className="p-4 lg:p-8">
-        <div className="grid gap-3 lg:gap-6 grid-cols-2 lg:grid-cols-4 mb-6 lg:mb-8">
+        <div className="grid gap-3 lg:gap-6 grid-cols-2 lg:grid-cols-5 mb-6 lg:mb-8">
           <StatCard
             title="Total Items"
             value={stats?.totalItems || 0}
@@ -146,6 +154,12 @@ export default async function DashboardPage() {
             value={`RM ${(stats?.totalValue || 0).toLocaleString('en-MY', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
             icon={TrendingUp}
             color="green"
+          />
+          <StatCard
+            title="Potential Profit"
+            value={`RM ${(stats?.totalProfit || 0).toLocaleString('en-MY', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`}
+            icon={Percent}
+            color="purple"
           />
           <StatCard
             title="Low Stock"
@@ -198,13 +212,14 @@ function StatCard({
   title: string
   value: string | number
   icon: React.ElementType
-  color: 'blue' | 'green' | 'yellow' | 'red'
+  color: 'blue' | 'green' | 'yellow' | 'red' | 'purple'
 }) {
   const colorClasses = {
     blue: 'bg-blue-50 text-blue-600',
     green: 'bg-green-50 text-green-600',
     yellow: 'bg-yellow-50 text-yellow-600',
     red: 'bg-red-50 text-red-600',
+    purple: 'bg-purple-50 text-purple-600',
   }
 
   const borderColors = {
@@ -212,6 +227,7 @@ function StatCard({
     green: 'border-green-200',
     yellow: 'border-yellow-200',
     red: 'border-red-200',
+    purple: 'border-purple-200',
   }
 
   return (

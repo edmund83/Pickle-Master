@@ -32,6 +32,7 @@ export default function EditItemPage() {
     unit: 'pcs',
     min_quantity: 0,
     price: 0,
+    cost_price: 0,
     currency: 'RM',
     location: '',
     notes: '',
@@ -84,6 +85,7 @@ export default function EditItemPage() {
           unit: itemData.unit || 'pcs',
           min_quantity: itemData.min_quantity || 0,
           price: itemData.price || 0,
+          cost_price: itemData.cost_price || 0,
           currency: itemData.currency || 'RM',
           location: itemData.location || '',
           notes: itemData.notes || '',
@@ -133,6 +135,7 @@ export default function EditItemPage() {
           unit: formData.unit,
           min_quantity: formData.min_quantity,
           price: formData.price,
+          cost_price: formData.cost_price || null,
           currency: formData.currency,
           location: formData.location || null,
           notes: formData.notes || null,
@@ -393,11 +396,11 @@ export default function EditItemPage() {
             <CardHeader>
               <CardTitle>Pricing</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="grid gap-4 sm:grid-cols-2">
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-3">
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-                    Price
+                    Selling Price
                   </label>
                   <Input
                     type="number"
@@ -407,6 +410,20 @@ export default function EditItemPage() {
                     min="0"
                     step="0.01"
                   />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                    Cost Price
+                  </label>
+                  <Input
+                    type="number"
+                    name="cost_price"
+                    value={formData.cost_price}
+                    onChange={handleChange}
+                    min="0"
+                    step="0.01"
+                  />
+                  <p className="mt-1 text-xs text-neutral-500">For margin calculation</p>
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-neutral-700">
@@ -425,6 +442,16 @@ export default function EditItemPage() {
                   </select>
                 </div>
               </div>
+              {formData.price > 0 && formData.cost_price > 0 && (
+                <div className="rounded-lg bg-neutral-50 p-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-neutral-600">Margin</span>
+                    <span className="font-medium text-pickle-600">
+                      {(((formData.price - formData.cost_price) / formData.cost_price) * 100).toFixed(1)}% / {formData.currency} {(formData.price - formData.cost_price).toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 

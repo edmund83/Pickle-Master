@@ -46,6 +46,8 @@ export function InventoryTable({ items, folders }: InventoryTableProps) {
                             <th className="px-4 py-3 text-right font-medium">Stock</th>
                             <th className="px-4 py-3 text-left font-medium">Status</th>
                             <th className="px-4 py-3 text-right font-medium">Price</th>
+                            <th className="px-4 py-3 text-right font-medium">Cost</th>
+                            <th className="px-4 py-3 text-right font-medium">Margin</th>
                             <th className="w-10 px-4 py-3"></th>
                         </tr>
                     </thead>
@@ -143,6 +145,28 @@ export function InventoryTable({ items, folders }: InventoryTableProps) {
                                             className="w-24"
                                         />
                                     </div>
+                                </td>
+                                <td className="px-4 py-3 text-right text-neutral-600">
+                                    <div className="flex items-center justify-end gap-1">
+                                        <span className="text-xs text-neutral-400">RM</span>
+                                        <EditableCell
+                                            itemId={item.id}
+                                            field="cost_price"
+                                            value={item.cost_price || 0}
+                                            type="number"
+                                            align="right"
+                                            className="w-24"
+                                        />
+                                    </div>
+                                </td>
+                                <td className="px-4 py-3 text-right">
+                                    {item.cost_price && item.cost_price > 0 ? (
+                                        <span className={`font-medium ${((item.price || 0) - item.cost_price) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                                            {((((item.price || 0) - item.cost_price) / item.cost_price) * 100).toFixed(1)}%
+                                        </span>
+                                    ) : (
+                                        <span className="text-neutral-400">-</span>
+                                    )}
                                 </td>
                                 <td className="px-4 py-3">
                                     <DropdownMenu>

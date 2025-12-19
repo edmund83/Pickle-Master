@@ -149,6 +149,11 @@ export default async function ItemDetailPage({ params }: PageProps) {
   }
 
   const totalValue = (item.quantity || 0) * (item.price || 0)
+  const marginAmount = (item.price || 0) - (item.cost_price || 0)
+  const marginPercent = item.cost_price && item.cost_price > 0
+    ? ((marginAmount / item.cost_price) * 100)
+    : null
+  const totalProfit = (item.quantity || 0) * marginAmount
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
@@ -313,17 +318,39 @@ export default async function ItemDetailPage({ params }: PageProps) {
               </div>
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span className="text-neutral-500">Unit Price</span>
+                  <span className="text-neutral-500">Selling Price</span>
                   <span className="font-medium text-neutral-900">
                     {item.currency || 'RM'} {(item.price || 0).toFixed(2)}
                   </span>
                 </div>
+                <div className="flex justify-between">
+                  <span className="text-neutral-500">Cost Price</span>
+                  <span className="font-medium text-neutral-900">
+                    {item.cost_price ? `${item.currency || 'RM'} ${item.cost_price.toFixed(2)}` : '-'}
+                  </span>
+                </div>
+                {marginPercent !== null && (
+                  <div className="flex justify-between">
+                    <span className="text-neutral-500">Margin</span>
+                    <span className={`font-medium ${marginAmount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {marginPercent.toFixed(1)}% / {item.currency || 'RM'} {marginAmount.toFixed(2)}
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between border-t border-neutral-100 pt-2">
                   <span className="text-neutral-500">Total Value</span>
                   <span className="font-bold text-pickle-600">
                     {item.currency || 'RM'} {totalValue.toFixed(2)}
                   </span>
                 </div>
+                {marginPercent !== null && (
+                  <div className="flex justify-between">
+                    <span className="text-neutral-500">Total Profit</span>
+                    <span className={`font-bold ${totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      {item.currency || 'RM'} {totalProfit.toFixed(2)}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
