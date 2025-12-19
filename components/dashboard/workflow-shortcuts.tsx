@@ -39,7 +39,7 @@ const shortcuts: ShortcutItem[] = [
 
 export function WorkflowShortcuts() {
   return (
-    <div className="mb-8">
+    <div className="hidden lg:block mb-8">
       <div className="flex items-center gap-2 mb-4">
         <span className="text-xs font-semibold tracking-wider text-pickle-600 uppercase">
           Workflow Shortcuts
