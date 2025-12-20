@@ -12,7 +12,6 @@ import {
   Clock,
   Edit,
   Trash2,
-  Printer,
   MoreHorizontal,
   Plus,
   Minus,
@@ -27,6 +26,7 @@ import { ItemCheckoutSection } from './item-checkout-section'
 import { ItemQuickActions } from './components/item-quick-actions'
 import { ItemAdvancedPanels } from './components/item-advanced-panels'
 import { TagsManager } from './components/tags-manager'
+import PrintLabelButton from './components/print-label-button'
 
 interface FeaturesEnabled {
   multi_location?: boolean
@@ -54,6 +54,8 @@ interface ItemWithRelations {
   itemTags: TagType[]
   activityLogs: ActivityLogItem[]
   features: FeaturesEnabled
+  tenantLogo: string | null
+  userEmail: string | null
 }
 
 async function getItemDetails(itemId: string): Promise<ItemWithRelations | null> {
@@ -118,16 +120,17 @@ async function getItemDetails(itemId: string): Promise<ItemWithRelations | null>
       p_limit: 10
     })
 
-  // Get tenant settings for feature flags
+  // Get tenant settings for feature flags and logo
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: tenant } = await (supabase as any)
     .from('tenants')
-    .select('settings')
+    .select('settings, logo_url')
     .eq('id', profile.tenant_id)
     .single()
 
   const settings = tenant?.settings as Record<string, unknown> | null
   const features = (settings?.features_enabled as FeaturesEnabled) || {}
+  const tenantLogo = (tenant?.logo_url as string) || null
 
   return {
     item: typedItem,
@@ -135,6 +138,8 @@ async function getItemDetails(itemId: string): Promise<ItemWithRelations | null>
     itemTags: (itemTags || []) as TagType[],
     activityLogs: (activityLogs || []) as ActivityLogItem[],
     features,
+    tenantLogo,
+    userEmail: user.email || null,
   }
 }
 
@@ -146,7 +151,7 @@ export default async function ItemDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  const { item, folder, itemTags, activityLogs, features } = data
+  const { item, folder, itemTags, activityLogs, features, tenantLogo, userEmail } = data
 
   const statusColors: Record<string, string> = {
     in_stock: 'bg-green-100 text-green-700 border-green-200',
@@ -208,10 +213,25 @@ export default async function ItemDetailPage({ params }: PageProps) {
               Edit
             </Button>
           </Link>
-          <Button variant="outline" size="sm">
-            <Printer className="mr-2 h-4 w-4" />
-            Print Label
-          </Button>
+          <PrintLabelButton
+            item={{
+              id: item.id,
+              name: item.name,
+              sku: item.sku,
+              barcode: item.barcode,
+              price: item.price,
+              cost_price: item.cost_price,
+              currency: item.currency,
+              quantity: item.quantity,
+              min_quantity: item.min_quantity,
+              notes: item.notes,
+              description: item.description,
+              image_urls: item.image_urls,
+              tags: itemTags.map((t) => ({ id: t.id, name: t.name, color: t.color || '#6b7280' })),
+            }}
+            tenantLogo={tenantLogo}
+            userEmail={userEmail}
+          />
           <Button variant="ghost" size="sm">
             <MoreHorizontal className="h-4 w-4" />
           </Button>

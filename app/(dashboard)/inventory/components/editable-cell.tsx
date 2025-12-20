@@ -8,7 +8,7 @@ import { Loader2 } from 'lucide-react'
 
 interface EditableCellProps {
     itemId: string
-    field: 'name' | 'sku' | 'location' | 'price' | 'cost_price' | 'min_quantity' | 'quantity'
+    field: 'name' | 'sku' | 'barcode' | 'serial_number' | 'location' | 'price' | 'cost_price' | 'min_quantity' | 'quantity'
     value: string | number
     type?: 'text' | 'number'
     className?: string
