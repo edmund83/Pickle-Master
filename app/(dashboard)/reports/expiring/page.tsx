@@ -1,8 +1,31 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { AlertTriangle, Calendar, Package, Clock } from 'lucide-react'
+import { AlertTriangle, Calendar, Package, Clock, DollarSign } from 'lucide-react'
 import Link from 'next/link'
-import type { InventoryItem } from '@/types/database.types'
+
+interface ExpiringLot {
+  lot_id: string
+  item_id: string
+  item_name: string
+  item_sku: string | null
+  item_image: string | null
+  lot_number: string | null
+  batch_code: string | null
+  expiry_date: string
+  quantity: number
+  status: string
+  location_id: string | null
+  location_name: string | null
+  days_until_expiry: number
+  urgency: 'expired' | 'critical' | 'warning' | 'upcoming'
+}
+
+interface ExpirySummary {
+  expired_count: number
+  expiring_7_days: number
+  expiring_30_days: number
+  total_value_at_risk: number
+}
 
 async function getExpiringItems() {
   const supabase = await createClient()
@@ -10,6 +33,7 @@ async function getExpiringItems() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  // Check if user has tenant
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: profile } = await (supabase as any)
     .from('profiles')
@@ -18,49 +42,65 @@ async function getExpiringItems() {
     .single()
 
   if (!profile?.tenant_id) {
-    return { expiringItems: [], expiredItems: [] }
+    return {
+      expiringLots: [],
+      expiredLots: [],
+      summary: { expired_count: 0, expiring_7_days: 0, expiring_30_days: 0, total_value_at_risk: 0 }
+    }
   }
 
-  const today = new Date()
-  const thirtyDaysFromNow = new Date()
-  thirtyDaysFromNow.setDate(thirtyDaysFromNow.getDate() + 30)
-
-  // Get items with expiry dates
-  // Note: This assumes an expiry_date column exists in inventory_items
-  // If not, this will return empty results gracefully
+  // Use the proper RPC functions that query the lots table
+  // Get all lots expiring within 30 days (includes expired ones)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: items } = await (supabase as any)
-    .from('inventory_items')
-    .select('id, name, sku, quantity, status, custom_fields')
-    .eq('tenant_id', profile.tenant_id)
-    .is('deleted_at', null)
-    .order('name', { ascending: true })
+  const { data: allExpiringData } = await (supabase as any)
+    .rpc('get_expiring_lots', { p_days: 30 })
 
-  const allItems = (items || []) as (Pick<InventoryItem, 'id' | 'name' | 'sku' | 'quantity' | 'status'> & { custom_fields: Record<string, unknown> | null })[]
+  // Get the summary statistics
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: summaryData } = await (supabase as any)
+    .rpc('get_expiring_lots_summary')
 
-  // Check for expiry_date in custom_fields or direct column
-  const itemsWithExpiry = allItems
-    .map(item => {
-      const expiryDate = item.custom_fields?.expiry_date || item.custom_fields?.expiryDate
-      return {
-        ...item,
-        expiry_date: expiryDate ? new Date(expiryDate as string) : null,
-      }
-    })
-    .filter(item => item.expiry_date && !isNaN(item.expiry_date.getTime()))
+  const allLots: ExpiringLot[] = allExpiringData || []
+  const summary: ExpirySummary = summaryData || {
+    expired_count: 0,
+    expiring_7_days: 0,
+    expiring_30_days: 0,
+    total_value_at_risk: 0
+  }
 
-  const expiredItems = itemsWithExpiry.filter(item => item.expiry_date! < today)
-  const expiringItems = itemsWithExpiry.filter(
-    item => item.expiry_date! >= today && item.expiry_date! <= thirtyDaysFromNow
-  )
+  // Separate expired from expiring
+  const expiredLots = allLots.filter(lot => lot.urgency === 'expired')
+  const expiringLots = allLots.filter(lot => lot.urgency !== 'expired')
 
-  return { expiringItems, expiredItems }
+  return { expiringLots, expiredLots, summary }
+}
+
+function formatCurrency(value: number): string {
+  return new Intl.NumberFormat('en-MY', {
+    style: 'currency',
+    currency: 'MYR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(value)
+}
+
+function getUrgencyBadge(urgency: string): { bg: string; text: string; label: string } {
+  switch (urgency) {
+    case 'expired':
+      return { bg: 'bg-red-100', text: 'text-red-700', label: 'Expired' }
+    case 'critical':
+      return { bg: 'bg-red-100', text: 'text-red-700', label: 'Critical (7 days)' }
+    case 'warning':
+      return { bg: 'bg-yellow-100', text: 'text-yellow-700', label: 'Warning (14 days)' }
+    default:
+      return { bg: 'bg-orange-100', text: 'text-orange-700', label: 'Upcoming' }
+  }
 }
 
 export default async function ExpiringItemsPage() {
-  const { expiringItems, expiredItems } = await getExpiringItems()
+  const { expiringLots, expiredLots, summary } = await getExpiringItems()
 
-  const totalAtRisk = expiringItems.length + expiredItems.length
+  const totalAtRisk = expiredLots.length + expiringLots.length
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -68,13 +108,13 @@ export default async function ExpiringItemsPage() {
       <div className="border-b border-neutral-200 bg-white px-8 py-6">
         <h1 className="text-2xl font-semibold text-neutral-900">Expiring Items Report</h1>
         <p className="mt-1 text-neutral-500">
-          Track items that are expired or expiring soon
+          Track lots and batches that are expired or expiring soon
         </p>
       </div>
 
       <div className="p-8">
         {/* Summary Stats */}
-        <div className="mb-8 grid gap-6 sm:grid-cols-3">
+        <div className="mb-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-xl border border-neutral-200 bg-white p-6">
             <div className="flex items-center gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-50 text-red-600">
@@ -82,7 +122,19 @@ export default async function ExpiringItemsPage() {
               </div>
               <div>
                 <p className="text-sm text-neutral-500">Expired</p>
-                <p className="text-2xl font-semibold text-red-600">{expiredItems.length}</p>
+                <p className="text-2xl font-semibold text-red-600">{summary.expired_count}</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-neutral-200 bg-white p-6">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50 text-orange-600">
+                <Clock className="h-6 w-6" />
+              </div>
+              <div>
+                <p className="text-sm text-neutral-500">Expiring (7 days)</p>
+                <p className="text-2xl font-semibold text-orange-600">{summary.expiring_7_days}</p>
               </div>
             </div>
           </div>
@@ -90,11 +142,11 @@ export default async function ExpiringItemsPage() {
           <div className="rounded-xl border border-neutral-200 bg-white p-6">
             <div className="flex items-center gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-yellow-50 text-yellow-600">
-                <Clock className="h-6 w-6" />
+                <Calendar className="h-6 w-6" />
               </div>
               <div>
                 <p className="text-sm text-neutral-500">Expiring (30 days)</p>
-                <p className="text-2xl font-semibold text-yellow-600">{expiringItems.length}</p>
+                <p className="text-2xl font-semibold text-yellow-600">{summary.expiring_30_days}</p>
               </div>
             </div>
           </div>
@@ -102,100 +154,46 @@ export default async function ExpiringItemsPage() {
           <div className="rounded-xl border border-neutral-200 bg-white p-6">
             <div className="flex items-center gap-4">
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-100 text-neutral-600">
-                <Package className="h-6 w-6" />
+                <DollarSign className="h-6 w-6" />
               </div>
               <div>
-                <p className="text-sm text-neutral-500">Total at Risk</p>
-                <p className="text-2xl font-semibold text-neutral-900">{totalAtRisk}</p>
+                <p className="text-sm text-neutral-500">Value at Risk</p>
+                <p className="text-2xl font-semibold text-neutral-900">{formatCurrency(summary.total_value_at_risk)}</p>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Expired Items */}
-        {expiredItems.length > 0 && (
+        {/* Expired Lots */}
+        {expiredLots.length > 0 && (
           <div className="mb-8 rounded-xl border border-red-200 bg-white">
             <div className="border-b border-red-200 bg-red-50 px-6 py-4">
               <h2 className="flex items-center gap-2 text-lg font-semibold text-red-700">
                 <AlertTriangle className="h-5 w-5" />
-                Expired Items
+                Expired Lots ({expiredLots.length})
               </h2>
             </div>
             <ul className="divide-y divide-neutral-200">
-              {expiredItems.map((item) => (
-                <li key={item.id} className="flex items-center justify-between px-6 py-4">
-                  <div className="flex items-center gap-4">
-                    <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-100 text-red-600">
-                      <Package className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <Link
-                        href={`/inventory/${item.id}`}
-                        className="font-medium text-neutral-900 hover:text-pickle-600"
-                      >
-                        {item.name}
-                      </Link>
-                      {item.sku && (
-                        <p className="text-sm text-neutral-500">SKU: {item.sku}</p>
-                      )}
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium text-red-600">
-                      Expired {item.expiry_date?.toLocaleDateString()}
-                    </p>
-                    <p className="text-sm text-neutral-500">Qty: {item.quantity}</p>
-                  </div>
-                </li>
+              {expiredLots.map((lot) => (
+                <LotRow key={lot.lot_id} lot={lot} />
               ))}
             </ul>
           </div>
         )}
 
         {/* Expiring Soon */}
-        {expiringItems.length > 0 && (
+        {expiringLots.length > 0 && (
           <div className="rounded-xl border border-yellow-200 bg-white">
             <div className="border-b border-yellow-200 bg-yellow-50 px-6 py-4">
               <h2 className="flex items-center gap-2 text-lg font-semibold text-yellow-700">
                 <Clock className="h-5 w-5" />
-                Expiring Within 30 Days
+                Expiring Within 30 Days ({expiringLots.length})
               </h2>
             </div>
             <ul className="divide-y divide-neutral-200">
-              {expiringItems.map((item) => {
-                const daysUntilExpiry = Math.ceil(
-                  (item.expiry_date!.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
-                )
-
-                return (
-                  <li key={item.id} className="flex items-center justify-between px-6 py-4">
-                    <div className="flex items-center gap-4">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-yellow-100 text-yellow-600">
-                        <Package className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <Link
-                          href={`/inventory/${item.id}`}
-                          className="font-medium text-neutral-900 hover:text-pickle-600"
-                        >
-                          {item.name}
-                        </Link>
-                        {item.sku && (
-                          <p className="text-sm text-neutral-500">SKU: {item.sku}</p>
-                        )}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-medium text-yellow-600">
-                        {daysUntilExpiry} day{daysUntilExpiry !== 1 ? 's' : ''} left
-                      </p>
-                      <p className="text-sm text-neutral-500">
-                        Expires {item.expiry_date?.toLocaleDateString()}
-                      </p>
-                    </div>
-                  </li>
-                )
-              })}
+              {expiringLots.map((lot) => (
+                <LotRow key={lot.lot_id} lot={lot} />
+              ))}
             </ul>
           </div>
         )}
@@ -208,15 +206,79 @@ export default async function ExpiringItemsPage() {
             </div>
             <h3 className="mt-4 text-lg font-medium text-neutral-900">All clear!</h3>
             <p className="mt-1 text-center text-neutral-500">
-              No items are expired or expiring soon.
+              No lots are expired or expiring soon.
               <br />
               <span className="text-sm">
-                To track expiry dates, add an &quot;expiry_date&quot; field to your items&apos; custom fields.
+                To track expiry dates, enable lot tracking for items and create lots with expiry dates.
               </span>
             </p>
           </div>
         )}
       </div>
     </div>
+  )
+}
+
+function LotRow({ lot }: { lot: ExpiringLot }) {
+  const badge = getUrgencyBadge(lot.urgency)
+  const expiryDate = new Date(lot.expiry_date)
+
+  return (
+    <li className="flex items-center justify-between px-6 py-4">
+      <div className="flex items-center gap-4">
+        <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+          lot.urgency === 'expired' ? 'bg-red-100 text-red-600' : 'bg-yellow-100 text-yellow-600'
+        }`}>
+          {lot.item_image ? (
+            <img src={lot.item_image} alt={lot.item_name} className="h-10 w-10 rounded-lg object-cover" />
+          ) : (
+            <Package className="h-5 w-5" />
+          )}
+        </div>
+        <div>
+          <Link
+            href={`/inventory/${lot.item_id}`}
+            className="font-medium text-neutral-900 hover:text-pickle-600"
+          >
+            {lot.item_name}
+          </Link>
+          <div className="flex items-center gap-2 text-sm text-neutral-500">
+            {lot.item_sku && <span>SKU: {lot.item_sku}</span>}
+            {lot.lot_number && (
+              <>
+                {lot.item_sku && <span>•</span>}
+                <span>Lot: {lot.lot_number}</span>
+              </>
+            )}
+            {lot.batch_code && (
+              <>
+                <span>•</span>
+                <span>Batch: {lot.batch_code}</span>
+              </>
+            )}
+            {lot.location_name && (
+              <>
+                <span>•</span>
+                <span>{lot.location_name}</span>
+              </>
+            )}
+          </div>
+        </div>
+      </div>
+      <div className="text-right">
+        <div className="flex items-center justify-end gap-2">
+          <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${badge.bg} ${badge.text}`}>
+            {badge.label}
+          </span>
+        </div>
+        <p className={`mt-1 font-medium ${lot.urgency === 'expired' ? 'text-red-600' : 'text-yellow-600'}`}>
+          {lot.urgency === 'expired'
+            ? `Expired ${expiryDate.toLocaleDateString()}`
+            : `${lot.days_until_expiry} day${lot.days_until_expiry !== 1 ? 's' : ''} left`
+          }
+        </p>
+        <p className="text-sm text-neutral-500">Qty: {lot.quantity}</p>
+      </div>
+    </li>
   )
 }

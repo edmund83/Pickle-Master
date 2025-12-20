@@ -1,37 +1,104 @@
 'use client'
 
-import { useState } from 'react'
-import { Settings, Monitor, Moon, Sun, Grid, List, Globe, Check, Loader2 } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { Monitor, Moon, Sun, Grid, List, Check, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 
 interface UserPreferences {
   theme: 'light' | 'dark' | 'system'
   defaultView: 'grid' | 'list'
   itemsPerPage: number
-  currency: string
   dateFormat: string
   compactMode: boolean
 }
 
+const defaultPreferences: UserPreferences = {
+  theme: 'light',
+  defaultView: 'grid',
+  itemsPerPage: 20,
+  dateFormat: 'DD/MM/YYYY',
+  compactMode: false,
+}
+
 export default function PreferencesPage() {
-  const [preferences, setPreferences] = useState<UserPreferences>({
-    theme: 'light',
-    defaultView: 'grid',
-    itemsPerPage: 20,
-    currency: 'MYR',
-    dateFormat: 'DD/MM/YYYY',
-    compactMode: false,
-  })
+  const [preferences, setPreferences] = useState<UserPreferences>(defaultPreferences)
+  const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    loadPreferences()
+  }, [])
+
+  async function loadPreferences() {
+    setLoading(true)
+    const supabase = createClient()
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: profile } = await (supabase as any)
+        .from('profiles')
+        .select('preferences')
+        .eq('id', user.id)
+        .single()
+
+      if (profile?.preferences) {
+        const savedPrefs = profile.preferences as Partial<UserPreferences>
+        setPreferences({
+          theme: savedPrefs.theme ?? defaultPreferences.theme,
+          defaultView: savedPrefs.defaultView ?? defaultPreferences.defaultView,
+          itemsPerPage: savedPrefs.itemsPerPage ?? defaultPreferences.itemsPerPage,
+          dateFormat: savedPrefs.dateFormat ?? defaultPreferences.dateFormat,
+          compactMode: savedPrefs.compactMode ?? defaultPreferences.compactMode,
+        })
+      }
+    } catch (err) {
+      console.error('Error loading preferences:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   async function savePreferences() {
     setSaving(true)
-    // In a real app, save to user settings in database
-    await new Promise(resolve => setTimeout(resolve, 500))
-    setSaving(false)
-    setSuccess(true)
-    setTimeout(() => setSuccess(false), 3000)
+    setError(null)
+    const supabase = createClient()
+
+    try {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) throw new Error('Not authenticated')
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error: updateError } = await (supabase as any)
+        .from('profiles')
+        .update({
+          preferences,
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', user.id)
+
+      if (updateError) throw updateError
+
+      setSuccess(true)
+      setTimeout(() => setSuccess(false), 3000)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to save preferences')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-neutral-400" />
+      </div>
+    )
   }
 
   return (
@@ -49,6 +116,13 @@ export default function PreferencesPage() {
         <div className="mx-8 mt-4 flex items-center gap-2 rounded-lg bg-green-50 p-4 text-green-700">
           <Check className="h-5 w-5" />
           Preferences saved successfully!
+        </div>
+      )}
+
+      {/* Error Message */}
+      {error && (
+        <div className="mx-8 mt-4 rounded-lg bg-red-50 p-4 text-red-700">
+          {error}
         </div>
       )}
 
@@ -137,23 +211,6 @@ export default function PreferencesPage() {
             <h2 className="text-lg font-semibold text-neutral-900">Regional Settings</h2>
           </div>
           <div className="p-6 space-y-6">
-            {/* Currency */}
-            <div>
-              <label className="mb-1 block text-sm font-medium text-neutral-700">Currency</label>
-              <select
-                value={preferences.currency}
-                onChange={(e) => setPreferences({ ...preferences, currency: e.target.value })}
-                className="h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm"
-              >
-                <option value="MYR">Malaysian Ringgit (RM)</option>
-                <option value="USD">US Dollar ($)</option>
-                <option value="EUR">Euro (€)</option>
-                <option value="GBP">British Pound (£)</option>
-                <option value="SGD">Singapore Dollar (S$)</option>
-                <option value="JPY">Japanese Yen (¥)</option>
-              </select>
-            </div>
-
             {/* Date Format */}
             <div>
               <label className="mb-1 block text-sm font-medium text-neutral-700">Date Format</label>

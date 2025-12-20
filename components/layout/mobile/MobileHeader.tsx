@@ -1,9 +1,9 @@
 'use client'
 
 import { usePathname } from 'next/navigation'
-import { Bell, Wifi, WifiOff } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { SyncStatusIndicator } from '@/components/ui/SyncStatusIndicator'
+import { NotificationBell } from '@/components/notifications/NotificationBell'
 
 // Page title mapping
 const pageTitles: Record<string, string> = {
@@ -73,21 +73,7 @@ export function MobileHeader() {
         <SyncStatusIndicator size="sm" />
 
         {/* Notifications */}
-        <button
-          className={cn(
-            'relative flex items-center justify-center',
-            'w-10 h-10 rounded-xl',
-            'text-neutral-500 hover:text-neutral-700',
-            'hover:bg-neutral-100',
-            'transition-colors duration-200',
-            'active:scale-95'
-          )}
-          aria-label="Notifications"
-        >
-          <Bell className="h-5 w-5" />
-          {/* Notification badge */}
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-pickle-500 rounded-full" />
-        </button>
+        <NotificationBell variant="mobile" />
       </div>
     </header>
   )

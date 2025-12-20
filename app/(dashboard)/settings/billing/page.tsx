@@ -217,7 +217,7 @@ export default function BillingPage() {
                 Your trial will end on {new Date(subscription?.trial_ends_at || '').toLocaleDateString()}
               </p>
             </div>
-            <Button>Upgrade Now</Button>
+            <Button disabled title="Coming soon">Upgrade Now</Button>
           </div>
         )}
 
@@ -394,7 +394,8 @@ export default function BillingPage() {
                     <Button
                       variant={isCurrent ? 'outline' : plan.popular ? 'default' : 'outline'}
                       className="w-full"
-                      disabled={isCurrent}
+                      disabled
+                      title={isCurrent ? undefined : 'Coming soon'}
                     >
                       {isCurrent ? 'Current Plan' : plan.price < 0 ? 'Contact Sales' : 'Upgrade'}
                     </Button>
@@ -419,7 +420,7 @@ export default function BillingPage() {
                 <p className="font-medium text-neutral-900">No payment method on file</p>
                 <p className="text-sm text-neutral-500">Add a payment method to upgrade your plan</p>
               </div>
-              <Button variant="outline">
+              <Button variant="outline" disabled title="Coming soon">
                 Add Payment Method
                 <ExternalLink className="ml-2 h-4 w-4" />
               </Button>
@@ -431,7 +432,7 @@ export default function BillingPage() {
         <div className="mt-8 rounded-xl border border-neutral-200 bg-white">
           <div className="border-b border-neutral-200 px-6 py-4 flex items-center justify-between">
             <h2 className="text-lg font-semibold text-neutral-900">Billing History</h2>
-            <Button variant="ghost" size="sm">
+            <Button variant="ghost" size="sm" disabled title="Coming soon">
               View All
               <ExternalLink className="ml-2 h-4 w-4" />
             </Button>

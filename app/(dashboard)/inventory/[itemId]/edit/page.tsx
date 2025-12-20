@@ -9,6 +9,8 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PhotoUpload } from '@/components/inventory/PhotoUpload'
 import { CustomFieldsSection } from '@/components/custom-fields'
+import { LotTrackingSection } from '@/components/lots/LotTrackingSection'
+import { SerialTrackingSection } from '@/components/serials/SerialTrackingSection'
 import { createClient } from '@/lib/supabase/client'
 import type { InventoryItem, ItemTrackingMode } from '@/types/database.types'
 
@@ -416,7 +418,12 @@ export default function EditItemPage() {
                     onChange={handleChange}
                     min="0"
                     required
+                    disabled={formData.tracking_mode === 'lot_expiry'}
+                    className={formData.tracking_mode === 'lot_expiry' ? 'bg-neutral-100' : ''}
                   />
+                  {formData.tracking_mode === 'lot_expiry' && (
+                    <p className="mt-1 text-xs text-neutral-500">Calculated from lots</p>
+                  )}
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-neutral-700">
@@ -707,12 +714,20 @@ export default function EditItemPage() {
                       </button>
                     ))}
                   </div>
+                  {/* Lot Tracking Section */}
                   {formData.tracking_mode === 'lot_expiry' && (
-                    <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
-                      <p className="text-sm text-amber-800">
-                        <strong>Note:</strong> Lot details (lot number, expiry date, batch code) are managed when receiving inventory. Go to the item detail page to add or manage lots.
-                      </p>
-                    </div>
+                    <LotTrackingSection
+                      itemId={itemId}
+                      onTotalChange={(total) => setFormData(prev => ({ ...prev, quantity: total }))}
+                    />
+                  )}
+
+                  {/* Serial Tracking Section */}
+                  {formData.tracking_mode === 'serialized' && (
+                    <SerialTrackingSection
+                      itemId={itemId}
+                      quantity={formData.quantity}
+                    />
                   )}
                 </CardContent>
               )}

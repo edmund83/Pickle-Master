@@ -25,6 +25,13 @@ import type { InventoryItem, Folder, Tag as TagType } from '@/types/database.typ
 import { format } from 'date-fns'
 import { ItemCheckoutSection } from './item-checkout-section'
 import { ItemQuickActions } from './components/item-quick-actions'
+import { ItemAdvancedPanels } from './components/item-advanced-panels'
+
+interface FeaturesEnabled {
+  multi_location?: boolean
+  shipping_dimensions?: boolean
+  lot_tracking?: boolean
+}
 
 interface PageProps {
   params: Promise<{ itemId: string }>
@@ -45,6 +52,7 @@ interface ItemWithRelations {
   folder: Folder | null
   itemTags: TagType[]
   activityLogs: ActivityLogItem[]
+  features: FeaturesEnabled
 }
 
 async function getItemDetails(itemId: string): Promise<ItemWithRelations | null> {
@@ -109,11 +117,23 @@ async function getItemDetails(itemId: string): Promise<ItemWithRelations | null>
       p_limit: 10
     })
 
+  // Get tenant settings for feature flags
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: tenant } = await (supabase as any)
+    .from('tenants')
+    .select('settings')
+    .eq('id', profile.tenant_id)
+    .single()
+
+  const settings = tenant?.settings as Record<string, unknown> | null
+  const features = (settings?.features_enabled as FeaturesEnabled) || {}
+
   return {
     item: typedItem,
     folder,
     itemTags: (itemTags || []) as TagType[],
-    activityLogs: (activityLogs || []) as ActivityLogItem[]
+    activityLogs: (activityLogs || []) as ActivityLogItem[],
+    features,
   }
 }
 
@@ -125,7 +145,7 @@ export default async function ItemDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  const { item, folder, itemTags, activityLogs } = data
+  const { item, folder, itemTags, activityLogs, features } = data
 
   const statusColors: Record<string, string> = {
     in_stock: 'bg-green-100 text-green-700 border-green-200',
@@ -282,6 +302,18 @@ export default async function ItemDetailPage({ params }: PageProps) {
           <div className="mb-6 grid gap-4 md:grid-cols-2">
             <ItemCheckoutSection item={item} />
           </div>
+
+          {/* Advanced Panels - Multi-Location & Lot Tracking */}
+          {(features.multi_location || features.lot_tracking) && (
+            <div className="mb-6">
+              <ItemAdvancedPanels
+                itemId={item.id}
+                itemName={item.name}
+                trackingMode={(item.tracking_mode as 'none' | 'serialized' | 'lot_expiry') || 'none'}
+                multiLocationEnabled={!!features.multi_location}
+              />
+            </div>
+          )}
 
           {/* Info Cards Grid */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

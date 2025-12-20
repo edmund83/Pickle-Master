@@ -51,7 +51,7 @@ export default async function TeamSettingsPage() {
           <p className="text-neutral-500">Manage your team and their permissions</p>
         </div>
         {isOwner && (
-          <Button>
+          <Button disabled title="Coming soon">
             <UserPlus className="mr-2 h-4 w-4" />
             Invite Member
           </Button>
@@ -96,7 +96,7 @@ export default async function TeamSettingsPage() {
                     {member.role || 'viewer'}
                   </span>
                   {isOwner && member.role !== 'owner' && (
-                    <Button variant="ghost" size="sm">
+                    <Button variant="ghost" size="sm" disabled title="Coming soon">
                       Edit
                     </Button>
                   )}

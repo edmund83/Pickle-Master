@@ -4,6 +4,7 @@ import { useState, useRef, useCallback } from 'react'
 import { Upload, X, Camera, Image as ImageIcon, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
+import { compressImages } from '@/lib/image-compression'
 
 interface PhotoUploadProps {
   images: string[]
@@ -19,6 +20,7 @@ export function PhotoUpload({
   disabled = false,
 }: PhotoUploadProps) {
   const [uploading, setUploading] = useState(false)
+  const [compressing, setCompressing] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [dragOver, setDragOver] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
@@ -33,9 +35,8 @@ export function PhotoUpload({
         throw new Error('Not authenticated')
       }
 
-      // Generate unique filename
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
+      // Generate unique filename (always .webp since we compress to WebP)
+      const fileName = `${user.id}/${Date.now()}-${Math.random().toString(36).substring(7)}.webp`
 
       // Upload to Supabase Storage
       const { error: uploadError } = await supabase.storage
@@ -85,11 +86,17 @@ export function PhotoUpload({
 
     if (validFiles.length === 0) return
 
-    setUploading(true)
     setError(null)
 
     try {
-      const uploadPromises = validFiles.map((file) => uploadImage(file))
+      // Step 1: Compress images
+      setCompressing(true)
+      const compressedFiles = await compressImages(validFiles)
+      setCompressing(false)
+
+      // Step 2: Upload compressed images
+      setUploading(true)
+      const uploadPromises = compressedFiles.map((file) => uploadImage(file))
       const results = await Promise.all(uploadPromises)
       const successfulUploads = results.filter((url): url is string => url !== null)
 
@@ -103,6 +110,7 @@ export function PhotoUpload({
     } catch {
       setError('Failed to upload images')
     } finally {
+      setCompressing(false)
       setUploading(false)
     }
   }, [images, maxImages, onImagesChange])
@@ -147,9 +155,14 @@ export function PhotoUpload({
           dragOver
             ? 'border-pickle-500 bg-pickle-50'
             : 'border-neutral-300 hover:border-neutral-400'
-        } ${disabled || uploading ? 'opacity-50 pointer-events-none' : ''}`}
+        } ${disabled || uploading || compressing ? 'opacity-50 pointer-events-none' : ''}`}
       >
-        {uploading ? (
+        {compressing ? (
+          <div className="flex flex-col items-center gap-2">
+            <Loader2 className="h-8 w-8 animate-spin text-pickle-500" />
+            <p className="text-sm text-neutral-600">Compressing images...</p>
+          </div>
+        ) : uploading ? (
           <div className="flex flex-col items-center gap-2">
             <Loader2 className="h-8 w-8 animate-spin text-pickle-500" />
             <p className="text-sm text-neutral-600">Uploading...</p>
@@ -183,7 +196,7 @@ export function PhotoUpload({
               </Button>
             </div>
             <p className="mt-2 text-xs text-neutral-400">
-              Max {maxImages} images, up to 5MB each
+              Max {maxImages} images • Auto-compressed for fast upload
             </p>
           </>
         )}
