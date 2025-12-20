@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PhotoUpload } from '@/components/inventory/PhotoUpload'
+import { CustomFieldsSection } from '@/components/custom-fields'
 import { createClient } from '@/lib/supabase/client'
 import type { InventoryItem, ItemTrackingMode } from '@/types/database.types'
 
@@ -30,6 +31,7 @@ export default function EditItemPage() {
   const [features, setFeatures] = useState<FeaturesEnabled>({})
   const [shippingExpanded, setShippingExpanded] = useState(false)
   const [lotExpanded, setLotExpanded] = useState(false)
+  const [customFields, setCustomFields] = useState<Record<string, unknown>>({})
 
   const [formData, setFormData] = useState({
     name: '',
@@ -105,6 +107,7 @@ export default function EditItemPage() {
         const itemData = data as InventoryItem
         setItem(itemData)
         setImages(itemData.image_urls || [])
+        setCustomFields((itemData.custom_fields as Record<string, unknown>) || {})
 
         // Auto-expand sections if they have data
         const hasShippingData = itemData.weight || itemData.length || itemData.width || itemData.height
@@ -202,6 +205,8 @@ export default function EditItemPage() {
           ...(features.lot_tracking && {
             tracking_mode: formData.tracking_mode,
           }),
+          // Custom fields
+          custom_fields: Object.keys(customFields).length > 0 ? customFields : null,
         })
         .eq('id', itemId)
 
@@ -730,6 +735,13 @@ export default function EditItemPage() {
               />
             </CardContent>
           </Card>
+
+          {/* Custom Fields */}
+          <CustomFieldsSection
+            values={customFields}
+            onChange={setCustomFields}
+            disabled={saving}
+          />
         </form>
       </div>
     </div>

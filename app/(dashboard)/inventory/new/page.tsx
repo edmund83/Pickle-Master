@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PhotoUpload } from '@/components/inventory/PhotoUpload'
+import { CustomFieldsSection } from '@/components/custom-fields'
 import { createClient } from '@/lib/supabase/client'
 import { canAddItemClient } from '@/lib/quota-client'
 
@@ -29,6 +30,7 @@ export default function NewItemPage() {
     location: '',
     notes: '',
   })
+  const [customFields, setCustomFields] = useState<Record<string, unknown>>({})
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -92,6 +94,7 @@ export default function NewItemPage() {
           status,
           created_by: user.id,
           last_modified_by: user.id,
+          custom_fields: Object.keys(customFields).length > 0 ? customFields : null,
         })
 
       if (insertError) throw insertError
@@ -345,6 +348,13 @@ export default function NewItemPage() {
               />
             </CardContent>
           </Card>
+
+          {/* Custom Fields */}
+          <CustomFieldsSection
+            values={customFields}
+            onChange={setCustomFields}
+            disabled={loading}
+          />
         </form>
       </div>
     </div>
