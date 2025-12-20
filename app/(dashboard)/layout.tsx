@@ -1,5 +1,6 @@
 import { MobileLayoutWrapper } from '@/components/layout/mobile/MobileLayoutWrapper'
 import { OfflineProvider } from '@/components/providers/OfflineProvider'
+import { QuotaWarningBanner } from '@/components/QuotaWarningBanner'
 
 export default function DashboardLayout({
   children,
@@ -8,9 +9,12 @@ export default function DashboardLayout({
 }) {
   return (
     <OfflineProvider>
-      <MobileLayoutWrapper>
-        {children}
-      </MobileLayoutWrapper>
+      <div className="flex min-h-screen flex-col">
+        <QuotaWarningBanner />
+        <MobileLayoutWrapper>
+          {children}
+        </MobileLayoutWrapper>
+      </div>
     </OfflineProvider>
   )
 }

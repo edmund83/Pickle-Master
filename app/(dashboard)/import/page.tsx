@@ -18,6 +18,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { createClient } from '@/lib/supabase/client'
+import { canAddItemsClient } from '@/lib/quota-client'
 
 // Field mapping configuration
 const IMPORTABLE_FIELDS = [
@@ -276,6 +277,15 @@ export default function ImportPage() {
     setStep('importing')
 
     try {
+      // Check quota before importing
+      const quotaCheck = await canAddItemsClient(validRows.length)
+      if (!quotaCheck.allowed) {
+        setError(quotaCheck.message || 'Item limit reached. Please upgrade your plan.')
+        setStep('preview')
+        setImporting(false)
+        return
+      }
+
       const supabase = createClient()
 
       const { data: { user } } = await supabase.auth.getUser()

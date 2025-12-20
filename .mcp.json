@@ -1,17 +1,3 @@
 {
-  "mcpServers": {
-    "supabase": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "dotenv-cli",
-        "-e",
-        ".env.local",
-        "--",
-        "sh",
-        "-c",
-        "npx -y @supabase/mcp-server-supabase --access-token $SUPABASE_SERVICE_ROLE_KEY"
-      ]
-    }
-  }
+  "mcpServers": {}
 }
