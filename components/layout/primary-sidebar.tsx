@@ -12,11 +12,11 @@ import {
   ClipboardList,
   Settings,
   HelpCircle,
-  Bell,
   LogOut,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { NotificationBell } from '@/components/notifications/NotificationBell'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -30,7 +30,6 @@ const navigation = [
 const bottomNavigation = [
   { name: 'Settings', href: '/settings', icon: Settings },
   { name: 'Help', href: '/help', icon: HelpCircle },
-  { name: 'Notifications', href: '/notifications', icon: Bell },
 ]
 
 export function PrimarySidebar() {
@@ -95,6 +94,9 @@ export function PrimarySidebar() {
             </Link>
           )
         })}
+
+        {/* Notifications with badge */}
+        <NotificationBell variant="sidebar" />
 
         {/* Logout Button */}
         <button

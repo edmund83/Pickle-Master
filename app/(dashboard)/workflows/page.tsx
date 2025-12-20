@@ -28,9 +28,9 @@ const workflows = [
     bgColor: 'bg-green-50',
   },
   {
-    href: '/workflows/moves',
-    title: 'Stock Moves',
-    description: 'Transfer items between locations',
+    href: '/workflows/transfers',
+    title: 'Stock Transfers',
+    description: 'Transfer items between locations with AI suggestions',
     icon: ArrowRightLeft,
     color: 'text-purple-500',
     bgColor: 'bg-purple-50',

@@ -185,6 +185,22 @@ export default function LocationsSettingsPage() {
     try {
       const supabase = createClient()
 
+      // Check if any items are using this location
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { count: stockCount } = await (supabase as any)
+        .from('location_stock')
+        .select('*', { count: 'exact', head: true })
+        .eq('location_id', locationId)
+
+      if (stockCount && stockCount > 0) {
+        setMessage({
+          type: 'error',
+          text: `Cannot delete: ${stockCount} item(s) are assigned to this location. Move or remove items first.`
+        })
+        setDeleteConfirm(null)
+        return
+      }
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error } = await (supabase as any)
         .from('locations')

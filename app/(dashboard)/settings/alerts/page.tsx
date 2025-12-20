@@ -29,12 +29,13 @@ export default function AlertsSettingsPage() {
   })
   const [tenantId, setTenantId] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    loadAlerts()
+    loadAlertsAndPreferences()
   }, [])
 
-  async function loadAlerts() {
+  async function loadAlertsAndPreferences() {
     setLoading(true)
     const supabase = createClient()
 
@@ -52,6 +53,23 @@ export default function AlertsSettingsPage() {
       if (!profile?.tenant_id) return
       setTenantId(profile.tenant_id)
 
+      // Load tenant settings for alert preferences
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: tenant } = await (supabase as any)
+        .from('tenants')
+        .select('settings')
+        .eq('id', profile.tenant_id)
+        .single()
+
+      if (tenant?.settings?.alert_preferences) {
+        const savedPrefs = tenant.settings.alert_preferences as AlertPreferences
+        setPreferences({
+          emailNotifications: savedPrefs.emailNotifications ?? true,
+          lowStockThreshold: savedPrefs.lowStockThreshold ?? 10,
+          outOfStockAlerts: savedPrefs.outOfStockAlerts ?? true,
+        })
+      }
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data } = await (supabase as any)
         .from('alerts')
@@ -66,37 +84,73 @@ export default function AlertsSettingsPage() {
   }
 
   async function savePreferences() {
+    if (!tenantId) return
+
     setSaving(true)
-    // In a real app, you'd save these to a tenant_settings table
-    // For now, we'll just simulate the save
-    await new Promise(resolve => setTimeout(resolve, 500))
-    setSaving(false)
-    setSuccess(true)
-    setTimeout(() => setSuccess(false), 3000)
+    const supabase = createClient()
+
+    try {
+      // First get current settings to merge with
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: tenant } = await (supabase as any)
+        .from('tenants')
+        .select('settings')
+        .eq('id', tenantId)
+        .single()
+
+      const currentSettings = tenant?.settings || {}
+
+      // Merge alert_preferences into settings
+      const updatedSettings = {
+        ...currentSettings,
+        alert_preferences: preferences,
+      }
+
+      // Update tenant settings
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error } = await (supabase as any)
+        .from('tenants')
+        .update({ settings: updatedSettings })
+        .eq('id', tenantId)
+
+      if (error) throw error
+
+      setSuccess(true)
+      setTimeout(() => setSuccess(false), 3000)
+    } catch (err) {
+      console.error('Error saving preferences:', err)
+    } finally {
+      setSaving(false)
+    }
   }
 
   async function createAlert() {
     if (!newAlert.name.trim() || !tenantId) return
 
     setSaving(true)
+    setError(null)
     const supabase = createClient()
 
     try {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      await (supabase as any)
+      const { error: insertError } = await (supabase as any)
         .from('alerts')
         .insert({
           tenant_id: tenantId,
-          target_id: 'global', // Using target_id to store the name/description
-          target_type: 'item',
+          target_id: newAlert.name.trim(), // Store alert name in target_id
+          target_type: 'custom',
           alert_type: 'low_stock',
           threshold: newAlert.threshold,
           is_active: true,
         })
 
+      if (insertError) throw insertError
+
       setNewAlert({ name: '', threshold: 10 })
       setShowNewAlert(false)
-      loadAlerts()
+      loadAlertsAndPreferences()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create alert')
     } finally {
       setSaving(false)
     }
@@ -143,6 +197,13 @@ export default function AlertsSettingsPage() {
         <div className="mx-8 mt-4 flex items-center gap-2 rounded-lg bg-green-50 p-4 text-green-700">
           <Check className="h-5 w-5" />
           Settings saved successfully!
+        </div>
+      )}
+
+      {/* Error Message */}
+      {error && (
+        <div className="mx-8 mt-4 rounded-lg bg-red-50 p-4 text-red-700">
+          {error}
         </div>
       )}
 
@@ -283,10 +344,11 @@ export default function AlertsSettingsPage() {
                     </div>
                     <div>
                       <p className={`font-medium ${alert.is_active ? 'text-neutral-900' : 'text-neutral-500'}`}>
-                        {alert.alert_type?.replace('_', ' ') || 'Alert'} - {alert.target_type}
+                        {alert.target_type === 'custom' ? alert.target_id : `${alert.alert_type?.replace('_', ' ') || 'Alert'} - ${alert.target_type}`}
                       </p>
                       <p className="text-sm text-neutral-500">
-                        Threshold: {alert.threshold ?? 'N/A'} • Target: {alert.target_id?.slice(0, 8) || 'Global'}
+                        Threshold: {alert.threshold ?? 'N/A'} units
+                        {alert.target_type !== 'custom' && ` • Target: ${alert.target_id?.slice(0, 8) || 'Global'}`}
                       </p>
                     </div>
                   </div>

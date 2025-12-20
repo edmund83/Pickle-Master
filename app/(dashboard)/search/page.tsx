@@ -8,8 +8,6 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import type { InventoryItem, Folder, Tag } from '@/types/database.types'
 
-const SAVED_SEARCHES_KEY = 'pickle-saved-searches'
-
 interface SearchFilters {
   status: string
   folderId: string
@@ -22,7 +20,9 @@ interface SavedSearch {
   query: string
   filters: SearchFilters
   sort: SortConfig
-  createdAt: string
+  is_shared?: boolean
+  is_owner?: boolean
+  created_at?: string
 }
 
 type SortOption = 'updated_at' | 'name' | 'quantity' | 'price'
@@ -62,53 +62,100 @@ export default function SearchPage() {
   const [showSavedSearches, setShowSavedSearches] = useState(false)
   const [saveSearchName, setSaveSearchName] = useState('')
   const [showSaveDialog, setShowSaveDialog] = useState(false)
+  const [savingSearch, setSavingSearch] = useState(false)
 
-  // Load saved searches from localStorage
+  // Load saved searches from database
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(SAVED_SEARCHES_KEY)
-      if (stored) {
-        setSavedSearches(JSON.parse(stored))
+    async function loadSavedSearches() {
+      const supabase = createClient()
+
+      try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data } = await (supabase as any).rpc('get_saved_searches')
+
+        if (data && Array.isArray(data)) {
+          setSavedSearches(data as SavedSearch[])
+        }
+      } catch (err) {
+        console.error('Error loading saved searches:', err)
       }
-    } catch {
-      // Ignore storage errors
     }
+
+    loadSavedSearches()
   }, [])
 
   // Save current search
-  const handleSaveSearch = useCallback(() => {
+  const handleSaveSearch = useCallback(async () => {
     if (!saveSearchName.trim()) return
 
-    const newSearch: SavedSearch = {
-      id: crypto.randomUUID(),
-      name: saveSearchName.trim(),
-      query,
-      filters,
-      sort,
-      createdAt: new Date().toISOString(),
-    }
+    setSavingSearch(true)
+    const supabase = createClient()
 
-    const updated = [...savedSearches, newSearch]
-    setSavedSearches(updated)
-    localStorage.setItem(SAVED_SEARCHES_KEY, JSON.stringify(updated))
-    setSaveSearchName('')
-    setShowSaveDialog(false)
-  }, [saveSearchName, query, filters, sort, savedSearches])
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase as any).rpc('save_search', {
+        p_name: saveSearchName.trim(),
+        p_query: query || null,
+        p_filters: filters,
+        p_sort: sort,
+        p_is_shared: false,
+      })
+
+      if (error) throw error
+
+      if (data?.success) {
+        // Reload saved searches
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: refreshedSearches } = await (supabase as any).rpc('get_saved_searches')
+        if (refreshedSearches) {
+          setSavedSearches(refreshedSearches as SavedSearch[])
+        }
+        setSaveSearchName('')
+        setShowSaveDialog(false)
+      }
+    } catch (err) {
+      console.error('Error saving search:', err)
+    } finally {
+      setSavingSearch(false)
+    }
+  }, [saveSearchName, query, filters, sort])
 
   // Apply a saved search
-  const applySavedSearch = useCallback((search: SavedSearch) => {
-    setQuery(search.query)
-    setFilters(search.filters)
-    setSort(search.sort)
+  const applySavedSearch = useCallback(async (search: SavedSearch) => {
+    setQuery(search.query || '')
+    setFilters(search.filters || { status: '', folderId: '', tagId: '' })
+    setSort(search.sort || { field: 'updated_at', direction: 'desc' })
     setShowSavedSearches(false)
+
+    // Record usage for sorting by most used
+    const supabase = createClient()
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase as any).rpc('use_saved_search', { p_search_id: search.id })
+    } catch (err) {
+      // Ignore errors for usage tracking
+    }
   }, [])
 
   // Delete a saved search
-  const deleteSavedSearch = useCallback((id: string) => {
-    const updated = savedSearches.filter((s) => s.id !== id)
-    setSavedSearches(updated)
-    localStorage.setItem(SAVED_SEARCHES_KEY, JSON.stringify(updated))
-  }, [savedSearches])
+  const deleteSavedSearch = useCallback(async (id: string) => {
+    const supabase = createClient()
+
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase as any).rpc('delete_saved_search', {
+        p_search_id: id,
+      })
+
+      if (error) throw error
+
+      if (data?.success) {
+        setSavedSearches((prev) => prev.filter((s) => s.id !== id))
+      }
+    } catch (err) {
+      console.error('Error deleting saved search:', err)
+    }
+  }, [])
 
   // Check if current search can be saved
   const canSaveSearch = query.trim() || filters.status || filters.folderId || filters.tagId
@@ -186,6 +233,25 @@ export default function SearchPage() {
       }
       if (filters.folderId) {
         searchQuery = searchQuery.eq('folder_id', filters.folderId)
+      }
+
+      // Apply tag filter - get items that have this tag via item_tags junction table
+      if (filters.tagId) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: taggedItemIds } = await (supabase as any)
+          .from('item_tags')
+          .select('item_id')
+          .eq('tag_id', filters.tagId)
+
+        if (taggedItemIds && taggedItemIds.length > 0) {
+          const itemIds = taggedItemIds.map((row: { item_id: string }) => row.item_id)
+          searchQuery = searchQuery.in('id', itemIds)
+        } else {
+          // No items have this tag, return empty results
+          setResults([])
+          setLoading(false)
+          return
+        }
       }
 
       searchQuery = searchQuery.order(sort.field, { ascending: sort.direction === 'asc' }).limit(50)
@@ -422,7 +488,8 @@ export default function SearchPage() {
                   if (e.key === 'Escape') setShowSaveDialog(false)
                 }}
               />
-              <Button onClick={handleSaveSearch} disabled={!saveSearchName.trim()}>
+              <Button onClick={handleSaveSearch} disabled={!saveSearchName.trim() || savingSearch}>
+                {savingSearch ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
                 Save
               </Button>
               <Button variant="ghost" onClick={() => setShowSaveDialog(false)}>
