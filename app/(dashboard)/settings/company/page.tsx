@@ -75,7 +75,7 @@ export default function CompanySettingsPage() {
         : {}
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error } = await (supabase as any)
+      const { data, error } = await (supabase as any)
         .from('tenants')
         .update({
           name: formData.name,
@@ -87,9 +87,14 @@ export default function CompanySettingsPage() {
           updated_at: new Date().toISOString(),
         })
         .eq('id', tenant.id)
+        .select()
+        .single()
 
       if (error) throw error
+      if (!data) throw new Error('Failed to update settings. You may not have permission.')
 
+      // Update local state with server data
+      setTenant(data as Tenant)
       setMessage({ type: 'success', text: 'Company settings updated' })
     } catch (err) {
       setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to update' })

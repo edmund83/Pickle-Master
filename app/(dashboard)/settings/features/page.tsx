@@ -91,7 +91,7 @@ export default function FeaturesSettingsPage() {
         : {}
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error } = await (supabase as any)
+      const { data, error } = await (supabase as any)
         .from('tenants')
         .update({
           settings: {
@@ -101,17 +101,14 @@ export default function FeaturesSettingsPage() {
           updated_at: new Date().toISOString(),
         })
         .eq('id', tenant.id)
+        .select()
+        .single()
 
       if (error) throw error
+      if (!data) throw new Error('Failed to update settings. You may not have permission.')
 
-      // Update local tenant state
-      setTenant({
-        ...tenant,
-        settings: {
-          ...existingSettings,
-          features_enabled: { ...features },
-        },
-      })
+      // Update local tenant state with data from server
+      setTenant(data as Tenant)
 
       setMessage({ type: 'success', text: 'Feature settings updated' })
     } catch (err) {
@@ -263,16 +260,21 @@ function FeatureToggle({ icon: Icon, title, description, enabled, onToggle }: Fe
         </div>
         <p className="mt-1 text-sm text-neutral-500">{description}</p>
       </div>
-      <label className="relative inline-flex cursor-pointer items-center shrink-0">
+      <div
+        className="relative inline-flex cursor-pointer items-center shrink-0"
+        onClick={(e) => e.stopPropagation()}
+      >
         <input
           type="checkbox"
           checked={enabled}
           onChange={onToggle}
-          onClick={(e) => e.stopPropagation()}
           className="peer sr-only"
         />
-        <div className="peer h-6 w-11 rounded-full bg-neutral-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-neutral-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-pickle-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-pickle-500 peer-focus:ring-offset-2"></div>
-      </label>
+        <div
+          onClick={onToggle}
+          className="peer h-6 w-11 rounded-full bg-neutral-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-neutral-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-pickle-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-pickle-500 peer-focus:ring-offset-2"
+        ></div>
+      </div>
     </div>
   )
 }

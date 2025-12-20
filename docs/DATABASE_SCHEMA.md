@@ -11,27 +11,32 @@ Pickle uses PostgreSQL via Supabase with a multi-tenant architecture. All data i
 ```
 ┌─────────────┐     ┌─────────────┐     ┌─────────────────┐
 │   tenants   │────<│  profiles   │     │     folders     │
-│             │     │ (auth.users)│     │   (hierarchy)   │
+│(quotas,tier)│     │ (auth.users)│     │   (hierarchy)   │
 └─────────────┘     └─────────────┘     └─────────────────┘
        │                   │                     │
        │                   │                     │
        ▼                   ▼                     ▼
 ┌─────────────────────────────────────────────────────────┐
 │                    inventory_items                       │
-│  (name, sku, quantity, price, status, barcode, etc.)    │
+│  (name, sku, quantity, price, status, tracking_mode)    │
 └─────────────────────────────────────────────────────────┘
-       │                   │                     │
-       ├───────────────────┼─────────────────────┤
-       ▼                   ▼                     ▼
-┌───────────┐      ┌─────────────┐      ┌──────────────┐
-│ item_tags │      │activity_logs│      │    alerts    │
-│(junction) │      │ (audit)     │      │(notifications│
-└───────────┘      └─────────────┘      └──────────────┘
-       │
-       ▼
-┌───────────┐
-│   tags    │
-└───────────┘
+       │           │           │           │           │
+       ▼           ▼           ▼           ▼           ▼
+┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐
+│item_tags │ │ activity │ │checkouts │ │location_ │ │   lots   │
+│(junction)│ │   logs   │ │(check-in/│ │  stock   │ │(expiry/  │
+└──────────┘ └──────────┘ │ out)     │ └──────────┘ │ batch)   │
+     │                    └──────────┘      │       └──────────┘
+     ▼                          │           │
+┌──────────┐              ┌──────────┐ ┌──────────┐
+│   tags   │              │   jobs   │ │locations │
+└──────────┘              └──────────┘ └──────────┘
+                                             │
+                                             ▼
+                                       ┌──────────┐
+                                       │ stock_   │
+                                       │transfers │
+                                       └──────────┘
 ```
 
 ---
@@ -336,6 +341,155 @@ User-defined field schemas.
 
 ---
 
+## Check-In/Check-Out Tables
+
+### `jobs`
+Projects or work orders for asset assignments.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | UUID | Primary key |
+| `tenant_id` | UUID | FK to tenants |
+| `name` | VARCHAR(255) | Job name |
+| `description` | TEXT | Job description |
+| `status` | VARCHAR(50) | active, completed, cancelled |
+| `start_date` | DATE | Project start date |
+| `end_date` | DATE | Project end date |
+| `location` | VARCHAR(255) | Job site location |
+| `notes` | TEXT | Additional notes |
+| `created_by` | UUID | FK to profiles |
+| `created_at` | TIMESTAMPTZ | Creation timestamp |
+| `updated_at` | TIMESTAMPTZ | Last update timestamp |
+
+### `checkouts`
+Track item assignments to people, jobs, or locations.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | UUID | Primary key |
+| `tenant_id` | UUID | FK to tenants |
+| `item_id` | UUID | FK to inventory_items |
+| `quantity` | INTEGER | Quantity checked out |
+| `assignee_type` | checkout_assignee_type | person, job, location |
+| `assignee_id` | UUID | Polymorphic FK |
+| `assignee_name` | VARCHAR(255) | Denormalized name |
+| `checked_out_at` | TIMESTAMPTZ | Checkout timestamp |
+| `checked_out_by` | UUID | FK to profiles |
+| `due_date` | DATE | Return due date |
+| `status` | checkout_status | checked_out, returned, overdue |
+| `returned_at` | TIMESTAMPTZ | Return timestamp |
+| `returned_by` | UUID | FK to profiles |
+| `return_condition` | item_condition | good, damaged, needs_repair, lost |
+| `return_notes` | TEXT | Notes on return |
+| `notes` | TEXT | General notes |
+
+---
+
+## Multi-Location Inventory Tables
+
+### `locations`
+Physical storage locations: warehouses, vans, stores, job sites.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | UUID | Primary key |
+| `tenant_id` | UUID | FK to tenants |
+| `name` | VARCHAR(255) | Location name |
+| `type` | location_type | warehouse, van, store, job_site |
+| `description` | TEXT | Location description |
+| `is_active` | BOOLEAN | Active status |
+| `created_by` | UUID | FK to profiles |
+| `created_at` | TIMESTAMPTZ | Creation timestamp |
+| `updated_at` | TIMESTAMPTZ | Last update timestamp |
+
+**Constraint:** `unique_location_name_per_tenant` - No duplicate names per tenant.
+
+### `location_stock`
+Tracks quantity of each item at each location.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | UUID | Primary key |
+| `tenant_id` | UUID | FK to tenants |
+| `item_id` | UUID | FK to inventory_items |
+| `location_id` | UUID | FK to locations |
+| `quantity` | INTEGER | Quantity at location (≥0) |
+| `min_quantity` | INTEGER | Per-location min stock |
+| `created_at` | TIMESTAMPTZ | Creation timestamp |
+| `updated_at` | TIMESTAMPTZ | Last update timestamp |
+
+**Constraint:** `unique_item_per_location` - One record per item-location pair.
+
+**Trigger:** `trigger_sync_item_quantity` - Keeps `inventory_items.quantity` in sync with sum of `location_stock`.
+
+### `stock_transfers`
+Tracks movement of items between locations.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | UUID | Primary key |
+| `tenant_id` | UUID | FK to tenants |
+| `item_id` | UUID | FK to inventory_items |
+| `quantity` | INTEGER | Quantity to transfer (>0) |
+| `from_location_id` | UUID | FK to locations (source) |
+| `to_location_id` | UUID | FK to locations (destination) |
+| `status` | transfer_status | pending, in_transit, completed, cancelled |
+| `is_ai_suggested` | BOOLEAN | AI-generated suggestion |
+| `ai_suggestion_reason` | TEXT | Reason for AI suggestion |
+| `requested_by` | UUID | FK to profiles |
+| `requested_at` | TIMESTAMPTZ | Request timestamp |
+| `completed_by` | UUID | FK to profiles |
+| `completed_at` | TIMESTAMPTZ | Completion timestamp |
+| `notes` | TEXT | Transfer notes |
+
+**Constraint:** `different_locations` - Cannot transfer to same location.
+
+---
+
+## Lot/Expiry Tracking Tables
+
+### `lots`
+Tracks multiple batches/lots per item with different expiry dates.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | UUID | Primary key |
+| `tenant_id` | UUID | FK to tenants |
+| `item_id` | UUID | FK to inventory_items |
+| `location_id` | UUID | FK to locations (optional) |
+| `lot_number` | VARCHAR(100) | Lot identifier |
+| `batch_code` | VARCHAR(100) | Batch code |
+| `expiry_date` | DATE | Expiration date |
+| `manufactured_date` | DATE | Manufacturing date |
+| `received_at` | TIMESTAMPTZ | When received |
+| `quantity` | INTEGER | Quantity in lot (≥0) |
+| `status` | lot_status | active, expired, depleted, blocked |
+| `notes` | TEXT | Lot notes |
+| `created_by` | UUID | FK to profiles |
+| `created_at` | TIMESTAMPTZ | Creation timestamp |
+| `updated_at` | TIMESTAMPTZ | Last update timestamp |
+
+**Trigger:** `trigger_sync_item_from_lots` - Syncs `inventory_items.quantity` from lots (for lot-tracked items).
+
+---
+
+## Extended Inventory Fields
+
+### Shipping Dimensions (on `inventory_items`)
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `cost_price` | DECIMAL(12,2) | Cost to acquire/produce |
+| `tracking_mode` | item_tracking_mode | none, serialized, lot_expiry |
+| `weight` | DECIMAL(10,3) | Item weight |
+| `weight_unit` | VARCHAR(10) | kg (default), lb |
+| `length` | DECIMAL(10,2) | Length dimension |
+| `width` | DECIMAL(10,2) | Width dimension |
+| `height` | DECIMAL(10,2) | Height dimension |
+| `dimension_unit` | VARCHAR(10) | cm (default), in, mm |
+
+---
+
 ## Enum Types
 
 ```sql
@@ -376,6 +530,27 @@ alert_type_enum: 'low_stock', 'out_of_stock', 'expiring_soon', 'reorder_point', 
 -- Custom field types
 field_type_enum: 'text', 'number', 'date', 'datetime', 'boolean', 'select',
                  'multi_select', 'url', 'email', 'phone', 'currency', 'percentage'
+
+-- Checkout assignee types (who/what an item is assigned to)
+checkout_assignee_type: 'person', 'job', 'location'
+
+-- Checkout status
+checkout_status: 'checked_out', 'returned', 'overdue'
+
+-- Item condition on return
+item_condition: 'good', 'damaged', 'needs_repair', 'lost'
+
+-- Location types (physical storage locations)
+location_type: 'warehouse', 'van', 'store', 'job_site'
+
+-- Stock transfer status
+transfer_status: 'pending', 'in_transit', 'completed', 'cancelled'
+
+-- Item tracking mode (how inventory is tracked)
+item_tracking_mode: 'none', 'serialized', 'lot_expiry'
+
+-- Lot status
+lot_status: 'active', 'expired', 'depleted', 'blocked'
 ```
 
 ---
@@ -414,6 +589,41 @@ field_type_enum: 'text', 'number', 'date', 'datetime', 'boolean', 'select',
 | `search_items_semantic(embedding, limit)` | Semantic/vector search |
 | `search_items_hybrid(query, embedding)` | Combined search |
 | `find_similar_items(item_id, limit)` | Find similar items by embedding |
+
+### Check-In/Check-Out Functions
+| Function | Description |
+|----------|-------------|
+| `checkout_item(item_id, quantity, assignee_type, assignee_id, due_date)` | Check out item to person/job/location |
+| `checkin_item(checkout_id, condition, notes)` | Return checked-out item |
+| `get_active_checkouts()` | List all active checkouts for tenant |
+| `get_overdue_checkouts()` | List overdue checkouts |
+| `update_overdue_status()` | Trigger to mark checkouts as overdue |
+
+### Multi-Location Functions
+| Function | Description |
+|----------|-------------|
+| `sync_item_quantity_from_locations()` | Trigger: sync `inventory_items.quantity` from `location_stock` |
+| `create_stock_transfer(item_id, from_loc, to_loc, qty)` | Initiate a stock transfer |
+| `complete_stock_transfer(transfer_id)` | Complete a transfer and move stock |
+| `get_location_inventory(location_id)` | List all items at a location |
+| `get_item_locations(item_id)` | Get stock distribution across locations |
+
+### Lot/Expiry Functions
+| Function | Description |
+|----------|-------------|
+| `sync_item_quantity_from_lots()` | Trigger: sync item quantity from active lots |
+| `get_expiring_lots(days_ahead)` | Get lots expiring within N days |
+| `consume_lot_fifo(item_id, quantity)` | Consume from oldest lots first (FIFO) |
+| `consume_lot_fefo(item_id, quantity)` | Consume from first-expiring lots (FEFO) |
+| `update_lot_status()` | Trigger: auto-expire and deplete lots |
+
+### Quota Enforcement Functions
+| Function | Description |
+|----------|-------------|
+| `enforce_item_quota()` | Trigger: block new items if `max_items` exceeded |
+| `enforce_user_quota()` | Trigger: block new users (non-owner) if `max_users` exceeded |
+| `get_quota_usage()` | Returns usage stats with warning (≥80%) and exceeded (≥100%) flags |
+| `check_subscription_limits()` | Returns current usage vs plan limits |
 
 ### Analytics
 | Function | Description |
@@ -458,6 +668,12 @@ Located in `supabase/migrations/`:
 | `00010_tenant_stats_view.sql` | Statistics views |
 | `00011_ai_embeddings.sql` | Vector search support |
 | `00012_api_functions.sql` | API helper functions |
+| `00013_check_in_out.sql` | Check-in/check-out system (jobs, checkouts tables) |
+| `00014_multi_location_inventory.sql` | Multi-location inventory (locations, location_stock, stock_transfers) |
+| `00015_lot_expiry_tracking.sql` | Lot/expiry tracking (lots table, FEFO logic) |
+| `00016_extended_inventory_fields.sql` | Shipping dimensions, tracking mode, cost_price |
+| `00017_allow_admin_update_tenant.sql` | Admin RLS policy for tenant settings |
+| `00018_quota_enforcement.sql` | Quota enforcement triggers and usage functions |
 
 ---
 

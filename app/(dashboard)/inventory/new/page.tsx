@@ -9,6 +9,7 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PhotoUpload } from '@/components/inventory/PhotoUpload'
 import { createClient } from '@/lib/supabase/client'
+import { canAddItemClient } from '@/lib/quota-client'
 
 export default function NewItemPage() {
   const router = useRouter()
@@ -35,6 +36,14 @@ export default function NewItemPage() {
     setError(null)
 
     try {
+      // Check quota before creating item
+      const quotaCheck = await canAddItemClient()
+      if (!quotaCheck.allowed) {
+        setError(quotaCheck.message || 'Item limit reached. Please upgrade your plan.')
+        setLoading(false)
+        return
+      }
+
       const supabase = createClient()
 
       // Get current user and their tenant
