@@ -2,10 +2,11 @@
 
 import { useState, useMemo, useCallback, useEffect } from 'react'
 import Link from 'next/link'
-import { Plus, Filter, Package, ScanLine, Upload } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Plus, Filter, Package, ScanLine, Upload, CheckSquare, Square, X, Edit3, Download } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
-import type { InventoryItem, Folder } from '@/types/database.types'
+import type { InventoryItem, Folder, Tag } from '@/types/database.types'
 import { SearchInput } from '@/components/ui/search-input'
 import { InventoryTable } from './inventory-table'
 import { ViewToggle } from './view-toggle'
@@ -14,6 +15,8 @@ import { FolderTreeView, type FolderStats } from './folder-tree-view'
 import { Breadcrumbs } from './breadcrumbs'
 import { FolderSummaryStats } from './folder-summary-stats'
 import { InlineFolderForm } from './inline-folder-form'
+import { BulkEditModal } from './bulk-edit-modal'
+import { createClient } from '@/lib/supabase/client'
 
 const EXPANDED_FOLDERS_KEY = 'pickle-expanded-folders'
 
@@ -25,9 +28,76 @@ interface InventoryDesktopViewProps {
 }
 
 export function InventoryDesktopView({ items, folders, view, folderStatsObj }: InventoryDesktopViewProps) {
+  const router = useRouter()
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null)
   const [isCreatingFolder, setIsCreatingFolder] = useState(false)
   const [createFolderParentId, setCreateFolderParentId] = useState<string | null>(null)
+
+  // Bulk selection state
+  const [isSelectionMode, setIsSelectionMode] = useState(false)
+  const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(new Set())
+  const [showBulkEditModal, setShowBulkEditModal] = useState(false)
+  const [tags, setTags] = useState<Tag[]>([])
+
+  // Load tags for bulk edit
+  useEffect(() => {
+    async function loadTags() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: profile } = await (supabase as any)
+        .from('profiles')
+        .select('tenant_id')
+        .eq('id', user.id)
+        .single()
+
+      if (!profile?.tenant_id) return
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data } = await (supabase as any)
+        .from('tags')
+        .select('*')
+        .eq('tenant_id', profile.tenant_id)
+
+      setTags((data || []) as Tag[])
+    }
+    loadTags()
+  }, [])
+
+  // Toggle item selection
+  const toggleItemSelection = useCallback((itemId: string, e?: React.MouseEvent) => {
+    if (e) {
+      e.preventDefault()
+      e.stopPropagation()
+    }
+    setSelectedItemIds(prev => {
+      const next = new Set(prev)
+      if (next.has(itemId)) {
+        next.delete(itemId)
+      } else {
+        next.add(itemId)
+      }
+      return next
+    })
+  }, [])
+
+  // Select all / deselect all - will be defined after filteredItems
+
+  // Exit selection mode
+  const exitSelectionMode = useCallback(() => {
+    setIsSelectionMode(false)
+    setSelectedItemIds(new Set())
+  }, [])
+
+  // Handle bulk edit success
+  const handleBulkEditSuccess = useCallback(() => {
+    setShowBulkEditModal(false)
+    setSelectedItemIds(new Set())
+    setIsSelectionMode(false)
+    router.refresh()
+  }, [router])
 
   // Convert folderStatsObj back to Map
   const folderStats = useMemo(() => new Map(Object.entries(folderStatsObj)), [folderStatsObj])
@@ -126,6 +196,69 @@ export function InventoryDesktopView({ items, folders, view, folderStatsObj }: I
       return false
     })
   }, [items, selectedFolderId, folders])
+
+  // Select all / deselect all (defined after filteredItems)
+  const toggleSelectAll = useCallback(() => {
+    if (selectedItemIds.size === filteredItems.length) {
+      setSelectedItemIds(new Set())
+    } else {
+      setSelectedItemIds(new Set(filteredItems.map(item => item.id)))
+    }
+  }, [selectedItemIds.size, filteredItems])
+
+  // Export items to CSV
+  const handleExportCSV = useCallback(() => {
+    if (filteredItems.length === 0) return
+
+    // CSV Headers
+    const headers = [
+      'Name',
+      'SKU',
+      'Barcode',
+      'Quantity',
+      'Unit',
+      'Min Quantity',
+      'Price',
+      'Cost Price',
+      'Status',
+      'Description',
+      'Notes',
+    ]
+
+    // CSV Rows
+    const rows = filteredItems.map((item) => [
+      item.name || '',
+      item.sku || '',
+      item.barcode || '',
+      item.quantity?.toString() || '0',
+      item.unit || 'pcs',
+      item.min_quantity?.toString() || '0',
+      item.price?.toFixed(2) || '0.00',
+      item.cost_price?.toFixed(2) || '',
+      item.status || 'in_stock',
+      item.description?.replace(/"/g, '""') || '',
+      item.notes?.replace(/"/g, '""') || '',
+    ])
+
+    // Build CSV content
+    const csvContent = [
+      headers.join(','),
+      ...rows.map((row) =>
+        row.map((cell) => `"${cell}"`).join(',')
+      ),
+    ].join('\n')
+
+    // Download file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.setAttribute('href', url)
+    link.setAttribute('download', `inventory-export-${new Date().toISOString().split('T')[0]}.csv`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }, [filteredItems])
 
   // Calculate summary stats for current view
   const summaryStats = useMemo(() => {
@@ -258,47 +391,107 @@ export function InventoryDesktopView({ items, folders, view, folderStatsObj }: I
           totalValue={summaryStats.totalValue}
         />
 
-        {/* Header */}
-        <div className="flex items-center justify-between border-b border-neutral-200 bg-white px-6 py-4">
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <SearchInput placeholder="Search items..." className="w-64" />
+        {/* Header - Selection Mode or Normal */}
+        {isSelectionMode ? (
+          <div className="flex items-center justify-between border-b border-neutral-200 bg-pickle-50 px-6 py-4">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={toggleSelectAll}
+                className="text-pickle-700"
+              >
+                {selectedItemIds.size === filteredItems.length ? (
+                  <CheckSquare className="mr-2 h-4 w-4" />
+                ) : (
+                  <Square className="mr-2 h-4 w-4" />
+                )}
+                {selectedItemIds.size === filteredItems.length ? 'Deselect All' : 'Select All'}
+              </Button>
+              <span className="text-sm font-medium text-pickle-700">
+                {selectedItemIds.size} item{selectedItemIds.size !== 1 ? 's' : ''} selected
+              </span>
             </div>
-            <ViewToggle />
-            <Button variant="outline" size="sm">
-              <Filter className="mr-2 h-4 w-4" />
-              Filter
-            </Button>
-            <div className="w-56">
-              <WarehouseSelector
-                warehouses={warehouses}
-                selectedWarehouseId={selectedFolderId}
-                onWarehouseChange={setSelectedFolderId}
-                itemCounts={warehouseCounts}
-              />
+            <div className="flex items-center gap-2">
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => setShowBulkEditModal(true)}
+                disabled={selectedItemIds.size === 0}
+              >
+                <Edit3 className="mr-2 h-4 w-4" />
+                Bulk Edit
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={exitSelectionMode}
+              >
+                <X className="mr-2 h-4 w-4" />
+                Cancel
+              </Button>
             </div>
           </div>
-          <div className="flex items-center gap-2">
-            <Link href="/import">
+        ) : (
+          <div className="flex items-center justify-between border-b border-neutral-200 bg-white px-6 py-4">
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <SearchInput placeholder="Search items..." className="w-64" />
+              </div>
+              <ViewToggle />
               <Button variant="outline" size="sm">
-                <Upload className="mr-2 h-4 w-4" />
-                Import
+                <Filter className="mr-2 h-4 w-4" />
+                Filter
               </Button>
-            </Link>
-            <Link href="/scan">
-              <Button variant="outline" size="sm">
-                <ScanLine className="mr-2 h-4 w-4" />
-                Scan
+              <div className="w-56">
+                <WarehouseSelector
+                  warehouses={warehouses}
+                  selectedWarehouseId={selectedFolderId}
+                  onWarehouseChange={setSelectedFolderId}
+                  itemCounts={warehouseCounts}
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsSelectionMode(true)}
+                disabled={filteredItems.length === 0}
+              >
+                <CheckSquare className="mr-2 h-4 w-4" />
+                Select
               </Button>
-            </Link>
-            <Link href="/inventory/new">
-              <Button size="sm">
-                <Plus className="mr-2 h-4 w-4" />
-                Add Item
+              <Link href="/import">
+                <Button variant="outline" size="sm">
+                  <Upload className="mr-2 h-4 w-4" />
+                  Import
+                </Button>
+              </Link>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleExportCSV}
+                disabled={filteredItems.length === 0}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Export
               </Button>
-            </Link>
+              <Link href="/scan">
+                <Button variant="outline" size="sm">
+                  <ScanLine className="mr-2 h-4 w-4" />
+                  Scan
+                </Button>
+              </Link>
+              <Link href="/inventory/new">
+                <Button size="sm">
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Item
+                </Button>
+              </Link>
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Items Grid/Table */}
         <div className="flex-1 overflow-y-auto p-6">
@@ -308,7 +501,13 @@ export function InventoryDesktopView({ items, folders, view, folderStatsObj }: I
             ) : (
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {filteredItems.map((item) => (
-                  <ItemCard key={item.id} item={item} />
+                  <ItemCard
+                    key={item.id}
+                    item={item}
+                    isSelectionMode={isSelectionMode}
+                    isSelected={selectedItemIds.has(item.id)}
+                    onToggleSelect={toggleItemSelection}
+                  />
                 ))}
               </div>
             )
@@ -317,6 +516,17 @@ export function InventoryDesktopView({ items, folders, view, folderStatsObj }: I
           )}
         </div>
       </div>
+
+      {/* Bulk Edit Modal */}
+      {showBulkEditModal && (
+        <BulkEditModal
+          selectedItemIds={Array.from(selectedItemIds)}
+          folders={folders}
+          tags={tags}
+          onClose={() => setShowBulkEditModal(false)}
+          onSuccess={handleBulkEditSuccess}
+        />
+      )}
 
       {/* Inline Folder Form (when creating subfolder - shown as modal overlay for subfolders) */}
       {isCreatingFolder && createFolderParentId !== null && (
@@ -337,7 +547,14 @@ export function InventoryDesktopView({ items, folders, view, folderStatsObj }: I
   )
 }
 
-function ItemCard({ item }: { item: InventoryItem }) {
+interface ItemCardProps {
+  item: InventoryItem
+  isSelectionMode?: boolean
+  isSelected?: boolean
+  onToggleSelect?: (itemId: string, e?: React.MouseEvent) => void
+}
+
+function ItemCard({ item, isSelectionMode, isSelected, onToggleSelect }: ItemCardProps) {
   const statusColors: Record<string, string> = {
     in_stock: 'bg-green-100 text-green-700',
     low_stock: 'bg-yellow-100 text-yellow-700',
@@ -350,11 +567,41 @@ function ItemCard({ item }: { item: InventoryItem }) {
     out_of_stock: 'Out of Stock',
   }
 
-  return (
-    <Link
-      href={`/inventory/${item.id}`}
-      className="group rounded-xl border border-neutral-200 bg-white p-4 transition-shadow hover:shadow-md"
-    >
+  const handleClick = (e: React.MouseEvent) => {
+    if (isSelectionMode && onToggleSelect) {
+      e.preventDefault()
+      onToggleSelect(item.id, e)
+    }
+  }
+
+  const cardClassName = cn(
+    'group relative rounded-xl border bg-white p-4 transition-all',
+    isSelectionMode
+      ? 'cursor-pointer'
+      : 'hover:shadow-md',
+    isSelected
+      ? 'border-pickle-500 bg-pickle-50 ring-2 ring-pickle-500'
+      : 'border-neutral-200'
+  )
+
+  const cardContent = (
+    <>
+      {/* Selection Checkbox */}
+      {isSelectionMode && (
+        <div className="absolute right-3 top-3 z-10">
+          <div
+            className={cn(
+              'flex h-6 w-6 items-center justify-center rounded-md border-2 transition-colors',
+              isSelected
+                ? 'border-pickle-500 bg-pickle-500 text-white'
+                : 'border-neutral-300 bg-white'
+            )}
+          >
+            {isSelected && <CheckSquare className="h-4 w-4" />}
+          </div>
+        </div>
+      )}
+
       {/* Image placeholder */}
       <div className="mb-3 flex h-32 items-center justify-center rounded-lg bg-neutral-100">
         {item.image_urls?.[0] ? (
@@ -369,7 +616,10 @@ function ItemCard({ item }: { item: InventoryItem }) {
       </div>
 
       {/* Info */}
-      <h3 className="font-medium text-neutral-900 group-hover:text-pickle-600">
+      <h3 className={cn(
+        'font-medium',
+        isSelected ? 'text-pickle-700' : 'text-neutral-900 group-hover:text-pickle-600'
+      )}>
         {item.name}
       </h3>
       {item.sku && (
@@ -393,6 +643,20 @@ function ItemCard({ item }: { item: InventoryItem }) {
           RM {(item.price ?? 0).toFixed(2)} / {item.unit}
         </p>
       )}
+    </>
+  )
+
+  if (isSelectionMode) {
+    return (
+      <div onClick={handleClick} className={cardClassName}>
+        {cardContent}
+      </div>
+    )
+  }
+
+  return (
+    <Link href={`/inventory/${item.id}`} className={cardClassName}>
+      {cardContent}
     </Link>
   )
 }

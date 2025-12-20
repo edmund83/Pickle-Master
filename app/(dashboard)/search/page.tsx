@@ -3,16 +3,42 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-import { Search as SearchIcon, Package, Filter, X, Loader2 } from 'lucide-react'
+import { Search as SearchIcon, Package, Filter, X, Loader2, ArrowUpDown, Bookmark, BookmarkPlus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import type { InventoryItem, Folder, Tag } from '@/types/database.types'
+
+const SAVED_SEARCHES_KEY = 'pickle-saved-searches'
 
 interface SearchFilters {
   status: string
   folderId: string
   tagId: string
 }
+
+interface SavedSearch {
+  id: string
+  name: string
+  query: string
+  filters: SearchFilters
+  sort: SortConfig
+  createdAt: string
+}
+
+type SortOption = 'updated_at' | 'name' | 'quantity' | 'price'
+type SortDirection = 'asc' | 'desc'
+
+interface SortConfig {
+  field: SortOption
+  direction: SortDirection
+}
+
+const SORT_OPTIONS: { value: SortOption; label: string; defaultDir: SortDirection }[] = [
+  { value: 'updated_at', label: 'Last Modified', defaultDir: 'desc' },
+  { value: 'name', label: 'Name', defaultDir: 'asc' },
+  { value: 'quantity', label: 'Quantity', defaultDir: 'desc' },
+  { value: 'price', label: 'Price', defaultDir: 'desc' },
+]
 
 export default function SearchPage() {
   const [query, setQuery] = useState('')
@@ -26,6 +52,66 @@ export default function SearchPage() {
     folderId: '',
     tagId: '',
   })
+  const [sort, setSort] = useState<SortConfig>({
+    field: 'updated_at',
+    direction: 'desc',
+  })
+
+  // Saved searches state
+  const [savedSearches, setSavedSearches] = useState<SavedSearch[]>([])
+  const [showSavedSearches, setShowSavedSearches] = useState(false)
+  const [saveSearchName, setSaveSearchName] = useState('')
+  const [showSaveDialog, setShowSaveDialog] = useState(false)
+
+  // Load saved searches from localStorage
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(SAVED_SEARCHES_KEY)
+      if (stored) {
+        setSavedSearches(JSON.parse(stored))
+      }
+    } catch {
+      // Ignore storage errors
+    }
+  }, [])
+
+  // Save current search
+  const handleSaveSearch = useCallback(() => {
+    if (!saveSearchName.trim()) return
+
+    const newSearch: SavedSearch = {
+      id: crypto.randomUUID(),
+      name: saveSearchName.trim(),
+      query,
+      filters,
+      sort,
+      createdAt: new Date().toISOString(),
+    }
+
+    const updated = [...savedSearches, newSearch]
+    setSavedSearches(updated)
+    localStorage.setItem(SAVED_SEARCHES_KEY, JSON.stringify(updated))
+    setSaveSearchName('')
+    setShowSaveDialog(false)
+  }, [saveSearchName, query, filters, sort, savedSearches])
+
+  // Apply a saved search
+  const applySavedSearch = useCallback((search: SavedSearch) => {
+    setQuery(search.query)
+    setFilters(search.filters)
+    setSort(search.sort)
+    setShowSavedSearches(false)
+  }, [])
+
+  // Delete a saved search
+  const deleteSavedSearch = useCallback((id: string) => {
+    const updated = savedSearches.filter((s) => s.id !== id)
+    setSavedSearches(updated)
+    localStorage.setItem(SAVED_SEARCHES_KEY, JSON.stringify(updated))
+  }, [savedSearches])
+
+  // Check if current search can be saved
+  const canSaveSearch = query.trim() || filters.status || filters.folderId || filters.tagId
 
   // Load folders and tags for filters
   useEffect(() => {
@@ -102,14 +188,14 @@ export default function SearchPage() {
         searchQuery = searchQuery.eq('folder_id', filters.folderId)
       }
 
-      searchQuery = searchQuery.order('updated_at', { ascending: false }).limit(50)
+      searchQuery = searchQuery.order(sort.field, { ascending: sort.direction === 'asc' }).limit(50)
 
       const { data: items } = await searchQuery
       setResults((items || []) as InventoryItem[])
     } finally {
       setLoading(false)
     }
-  }, [query, filters])
+  }, [query, filters, sort])
 
   // Debounced search
   useEffect(() => {
@@ -122,6 +208,18 @@ export default function SearchPage() {
 
   const clearFilters = () => {
     setFilters({ status: '', folderId: '', tagId: '' })
+  }
+
+  const handleSortChange = (field: SortOption) => {
+    setSort((prev) => {
+      if (prev.field === field) {
+        // Toggle direction if same field
+        return { ...prev, direction: prev.direction === 'asc' ? 'desc' : 'asc' }
+      }
+      // New field - use default direction
+      const option = SORT_OPTIONS.find((o) => o.value === field)
+      return { field, direction: option?.defaultDir || 'desc' }
+    })
   }
 
   const hasActiveFilters = filters.status || filters.folderId || filters.tagId
@@ -153,6 +251,28 @@ export default function SearchPage() {
               <Loader2 className="absolute right-3 top-1/2 h-5 w-5 -translate-y-1/2 text-neutral-400 animate-spin" />
             )}
           </div>
+          <div className="flex items-center gap-2">
+            <ArrowUpDown className="h-4 w-4 text-neutral-400" />
+            <select
+              value={`${sort.field}-${sort.direction}`}
+              onChange={(e) => {
+                const [field, dir] = e.target.value.split('-') as [SortOption, SortDirection]
+                setSort({ field, direction: dir })
+              }}
+              className="h-10 rounded-lg border border-neutral-300 bg-white px-3 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+            >
+              {SORT_OPTIONS.map((option) => (
+                <optgroup key={option.value} label={option.label}>
+                  <option value={`${option.value}-asc`}>
+                    {option.label} (A→Z / Low→High)
+                  </option>
+                  <option value={`${option.value}-desc`}>
+                    {option.label} (Z→A / High→Low)
+                  </option>
+                </optgroup>
+              ))}
+            </select>
+          </div>
           <Button
             variant={showFilters ? 'default' : 'outline'}
             onClick={() => setShowFilters(!showFilters)}
@@ -165,6 +285,27 @@ export default function SearchPage() {
               </span>
             )}
           </Button>
+          <Button
+            variant={showSavedSearches ? 'default' : 'outline'}
+            onClick={() => setShowSavedSearches(!showSavedSearches)}
+          >
+            <Bookmark className="mr-2 h-4 w-4" />
+            Saved
+            {savedSearches.length > 0 && (
+              <span className="ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-pickle-100 text-xs text-pickle-700">
+                {savedSearches.length}
+              </span>
+            )}
+          </Button>
+          {canSaveSearch && (
+            <Button
+              variant="outline"
+              onClick={() => setShowSaveDialog(true)}
+            >
+              <BookmarkPlus className="mr-2 h-4 w-4" />
+              Save Search
+            </Button>
+          )}
         </div>
 
         {/* Filters Panel */}
@@ -222,6 +363,72 @@ export default function SearchPage() {
                 Clear filters
               </Button>
             )}
+          </div>
+        )}
+
+        {/* Saved Searches Panel */}
+        {showSavedSearches && (
+          <div className="mt-4 rounded-lg border border-neutral-200 bg-neutral-50 p-4">
+            <h3 className="mb-3 text-sm font-medium text-neutral-700">Saved Searches</h3>
+            {savedSearches.length > 0 ? (
+              <ul className="space-y-2">
+                {savedSearches.map((search) => (
+                  <li
+                    key={search.id}
+                    className="flex items-center justify-between rounded-lg bg-white px-3 py-2 border border-neutral-200"
+                  >
+                    <button
+                      onClick={() => applySavedSearch(search)}
+                      className="flex-1 text-left hover:text-pickle-600"
+                    >
+                      <span className="font-medium text-neutral-900">{search.name}</span>
+                      <span className="ml-2 text-xs text-neutral-500">
+                        {search.query && `"${search.query}"`}
+                        {(search.filters.status || search.filters.folderId || search.filters.tagId) && ' + filters'}
+                      </span>
+                    </button>
+                    <button
+                      onClick={() => deleteSavedSearch(search.id)}
+                      className="ml-2 p-1 text-neutral-400 hover:text-red-500"
+                      title="Delete saved search"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-neutral-500">
+                No saved searches yet. Create a search and click "Save Search" to save it.
+              </p>
+            )}
+          </div>
+        )}
+
+        {/* Save Search Dialog */}
+        {showSaveDialog && (
+          <div className="mt-4 rounded-lg border border-pickle-200 bg-pickle-50 p-4">
+            <h3 className="mb-3 text-sm font-medium text-pickle-700">Save Current Search</h3>
+            <div className="flex items-center gap-3">
+              <Input
+                type="text"
+                placeholder="Enter a name for this search..."
+                value={saveSearchName}
+                onChange={(e) => setSaveSearchName(e.target.value)}
+                className="flex-1"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleSaveSearch()
+                  if (e.key === 'Escape') setShowSaveDialog(false)
+                }}
+              />
+              <Button onClick={handleSaveSearch} disabled={!saveSearchName.trim()}>
+                Save
+              </Button>
+              <Button variant="ghost" onClick={() => setShowSaveDialog(false)}>
+                Cancel
+              </Button>
+            </div>
           </div>
         )}
       </div>

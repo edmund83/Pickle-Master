@@ -132,16 +132,14 @@ export function QuotaWarningBanner() {
             <ArrowUpRight className="h-3.5 w-3.5" />
           </Link>
 
-          {/* Dismiss button (only for warnings, not exceeded) */}
-          {!hasExceeded && (
-            <button
-              onClick={() => setDismissed(true)}
-              className="p-1 rounded-full hover:bg-black/5 transition-colors"
-              aria-label="Dismiss warning"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          )}
+          {/* Dismiss button */}
+          <button
+            onClick={() => setDismissed(true)}
+            className="p-1 rounded-full hover:bg-black/5 transition-colors"
+            aria-label="Dismiss banner"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
       </div>
     </div>
