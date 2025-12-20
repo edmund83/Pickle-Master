@@ -26,6 +26,7 @@ import { format } from 'date-fns'
 import { ItemCheckoutSection } from './item-checkout-section'
 import { ItemQuickActions } from './components/item-quick-actions'
 import { ItemAdvancedPanels } from './components/item-advanced-panels'
+import { TagsManager } from './components/tags-manager'
 
 interface FeaturesEnabled {
   multi_location?: boolean
@@ -425,9 +426,10 @@ export default async function ItemDetailPage({ params }: PageProps) {
                     Tags
                   </h2>
                 </div>
-                <Button variant="ghost" size="sm" className="h-6 w-6 p-0 hover:bg-neutral-100">
-                  <Plus className="h-4 w-4" />
-                </Button>
+                <TagsManager
+                  itemId={item.id}
+                  currentTagIds={itemTags.map(t => t.id)}
+                />
               </div>
               {itemTags && itemTags.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
@@ -490,9 +492,11 @@ export default async function ItemDetailPage({ params }: PageProps) {
                   Recent Activity
                 </h2>
               </div>
-              <Button variant="ghost" size="sm">
-                View All
-              </Button>
+              <Link href={`/inventory/${item.id}/activity`}>
+                <Button variant="ghost" size="sm">
+                  View All
+                </Button>
+              </Link>
             </div>
             {activityLogs && activityLogs.length > 0 ? (
               <div className="space-y-4">

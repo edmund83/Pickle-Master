@@ -1,7 +1,9 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
-import { MoreHorizontal, Package } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { MoreHorizontal, Package, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
     DropdownMenu,
@@ -11,6 +13,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import type { InventoryItem, Folder } from '@/types/database.types'
 import { EditableCell } from './editable-cell'
+import { deleteItem } from '@/app/actions/inventory'
 
 interface InventoryTableProps {
     items: InventoryItem[]
@@ -18,8 +21,27 @@ interface InventoryTableProps {
 }
 
 export function InventoryTable({ items, folders }: InventoryTableProps) {
+    const router = useRouter()
+    const [deletingId, setDeletingId] = useState<string | null>(null)
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null)
+
     // Create a map of folder IDs to folder names for quick lookup
     const folderMap = new Map(folders.map(f => [f.id, f]))
+
+    const handleDelete = async (itemId: string) => {
+        setDeletingId(itemId)
+        try {
+            const result = await deleteItem(itemId)
+            if (result.success) {
+                router.refresh()
+            } else {
+                console.error('Delete failed:', result.error)
+            }
+        } finally {
+            setDeletingId(null)
+            setShowDeleteConfirm(null)
+        }
+    }
 
     const statusColors: Record<string, string> = {
         in_stock: 'bg-green-100 text-green-700',
@@ -183,14 +205,47 @@ export function InventoryTable({ items, folders }: InventoryTableProps) {
                                             <Link href={`/inventory/${item.id}`}>
                                                 <DropdownMenuItem>View Details</DropdownMenuItem>
                                             </Link>
-                                            <Link href={`/inventory/new?edit=${item.id}`}>
+                                            <Link href={`/inventory/${item.id}/edit`}>
                                                 <DropdownMenuItem>Edit Item</DropdownMenuItem>
                                             </Link>
-                                            {/* Placeholder for future actions */}
-                                            <DropdownMenuItem>Check In/Out</DropdownMenuItem>
-                                            <DropdownMenuItem className="text-red-600">
-                                                Delete
-                                            </DropdownMenuItem>
+                                            <Link href={`/inventory/${item.id}#checkout`}>
+                                                <DropdownMenuItem>Check In/Out</DropdownMenuItem>
+                                            </Link>
+                                            {showDeleteConfirm === item.id ? (
+                                                <div className="px-2 py-1.5">
+                                                    <p className="text-xs text-neutral-500 mb-2">Delete this item?</p>
+                                                    <div className="flex gap-2">
+                                                        <Button
+                                                            size="sm"
+                                                            variant="destructive"
+                                                            className="h-7 text-xs"
+                                                            onClick={() => handleDelete(item.id)}
+                                                            disabled={deletingId === item.id}
+                                                        >
+                                                            {deletingId === item.id ? (
+                                                                <Loader2 className="h-3 w-3 animate-spin" />
+                                                            ) : (
+                                                                'Confirm'
+                                                            )}
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="ghost"
+                                                            className="h-7 text-xs"
+                                                            onClick={() => setShowDeleteConfirm(null)}
+                                                        >
+                                                            Cancel
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            ) : (
+                                                <DropdownMenuItem
+                                                    className="text-red-600"
+                                                    onClick={() => setShowDeleteConfirm(item.id)}
+                                                >
+                                                    Delete
+                                                </DropdownMenuItem>
+                                            )}
                                         </DropdownMenuContent>
                                     </DropdownMenu>
                                 </td>

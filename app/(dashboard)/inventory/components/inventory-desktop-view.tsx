@@ -2,10 +2,18 @@
 
 import { useState, useMemo, useCallback, useEffect } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { Plus, Filter, Package, ScanLine, Upload, CheckSquare, Square, X, Edit3, Download } from 'lucide-react'
+import { useRouter, useSearchParams } from 'next/navigation'
+import { Plus, Filter, Package, ScanLine, Upload, CheckSquare, Square, X, Edit3, Download, Image as ImageIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuTrigger,
+    DropdownMenuCheckboxItem,
+    DropdownMenuSeparator,
+    DropdownMenuLabel,
+} from '@/components/ui/dropdown-menu'
 import type { InventoryItem, Folder, Tag } from '@/types/database.types'
 import { SearchInput } from '@/components/ui/search-input'
 import { InventoryTable } from './inventory-table'
@@ -18,6 +26,22 @@ import { InlineFolderForm } from './inline-folder-form'
 import { BulkEditModal } from './bulk-edit-modal'
 import { createClient } from '@/lib/supabase/client'
 
+// Properly escape CSV values
+function escapeCSV(value: string | number | null | undefined): string {
+  if (value == null) return ''
+  const str = String(value)
+  // Escape if contains comma, newline, or quote
+  if (str.includes(',') || str.includes('\n') || str.includes('\r') || str.includes('"')) {
+    return `"${str.replace(/"/g, '""')}"`
+  }
+  return str
+}
+
+interface FilterState {
+  status: string[]
+  hasImages: boolean | null
+}
+
 const EXPANDED_FOLDERS_KEY = 'pickle-expanded-folders'
 
 interface InventoryDesktopViewProps {
@@ -29,15 +53,56 @@ interface InventoryDesktopViewProps {
 
 export function InventoryDesktopView({ items, folders, view, folderStatsObj }: InventoryDesktopViewProps) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null)
   const [isCreatingFolder, setIsCreatingFolder] = useState(false)
   const [createFolderParentId, setCreateFolderParentId] = useState<string | null>(null)
+
+  // Filter state
+  const [filters, setFilters] = useState<FilterState>({
+    status: [],
+    hasImages: null,
+  })
 
   // Bulk selection state
   const [isSelectionMode, setIsSelectionMode] = useState(false)
   const [selectedItemIds, setSelectedItemIds] = useState<Set<string>>(new Set())
   const [showBulkEditModal, setShowBulkEditModal] = useState(false)
   const [tags, setTags] = useState<Tag[]>([])
+
+  // Get search query from URL
+  const searchQuery = searchParams.get('q') || ''
+
+  // Count active filters
+  const activeFilterCount = useMemo(() => {
+    let count = 0
+    if (filters.status.length > 0) count += filters.status.length
+    if (filters.hasImages !== null) count += 1
+    return count
+  }, [filters])
+
+  // Toggle status filter
+  const toggleStatusFilter = useCallback((status: string) => {
+    setFilters(prev => ({
+      ...prev,
+      status: prev.status.includes(status)
+        ? prev.status.filter(s => s !== status)
+        : [...prev.status, status]
+    }))
+  }, [])
+
+  // Toggle has images filter
+  const toggleHasImagesFilter = useCallback((value: boolean | null) => {
+    setFilters(prev => ({
+      ...prev,
+      hasImages: prev.hasImages === value ? null : value
+    }))
+  }, [])
+
+  // Clear all filters
+  const clearFilters = useCallback(() => {
+    setFilters({ status: [], hasImages: null })
+  }, [])
 
   // Load tags for bulk edit
   useEffect(() => {
@@ -175,27 +240,51 @@ export function InventoryDesktopView({ items, folders, view, folderStatsObj }: I
     return counts
   }, [items, warehouses, folderToWarehouse])
 
-  // Filter items by selected folder (including children)
+  // Filter items by selected folder (including children), search query, and filters
   const filteredItems = useMemo(() => {
-    if (selectedFolderId === null) return items
+    let result = items
 
-    // Get the selected folder
-    const selectedFolder = folders.find(f => f.id === selectedFolderId)
-    if (!selectedFolder) return items
+    // Filter by folder
+    if (selectedFolderId !== null) {
+      const selectedFolder = folders.find(f => f.id === selectedFolderId)
+      if (selectedFolder) {
+        result = result.filter(item => {
+          if (!item.folder_id) return false
+          if (item.folder_id === selectedFolderId) return true
+          // Check if item's folder is a descendant
+          const itemFolder = folders.find(f => f.id === item.folder_id)
+          if (itemFolder?.path?.includes(selectedFolderId)) return true
+          return false
+        })
+      }
+    }
 
-    // Include items directly in this folder
-    // OR items in any sub-folder (where path includes selectedFolderId)
-    return items.filter(item => {
-      if (!item.folder_id) return false
-      if (item.folder_id === selectedFolderId) return true
+    // Filter by search query
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase()
+      result = result.filter(item =>
+        item.name.toLowerCase().includes(query) ||
+        item.sku?.toLowerCase().includes(query) ||
+        item.barcode?.toLowerCase().includes(query) ||
+        item.description?.toLowerCase().includes(query)
+      )
+    }
 
-      // Check if item's folder is a descendant
-      const itemFolder = folders.find(f => f.id === item.folder_id)
-      if (itemFolder?.path?.includes(selectedFolderId)) return true
+    // Filter by status
+    if (filters.status.length > 0) {
+      result = result.filter(item => filters.status.includes(item.status || 'in_stock'))
+    }
 
-      return false
-    })
-  }, [items, selectedFolderId, folders])
+    // Filter by has images
+    if (filters.hasImages !== null) {
+      result = result.filter(item => {
+        const hasImages = item.image_urls && item.image_urls.length > 0
+        return filters.hasImages ? hasImages : !hasImages
+      })
+    }
+
+    return result
+  }, [items, selectedFolderId, folders, searchQuery, filters])
 
   // Select all / deselect all (defined after filteredItems)
   const toggleSelectAll = useCallback(() => {
@@ -225,27 +314,25 @@ export function InventoryDesktopView({ items, folders, view, folderStatsObj }: I
       'Notes',
     ]
 
-    // CSV Rows
+    // CSV Rows - use escapeCSV for proper escaping
     const rows = filteredItems.map((item) => [
-      item.name || '',
-      item.sku || '',
-      item.barcode || '',
-      item.quantity?.toString() || '0',
-      item.unit || 'pcs',
-      item.min_quantity?.toString() || '0',
-      item.price?.toFixed(2) || '0.00',
-      item.cost_price?.toFixed(2) || '',
-      item.status || 'in_stock',
-      item.description?.replace(/"/g, '""') || '',
-      item.notes?.replace(/"/g, '""') || '',
+      escapeCSV(item.name),
+      escapeCSV(item.sku),
+      escapeCSV(item.barcode),
+      escapeCSV(item.quantity?.toString() || '0'),
+      escapeCSV(item.unit || 'pcs'),
+      escapeCSV(item.min_quantity?.toString() || '0'),
+      escapeCSV(item.price?.toFixed(2) || '0.00'),
+      escapeCSV(item.cost_price?.toFixed(2) || ''),
+      escapeCSV(item.status || 'in_stock'),
+      escapeCSV(item.description),
+      escapeCSV(item.notes),
     ])
 
     // Build CSV content
     const csvContent = [
       headers.join(','),
-      ...rows.map((row) =>
-        row.map((cell) => `"${cell}"`).join(',')
-      ),
+      ...rows.map((row) => row.join(',')),
     ].join('\n')
 
     // Download file
@@ -439,10 +526,70 @@ export function InventoryDesktopView({ items, folders, view, folderStatsObj }: I
                 <SearchInput placeholder="Search items..." className="w-64" />
               </div>
               <ViewToggle />
-              <Button variant="outline" size="sm">
-                <Filter className="mr-2 h-4 w-4" />
-                Filter
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <Filter className="mr-2 h-4 w-4" />
+                    Filter
+                    {activeFilterCount > 0 && (
+                      <span className="ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-pickle-500 text-xs text-white">
+                        {activeFilterCount}
+                      </span>
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="start" className="w-56">
+                  <DropdownMenuLabel>Status</DropdownMenuLabel>
+                  <DropdownMenuCheckboxItem
+                    checked={filters.status.includes('in_stock')}
+                    onCheckedChange={() => toggleStatusFilter('in_stock')}
+                  >
+                    <span className="mr-2 h-2 w-2 rounded-full bg-green-500" />
+                    In Stock
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={filters.status.includes('low_stock')}
+                    onCheckedChange={() => toggleStatusFilter('low_stock')}
+                  >
+                    <span className="mr-2 h-2 w-2 rounded-full bg-yellow-500" />
+                    Low Stock
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={filters.status.includes('out_of_stock')}
+                    onCheckedChange={() => toggleStatusFilter('out_of_stock')}
+                  >
+                    <span className="mr-2 h-2 w-2 rounded-full bg-red-500" />
+                    Out of Stock
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuLabel>Images</DropdownMenuLabel>
+                  <DropdownMenuCheckboxItem
+                    checked={filters.hasImages === true}
+                    onCheckedChange={() => toggleHasImagesFilter(true)}
+                  >
+                    <ImageIcon className="mr-2 h-4 w-4" />
+                    Has Images
+                  </DropdownMenuCheckboxItem>
+                  <DropdownMenuCheckboxItem
+                    checked={filters.hasImages === false}
+                    onCheckedChange={() => toggleHasImagesFilter(false)}
+                  >
+                    <Package className="mr-2 h-4 w-4" />
+                    No Images
+                  </DropdownMenuCheckboxItem>
+                  {activeFilterCount > 0 && (
+                    <>
+                      <DropdownMenuSeparator />
+                      <button
+                        onClick={clearFilters}
+                        className="w-full px-2 py-1.5 text-sm text-red-600 hover:bg-neutral-100 text-left"
+                      >
+                        Clear all filters
+                      </button>
+                    </>
+                  )}
+                </DropdownMenuContent>
+              </DropdownMenu>
               <div className="w-56">
                 <WarehouseSelector
                   warehouses={warehouses}

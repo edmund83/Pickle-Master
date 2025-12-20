@@ -208,3 +208,122 @@ export async function updateItemField(
 
     return { success: true }
 }
+
+export async function deleteItem(itemId: string): Promise<ActionResult<void>> {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        return { success: false, error: 'Unauthorized' }
+    }
+
+    // Get item first for activity log
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: item, error: fetchError } = await (supabase as any)
+        .from('inventory_items')
+        .select('*')
+        .eq('id', itemId)
+        .single()
+
+    if (fetchError || !item) {
+        return { success: false, error: 'Item not found' }
+    }
+
+    // Soft delete by setting deleted_at
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: deleteError } = await (supabase as any)
+        .from('inventory_items')
+        .update({
+            deleted_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+            last_modified_by: user.id
+        })
+        .eq('id', itemId)
+
+    if (deleteError) {
+        return { success: false, error: deleteError.message }
+    }
+
+    // Log activity
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase as any).from('activity_logs').insert({
+        tenant_id: item.tenant_id,
+        user_id: user.id,
+        user_name: user.email,
+        action_type: 'delete',
+        entity_type: 'item',
+        entity_id: itemId,
+        entity_name: item.name,
+        changes: { deleted_by: user.email }
+    })
+
+    revalidatePath('/inventory')
+
+    return { success: true }
+}
+
+export async function updateItemTags(
+    itemId: string,
+    tagIds: string[]
+): Promise<ActionResult<void>> {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) {
+        return { success: false, error: 'Unauthorized' }
+    }
+
+    // Get item first for tenant_id
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: item, error: fetchError } = await (supabase as any)
+        .from('inventory_items')
+        .select('tenant_id, name')
+        .eq('id', itemId)
+        .single()
+
+    if (fetchError || !item) {
+        return { success: false, error: 'Item not found' }
+    }
+
+    // Delete existing item_tags for this item
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase as any)
+        .from('item_tags')
+        .delete()
+        .eq('item_id', itemId)
+
+    // Insert new tags
+    if (tagIds.length > 0) {
+        const tagInserts = tagIds.map(tagId => ({
+            item_id: itemId,
+            tag_id: tagId,
+            tenant_id: item.tenant_id
+        }))
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: insertError } = await (supabase as any)
+            .from('item_tags')
+            .insert(tagInserts)
+
+        if (insertError) {
+            return { success: false, error: insertError.message }
+        }
+    }
+
+    // Log activity
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase as any).from('activity_logs').insert({
+        tenant_id: item.tenant_id,
+        user_id: user.id,
+        user_name: user.email,
+        action_type: 'update',
+        entity_type: 'item',
+        entity_id: itemId,
+        entity_name: item.name,
+        changes: { tags_updated: tagIds.length }
+    })
+
+    revalidatePath(`/inventory/${itemId}`)
+
+    return { success: true }
+}
