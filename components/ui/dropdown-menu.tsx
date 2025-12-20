@@ -94,3 +94,58 @@ export function DropdownMenuItem({ children, className, onClick }: { children: R
         </button>
     )
 }
+
+export function DropdownMenuCheckboxItem({
+    children,
+    className,
+    checked,
+    onCheckedChange
+}: {
+    children: React.ReactNode
+    className?: string
+    checked?: boolean
+    onCheckedChange?: (checked: boolean) => void
+}) {
+    const handleClick = (e: React.MouseEvent) => {
+        e.preventDefault()
+        e.stopPropagation()
+        onCheckedChange?.(!checked)
+    }
+
+    return (
+        <button
+            className={cn(
+                "flex w-full items-center px-4 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900",
+                className
+            )}
+            onClick={handleClick}
+        >
+            <span className={cn(
+                "mr-2 flex h-4 w-4 items-center justify-center rounded border",
+                checked ? "border-pickle-500 bg-pickle-500" : "border-neutral-300"
+            )}>
+                {checked && (
+                    <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                )}
+            </span>
+            {children}
+        </button>
+    )
+}
+
+export function DropdownMenuSeparator() {
+    return <div className="my-1 h-px bg-neutral-200" />
+}
+
+export function DropdownMenuLabel({ children, className }: { children: React.ReactNode; className?: string }) {
+    return (
+        <div className={cn(
+            "px-4 py-2 text-xs font-semibold uppercase tracking-wide text-neutral-500",
+            className
+        )}>
+            {children}
+        </div>
+    )
+}
