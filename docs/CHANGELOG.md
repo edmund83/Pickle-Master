@@ -18,14 +18,41 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
   - Medium (2" × 4") - 10/sheet - Avery 5163/8163
   - Small (1⅓" × 4") - 14/sheet - Avery 5162/8162
   - Extra Small (1" × 2⅝") - 30/sheet - Avery 5160/8160
-- **Thermal Printer Support** for DYMO LabelWriter (¾" × 2" labels)
+- **Universal Label Printer Support** with 19 industry-standard label sizes:
+  - Small: 1" × 3", 1.125" × 1.25", 1.1875" × 1", 1.2" × 0.85", 1.25" × 1"
+  - Medium: 2" × 1", 2.2" × 0.5", 2.25" × 0.5", 2.25" × 1.25", 2.25" × 2", 2.25" × 2.5"
+  - Large: 3" × 2", 3" × 3", 4" × 1.5", 4" × 2", 4" × 2.5", 4" × 3", 4" × 5", 4" × 6"
+- **Label Size Dropdown** for selecting printer label sizes (replacing fixed thermal options)
 - **Dynamic Label Features** based on size:
-  - Extra Large/Large: Photo, logo, up to 3 details, note
-  - Medium: 1 detail field only
-  - Small/Extra Small/Thermal: Name and code only
+  - Extra Large/Large & 4"×5"/4"×6" labels: Photo, logo, up to 3 details, note
+  - Medium & 4"×3" labels: Photo, 1-2 details
+  - Small labels: Name and code only
 - **Live Preview Components** for all 6 label sizes
 - **Smart UI** that hides unavailable options for smaller label sizes
+- **Multiple Barcode Symbologies** for inventory workflows:
+  - Auto-detect (UPC/EAN/ITF/GS1)
+  - Code 128, Code 39
+  - UPC-A, EAN-13, EAN-8
+  - ITF-14, GS1-128
 - Updated Avery product compatibility references
+
+### Changed
+
+- **Label Extras Section**: Replaced toggle switches with image selector fields for photo and logo
+  - Photo: Select from item's existing photos or upload a custom image
+  - Logo: Select company logo or upload a custom image
+  - Click to select, with visual checkmark overlay for selected state
+  - Remove button to clear selection
+  - Fields conditionally shown based on label size support
+- Refreshed the label wizard UI with a preview-first layout, card-based option pickers, and a mobile Settings/Preview toggle.
+- Simplified printing to two choices: print a full paper sheet (max labels) or print to a label printer.
+- Removed DYMO-specific branding - now shows "Works with any label printer" for universal compatibility.
+- Label printer sizes now presented in a dropdown selector for easier selection.
+
+### Fixed
+
+- **Auto-generate barcode** is now disabled for formats that require specific numeric patterns (EAN-13, EAN-8, UPC-A, ITF-14, GS1-128). Auto-generate creates alphanumeric barcodes (e.g., `PKL12345678`) which are only compatible with Code 128 and Code 39.
+- When selecting a numeric-only barcode format with "Auto-generate" active, the system now automatically switches to "Use existing barcode" (if available) or "Enter manually".
 
 ---
 
