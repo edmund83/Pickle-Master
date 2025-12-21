@@ -29,6 +29,8 @@ import {
   getCompatibleProducts,
   type DetailField,
   type LabelPDFConfig,
+  type LabelSize,
+  type PaperSize,
 } from '@/lib/labels/pdf-generator'
 import DetailsSelector from './DetailsSelector'
 import StartPositionSelector from './StartPositionSelector'
@@ -58,8 +60,6 @@ interface LabelWizardProps {
 }
 
 type LabelType = 'qr' | 'barcode'
-type PaperSize = 'letter' | 'a4'
-type LabelSize = 'small' | 'medium' | 'large' | 'qr_large'
 type BarcodeSource = 'existing' | 'auto' | 'manual'
 type QuantityMode = 'custom' | 'full_sheet'
 
@@ -83,16 +83,31 @@ interface LabelConfig {
   email: string
 }
 
+// Sortly-compatible QR label sizes
 const QR_LABEL_SIZES = {
-  medium: LABEL_SIZES.medium,
+  extra_large: LABEL_SIZES.extra_large,
   large: LABEL_SIZES.large,
-  qr_large: { width: 5.5, height: 8.5, name: 'Half Sheet (5 1/2in x 8 1/2in)', perSheet: 2 },
+  medium: LABEL_SIZES.medium,
+  small: LABEL_SIZES.small,
+  extra_small: LABEL_SIZES.extra_small,
 }
 
+// Barcode label sizes (including thermal for DYMO printers)
 const BARCODE_LABEL_SIZES = {
-  small: LABEL_SIZES.small,
   medium: LABEL_SIZES.medium,
-  large: LABEL_SIZES.large,
+  small: LABEL_SIZES.small,
+  extra_small: LABEL_SIZES.extra_small,
+  thermal: LABEL_SIZES.thermal,
+}
+
+// Define which features are available for each label size
+const LABEL_FEATURES: Record<LabelSize, { photo: boolean; logo: boolean; maxDetails: number; note: boolean }> = {
+  extra_large: { photo: true, logo: true, maxDetails: 3, note: true },
+  large: { photo: true, logo: true, maxDetails: 2, note: true },
+  medium: { photo: false, logo: false, maxDetails: 1, note: false },
+  small: { photo: false, logo: false, maxDetails: 0, note: false },
+  extra_small: { photo: false, logo: false, maxDetails: 0, note: false },
+  thermal: { photo: false, logo: false, maxDetails: 0, note: false },
 }
 
 export default function LabelWizard({ item, tenantLogo, userEmail, onClose, onSave }: LabelWizardProps) {
@@ -100,7 +115,7 @@ export default function LabelWizard({ item, tenantLogo, userEmail, onClose, onSa
   const [config, setConfig] = useState<LabelConfig>({
     type: 'qr',
     paperSize: 'letter',
-    labelSize: 'qr_large',
+    labelSize: 'extra_large',
     selectedDetails: ['price'],
     includePhoto: true,
     includeLogo: false,
@@ -169,18 +184,40 @@ export default function LabelWizard({ item, tenantLogo, userEmail, onClose, onSa
 
   // Get current label sizes based on type
   const labelSizes = config.type === 'qr' ? QR_LABEL_SIZES : BARCODE_LABEL_SIZES
-  const currentLabelSize = labelSizes[config.labelSize as keyof typeof labelSizes] || labelSizes.medium
-  const labelsPerSheet = calculateLabelsPerSheet(config.paperSize, config.labelSize as LabelSize)
-  const compatibleProducts = getCompatibleProducts(config.labelSize as LabelSize)
+  const currentLabelSize = labelSizes[config.labelSize as keyof typeof labelSizes] || (config.type === 'qr' ? QR_LABEL_SIZES.extra_large : BARCODE_LABEL_SIZES.medium)
+  const labelsPerSheet = calculateLabelsPerSheet(config.paperSize, config.labelSize)
+  const compatibleProducts = getCompatibleProducts(config.labelSize)
+  const labelFeatures = LABEL_FEATURES[config.labelSize]
 
   // Reset label size when type changes
   useEffect(() => {
     if (config.type === 'qr' && !QR_LABEL_SIZES[config.labelSize as keyof typeof QR_LABEL_SIZES]) {
-      setConfig((c) => ({ ...c, labelSize: 'qr_large' }))
+      setConfig((c) => ({ ...c, labelSize: 'extra_large' }))
     } else if (config.type === 'barcode' && !BARCODE_LABEL_SIZES[config.labelSize as keyof typeof BARCODE_LABEL_SIZES]) {
       setConfig((c) => ({ ...c, labelSize: 'medium' }))
     }
   }, [config.type, config.labelSize])
+
+  // Auto-set paper size for thermal labels
+  useEffect(() => {
+    if (config.labelSize === 'thermal') {
+      setConfig((c) => ({ ...c, paperSize: 'label_printer' }))
+    } else if (config.paperSize === 'label_printer') {
+      setConfig((c) => ({ ...c, paperSize: 'letter' }))
+    }
+  }, [config.labelSize, config.paperSize])
+
+  // Reset features when switching to smaller label sizes
+  useEffect(() => {
+    const features = LABEL_FEATURES[config.labelSize]
+    setConfig((c) => ({
+      ...c,
+      includePhoto: features.photo && c.includePhoto,
+      includeLogo: features.logo && c.includeLogo,
+      includeNote: features.note && c.includeNote,
+      selectedDetails: c.selectedDetails.slice(0, features.maxDetails),
+    }))
+  }, [config.labelSize])
 
   // Handle quantity mode change
   useEffect(() => {
@@ -241,7 +278,7 @@ export default function LabelWizard({ item, tenantLogo, userEmail, onClose, onSa
       const pdfConfig: LabelPDFConfig = {
         labelType: config.type,
         paperSize: config.paperSize,
-        labelSize: config.labelSize as LabelSize,
+        labelSize: config.labelSize,
         quantity: config.quantity,
         startPosition: config.startPosition,
         includePhoto: config.includePhoto,
@@ -405,24 +442,31 @@ export default function LabelWizard({ item, tenantLogo, userEmail, onClose, onSa
                     </div>
                   </div>
 
-                  {/* Paper Size */}
-                  <div className="space-y-1.5">
-                    <label className="text-sm font-medium text-neutral-500">Paper size</label>
-                    <div className="relative">
-                      <select
-                        value={config.paperSize}
-                        onChange={(e) => setConfig({ ...config, paperSize: e.target.value as PaperSize })}
-                        className="w-full appearance-none rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm font-medium text-neutral-700 focus:outline-none focus:ring-2 focus:ring-pickle-500"
-                      >
-                        {Object.entries(PAPER_SIZES).map(([key, size]) => (
-                          <option key={key} value={key}>
-                            {size.name}
-                          </option>
-                        ))}
-                      </select>
-                      <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400 pointer-events-none" />
+                  {/* Paper Size (hidden for thermal labels) */}
+                  {config.labelSize !== 'thermal' && (
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium text-neutral-500">Paper size</label>
+                      <div className="relative">
+                        <select
+                          value={config.paperSize}
+                          onChange={(e) => setConfig({ ...config, paperSize: e.target.value as PaperSize })}
+                          className="w-full appearance-none rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm font-medium text-neutral-700 focus:outline-none focus:ring-2 focus:ring-pickle-500"
+                        >
+                          <option value="letter">{PAPER_SIZES.letter.name}</option>
+                          <option value="a4">{PAPER_SIZES.a4.name}</option>
+                        </select>
+                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400 pointer-events-none" />
+                      </div>
                     </div>
-                  </div>
+                  )}
+
+                  {/* Show thermal printer info */}
+                  {config.labelSize === 'thermal' && (
+                    <div className="flex items-center gap-2 p-3 bg-amber-50 text-amber-700 rounded-lg text-sm">
+                      <Info className="h-4 w-4 shrink-0" />
+                      <span>Thermal labels print directly to DYMO or similar label printers</span>
+                    </div>
+                  )}
 
                   {/* Label Size */}
                   <div className="space-y-1.5">
@@ -472,71 +516,81 @@ export default function LabelWizard({ item, tenantLogo, userEmail, onClose, onSa
                   )}
                 </div>
 
-                {/* Details Selector (QR labels) */}
-                {config.type === 'qr' && config.labelSize === 'qr_large' && (
+                {/* Details Selector (for label sizes that support details) */}
+                {labelFeatures.maxDetails > 0 && (
                   <div className="space-y-4">
                     <h4 className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
                       Details
                     </h4>
                     <DetailsSelector
                       selected={config.selectedDetails}
-                      onChange={(selected) => setConfig({ ...config, selectedDetails: selected })}
+                      onChange={(selected) => setConfig({ ...config, selectedDetails: selected.slice(0, labelFeatures.maxDetails) })}
+                      maxSelections={labelFeatures.maxDetails}
                     />
+                    {labelFeatures.maxDetails === 1 && (
+                      <p className="text-xs text-neutral-400">This label size supports 1 detail field</p>
+                    )}
                   </div>
                 )}
 
-                {/* Label Settings */}
-                <div className="space-y-4">
-                  <h4 className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
-                    Label Settings
-                  </h4>
+                {/* Label Settings (only show if any features are available) */}
+                {(labelFeatures.photo || labelFeatures.logo || labelFeatures.note) && (
+                  <div className="space-y-4">
+                    <h4 className="text-xs font-semibold text-neutral-400 uppercase tracking-wider">
+                      Label Settings
+                    </h4>
 
-                  {config.type === 'barcode' && (
-                    <ToggleSwitch
-                      label="Include additional item details"
-                      helpText="Show SKU or price on label"
-                      icon={<FileText className="h-4 w-4" />}
-                      checked={config.selectedDetails.length > 0}
-                      onChange={(checked) =>
-                        setConfig({ ...config, selectedDetails: checked ? ['sku'] : [] })
-                      }
-                    />
-                  )}
+                    {labelFeatures.photo && (
+                      <ToggleSwitch
+                        label="Include photo"
+                        helpText="The first photo of the item will be used on the label"
+                        icon={<ImageIcon className="h-4 w-4" />}
+                        checked={config.includePhoto}
+                        onChange={(checked) => setConfig({ ...config, includePhoto: checked })}
+                        disabled={!firstPhotoUrl}
+                      />
+                    )}
 
-                  <ToggleSwitch
-                    label="Include photo"
-                    helpText="The first photo of the item will be used on the label"
-                    icon={<ImageIcon className="h-4 w-4" />}
-                    checked={config.includePhoto}
-                    onChange={(checked) => setConfig({ ...config, includePhoto: checked })}
-                    disabled={!firstPhotoUrl}
-                  />
+                    {labelFeatures.logo && (
+                      <ToggleSwitch
+                        label="Include logo or icon"
+                        helpText="Add your company logo to the label"
+                        icon={<Building2 className="h-4 w-4" />}
+                        checked={config.includeLogo}
+                        onChange={(checked) => setConfig({ ...config, includeLogo: checked })}
+                        disabled={!tenantLogo}
+                      />
+                    )}
 
-                  <ToggleSwitch
-                    label="Include logo or icon"
-                    helpText="Add your company logo to the label"
-                    icon={<Building2 className="h-4 w-4" />}
-                    checked={config.includeLogo}
-                    onChange={(checked) => setConfig({ ...config, includeLogo: checked })}
-                    disabled={!tenantLogo}
-                  />
+                    {labelFeatures.note && (
+                      <>
+                        <ToggleSwitch
+                          label="Add a note to label"
+                          icon={<FileText className="h-4 w-4" />}
+                          checked={config.includeNote}
+                          onChange={(checked) => setConfig({ ...config, includeNote: checked })}
+                        />
 
-                  <ToggleSwitch
-                    label="Add a note to label"
-                    icon={<FileText className="h-4 w-4" />}
-                    checked={config.includeNote}
-                    onChange={(checked) => setConfig({ ...config, includeNote: checked })}
-                  />
+                        {config.includeNote && (
+                          <Input
+                            value={config.note}
+                            onChange={(e) => setConfig({ ...config, note: e.target.value })}
+                            placeholder="Enter label note..."
+                            className="mt-2"
+                          />
+                        )}
+                      </>
+                    )}
+                  </div>
+                )}
 
-                  {config.includeNote && (
-                    <Input
-                      value={config.note}
-                      onChange={(e) => setConfig({ ...config, note: e.target.value })}
-                      placeholder="Enter label note..."
-                      className="mt-2"
-                    />
-                  )}
-                </div>
+                {/* Info message for small label sizes */}
+                {!labelFeatures.photo && !labelFeatures.logo && !labelFeatures.note && labelFeatures.maxDetails === 0 && (
+                  <div className="flex items-center gap-2 p-3 bg-neutral-50 text-neutral-600 rounded-lg text-sm">
+                    <Info className="h-4 w-4 shrink-0" />
+                    <span>This label size shows item name and {config.type === 'qr' ? 'QR code' : 'barcode'} only</span>
+                  </div>
+                )}
               </>
             ) : (
               <>
@@ -576,21 +630,26 @@ export default function LabelWizard({ item, tenantLogo, userEmail, onClose, onSa
                     </div>
                   </div>
 
-                  <ToggleSwitch
-                    label="Choose label print start position"
-                    helpText="Select where on the sheet to start printing"
-                    checked={config.chooseStartPosition}
-                    onChange={(checked) => setConfig({ ...config, chooseStartPosition: checked })}
-                  />
+                  {/* Hide start position for thermal labels (single label) */}
+                  {config.labelSize !== 'thermal' && (
+                    <>
+                      <ToggleSwitch
+                        label="Choose label print start position"
+                        helpText="Select where on the sheet to start printing"
+                        checked={config.chooseStartPosition}
+                        onChange={(checked) => setConfig({ ...config, chooseStartPosition: checked })}
+                      />
 
-                  {config.chooseStartPosition && (
-                    <StartPositionSelector
-                      rows={labelsPerSheet.rows}
-                      cols={labelsPerSheet.cols}
-                      selectedPosition={config.startPosition}
-                      onChange={(position) => setConfig({ ...config, startPosition: position })}
-                      labelsNeeded={config.quantity}
-                    />
+                      {config.chooseStartPosition && (
+                        <StartPositionSelector
+                          rows={labelsPerSheet.rows}
+                          cols={labelsPerSheet.cols}
+                          selectedPosition={config.startPosition}
+                          onChange={(position) => setConfig({ ...config, startPosition: position })}
+                          labelsNeeded={config.quantity}
+                        />
+                      )}
+                    </>
                   )}
 
                   <ToggleSwitch
@@ -679,26 +738,46 @@ export default function LabelWizard({ item, tenantLogo, userEmail, onClose, onSa
             </div>
 
             {/* Label Preview */}
-            {config.type === 'qr' && config.labelSize === 'qr_large' ? (
-              <QRLargeLabelPreview
+            {config.labelSize === 'thermal' ? (
+              <ThermalLabelPreview
                 item={item}
-                config={config}
-                qrCodeUrl={qrCodeUrl}
-                labelId={labelId}
-              />
-            ) : config.type === 'barcode' ? (
-              <BarcodeLabelPreview
-                item={item}
-                config={config}
                 barcodeUrl={barcodeUrl}
                 labelId={labelId}
               />
-            ) : (
-              <StandardLabelPreview
+            ) : config.labelSize === 'extra_large' ? (
+              <ExtraLargeLabelPreview
                 item={item}
                 config={config}
                 qrCodeUrl={qrCodeUrl}
                 labelId={labelId}
+              />
+            ) : config.labelSize === 'large' ? (
+              <LargeLabelPreview
+                item={item}
+                config={config}
+                codeUrl={config.type === 'qr' ? qrCodeUrl : barcodeUrl}
+                labelId={labelId}
+              />
+            ) : config.labelSize === 'medium' ? (
+              <MediumLabelPreview
+                item={item}
+                config={config}
+                codeUrl={config.type === 'qr' ? qrCodeUrl : barcodeUrl}
+                labelId={labelId}
+              />
+            ) : config.labelSize === 'small' ? (
+              <SmallLabelPreview
+                item={item}
+                codeUrl={config.type === 'qr' ? qrCodeUrl : barcodeUrl}
+                labelId={labelId}
+                type={config.type}
+              />
+            ) : (
+              <ExtraSmallLabelPreview
+                item={item}
+                codeUrl={config.type === 'qr' ? qrCodeUrl : barcodeUrl}
+                labelId={labelId}
+                type={config.type}
               />
             )}
 
@@ -793,8 +872,8 @@ function ToggleSwitch({
   )
 }
 
-// QR Large Label Preview Component
-function QRLargeLabelPreview({
+// Extra Large Label Preview (5.5" x 8.5" half-sheet)
+function ExtraLargeLabelPreview({
   item,
   config,
   qrCodeUrl,
@@ -813,7 +892,7 @@ function QRLargeLabelPreview({
       <h3 className="text-xl font-bold text-neutral-800 leading-tight">{item.name}</h3>
 
       {/* Separator */}
-      <div className="w-full h-px bg-red-400 my-4" />
+      <div className="w-full h-px bg-neutral-300 my-4" />
 
       {/* Details */}
       <div className="space-y-2 flex-1">
@@ -859,80 +938,214 @@ function QRLargeLabelPreview({
   )
 }
 
-// Barcode Label Preview Component
-function BarcodeLabelPreview({
+// Large Label Preview (3.333" x 4")
+function LargeLabelPreview({
   item,
   config,
-  barcodeUrl,
+  codeUrl,
   labelId,
 }: {
   item: LabelWizardItem
   config: LabelConfig
-  barcodeUrl: string
+  codeUrl: string
   labelId: string
 }) {
+  const firstPhotoUrl = item.image_urls?.[0]
+
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-4 w-full max-w-[280px] aspect-[2.375/1.25] flex flex-col items-center justify-between">
-      {/* Item Name */}
-      <h3 className="text-sm font-bold text-neutral-800 text-center truncate w-full">{item.name}</h3>
-
-      {/* Barcode */}
-      <div className="flex flex-col items-center w-full">
-        {barcodeUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={barcodeUrl} alt="Barcode" className="w-full max-w-[200px] h-12 object-contain" />
-        ) : (
-          <div className="w-full max-w-[200px] h-12 bg-neutral-100 rounded flex items-center justify-center">
-            <Barcode className="h-6 w-6 text-neutral-300" />
-          </div>
-        )}
-
-        {/* Separator line */}
-        <div className="w-full max-w-[200px] h-px bg-red-400 mt-1" />
-
-        {/* Label ID */}
-        <span className="text-[10px] font-mono text-neutral-500 mt-1">{labelId}</span>
+    <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-5 w-full max-w-[240px] aspect-[4/3.333] flex flex-col relative">
+      {/* Top row: Name and QR */}
+      <div className="flex justify-between gap-2">
+        <h3 className="text-base font-bold text-neutral-800 leading-tight flex-1">{item.name}</h3>
+        <div className="flex flex-col items-center shrink-0">
+          {codeUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={codeUrl} alt="Code" className="w-14 h-14" />
+          ) : (
+            <div className="w-14 h-14 bg-neutral-100 rounded flex items-center justify-center">
+              <QrCode className="h-6 w-6 text-neutral-300" />
+            </div>
+          )}
+          <span className="text-[8px] font-mono text-neutral-500 mt-0.5">{labelId}</span>
+        </div>
       </div>
+
+      {/* Separator */}
+      <div className="w-full h-px bg-neutral-300 my-2" />
+
+      {/* Details */}
+      <div className="space-y-1 flex-1">
+        {config.selectedDetails.slice(0, 2).map((field) => {
+          const detail = getDetailDisplay(item, field)
+          return (
+            <div key={field}>
+              <div className="text-[10px] font-semibold text-neutral-600">{detail.label}</div>
+              <div className="text-xs text-neutral-500">{detail.value}</div>
+            </div>
+          )
+        })}
+      </div>
+
+      {/* Photo at bottom */}
+      {config.includePhoto && (
+        <div className="w-12 h-12 rounded border border-neutral-200 bg-neutral-50 flex items-center justify-center overflow-hidden mt-auto">
+          {firstPhotoUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={firstPhotoUrl} alt={item.name} className="w-full h-full object-cover" />
+          ) : (
+            <span className="text-[8px] text-neutral-400">Photo</span>
+          )}
+        </div>
+      )}
     </div>
   )
 }
 
-// Standard Label Preview (QR small/medium)
-function StandardLabelPreview({
+// Medium Label Preview (2" x 4")
+function MediumLabelPreview({
   item,
   config,
-  qrCodeUrl,
+  codeUrl,
   labelId,
 }: {
   item: LabelWizardItem
   config: LabelConfig
-  qrCodeUrl: string
+  codeUrl: string
   labelId: string
 }) {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-4 w-full max-w-[280px] aspect-[2.375/1.25] flex items-center justify-between gap-3">
+    <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-3 w-full max-w-[280px] aspect-[4/2] flex items-center justify-between gap-3">
       {/* Left - Name and details */}
       <div className="flex-1 min-w-0">
-        <h3 className="text-sm font-bold text-neutral-800 truncate">{item.name}</h3>
+        <h3 className="text-sm font-bold text-neutral-800 leading-tight line-clamp-2">{item.name}</h3>
         {config.selectedDetails.length > 0 && (
           <p className="text-xs text-neutral-500 mt-1 truncate">
-            {getDetailDisplay(item, config.selectedDetails[0]).value}
+            {getDetailDisplay(item, config.selectedDetails[0]).label}: {getDetailDisplay(item, config.selectedDetails[0]).value}
           </p>
         )}
       </div>
 
-      {/* Right - QR */}
+      {/* Right - Code */}
       <div className="flex flex-col items-center shrink-0">
-        {qrCodeUrl ? (
+        {codeUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
-          <img src={qrCodeUrl} alt="QR Code" className="w-12 h-12" />
+          <img src={codeUrl} alt="Code" className="w-14 h-14" />
         ) : (
-          <div className="w-12 h-12 bg-neutral-100 rounded flex items-center justify-center">
+          <div className="w-14 h-14 bg-neutral-100 rounded flex items-center justify-center">
             <QrCode className="h-6 w-6 text-neutral-300" />
           </div>
         )}
         <span className="text-[8px] font-mono text-neutral-500 mt-0.5">{labelId}</span>
       </div>
+    </div>
+  )
+}
+
+// Small Label Preview (1.333" x 4")
+function SmallLabelPreview({
+  item,
+  codeUrl,
+  labelId,
+  type,
+}: {
+  item: LabelWizardItem
+  codeUrl: string
+  labelId: string
+  type: 'qr' | 'barcode'
+}) {
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-2 w-full max-w-[280px] aspect-[4/1.333] flex items-center justify-between gap-2">
+      {/* Left - Name */}
+      <div className="flex-1 min-w-0">
+        <h3 className="text-xs font-bold text-neutral-800 leading-tight line-clamp-2">{item.name}</h3>
+        <span className="text-[8px] font-mono text-neutral-500">{labelId}</span>
+      </div>
+
+      {/* Right - Code */}
+      <div className="shrink-0">
+        {codeUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={codeUrl} alt="Code" className="w-10 h-10" />
+        ) : (
+          <div className="w-10 h-10 bg-neutral-100 rounded flex items-center justify-center">
+            {type === 'qr' ? (
+              <QrCode className="h-5 w-5 text-neutral-300" />
+            ) : (
+              <Barcode className="h-5 w-5 text-neutral-300" />
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// Extra Small Label Preview (1" x 2.625")
+function ExtraSmallLabelPreview({
+  item,
+  codeUrl,
+  labelId,
+  type,
+}: {
+  item: LabelWizardItem
+  codeUrl: string
+  labelId: string
+  type: 'qr' | 'barcode'
+}) {
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-1.5 w-full max-w-[200px] aspect-[2.625/1] flex items-center justify-between gap-1">
+      {/* Left - Name */}
+      <div className="flex-1 min-w-0">
+        <h3 className="text-[10px] font-bold text-neutral-800 leading-tight truncate">{item.name}</h3>
+        <span className="text-[6px] font-mono text-neutral-500">{labelId}</span>
+      </div>
+
+      {/* Right - Code */}
+      <div className="shrink-0">
+        {codeUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={codeUrl} alt="Code" className="w-8 h-8" />
+        ) : (
+          <div className="w-8 h-8 bg-neutral-100 rounded flex items-center justify-center">
+            {type === 'qr' ? (
+              <QrCode className="h-4 w-4 text-neutral-300" />
+            ) : (
+              <Barcode className="h-4 w-4 text-neutral-300" />
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// Thermal Label Preview (0.75" x 2" for DYMO)
+function ThermalLabelPreview({
+  item,
+  barcodeUrl,
+  labelId,
+}: {
+  item: LabelWizardItem
+  barcodeUrl: string
+  labelId: string
+}) {
+  return (
+    <div className="bg-white rounded-lg shadow-sm border border-neutral-200 p-2 w-full max-w-[200px] aspect-[2/0.75] flex flex-col items-center justify-center gap-0.5">
+      {/* Item Name */}
+      <h3 className="text-[9px] font-bold text-neutral-800 text-center truncate w-full">{item.name}</h3>
+
+      {/* Barcode */}
+      {barcodeUrl ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={barcodeUrl} alt="Barcode" className="w-full max-w-[150px] h-6 object-contain" />
+      ) : (
+        <div className="w-full max-w-[150px] h-6 bg-neutral-100 rounded flex items-center justify-center">
+          <Barcode className="h-4 w-4 text-neutral-300" />
+        </div>
+      )}
+
+      {/* Label ID */}
+      <span className="text-[6px] font-mono text-neutral-500">{labelId}</span>
     </div>
   )
 }

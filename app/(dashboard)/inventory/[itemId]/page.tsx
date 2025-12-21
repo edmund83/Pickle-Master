@@ -27,6 +27,7 @@ import { ItemQuickActions } from './components/item-quick-actions'
 import { ItemAdvancedPanels } from './components/item-advanced-panels'
 import { TagsManager } from './components/tags-manager'
 import PrintLabelButton from './components/print-label-button'
+import QRBarcodeSection from './components/qr-barcode-section'
 
 interface FeaturesEnabled {
   multi_location?: boolean
@@ -424,18 +425,33 @@ export default async function ItemDetailPage({ params }: PageProps) {
                   <span className="text-neutral-500">Barcode</span>
                   <span className="font-mono text-neutral-900">{item.barcode || '-'}</span>
                 </div>
-                {item.qr_code && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-neutral-500">QR Code</span>
-                    <QrCode className="h-4 w-4 text-neutral-600" />
-                  </div>
-                )}
                 <div className="flex justify-between">
                   <span className="text-neutral-500">Serial #</span>
                   <span className="font-mono text-neutral-900">{item.serial_number || '-'}</span>
                 </div>
               </div>
             </div>
+
+            {/* QR & Barcode Card */}
+            <QRBarcodeSection
+              item={{
+                id: item.id,
+                name: item.name,
+                sku: item.sku,
+                barcode: item.barcode,
+                price: item.price,
+                cost_price: item.cost_price,
+                currency: item.currency,
+                quantity: item.quantity,
+                min_quantity: item.min_quantity,
+                notes: item.notes,
+                description: item.description,
+                image_urls: item.image_urls,
+                tags: itemTags.map((t) => ({ id: t.id, name: t.name, color: t.color || '#6b7280' })),
+              }}
+              tenantLogo={tenantLogo}
+              userEmail={userEmail}
+            />
 
             {/* Tags Card */}
             <div className="rounded-xl border border-neutral-200 bg-white p-6">
