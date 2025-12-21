@@ -8,6 +8,7 @@ interface DetailsSelectorProps {
   selected: DetailField[]
   onChange: (selected: DetailField[]) => void
   disabled?: boolean
+  maxSelections?: number
 }
 
 const DETAIL_OPTIONS: { value: DetailField; label: string; description: string }[] = [
@@ -19,7 +20,7 @@ const DETAIL_OPTIONS: { value: DetailField; label: string; description: string }
   { value: 'sku', label: 'SKU', description: 'Stock keeping unit' },
 ]
 
-export default function DetailsSelector({ selected, onChange, disabled }: DetailsSelectorProps) {
+export default function DetailsSelector({ selected, onChange, disabled, maxSelections }: DetailsSelectorProps) {
   const [isOpen, setIsOpen] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
@@ -39,9 +40,17 @@ export default function DetailsSelector({ selected, onChange, disabled }: Detail
     if (selected.includes(value)) {
       onChange(selected.filter((v) => v !== value))
     } else {
-      onChange([...selected, value])
+      // Check if we've reached the maximum selections
+      if (maxSelections && selected.length >= maxSelections) {
+        // Replace the last selected item
+        onChange([...selected.slice(0, -1), value])
+      } else {
+        onChange([...selected, value])
+      }
     }
   }
+
+  const isAtMaxSelections = maxSelections !== undefined && selected.length >= maxSelections
 
   const getDisplayText = () => {
     if (selected.length === 0) return 'Select details...'
@@ -82,7 +91,13 @@ export default function DetailsSelector({ selected, onChange, disabled }: Detail
           <div className="px-3 py-2 border-b border-neutral-100">
             <div className="flex items-center gap-2 text-xs text-neutral-500">
               <HelpCircle className="h-3 w-3" />
-              <span>Select fields to display on label</span>
+              <span>
+                {maxSelections === 1
+                  ? 'Select 1 field to display'
+                  : maxSelections
+                    ? `Select up to ${maxSelections} fields to display`
+                    : 'Select fields to display on label'}
+              </span>
             </div>
           </div>
 

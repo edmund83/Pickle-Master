@@ -116,7 +116,7 @@ export async function updateItemQuantity(
 
 export async function updateItemField(
     itemId: string,
-    field: 'name' | 'sku' | 'location' | 'price' | 'cost_price' | 'min_quantity' | 'quantity',
+    field: 'name' | 'sku' | 'barcode' | 'serial_number' | 'location' | 'price' | 'cost_price' | 'min_quantity' | 'quantity',
     value: string | number
 ): Promise<ActionResult<void>> {
     const supabase = await createClient()

@@ -9,7 +9,23 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
-_No unreleased changes._
+### Added
+
+#### Sortly-Compatible Label System
+- **5 QR Label Sizes** matching Sortly's label options:
+  - Extra Large (5½" × 8½") - Half sheet, 2/sheet - Avery 8126
+  - Large (3⅓" × 4") - 6/sheet - Avery 5164/8164
+  - Medium (2" × 4") - 10/sheet - Avery 5163/8163
+  - Small (1⅓" × 4") - 14/sheet - Avery 5162/8162
+  - Extra Small (1" × 2⅝") - 30/sheet - Avery 5160/8160
+- **Thermal Printer Support** for DYMO LabelWriter (¾" × 2" labels)
+- **Dynamic Label Features** based on size:
+  - Extra Large/Large: Photo, logo, up to 3 details, note
+  - Medium: 1 detail field only
+  - Small/Extra Small/Thermal: Name and code only
+- **Live Preview Components** for all 6 label sizes
+- **Smart UI** that hides unavailable options for smaller label sizes
+- Updated Avery product compatibility references
 
 ---
 

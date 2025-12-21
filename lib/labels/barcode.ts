@@ -23,12 +23,19 @@ export interface LabelConfig {
 export const PAPER_SIZES = {
   letter: { width: 8.5, height: 11, name: 'US Letter (8.5in x 11in)' },
   a4: { width: 8.27, height: 11.69, name: 'A4 (210mm x 297mm)' },
+  label_printer: { width: 2, height: 0.75, name: 'Label Printer (DYMO)' },
 }
 
+// Sortly-compatible label sizes
 export const LABEL_SIZES = {
-  small: { width: 2, height: 1, name: 'Small (2in x 1in)', perSheet: 30 },
-  medium: { width: 2.375, height: 1.25, name: 'Medium (2 3/8in x 1 1/4in)', perSheet: 18 },
-  large: { width: 4, height: 2, name: 'Large (4in x 2in)', perSheet: 10 },
+  // QR Label sizes (US Letter)
+  extra_large: { width: 5.5, height: 8.5, name: 'Extra Large (5 1/2in x 8 1/2in)', perSheet: 2, cols: 1, rows: 2 },
+  large: { width: 4, height: 3.333, name: 'Large (3 1/3in x 4in)', perSheet: 6, cols: 2, rows: 3 },
+  medium: { width: 4, height: 2, name: 'Medium (2in x 4in)', perSheet: 10, cols: 2, rows: 5 },
+  small: { width: 4, height: 1.333, name: 'Small (1 1/3in x 4in)', perSheet: 14, cols: 2, rows: 7 },
+  extra_small: { width: 2.625, height: 1, name: 'Extra Small (1in x 2 5/8in)', perSheet: 30, cols: 3, rows: 10 },
+  // Thermal printer (DYMO)
+  thermal: { width: 2, height: 0.75, name: 'Thermal (3/4in x 2in)', perSheet: 1, cols: 1, rows: 1 },
 }
 
 /**
@@ -114,34 +121,29 @@ export function formatLabelId(id: string): string {
  * Calculate labels per sheet based on paper and label size
  */
 export function calculateLabelsPerSheet(
-  paperSize: keyof typeof PAPER_SIZES,
+  _paperSize: keyof typeof PAPER_SIZES,
   labelSize: keyof typeof LABEL_SIZES
 ): { rows: number; cols: number; total: number } {
-  const paper = PAPER_SIZES[paperSize]
   const label = LABEL_SIZES[labelSize]
 
-  // Account for margins (0.5in on each side)
-  const usableWidth = paper.width - 1
-  const usableHeight = paper.height - 1
-
-  const cols = Math.floor(usableWidth / label.width)
-  const rows = Math.floor(usableHeight / label.height)
-
   return {
-    rows,
-    cols,
-    total: rows * cols,
+    rows: label.rows,
+    cols: label.cols,
+    total: label.perSheet,
   }
 }
 
 /**
- * Get compatible label products
+ * Get compatible label products (Avery and equivalents)
  */
 export function getCompatibleProducts(labelSize: keyof typeof LABEL_SIZES): string[] {
   const products: Record<string, string[]> = {
-    small: ['Avery 5160', 'Avery 8160'],
-    medium: ['Avery 6871', 'Avery 30330'],
-    large: ['Avery 5163', 'Avery 8463'],
+    extra_large: ['Avery 8126', 'Half Sheet'],
+    large: ['Avery 5164', 'Avery 8164'],
+    medium: ['Avery 5163', 'Avery 8163'],
+    small: ['Avery 5162', 'Avery 8162'],
+    extra_small: ['Avery 5160', 'Avery 8160'],
+    thermal: ['DYMO 30330', 'DYMO 30252'],
   }
 
   return products[labelSize] || []
