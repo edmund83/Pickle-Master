@@ -291,6 +291,80 @@ export type Database = {
           updated_at?: string | null
         }
       }
+      item_reminders: {
+        Row: {
+          id: string
+          tenant_id: string
+          item_id: string
+          created_by: string | null
+          reminder_type: 'low_stock' | 'expiry' | 'restock'
+          title: string | null
+          message: string | null
+          threshold: number | null
+          comparison_operator: 'lte' | 'lt' | 'gt' | 'gte' | 'eq'
+          days_before_expiry: number | null
+          scheduled_at: string | null
+          recurrence: 'once' | 'daily' | 'weekly' | 'monthly'
+          recurrence_end_date: string | null
+          notify_in_app: boolean
+          notify_email: boolean
+          notify_user_ids: string[] | null
+          status: 'active' | 'paused' | 'triggered' | 'expired'
+          last_triggered_at: string | null
+          next_trigger_at: string | null
+          trigger_count: number
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          item_id: string
+          created_by?: string | null
+          reminder_type: 'low_stock' | 'expiry' | 'restock'
+          title?: string | null
+          message?: string | null
+          threshold?: number | null
+          comparison_operator?: 'lte' | 'lt' | 'gt' | 'gte' | 'eq'
+          days_before_expiry?: number | null
+          scheduled_at?: string | null
+          recurrence?: 'once' | 'daily' | 'weekly' | 'monthly'
+          recurrence_end_date?: string | null
+          notify_in_app?: boolean
+          notify_email?: boolean
+          notify_user_ids?: string[] | null
+          status?: 'active' | 'paused' | 'triggered' | 'expired'
+          last_triggered_at?: string | null
+          next_trigger_at?: string | null
+          trigger_count?: number
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          item_id?: string
+          created_by?: string | null
+          reminder_type?: 'low_stock' | 'expiry' | 'restock'
+          title?: string | null
+          message?: string | null
+          threshold?: number | null
+          comparison_operator?: 'lte' | 'lt' | 'gt' | 'gte' | 'eq'
+          days_before_expiry?: number | null
+          scheduled_at?: string | null
+          recurrence?: 'once' | 'daily' | 'weekly' | 'monthly'
+          recurrence_end_date?: string | null
+          notify_in_app?: boolean
+          notify_email?: boolean
+          notify_user_ids?: string[] | null
+          status?: 'active' | 'paused' | 'triggered' | 'expired'
+          last_triggered_at?: string | null
+          next_trigger_at?: string | null
+          trigger_count?: number
+          created_at?: string | null
+          updated_at?: string | null
+        }
+      }
       activity_logs: {
         Row: {
           action_type: string
@@ -1491,6 +1565,13 @@ export type Database = {
         | 'team'
         | 'alert'
         | 'welcome'
+        | 'reminder_low_stock'
+        | 'reminder_expiry'
+        | 'reminder_restock'
+      reminder_type_enum: 'low_stock' | 'expiry' | 'restock'
+      reminder_recurrence_enum: 'once' | 'daily' | 'weekly' | 'monthly'
+      reminder_status_enum: 'active' | 'paused' | 'triggered' | 'expired'
+      comparison_operator_enum: 'lte' | 'lt' | 'gt' | 'gte' | 'eq'
       pick_list_status_enum: 'draft' | 'in_progress' | 'completed' | 'cancelled'
       po_status_enum:
         | 'draft'
@@ -1542,6 +1623,7 @@ export type Location = Tables<'locations'>
 export type LocationStock = Tables<'location_stock'>
 export type StockTransfer = Tables<'stock_transfers'>
 export type Lot = Tables<'lots'>
+export type ItemReminder = Tables<'item_reminders'>
 
 // Enum types
 export type ItemStatus = Database['public']['Enums']['item_status_enum']
@@ -1555,6 +1637,10 @@ export type ActivityAction = Database['public']['Enums']['activity_action_enum']
 export type EntityType = Database['public']['Enums']['entity_type_enum']
 export type AlertType = Database['public']['Enums']['alert_type_enum']
 export type FieldType = Database['public']['Enums']['field_type_enum']
+export type ReminderType = Database['public']['Enums']['reminder_type_enum']
+export type ReminderRecurrence = Database['public']['Enums']['reminder_recurrence_enum']
+export type ReminderStatus = Database['public']['Enums']['reminder_status_enum']
+export type ComparisonOperator = Database['public']['Enums']['comparison_operator_enum']
 
 // Checkout-related types
 export type CheckoutAssigneeType = 'person' | 'job' | 'location'
@@ -1675,4 +1761,27 @@ export interface ShippingDimensions {
   width: number | null
   height: number | null
   dimension_unit: string
+}
+
+// Reminder-related types
+export interface ItemReminderWithDetails extends ItemReminder {
+  created_by_name?: string
+  trigger_description?: string
+}
+
+// Reminder form input type
+export interface CreateReminderInput {
+  itemId: string
+  reminderType: ReminderType
+  title?: string
+  message?: string
+  threshold?: number
+  comparisonOperator?: ComparisonOperator
+  daysBeforeExpiry?: number
+  scheduledAt?: string
+  recurrence?: ReminderRecurrence
+  recurrenceEndDate?: string
+  notifyInApp?: boolean
+  notifyEmail?: boolean
+  notifyUserIds?: string[]
 }

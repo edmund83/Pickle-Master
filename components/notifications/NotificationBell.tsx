@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-import { Bell, Check, AlertTriangle, Package, Users, Settings, X } from 'lucide-react'
+import { Bell, Check, AlertTriangle, Package, Users, Settings, X, Calendar, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Notification } from '@/types/database.types'
 
@@ -13,6 +13,9 @@ const NOTIFICATION_ICONS: Record<string, React.ElementType> = {
   system: Settings,
   team: Users,
   alert: Bell,
+  reminder_low_stock: AlertTriangle,
+  reminder_expiry: Calendar,
+  reminder_restock: RefreshCw,
 }
 
 const NOTIFICATION_COLORS: Record<string, string> = {
@@ -21,6 +24,9 @@ const NOTIFICATION_COLORS: Record<string, string> = {
   system: 'bg-neutral-100 text-neutral-600',
   team: 'bg-purple-100 text-purple-600',
   alert: 'bg-red-100 text-red-600',
+  reminder_low_stock: 'bg-yellow-100 text-yellow-600',
+  reminder_expiry: 'bg-orange-100 text-orange-600',
+  reminder_restock: 'bg-blue-100 text-blue-600',
 }
 
 interface NotificationBellProps {
