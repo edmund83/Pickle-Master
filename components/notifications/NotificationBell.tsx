@@ -26,9 +26,10 @@ const NOTIFICATION_COLORS: Record<string, string> = {
 interface NotificationBellProps {
   className?: string
   variant?: 'default' | 'sidebar' | 'mobile'
+  isExpanded?: boolean
 }
 
-export function NotificationBell({ className, variant = 'default' }: NotificationBellProps) {
+export function NotificationBell({ className, variant = 'default', isExpanded = false }: NotificationBellProps) {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [unreadCount, setUnreadCount] = useState(0)
   const [isOpen, setIsOpen] = useState(false)
@@ -128,21 +129,28 @@ export function NotificationBell({ className, variant = 'default' }: Notificatio
     return date.toLocaleDateString()
   }
 
-  // Sidebar variant - just shows the icon with badge
+  // Sidebar variant - shows icon with optional label when expanded
   if (variant === 'sidebar') {
     return (
       <Link
         href="/notifications"
         className={cn(
-          'relative flex h-10 w-10 items-center justify-center rounded-xl transition-colors',
+          'relative flex items-center rounded-xl transition-colors',
           'text-white/70 hover:bg-white/10 hover:text-white',
+          isExpanded ? 'h-10 gap-3 px-3' : 'h-10 w-10 justify-center',
           className
         )}
-        title="Notifications"
+        title={!isExpanded ? 'Notifications' : undefined}
       >
-        <Bell className="h-5 w-5" />
+        <Bell className="h-5 w-5 shrink-0" />
+        {isExpanded && (
+          <span className="text-sm font-medium">Notifications</span>
+        )}
         {unreadCount > 0 && (
-          <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-medium text-white">
+          <span className={cn(
+            'flex h-4 w-4 items-center justify-center rounded-full bg-red-500 text-[10px] font-medium text-white',
+            isExpanded ? 'ml-auto' : 'absolute -top-0.5 -right-0.5'
+          )}>
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}

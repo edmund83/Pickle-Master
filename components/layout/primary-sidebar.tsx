@@ -133,9 +133,7 @@ export function PrimarySidebar({ isExpanded = false, onToggle }: PrimarySidebarP
         })}
 
         {/* Notifications with badge */}
-        <div className={cn(isExpanded ? 'px-0' : '')}>
-          <NotificationBell variant="sidebar" />
-        </div>
+        <NotificationBell variant="sidebar" isExpanded={isExpanded} />
 
         {/* Logout Button */}
         <button

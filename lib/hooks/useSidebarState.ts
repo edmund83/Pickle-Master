@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from 'react'
 
 const STORAGE_KEY = 'pickle-sidebar-expanded'
+const STORAGE_VERSION_KEY = 'pickle-sidebar-version'
+const CURRENT_VERSION = '2' // Bump this to reset user preferences
 
 export function useSidebarState() {
   // Default to expanded for better visibility
@@ -11,11 +13,19 @@ export function useSidebarState() {
 
   // Load from localStorage after hydration
   useEffect(() => {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored !== null) {
-      setIsExpanded(stored === 'true')
+    // Check version - if outdated, reset to new default (expanded)
+    const version = localStorage.getItem(STORAGE_VERSION_KEY)
+    if (version !== CURRENT_VERSION) {
+      // Reset to expanded for new version
+      localStorage.setItem(STORAGE_KEY, 'true')
+      localStorage.setItem(STORAGE_VERSION_KEY, CURRENT_VERSION)
+      setIsExpanded(true)
+    } else {
+      const stored = localStorage.getItem(STORAGE_KEY)
+      if (stored !== null) {
+        setIsExpanded(stored === 'true')
+      }
     }
-    // If no stored preference, keep default (expanded)
     setIsHydrated(true)
   }, [])
 
