@@ -3,21 +3,10 @@ import { redirect } from 'next/navigation'
 import type { InventoryItem, Folder } from '@/types/database.types'
 import { MobileInventoryView } from './components/mobile-inventory-view'
 import { InventoryDesktopView } from './components/inventory-desktop-view'
-import type { FolderStats } from './components/folder-tree-view'
-
-interface FolderStatsRow {
-  folder_id: string
-  folder_name: string
-  folder_color: string | null
-  item_count: number
-  low_stock_count: number
-  total_value: number
-}
 
 async function getInventoryData(query?: string): Promise<{
   items: InventoryItem[],
   folders: Folder[],
-  folderStats: Map<string, FolderStats>
 }> {
   const supabase = await createClient()
 
@@ -34,7 +23,7 @@ async function getInventoryData(query?: string): Promise<{
   const profile = profileData as { tenant_id: string | null } | null
 
   if (!profile?.tenant_id) {
-    return { items: [], folders: [], folderStats: new Map() }
+    return { items: [], folders: [] }
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -58,27 +47,9 @@ async function getInventoryData(query?: string): Promise<{
     .eq('tenant_id', profile.tenant_id)
     .order('sort_order', { ascending: true })
 
-  // Fetch folder stats using RPC function
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: folderStatsData } = await (supabase as any)
-    .rpc('get_folder_stats')
-
-  // Convert to Map for efficient lookup
-  const folderStats = new Map<string, FolderStats>(
-    ((folderStatsData || []) as FolderStatsRow[]).map((stat) => [
-      stat.folder_id,
-      {
-        itemCount: Number(stat.item_count) || 0,
-        lowStockCount: Number(stat.low_stock_count) || 0,
-        totalValue: Number(stat.total_value) || 0,
-      },
-    ])
-  )
-
   return {
     items: (items || []) as InventoryItem[],
     folders: (folders || []) as Folder[],
-    folderStats,
   }
 }
 
@@ -86,10 +57,7 @@ export default async function InventoryPage(props: { searchParams?: Promise<{ q?
   const searchParams = await props.searchParams
   const query = searchParams?.q
   const view = searchParams?.view || 'grid'
-  const { items, folders, folderStats } = await getInventoryData(query)
-
-  // Convert Map to serializable object for client component
-  const folderStatsObj = Object.fromEntries(folderStats)
+  const { items, folders } = await getInventoryData(query)
 
   return (
     <>
@@ -99,7 +67,6 @@ export default async function InventoryPage(props: { searchParams?: Promise<{ q?
           items={items}
           folders={folders}
           view={view}
-          folderStatsObj={folderStatsObj}
         />
       </div>
 

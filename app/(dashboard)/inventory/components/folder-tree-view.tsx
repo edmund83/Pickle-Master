@@ -21,6 +21,7 @@ interface FolderTreeViewProps {
   folders: Folder[]
   folderStats: Map<string, FolderStats>
   selectedFolderId: string | null
+  highlightedFolderId?: string | null
   onFolderSelect: (folderId: string | null) => void
   expandedFolderIds: Set<string>
   onToggleExpand: (folderId: string) => void
@@ -33,10 +34,12 @@ interface FolderTreeItemProps {
   stats: FolderStats | undefined
   isExpanded: boolean
   isSelected: boolean
+  isHighlighted: boolean
   hasChildren: boolean
   expandedFolderIds: Set<string>
   folderStats: Map<string, FolderStats>
   selectedFolderId: string | null
+  highlightedFolderId?: string | null
   onToggle: (folderId: string) => void
   onSelect: (folderId: string) => void
   onAddSubfolder?: (parentId: string) => void
@@ -97,10 +100,12 @@ function FolderTreeItem({
   stats,
   isExpanded,
   isSelected,
+  isHighlighted,
   hasChildren,
   expandedFolderIds,
   folderStats,
   selectedFolderId,
+  highlightedFolderId,
   onToggle,
   onSelect,
   onAddSubfolder,
@@ -194,14 +199,18 @@ function FolderTreeItem({
   const hasLowStock = stats && stats.lowStockCount > 0
   const itemCount = stats?.itemCount ?? 0
 
+  // Determine visual state: highlighted (current item's folder) takes priority styling
+  const isActive = isSelected || isHighlighted
+
   return (
     <div>
       <div
         className={cn(
           'group flex w-full cursor-pointer items-center rounded-md py-1.5 text-[13px] transition-all duration-150',
           'hover:bg-neutral-100/80',
-          isSelected && 'bg-pickle-50/80 text-pickle-700',
-          !isSelected && 'text-neutral-700'
+          isActive && 'bg-pickle-50/80 text-pickle-700',
+          isHighlighted && !isSelected && 'border-l-2 border-pickle-500',
+          !isActive && 'text-neutral-700'
         )}
         style={{ paddingLeft: `${8 + depth * 16}px`, paddingRight: '8px' }}
         onClick={handleSelect}
@@ -214,7 +223,7 @@ function FolderTreeItem({
               className={cn(
                 'flex h-4 w-4 items-center justify-center rounded transition-colors',
                 'hover:bg-neutral-200/80',
-                isSelected && 'hover:bg-pickle-100'
+                isActive && 'hover:bg-pickle-100'
               )}
               aria-label={isExpanded ? 'Collapse folder' : 'Expand folder'}
             >
@@ -222,7 +231,7 @@ function FolderTreeItem({
                 className={cn(
                   'h-3 w-3 transition-transform duration-200',
                   isExpanded && 'rotate-90',
-                  isSelected ? 'text-pickle-500' : 'text-neutral-400'
+                  isActive ? 'text-pickle-500' : 'text-neutral-400'
                 )}
               />
             </button>
@@ -270,7 +279,7 @@ function FolderTreeItem({
           <span
             className={cn(
               'min-w-0 flex-1 truncate',
-              isSelected && 'font-medium'
+              isActive && 'font-medium'
             )}
             title={folder.name}
             onDoubleClick={handleStartEdit}
@@ -289,7 +298,7 @@ function FolderTreeItem({
                 className={cn(
                   'flex h-5 w-5 items-center justify-center rounded transition-colors',
                   'text-neutral-400 hover:bg-neutral-200 hover:text-neutral-600',
-                  isSelected && 'hover:bg-pickle-100 hover:text-pickle-700'
+                  isActive && 'hover:bg-pickle-100 hover:text-pickle-700'
                 )}
                 title="Rename"
               >
@@ -304,7 +313,7 @@ function FolderTreeItem({
                   className={cn(
                     'flex h-5 w-5 items-center justify-center rounded transition-colors',
                     'text-neutral-400 hover:bg-neutral-200 hover:text-neutral-600',
-                    isSelected && 'hover:bg-pickle-100 hover:text-pickle-700'
+                    isActive && 'hover:bg-pickle-100 hover:text-pickle-700'
                   )}
                   title="More options"
                 >
@@ -344,7 +353,7 @@ function FolderTreeItem({
             )}
             <span className={cn(
               'min-w-5 text-right text-xs tabular-nums',
-              isSelected ? 'text-pickle-400' : 'text-neutral-400'
+              isActive ? 'text-pickle-400' : 'text-neutral-400'
             )}>
               {itemCount}
             </span>
@@ -363,10 +372,12 @@ function FolderTreeItem({
               stats={folderStats.get(child.id)}
               isExpanded={expandedFolderIds.has(child.id)}
               isSelected={selectedFolderId === child.id}
+              isHighlighted={highlightedFolderId === child.id}
               hasChildren={child.children.length > 0}
               expandedFolderIds={expandedFolderIds}
               folderStats={folderStats}
               selectedFolderId={selectedFolderId}
+              highlightedFolderId={highlightedFolderId}
               onToggle={onToggle}
               onSelect={onSelect}
               onAddSubfolder={onAddSubfolder}
@@ -383,6 +394,7 @@ export function FolderTreeView({
   folders,
   folderStats,
   selectedFolderId,
+  highlightedFolderId,
   onFolderSelect,
   expandedFolderIds,
   onToggleExpand,
@@ -401,16 +413,18 @@ export function FolderTreeView({
         stats={folderStats.get(node.id)}
         isExpanded={expandedFolderIds.has(node.id)}
         isSelected={selectedFolderId === node.id}
+        isHighlighted={highlightedFolderId === node.id}
         hasChildren={node.children.length > 0}
         expandedFolderIds={expandedFolderIds}
         folderStats={folderStats}
         selectedFolderId={selectedFolderId}
+        highlightedFolderId={highlightedFolderId}
         onToggle={onToggleExpand}
         onSelect={onFolderSelect}
         onAddSubfolder={onAddSubfolder}
       />
     ))
-  }, [folderStats, expandedFolderIds, selectedFolderId, onToggleExpand, onFolderSelect, onAddSubfolder])
+  }, [folderStats, expandedFolderIds, selectedFolderId, highlightedFolderId, onToggleExpand, onFolderSelect, onAddSubfolder])
 
   if (tree.length === 0) {
     return (
