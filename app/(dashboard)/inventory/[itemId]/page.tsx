@@ -11,24 +11,21 @@ import {
   FileText,
   Clock,
   Edit,
-  Trash2,
   MoreHorizontal,
-  Plus,
-  Minus,
-  FolderInput,
   History,
-  QrCode
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Card } from '@/components/ui/card'
 import type { InventoryItem, Folder, Tag as TagType } from '@/types/database.types'
 import { format } from 'date-fns'
-import { ItemCheckoutSection } from './item-checkout-section'
+import { ItemCheckoutHistoryCard, ItemCheckoutStatusCard } from './item-checkout-section'
 import { ItemQuickActions } from './components/item-quick-actions'
 import { ItemAdvancedPanels } from './components/item-advanced-panels'
 import { TagsManager } from './components/tags-manager'
 import PrintLabelButton from './components/print-label-button'
 import QRBarcodeSection from './components/qr-barcode-section'
 import { SetHighlightedFolder } from './components/set-highlighted-folder'
+import { ItemDetailCard } from './components/item-detail-card'
 
 interface FeaturesEnabled {
   multi_location?: boolean
@@ -247,86 +244,87 @@ export default async function ItemDetailPage({ params }: PageProps) {
       <div className="flex-1 overflow-y-auto bg-neutral-50 p-6">
         <div className="mx-auto max-w-6xl">
           {/* Hero Section */}
-          <div className="mb-6 grid gap-6 lg:grid-cols-2">
+          <div className="mb-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,420px)]">
             {/* Photo Gallery */}
-            <div className="rounded-xl border border-neutral-200 bg-white p-4">
-              <div className="flex aspect-square items-center justify-center rounded-lg bg-neutral-100">
-                {item.image_urls && item.image_urls.length > 0 ? (
-                  <img
-                    src={item.image_urls[0]}
-                    alt={item.name}
-                    className="h-full w-full rounded-lg object-cover"
-                  />
-                ) : (
-                  <Package className="h-24 w-24 text-neutral-300" />
+            <Card className="rounded-xl shadow-none">
+              <div className="p-4">
+                <div className="flex aspect-square items-center justify-center rounded-lg bg-neutral-100">
+                  {item.image_urls && item.image_urls.length > 0 ? (
+                    <img
+                      src={item.image_urls[0]}
+                      alt={item.name}
+                      className="h-full w-full rounded-lg object-cover"
+                    />
+                  ) : (
+                    <Package className="h-24 w-24 text-neutral-300" />
+                  )}
+                </div>
+                {item.image_urls && item.image_urls.length > 1 && (
+                  <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
+                    {item.image_urls.map((url, index) => (
+                      <button
+                        key={index}
+                        className={`h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all ${index === 0 ? 'border-pickle-500 ring-2 ring-pickle-200' : 'border-neutral-200 hover:border-neutral-300'
+                          }`}
+                        type="button"
+                      >
+                        <img
+                          src={url}
+                          alt={`${item.name} ${index + 1}`}
+                          className="h-full w-full object-cover"
+                        />
+                      </button>
+                    ))}
+                  </div>
                 )}
               </div>
-              {item.image_urls && item.image_urls.length > 1 && (
-                <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
-                  {item.image_urls.map((url, index) => (
-                    <button
-                      key={index}
-                      className={`h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all ${index === 0 ? 'border-pickle-500 ring-2 ring-pickle-200' : 'border-neutral-200 hover:border-neutral-300'
-                        }`}
-                    >
-                      <img
-                        src={url}
-                        alt={`${item.name} ${index + 1}`}
-                        className="h-full w-full object-cover"
-                      />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            </Card>
 
-            {/* Quick Actions & Stock Info */}
-            <div className="space-y-4">
-              {/* Quick Actions */}
-              <ItemQuickActions
-                itemId={item.id}
-                currentQuantity={item.quantity}
-                unit={item.unit || 'units'}
-              />
+            {/* Inventory & Checkout */}
+            <div className="space-y-4 lg:sticky lg:top-6">
+              <ItemDetailCard
+                title="Inventory"
+                icon={<Package className="h-5 w-5" />}
+                action={
+                  <span
+                    className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs font-medium ${statusColors[item.status || 'in_stock'] || statusColors.in_stock
+                      }`}
+                  >
+                    {statusLabels[item.status || 'in_stock'] || 'In Stock'}
+                  </span>
+                }
+                contentClassName="space-y-5"
+              >
+                <ItemQuickActions
+                  itemId={item.id}
+                  currentQuantity={item.quantity}
+                  unit={item.unit || 'units'}
+                  variant="inline"
+                />
 
-              {/* Stock Card */}
-              <div className="rounded-xl border border-neutral-200 bg-white p-6">
-                <div className="flex items-center gap-2 mb-4">
-                  <Package className="h-5 w-5 text-neutral-400" />
-                  <h2 className="text-sm font-medium uppercase tracking-wide text-neutral-500">
-                    Stock Information
-                  </h2>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-neutral-500">Current Quantity</p>
-                    <p className="text-2xl font-bold text-neutral-900">{item.quantity}</p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-lg bg-neutral-50 p-3">
+                    <p className="text-xs text-neutral-500">Min quantity</p>
+                    <p className="text-lg font-semibold text-neutral-900">
+                      {item.min_quantity ?? '-'}
+                    </p>
                   </div>
-                  <div>
-                    <p className="text-sm text-neutral-500">Min Quantity</p>
-                    <p className="text-2xl font-bold text-neutral-900">{item.min_quantity || '-'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-neutral-500">Unit</p>
-                    <p className="text-lg font-medium text-neutral-900">{item.unit || 'units'}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-neutral-500">Status</p>
-                    <span
-                      className={`inline-block rounded-full border px-2 py-0.5 text-xs font-medium ${statusColors[item.status || 'in_stock']
-                        }`}
-                    >
-                      {statusLabels[item.status || 'in_stock']}
-                    </span>
+                  <div className="rounded-lg bg-neutral-50 p-3">
+                    <p className="text-xs text-neutral-500">Unit</p>
+                    <p className="text-lg font-semibold text-neutral-900">
+                      {item.unit || 'units'}
+                    </p>
                   </div>
                 </div>
-              </div>
+              </ItemDetailCard>
+
+              <ItemCheckoutStatusCard item={item} />
             </div>
           </div>
 
           {/* Checkout Section */}
-          <div className="mb-6 grid gap-4 md:grid-cols-2">
-            <ItemCheckoutSection item={item} />
+          <div className="mb-6">
+            <ItemCheckoutHistoryCard itemId={item.id} limit={5} />
           </div>
 
           {/* Advanced Panels - Multi-Location & Lot Tracking */}
@@ -344,13 +342,7 @@ export default async function ItemDetailPage({ params }: PageProps) {
           {/* Info Cards Grid */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {/* Location Card */}
-            <div className="rounded-xl border border-neutral-200 bg-white p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <MapPin className="h-5 w-5 text-neutral-400" />
-                <h2 className="text-sm font-medium uppercase tracking-wide text-neutral-500">
-                  Location
-                </h2>
-              </div>
+            <ItemDetailCard title="Location" icon={<MapPin className="h-5 w-5" />}>
               {folder ? (
                 <div className="flex items-center gap-2">
                   <div
@@ -364,16 +356,10 @@ export default async function ItemDetailPage({ params }: PageProps) {
               ) : (
                 <p className="text-neutral-400 italic">No location set</p>
               )}
-            </div>
+            </ItemDetailCard>
 
             {/* Pricing Card */}
-            <div className="rounded-xl border border-neutral-200 bg-white p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <DollarSign className="h-5 w-5 text-neutral-400" />
-                <h2 className="text-sm font-medium uppercase tracking-wide text-neutral-500">
-                  Pricing
-                </h2>
-              </div>
+            <ItemDetailCard title="Pricing" icon={<DollarSign className="h-5 w-5" />}>
               <div className="space-y-2">
                 <div className="flex justify-between">
                   <span className="text-neutral-500">Selling Price</span>
@@ -410,16 +396,10 @@ export default async function ItemDetailPage({ params }: PageProps) {
                   </div>
                 )}
               </div>
-            </div>
+            </ItemDetailCard>
 
             {/* Identifiers Card */}
-            <div className="rounded-xl border border-neutral-200 bg-white p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <Barcode className="h-5 w-5 text-neutral-400" />
-                <h2 className="text-sm font-medium uppercase tracking-wide text-neutral-500">
-                  Identifiers
-                </h2>
-              </div>
+            <ItemDetailCard title="Identifiers" icon={<Barcode className="h-5 w-5" />}>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-neutral-500">SKU</span>
@@ -434,7 +414,7 @@ export default async function ItemDetailPage({ params }: PageProps) {
                   <span className="font-mono text-neutral-900">{item.serial_number || '-'}</span>
                 </div>
               </div>
-            </div>
+            </ItemDetailCard>
 
             {/* QR & Barcode Card */}
             <QRBarcodeSection
@@ -458,19 +438,16 @@ export default async function ItemDetailPage({ params }: PageProps) {
             />
 
             {/* Tags Card */}
-            <div className="rounded-xl border border-neutral-200 bg-white p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <Tag className="h-5 w-5 text-neutral-400" />
-                  <h2 className="text-sm font-medium uppercase tracking-wide text-neutral-500">
-                    Tags
-                  </h2>
-                </div>
+            <ItemDetailCard
+              title="Tags"
+              icon={<Tag className="h-5 w-5" />}
+              action={
                 <TagsManager
                   itemId={item.id}
                   currentTagIds={itemTags.map(t => t.id)}
                 />
-              </div>
+              }
+            >
               {itemTags && itemTags.length > 0 ? (
                 <div className="flex flex-wrap gap-2">
                   {itemTags.map((tag) => (
@@ -493,16 +470,14 @@ export default async function ItemDetailPage({ params }: PageProps) {
               ) : (
                 <p className="text-neutral-400 italic">No tags assigned</p>
               )}
-            </div>
+            </ItemDetailCard>
 
             {/* Notes Card */}
-            <div className="rounded-xl border border-neutral-200 bg-white p-6 md:col-span-2">
-              <div className="flex items-center gap-2 mb-4">
-                <FileText className="h-5 w-5 text-neutral-400" />
-                <h2 className="text-sm font-medium uppercase tracking-wide text-neutral-500">
-                  Description & Notes
-                </h2>
-              </div>
+            <ItemDetailCard
+              title="Description & Notes"
+              icon={<FileText className="h-5 w-5" />}
+              className="md:col-span-2"
+            >
               <div className="space-y-4">
                 {item.description ? (
                   <div>
@@ -520,24 +495,22 @@ export default async function ItemDetailPage({ params }: PageProps) {
                   <p className="text-neutral-400 italic">No description or notes added</p>
                 )}
               </div>
-            </div>
+            </ItemDetailCard>
           </div>
 
           {/* Activity History */}
-          <div className="mt-6 rounded-xl border border-neutral-200 bg-white p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2">
-                <History className="h-5 w-5 text-neutral-400" />
-                <h2 className="text-sm font-medium uppercase tracking-wide text-neutral-500">
-                  Recent Activity
-                </h2>
-              </div>
+          <ItemDetailCard
+            title="Recent Activity"
+            icon={<History className="h-5 w-5" />}
+            action={
               <Link href={`/inventory/${item.id}/activity`}>
                 <Button variant="ghost" size="sm">
                   View All
                 </Button>
               </Link>
-            </div>
+            }
+            className="mt-6"
+          >
             {activityLogs && activityLogs.length > 0 ? (
               <div className="space-y-4">
                 {activityLogs.map((log) => (
@@ -566,7 +539,7 @@ export default async function ItemDetailPage({ params }: PageProps) {
             ) : (
               <p className="text-neutral-400 italic">No activity recorded yet</p>
             )}
-          </div>
+          </ItemDetailCard>
 
           {/* Metadata Footer */}
           <div className="mt-6 flex flex-wrap items-center justify-between gap-4 text-xs text-neutral-400">
