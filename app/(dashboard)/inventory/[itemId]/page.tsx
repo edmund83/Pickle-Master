@@ -13,6 +13,8 @@ import {
   Edit,
   MoreHorizontal,
   History,
+  Ruler,
+  ScanLine,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -412,6 +414,87 @@ export default async function ItemDetailPage({ params }: PageProps) {
                   <span className="text-neutral-500">Serial #</span>
                   <span className="font-mono text-neutral-900">{item.serial_number || '-'}</span>
                 </div>
+              </div>
+            </ItemDetailCard>
+
+            {/* Shipping & Dimensions Card */}
+            {features.shipping_dimensions && (
+              <ItemDetailCard title="Shipping & Dimensions" icon={<Ruler className="h-5 w-5" />}>
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-neutral-500">Weight</span>
+                    <span className="font-medium text-neutral-900">
+                      {item.weight ? `${item.weight} ${item.weight_unit || 'kg'}` : '-'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-neutral-500">Dimensions (L × W × H)</span>
+                    <span className="font-medium text-neutral-900">
+                      {item.length && item.width && item.height
+                        ? `${item.length} × ${item.width} × ${item.height} ${item.dimension_unit || 'cm'}`
+                        : '-'}
+                    </span>
+                  </div>
+                  {item.length && item.width && item.height && (
+                    <div className="flex justify-between border-t border-neutral-100 pt-2">
+                      <span className="text-neutral-500">Volume</span>
+                      <span className="font-medium text-neutral-900">
+                        {(item.length * item.width * item.height).toLocaleString()} {item.dimension_unit || 'cm'}³
+                      </span>
+                    </div>
+                  )}
+                  {item.weight && item.length && item.width && item.height && (
+                    <div className="flex justify-between">
+                      <span className="text-neutral-500">Volumetric Weight</span>
+                      <span className="font-medium text-neutral-900">
+                        {((item.length * item.width * item.height) / 5000).toFixed(2)} kg
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </ItemDetailCard>
+            )}
+
+            {/* Tracking & Traceability Card */}
+            <ItemDetailCard title="Tracking & Traceability" icon={<ScanLine className="h-5 w-5" />}>
+              <div className="space-y-3 text-sm">
+                <div className="flex justify-between items-center">
+                  <span className="text-neutral-500">Tracking Mode</span>
+                  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                    item.tracking_mode === 'serialized'
+                      ? 'bg-blue-100 text-blue-700'
+                      : item.tracking_mode === 'lot_expiry'
+                      ? 'bg-purple-100 text-purple-700'
+                      : 'bg-neutral-100 text-neutral-600'
+                  }`}>
+                    {item.tracking_mode === 'serialized'
+                      ? 'Serialized'
+                      : item.tracking_mode === 'lot_expiry'
+                      ? 'Lot / Expiry'
+                      : 'Standard'}
+                  </span>
+                </div>
+                {item.serial_number && (
+                  <div className="flex justify-between">
+                    <span className="text-neutral-500">Serial Number</span>
+                    <span className="font-mono font-medium text-neutral-900">{item.serial_number}</span>
+                  </div>
+                )}
+                {item.tracking_mode === 'serialized' && (
+                  <p className="text-xs text-neutral-400 pt-1 border-t border-neutral-100">
+                    Each unit has a unique serial number for individual tracking.
+                  </p>
+                )}
+                {item.tracking_mode === 'lot_expiry' && (
+                  <p className="text-xs text-neutral-400 pt-1 border-t border-neutral-100">
+                    Track by lot/batch numbers with expiry dates for FEFO picking.
+                  </p>
+                )}
+                {(!item.tracking_mode || item.tracking_mode === 'none') && !item.serial_number && (
+                  <p className="text-xs text-neutral-400">
+                    Standard quantity-based tracking without serial or lot numbers.
+                  </p>
+                )}
               </div>
             </ItemDetailCard>
 
