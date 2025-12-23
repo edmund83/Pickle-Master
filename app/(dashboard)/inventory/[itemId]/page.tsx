@@ -28,6 +28,7 @@ import PrintLabelButton from './components/print-label-button'
 import QRBarcodeSection from './components/qr-barcode-section'
 import { SetHighlightedFolder } from './components/set-highlighted-folder'
 import { ItemDetailCard } from './components/item-detail-card'
+import { InlineReminders } from './components/inline-reminders'
 
 interface FeaturesEnabled {
   multi_location?: boolean
@@ -318,6 +319,14 @@ export default async function ItemDetailPage({ params }: PageProps) {
                     </p>
                   </div>
                 </div>
+
+                {/* Inline Reminders */}
+                <div className="border-t border-neutral-100 pt-4">
+                  <InlineReminders
+                    itemId={item.id}
+                    minQuantity={item.min_quantity}
+                  />
+                </div>
               </ItemDetailCard>
             </div>
           </div>
@@ -340,7 +349,8 @@ export default async function ItemDetailPage({ params }: PageProps) {
             </div>
           )}
 
-          {/* Info Cards Grid */}
+          {/* Info Cards Grid - Priority-based rows */}
+          {/* Row 1: Key Information */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
             {/* Location Card */}
             <ItemDetailCard title="Location" icon={<MapPin className="h-5 w-5" />}>
@@ -399,62 +409,6 @@ export default async function ItemDetailPage({ params }: PageProps) {
               </div>
             </ItemDetailCard>
 
-            {/* Identifiers Card */}
-            <ItemDetailCard title="Identifiers" icon={<Barcode className="h-5 w-5" />}>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-neutral-500">SKU</span>
-                  <span className="font-mono text-neutral-900">{item.sku || '-'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-neutral-500">Barcode</span>
-                  <span className="font-mono text-neutral-900">{item.barcode || '-'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-neutral-500">Serial #</span>
-                  <span className="font-mono text-neutral-900">{item.serial_number || '-'}</span>
-                </div>
-              </div>
-            </ItemDetailCard>
-
-            {/* Shipping & Dimensions Card */}
-            {features.shipping_dimensions && (
-              <ItemDetailCard title="Shipping & Dimensions" icon={<Ruler className="h-5 w-5" />}>
-                <div className="space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-neutral-500">Weight</span>
-                    <span className="font-medium text-neutral-900">
-                      {item.weight ? `${item.weight} ${item.weight_unit || 'kg'}` : '-'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-neutral-500">Dimensions (L × W × H)</span>
-                    <span className="font-medium text-neutral-900">
-                      {item.length && item.width && item.height
-                        ? `${item.length} × ${item.width} × ${item.height} ${item.dimension_unit || 'cm'}`
-                        : '-'}
-                    </span>
-                  </div>
-                  {item.length && item.width && item.height && (
-                    <div className="flex justify-between border-t border-neutral-100 pt-2">
-                      <span className="text-neutral-500">Volume</span>
-                      <span className="font-medium text-neutral-900">
-                        {(item.length * item.width * item.height).toLocaleString()} {item.dimension_unit || 'cm'}³
-                      </span>
-                    </div>
-                  )}
-                  {item.weight && item.length && item.width && item.height && (
-                    <div className="flex justify-between">
-                      <span className="text-neutral-500">Volumetric Weight</span>
-                      <span className="font-medium text-neutral-900">
-                        {((item.length * item.width * item.height) / 5000).toFixed(2)} kg
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </ItemDetailCard>
-            )}
-
             {/* Tracking & Traceability Card */}
             <ItemDetailCard title="Tracking & Traceability" icon={<ScanLine className="h-5 w-5" />}>
               <div className="space-y-3 text-sm">
@@ -497,6 +451,96 @@ export default async function ItemDetailPage({ params }: PageProps) {
                 )}
               </div>
             </ItemDetailCard>
+          </div>
+
+          {/* Row 2: Secondary Information */}
+          <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+            {/* Identifiers Card */}
+            <ItemDetailCard title="Identifiers" icon={<Barcode className="h-5 w-5" />}>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-neutral-500">SKU</span>
+                  <span className="font-mono text-neutral-900">{item.sku || '-'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-neutral-500">Barcode</span>
+                  <span className="font-mono text-neutral-900">{item.barcode || '-'}</span>
+                </div>
+              </div>
+            </ItemDetailCard>
+
+            {/* Shipping & Dimensions Card */}
+            {features.shipping_dimensions ? (
+              <ItemDetailCard title="Shipping & Dimensions" icon={<Ruler className="h-5 w-5" />}>
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-neutral-500">Weight</span>
+                    <span className="font-medium text-neutral-900">
+                      {item.weight ? `${item.weight} ${item.weight_unit || 'kg'}` : '-'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-neutral-500">Dimensions (L × W × H)</span>
+                    <span className="font-medium text-neutral-900">
+                      {item.length && item.width && item.height
+                        ? `${item.length} × ${item.width} × ${item.height} ${item.dimension_unit || 'cm'}`
+                        : '-'}
+                    </span>
+                  </div>
+                  {item.length && item.width && item.height && (
+                    <div className="flex justify-between border-t border-neutral-100 pt-2">
+                      <span className="text-neutral-500">Volume</span>
+                      <span className="font-medium text-neutral-900">
+                        {(item.length * item.width * item.height).toLocaleString()} {item.dimension_unit || 'cm'}³
+                      </span>
+                    </div>
+                  )}
+                  {item.weight && item.length && item.width && item.height && (
+                    <div className="flex justify-between">
+                      <span className="text-neutral-500">Volumetric Weight</span>
+                      <span className="font-medium text-neutral-900">
+                        {((item.length * item.width * item.height) / 5000).toFixed(2)} kg
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </ItemDetailCard>
+            ) : (
+              /* Tags Card - show here if no shipping dimensions */
+              <ItemDetailCard
+                title="Tags"
+                icon={<Tag className="h-5 w-5" />}
+                action={
+                  <TagsManager
+                    itemId={item.id}
+                    currentTagIds={itemTags.map(t => t.id)}
+                  />
+                }
+              >
+                {itemTags && itemTags.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {itemTags.map((tag) => (
+                      <span
+                        key={tag.id}
+                        className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium"
+                        style={{
+                          backgroundColor: `${tag.color}20`,
+                          color: tag.color || '#6b7280',
+                        }}
+                      >
+                        <span
+                          className="h-2 w-2 rounded-full"
+                          style={{ backgroundColor: tag.color || '#6b7280' }}
+                        />
+                        {tag.name}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-neutral-400 italic">No tags assigned</p>
+                )}
+              </ItemDetailCard>
+            )}
 
             {/* QR & Barcode Card */}
             <QRBarcodeSection
@@ -518,47 +562,52 @@ export default async function ItemDetailPage({ params }: PageProps) {
               tenantLogo={tenantLogo}
               userEmail={userEmail}
             />
+          </div>
 
-            {/* Tags Card */}
-            <ItemDetailCard
-              title="Tags"
-              icon={<Tag className="h-5 w-5" />}
-              action={
-                <TagsManager
-                  itemId={item.id}
-                  currentTagIds={itemTags.map(t => t.id)}
-                />
-              }
-            >
-              {itemTags && itemTags.length > 0 ? (
-                <div className="flex flex-wrap gap-2">
-                  {itemTags.map((tag) => (
-                    <span
-                      key={tag.id}
-                      className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium"
-                      style={{
-                        backgroundColor: `${tag.color}20`,
-                        color: tag.color || '#6b7280',
-                      }}
-                    >
+          {/* Row 3: Supplementary Information */}
+          <div className="mt-4 grid gap-4 md:grid-cols-3">
+            {/* Tags Card - show here if shipping dimensions enabled */}
+            {features.shipping_dimensions && (
+              <ItemDetailCard
+                title="Tags"
+                icon={<Tag className="h-5 w-5" />}
+                action={
+                  <TagsManager
+                    itemId={item.id}
+                    currentTagIds={itemTags.map(t => t.id)}
+                  />
+                }
+              >
+                {itemTags && itemTags.length > 0 ? (
+                  <div className="flex flex-wrap gap-2">
+                    {itemTags.map((tag) => (
                       <span
-                        className="h-2 w-2 rounded-full"
-                        style={{ backgroundColor: tag.color || '#6b7280' }}
-                      />
-                      {tag.name}
-                    </span>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-neutral-400 italic">No tags assigned</p>
-              )}
-            </ItemDetailCard>
+                        key={tag.id}
+                        className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium"
+                        style={{
+                          backgroundColor: `${tag.color}20`,
+                          color: tag.color || '#6b7280',
+                        }}
+                      >
+                        <span
+                          className="h-2 w-2 rounded-full"
+                          style={{ backgroundColor: tag.color || '#6b7280' }}
+                        />
+                        {tag.name}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-neutral-400 italic">No tags assigned</p>
+                )}
+              </ItemDetailCard>
+            )}
 
             {/* Notes Card */}
             <ItemDetailCard
               title="Description & Notes"
               icon={<FileText className="h-5 w-5" />}
-              className="md:col-span-2"
+              className={features.shipping_dimensions ? 'md:col-span-2' : 'md:col-span-2'}
             >
               <div className="space-y-4">
                 {item.description ? (
@@ -622,6 +671,7 @@ export default async function ItemDetailPage({ params }: PageProps) {
               <p className="text-neutral-400 italic">No activity recorded yet</p>
             )}
           </ItemDetailCard>
+
 
           {/* Metadata Footer */}
           <div className="mt-6 flex flex-wrap items-center justify-between gap-4 text-xs text-neutral-400">
