@@ -5,6 +5,7 @@ import { QrCode, Barcode, Loader2, Printer, RefreshCw, Sparkles } from 'lucide-r
 import { Button } from '@/components/ui/button'
 import { generateQRCode, formatLabelId } from '@/lib/labels/barcode'
 import { generateScannableBarcode, generateItemBarcode } from '@/lib/labels/barcode-generator'
+import { ItemDetailCard } from './item-detail-card'
 
 interface QRBarcodeCardProps {
   itemId: string
@@ -58,14 +59,7 @@ export default function QRBarcodeCard({
   }, [labelId, barcodeData])
 
   return (
-    <div className="rounded-xl border border-neutral-200 bg-white p-6">
-      <div className="flex items-center gap-2 mb-4">
-        <QrCode className="h-5 w-5 text-neutral-400" />
-        <h2 className="text-sm font-medium uppercase tracking-wide text-neutral-500">
-          QR & Barcode
-        </h2>
-      </div>
-
+    <ItemDetailCard title="QR & Barcode" icon={<QrCode className="h-5 w-5" />}>
       {loading ? (
         <div className="flex items-center justify-center py-8">
           <Loader2 className="h-6 w-6 animate-spin text-neutral-400" />
@@ -169,6 +163,6 @@ export default function QRBarcodeCard({
           </div>
         </div>
       )}
-    </div>
+    </ItemDetailCard>
   )
 }

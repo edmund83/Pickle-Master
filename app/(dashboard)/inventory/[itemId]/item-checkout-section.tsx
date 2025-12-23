@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { CheckOutModal, CheckInModal, CheckoutHistory } from '@/components/checkout'
 import type { InventoryItem } from '@/types/database.types'
 import { format } from 'date-fns'
+import { ItemDetailCard } from './components/item-detail-card'
 
 interface ActiveCheckout {
   id: string
@@ -34,7 +35,7 @@ const assigneeTypeIcons = {
   location: <MapPin className="h-4 w-4" />
 }
 
-export function ItemCheckoutSection({ item }: ItemCheckoutSectionProps) {
+export function ItemCheckoutStatusCard({ item }: ItemCheckoutSectionProps) {
   const router = useRouter()
   const [activeCheckout, setActiveCheckout] = useState<ActiveCheckout | null>(null)
   const [loading, setLoading] = useState(true)
@@ -87,31 +88,35 @@ export function ItemCheckoutSection({ item }: ItemCheckoutSectionProps) {
 
   if (loading) {
     return (
-      <div className="rounded-xl border border-neutral-200 bg-white p-6">
+      <ItemDetailCard title="Checkout" icon={<Clock className="h-5 w-5" />}>
         <div className="flex items-center justify-center py-4">
           <Loader2 className="h-5 w-5 animate-spin text-neutral-400" />
         </div>
-      </div>
+      </ItemDetailCard>
     )
   }
 
   return (
     <>
-      {/* Checkout Status Card - shows if item is checked out */}
       {activeCheckout ? (
-        <div className={`rounded-xl border p-6 ${activeCheckout.is_overdue
-            ? 'border-red-200 bg-red-50'
-            : 'border-amber-200 bg-amber-50'
-          }`}>
-          <div className="flex items-center gap-2 mb-4">
-            <LogOut className={`h-5 w-5 ${activeCheckout.is_overdue ? 'text-red-500' : 'text-amber-500'
-              }`} />
-            <h2 className={`text-sm font-medium uppercase tracking-wide ${activeCheckout.is_overdue ? 'text-red-700' : 'text-amber-700'
-              }`}>
-              {activeCheckout.is_overdue ? 'Overdue' : 'Checked Out'}
-            </h2>
-          </div>
-
+        <ItemDetailCard
+          title={activeCheckout.is_overdue ? 'Overdue' : 'Checked Out'}
+          icon={
+            <LogOut
+              className={`h-5 w-5 ${activeCheckout.is_overdue ? 'text-red-500' : 'text-amber-500'
+                }`}
+            />
+          }
+          className={
+            activeCheckout.is_overdue
+              ? 'border-red-200 bg-red-50'
+              : 'border-amber-200 bg-amber-50'
+          }
+          headerClassName={
+            activeCheckout.is_overdue ? 'border-red-200' : 'border-amber-200'
+          }
+          titleClassName={activeCheckout.is_overdue ? 'text-red-700' : 'text-amber-700'}
+        >
           <div className="space-y-3">
             <div className="flex items-center gap-2">
               <span className="text-neutral-500">
@@ -157,40 +162,21 @@ export function ItemCheckoutSection({ item }: ItemCheckoutSectionProps) {
             <LogIn className="mr-2 h-4 w-4" />
             Check In
           </Button>
-        </div>
+        </ItemDetailCard>
       ) : (
-        /* Check Out Button - shows if item is available */
-        <div className="rounded-xl border border-neutral-200 bg-white p-6">
-          <div className="flex items-center gap-2 mb-4">
-            <Clock className="h-5 w-5 text-neutral-400" />
-            <h2 className="text-sm font-medium uppercase tracking-wide text-neutral-500">
-              Availability
-            </h2>
-          </div>
+        <ItemDetailCard title="Availability" icon={<Clock className="h-5 w-5" />}>
           <p className="mb-4 text-sm text-neutral-600">
             This item is available for checkout.
           </p>
           <Button
             onClick={() => setShowCheckOutModal(true)}
-            variant="outline"
-            className="w-full border-pickle-300 text-pickle-700 hover:bg-pickle-50"
+            className="w-full bg-pickle-600 text-white hover:bg-pickle-700"
           >
             <LogOut className="mr-2 h-4 w-4" />
             Check Out
           </Button>
-        </div>
+        </ItemDetailCard>
       )}
-
-      {/* Checkout History */}
-      <div className="rounded-xl border border-neutral-200 bg-white p-6">
-        <div className="flex items-center gap-2 mb-4">
-          <Clock className="h-5 w-5 text-neutral-400" />
-          <h2 className="text-sm font-medium uppercase tracking-wide text-neutral-500">
-            Checkout History
-          </h2>
-        </div>
-        <CheckoutHistory itemId={item.id} limit={5} />
-      </div>
 
       {/* Modals */}
       <CheckOutModal
@@ -218,6 +204,23 @@ export function ItemCheckoutSection({ item }: ItemCheckoutSectionProps) {
           onSuccess={handleSuccess}
         />
       )}
+    </>
+  )
+}
+
+export function ItemCheckoutHistoryCard({ itemId, limit = 5 }: { itemId: string; limit?: number }) {
+  return (
+    <ItemDetailCard title="Checkout History" icon={<Clock className="h-5 w-5" />}>
+      <CheckoutHistory itemId={itemId} limit={limit} />
+    </ItemDetailCard>
+  )
+}
+
+export function ItemCheckoutSection({ item }: ItemCheckoutSectionProps) {
+  return (
+    <>
+      <ItemCheckoutStatusCard item={item} />
+      <ItemCheckoutHistoryCard itemId={item.id} limit={5} />
     </>
   )
 }
