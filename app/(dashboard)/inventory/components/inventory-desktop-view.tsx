@@ -19,10 +19,8 @@ import { SearchInput } from '@/components/ui/search-input'
 import { InventoryTable } from './inventory-table'
 import { ViewToggle } from './view-toggle'
 import { WarehouseSelector } from './warehouse-selector'
-import { FolderTreeView, type FolderStats } from './folder-tree-view'
 import { Breadcrumbs } from './breadcrumbs'
 import { FolderSummaryStats } from './folder-summary-stats'
-import { InlineFolderForm } from './inline-folder-form'
 import { BulkEditModal } from './bulk-edit-modal'
 import { createClient } from '@/lib/supabase/client'
 
@@ -42,21 +40,18 @@ interface FilterState {
   hasImages: boolean | null
 }
 
-const EXPANDED_FOLDERS_KEY = 'pickle-expanded-folders'
-
 interface InventoryDesktopViewProps {
   items: InventoryItem[]
   folders: Folder[]
   view: string
-  folderStatsObj: Record<string, FolderStats>
 }
 
-export function InventoryDesktopView({ items, folders, view, folderStatsObj }: InventoryDesktopViewProps) {
+export function InventoryDesktopView({ items, folders, view }: InventoryDesktopViewProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [selectedFolderId, setSelectedFolderId] = useState<string | null>(null)
-  const [isCreatingFolder, setIsCreatingFolder] = useState(false)
-  const [createFolderParentId, setCreateFolderParentId] = useState<string | null>(null)
+
+  // Get selected folder from URL
+  const selectedFolderId = searchParams.get('folder')
 
   // Filter state
   const [filters, setFilters] = useState<FilterState>({
@@ -72,6 +67,18 @@ export function InventoryDesktopView({ items, folders, view, folderStatsObj }: I
 
   // Get search query from URL
   const searchQuery = searchParams.get('q') || ''
+
+  // Navigate to folder
+  const navigateToFolder = useCallback((folderId: string | null) => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (folderId === null) {
+      params.delete('folder')
+    } else {
+      params.set('folder', folderId)
+    }
+    const queryString = params.toString()
+    router.push(`/inventory${queryString ? `?${queryString}` : ''}`)
+  }, [router, searchParams])
 
   // Count active filters
   const activeFilterCount = useMemo(() => {
@@ -148,8 +155,6 @@ export function InventoryDesktopView({ items, folders, view, folderStatsObj }: I
     })
   }, [])
 
-  // Select all / deselect all - will be defined after filteredItems
-
   // Exit selection mode
   const exitSelectionMode = useCallback(() => {
     setIsSelectionMode(false)
@@ -163,51 +168,6 @@ export function InventoryDesktopView({ items, folders, view, folderStatsObj }: I
     setIsSelectionMode(false)
     router.refresh()
   }, [router])
-
-  // Convert folderStatsObj back to Map
-  const folderStats = useMemo(() => new Map(Object.entries(folderStatsObj)), [folderStatsObj])
-
-  // Track if we've loaded from localStorage (to avoid hydration mismatch)
-  const [isHydrated, setIsHydrated] = useState(false)
-
-  // Initialize with empty Set to match server render, then load from localStorage after hydration
-  const [expandedFolderIds, setExpandedFolderIds] = useState<Set<string>>(() => new Set())
-
-  // Load expanded folders from localStorage after hydration
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(EXPANDED_FOLDERS_KEY)
-      if (stored) {
-        setExpandedFolderIds(new Set(JSON.parse(stored)))
-      }
-    } catch {
-      // Ignore storage errors
-    }
-    setIsHydrated(true)
-  }, [])
-
-  // Persist expanded state to localStorage (only after hydration)
-  useEffect(() => {
-    if (!isHydrated) return
-    try {
-      localStorage.setItem(EXPANDED_FOLDERS_KEY, JSON.stringify([...expandedFolderIds]))
-    } catch {
-      // Ignore storage errors
-    }
-  }, [expandedFolderIds, isHydrated])
-
-  // Toggle folder expand/collapse
-  const toggleExpand = useCallback((folderId: string) => {
-    setExpandedFolderIds(prev => {
-      const next = new Set(prev)
-      if (next.has(folderId)) {
-        next.delete(folderId)
-      } else {
-        next.add(folderId)
-      }
-      return next
-    })
-  }, [])
 
   // Get warehouses (top-level folders only) - still needed for warehouse selector
   const warehouses = useMemo(() =>
@@ -365,100 +325,8 @@ export function InventoryDesktopView({ items, folders, view, folderStatsObj }: I
     }
   }, [filteredItems, folders, selectedFolderId])
 
-  // Handle starting folder creation
-  const handleStartCreateFolder = useCallback((parentId: string | null = null) => {
-    setCreateFolderParentId(parentId)
-    setIsCreatingFolder(true)
-    // Auto-expand parent if creating subfolder
-    if (parentId) {
-      setExpandedFolderIds(prev => {
-        const next = new Set(prev)
-        next.add(parentId)
-        return next
-      })
-    }
-  }, [])
-
-  // Handle folder creation success
-  const handleFolderCreated = useCallback(() => {
-    setIsCreatingFolder(false)
-    setCreateFolderParentId(null)
-  }, [])
-
-  // Handle add subfolder from tree context menu
-  const handleAddSubfolder = useCallback((parentId: string) => {
-    handleStartCreateFolder(parentId)
-  }, [handleStartCreateFolder])
-
   return (
     <>
-      {/* Secondary Sidebar - Folders */}
-      <div className="flex w-64 flex-col border-r border-neutral-200 bg-white">
-        <div className="flex h-16 items-center justify-between border-b border-neutral-200 px-4">
-          <h2 className="text-lg font-semibold text-neutral-900">Inventory</h2>
-        </div>
-        <nav className="flex-1 overflow-y-auto p-2">
-          {/* All Items Link */}
-          <button
-            onClick={() => setSelectedFolderId(null)}
-            className={cn(
-              'group flex w-full items-center rounded-md py-1.5 pl-3 pr-2 text-[13px] transition-all duration-150',
-              'hover:bg-neutral-100/80',
-              selectedFolderId === null
-                ? 'bg-pickle-50/80 font-medium text-pickle-700'
-                : 'text-neutral-700'
-            )}
-          >
-            <Package className="mr-2 h-4 w-4 flex-shrink-0 text-neutral-500" />
-            <span className="flex-1 text-left">All Items</span>
-            <span className={cn(
-              'min-w-5 text-right text-xs tabular-nums',
-              selectedFolderId === null ? 'text-pickle-400' : 'text-neutral-400'
-            )}>
-              {items.length}
-            </span>
-          </button>
-
-          {/* Folder Tree */}
-          <div className="mt-2">
-            <FolderTreeView
-              folders={folders}
-              folderStats={folderStats}
-              selectedFolderId={selectedFolderId}
-              onFolderSelect={setSelectedFolderId}
-              expandedFolderIds={expandedFolderIds}
-              onToggleExpand={toggleExpand}
-              onAddSubfolder={handleAddSubfolder}
-            />
-          </div>
-
-          {/* Inline Folder Form (when creating at root level) */}
-          {isCreatingFolder && createFolderParentId === null && (
-            <InlineFolderForm
-              parentId={null}
-              onSuccess={handleFolderCreated}
-              onCancel={() => {
-                setIsCreatingFolder(false)
-                setCreateFolderParentId(null)
-              }}
-              className="mt-2"
-            />
-          )}
-        </nav>
-        <div className="border-t border-neutral-200 p-2">
-          <Button
-            variant="ghost"
-            className="w-full justify-start"
-            size="sm"
-            onClick={() => handleStartCreateFolder(null)}
-            disabled={isCreatingFolder}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            New Folder
-          </Button>
-        </div>
-      </div>
-
       {/* Main Content */}
       <div className="flex flex-1 flex-col overflow-hidden">
         {/* Breadcrumbs */}
@@ -466,7 +334,7 @@ export function InventoryDesktopView({ items, folders, view, folderStatsObj }: I
           <Breadcrumbs
             folders={folders}
             currentFolderId={selectedFolderId}
-            onNavigate={setSelectedFolderId}
+            onNavigate={navigateToFolder}
           />
         </div>
 
@@ -594,7 +462,7 @@ export function InventoryDesktopView({ items, folders, view, folderStatsObj }: I
                 <WarehouseSelector
                   warehouses={warehouses}
                   selectedWarehouseId={selectedFolderId}
-                  onWarehouseChange={setSelectedFolderId}
+                  onWarehouseChange={navigateToFolder}
                   itemCounts={warehouseCounts}
                 />
               </div>
@@ -659,7 +527,7 @@ export function InventoryDesktopView({ items, folders, view, folderStatsObj }: I
               </div>
             )
           ) : (
-            <EmptyState selectedFolderId={selectedFolderId} onClearFilter={() => setSelectedFolderId(null)} />
+            <EmptyState selectedFolderId={selectedFolderId} onClearFilter={() => navigateToFolder(null)} />
           )}
         </div>
       </div>
@@ -673,22 +541,6 @@ export function InventoryDesktopView({ items, folders, view, folderStatsObj }: I
           onClose={() => setShowBulkEditModal(false)}
           onSuccess={handleBulkEditSuccess}
         />
-      )}
-
-      {/* Inline Folder Form (when creating subfolder - shown as modal overlay for subfolders) */}
-      {isCreatingFolder && createFolderParentId !== null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/20">
-          <div className="w-64">
-            <InlineFolderForm
-              parentId={createFolderParentId}
-              onSuccess={handleFolderCreated}
-              onCancel={() => {
-                setIsCreatingFolder(false)
-                setCreateFolderParentId(null)
-              }}
-            />
-          </div>
-        </div>
       )}
     </>
   )

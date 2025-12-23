@@ -2,6 +2,7 @@
 
 import { ReactNode } from 'react'
 import { useIsDesktop } from '@/lib/hooks/useMediaQuery'
+import { useSidebarState } from '@/lib/hooks/useSidebarState'
 import { PrimarySidebar } from '../primary-sidebar'
 import { BottomNavBar } from './BottomNavBar'
 import { MobileHeader } from './MobileHeader'
@@ -13,12 +14,13 @@ interface MobileLayoutWrapperProps {
 
 export function MobileLayoutWrapper({ children }: MobileLayoutWrapperProps) {
   const isDesktop = useIsDesktop()
+  const { isExpanded, toggle } = useSidebarState()
 
   // Desktop layout: sidebar on left
   if (isDesktop) {
     return (
       <div className="flex h-screen bg-neutral-50">
-        <PrimarySidebar />
+        <PrimarySidebar isExpanded={isExpanded} onToggle={toggle} />
         <div className="flex flex-1 overflow-hidden">
           {children}
         </div>

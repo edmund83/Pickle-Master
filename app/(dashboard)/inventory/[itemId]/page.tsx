@@ -28,6 +28,7 @@ import { ItemAdvancedPanels } from './components/item-advanced-panels'
 import { TagsManager } from './components/tags-manager'
 import PrintLabelButton from './components/print-label-button'
 import QRBarcodeSection from './components/qr-barcode-section'
+import { SetHighlightedFolder } from './components/set-highlighted-folder'
 
 interface FeaturesEnabled {
   multi_location?: boolean
@@ -184,6 +185,9 @@ export default async function ItemDetailPage({ params }: PageProps) {
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
+      {/* Set the highlighted folder in sidebar */}
+      <SetHighlightedFolder folderId={item.folder_id} />
+
       {/* Header */}
       <div className="flex items-center justify-between border-b border-neutral-200 bg-white px-6 py-4">
         <div className="flex items-center gap-4">
