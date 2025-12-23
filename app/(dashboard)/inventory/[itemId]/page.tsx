@@ -280,7 +280,7 @@ export default async function ItemDetailPage({ params }: PageProps) {
               </div>
             </Card>
 
-            {/* Inventory & Checkout */}
+            {/* Inventory */}
             <div className="space-y-4 lg:sticky lg:top-6">
               <ItemDetailCard
                 title="Inventory"
@@ -317,13 +317,12 @@ export default async function ItemDetailPage({ params }: PageProps) {
                   </div>
                 </div>
               </ItemDetailCard>
-
-              <ItemCheckoutStatusCard item={item} />
             </div>
           </div>
 
-          {/* Checkout Section */}
-          <div className="mb-6">
+          {/* Borrowing Section */}
+          <div className="mb-6 grid gap-4 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
+            <ItemCheckoutStatusCard item={item} />
             <ItemCheckoutHistoryCard itemId={item.id} limit={5} />
           </div>
 

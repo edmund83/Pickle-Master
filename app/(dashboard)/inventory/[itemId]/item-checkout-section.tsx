@@ -88,7 +88,7 @@ export function ItemCheckoutStatusCard({ item }: ItemCheckoutSectionProps) {
 
   if (loading) {
     return (
-      <ItemDetailCard title="Checkout" icon={<Clock className="h-5 w-5" />}>
+      <ItemDetailCard title="Borrowing" icon={<Clock className="h-5 w-5" />}>
         <div className="flex items-center justify-center py-4">
           <Loader2 className="h-5 w-5 animate-spin text-neutral-400" />
         </div>
@@ -100,7 +100,7 @@ export function ItemCheckoutStatusCard({ item }: ItemCheckoutSectionProps) {
     <>
       {activeCheckout ? (
         <ItemDetailCard
-          title={activeCheckout.is_overdue ? 'Overdue' : 'Checked Out'}
+          title={activeCheckout.is_overdue ? 'Late return' : 'Borrowed'}
           icon={
             <LogOut
               className={`h-5 w-5 ${activeCheckout.is_overdue ? 'text-red-500' : 'text-amber-500'
@@ -129,14 +129,14 @@ export function ItemCheckoutStatusCard({ item }: ItemCheckoutSectionProps) {
 
             <div className="flex items-center gap-4 text-sm">
               <div>
-                <span className="text-neutral-500">Checked out: </span>
+                <span className="text-neutral-500">Borrowed: </span>
                 <span className="text-neutral-700">
                   {format(new Date(activeCheckout.checked_out_at), 'MMM d, yyyy')}
                 </span>
               </div>
               {activeCheckout.due_date && (
                 <div>
-                  <span className="text-neutral-500">Due: </span>
+                  <span className="text-neutral-500">Return by: </span>
                   <span className={activeCheckout.is_overdue ? 'font-medium text-red-600' : 'text-neutral-700'}>
                     {format(new Date(activeCheckout.due_date), 'MMM d, yyyy')}
                     {activeCheckout.is_overdue && ` (${Math.abs(activeCheckout.days_until_due || 0)} days overdue)`}
@@ -160,20 +160,20 @@ export function ItemCheckoutStatusCard({ item }: ItemCheckoutSectionProps) {
               }`}
           >
             <LogIn className="mr-2 h-4 w-4" />
-            Check In
+            Return
           </Button>
         </ItemDetailCard>
       ) : (
-        <ItemDetailCard title="Availability" icon={<Clock className="h-5 w-5" />}>
+        <ItemDetailCard title="Available" icon={<Clock className="h-5 w-5" />}>
           <p className="mb-4 text-sm text-neutral-600">
-            This item is available for checkout.
+            This item is ready to borrow.
           </p>
           <Button
             onClick={() => setShowCheckOutModal(true)}
             className="w-full bg-pickle-600 text-white hover:bg-pickle-700"
           >
             <LogOut className="mr-2 h-4 w-4" />
-            Check Out
+            Borrow
           </Button>
         </ItemDetailCard>
       )}
@@ -210,7 +210,7 @@ export function ItemCheckoutStatusCard({ item }: ItemCheckoutSectionProps) {
 
 export function ItemCheckoutHistoryCard({ itemId, limit = 5 }: { itemId: string; limit?: number }) {
   return (
-    <ItemDetailCard title="Checkout History" icon={<Clock className="h-5 w-5" />}>
+    <ItemDetailCard title="Borrowing History" icon={<Clock className="h-5 w-5" />}>
       <CheckoutHistory itemId={itemId} limit={limit} />
     </ItemDetailCard>
   )
