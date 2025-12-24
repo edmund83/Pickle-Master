@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Bell, BellOff, Calendar, X, ChevronDown, ChevronUp } from 'lucide-react'
+import { Bell, BellOff, Calendar, X, ChevronDown, ChevronUp, FolderOpen } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
   getItemReminders,
@@ -130,13 +130,18 @@ export function InlineReminders({
     }
   }
 
-  const getLowStockReminder = () =>
-    reminders.find((r) => r.reminder_type === 'low_stock' && r.status === 'active')
-  const getExpiryReminder = () =>
-    reminders.find((r) => r.reminder_type === 'expiry' && r.status === 'active')
+  // Get item-specific reminders (not folder)
+  const getItemLowStockReminder = () =>
+    reminders.find((r) => r.reminder_type === 'low_stock' && r.status === 'active' && r.source_type !== 'folder')
+  const getItemExpiryReminder = () =>
+    reminders.find((r) => r.reminder_type === 'expiry' && r.status === 'active' && r.source_type !== 'folder')
+
+  // Get folder-level reminders
+  const getFolderReminders = () =>
+    reminders.filter((r) => r.source_type === 'folder' && r.status === 'active')
 
   const handleLowStockClick = async () => {
-    const existing = getLowStockReminder()
+    const existing = getItemLowStockReminder()
     if (existing) {
       // Turn off - delete immediately
       setIsUpdating('low_stock')
@@ -158,7 +163,7 @@ export function InlineReminders({
   }
 
   const handleExpiryClick = async () => {
-    const existing = getExpiryReminder()
+    const existing = getItemExpiryReminder()
     if (existing) {
       // Turn off - delete immediately
       setIsUpdating('expiry')
@@ -255,8 +260,13 @@ export function InlineReminders({
     }
   }
 
-  const lowStockActive = !!getLowStockReminder()
-  const expiryActive = !!getExpiryReminder()
+  const lowStockActive = !!getItemLowStockReminder()
+  const expiryActive = !!getItemExpiryReminder()
+  const folderReminders = getFolderReminders()
+
+  // Check if folder already has specific reminder types
+  const hasFolderLowStock = folderReminders.some((r) => r.reminder_type === 'low_stock')
+  const hasFolderExpiry = folderReminders.some((r) => r.reminder_type === 'expiry')
 
   if (isLoading) {
     return (
@@ -276,13 +286,15 @@ export function InlineReminders({
           <button
             type="button"
             onClick={handleLowStockClick}
-            disabled={isUpdating !== null}
+            disabled={isUpdating !== null || hasFolderLowStock}
+            title={hasFolderLowStock ? 'Folder already has a Low Stock reminder' : undefined}
             className={cn(
               'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all',
               lowStockActive
                 ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
                 : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200',
-              isUpdating === 'low_stock' && 'opacity-50 cursor-wait'
+              isUpdating === 'low_stock' && 'opacity-50 cursor-wait',
+              hasFolderLowStock && 'opacity-50 cursor-not-allowed hover:bg-neutral-100'
             )}
           >
             {isUpdating === 'low_stock' ? (
@@ -295,7 +307,7 @@ export function InlineReminders({
             Low Stock
             {lowStockActive && (
               <span className="text-[10px] opacity-75">
-                ({getComparisonLabel(getLowStockReminder()?.comparison_operator)}{getLowStockReminder()?.threshold || minQuantity || 10})
+                ({getComparisonLabel(getItemLowStockReminder()?.comparison_operator)}{getItemLowStockReminder()?.threshold || minQuantity || 10})
               </span>
             )}
           </button>
@@ -462,13 +474,15 @@ export function InlineReminders({
           <button
             type="button"
             onClick={handleExpiryClick}
-            disabled={isUpdating !== null}
+            disabled={isUpdating !== null || hasFolderExpiry}
+            title={hasFolderExpiry ? 'Folder already has an Expiry reminder' : undefined}
             className={cn(
               'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all',
               expiryActive
                 ? 'bg-orange-100 text-orange-700 hover:bg-orange-200'
                 : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200',
-              isUpdating === 'expiry' && 'opacity-50 cursor-wait'
+              isUpdating === 'expiry' && 'opacity-50 cursor-wait',
+              hasFolderExpiry && 'opacity-50 cursor-not-allowed hover:bg-neutral-100'
             )}
           >
             {isUpdating === 'expiry' ? (
@@ -481,7 +495,7 @@ export function InlineReminders({
             Expiry
             {expiryActive && (
               <span className="text-[10px] opacity-75">
-                ({getExpiryReminder()?.days_before_expiry || 7}d before)
+                ({getItemExpiryReminder()?.days_before_expiry || 7}d before)
               </span>
             )}
           </button>
@@ -630,6 +644,55 @@ export function InlineReminders({
           )}
         </div>
       </div>
+
+      {/* Folder Reminders (read-only) */}
+      {folderReminders.length > 0 && (
+        <div className="mt-2 pt-2 border-t border-neutral-100">
+          <p className="text-xs text-neutral-400 mb-1.5">From folder</p>
+          <div className="flex flex-wrap gap-2">
+            {folderReminders.map((reminder) => (
+              <div
+                key={reminder.id}
+                className={cn(
+                  'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium',
+                  reminder.reminder_type === 'low_stock'
+                    ? 'bg-yellow-50 text-yellow-700 border border-yellow-200'
+                    : reminder.reminder_type === 'expiry'
+                      ? 'bg-orange-50 text-orange-700 border border-orange-200'
+                      : 'bg-blue-50 text-blue-700 border border-blue-200'
+                )}
+                title={`Folder reminder from "${reminder.folder_name}"`}
+              >
+                <FolderOpen className="h-3 w-3 opacity-70" />
+                {reminder.reminder_type === 'low_stock' && (
+                  <>
+                    Low Stock
+                    <span className="text-[10px] opacity-75">
+                      ({getComparisonLabel(reminder.comparison_operator)}{reminder.threshold})
+                    </span>
+                  </>
+                )}
+                {reminder.reminder_type === 'expiry' && (
+                  <>
+                    Expiry
+                    <span className="text-[10px] opacity-75">
+                      ({reminder.days_before_expiry}d)
+                    </span>
+                  </>
+                )}
+                {reminder.reminder_type === 'restock' && (
+                  <>
+                    Restock
+                    <span className="text-[10px] opacity-75">
+                      ({reminder.recurrence})
+                    </span>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   )
 }

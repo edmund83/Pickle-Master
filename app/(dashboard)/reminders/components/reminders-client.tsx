@@ -5,6 +5,7 @@ import { Plus, Bell, FolderOpen, Package, Filter } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ReminderCard } from './reminder-card'
 import { NewReminderModal } from './new-reminder-modal'
+import { EditReminderModal } from './edit-reminder-modal'
 import {
   getAllReminders,
   type GlobalReminder,
@@ -30,6 +31,8 @@ export function RemindersClient({
   const [total, setTotal] = useState(initialTotal)
   const [stats, setStats] = useState(initialStats)
   const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false)
+  const [editingReminder, setEditingReminder] = useState<GlobalReminder | null>(null)
   const [isPending, startTransition] = useTransition()
 
   // Filters
@@ -85,6 +88,15 @@ export function RemindersClient({
     setReminders((prev) =>
       prev.map((r) => (r.id === id ? { ...r, status: newStatus } : r))
     )
+  }
+
+  const handleEditReminder = (reminder: GlobalReminder) => {
+    setEditingReminder(reminder)
+    setIsEditModalOpen(true)
+  }
+
+  const handleReminderUpdated = () => {
+    refreshReminders()
   }
 
   return (
@@ -240,6 +252,7 @@ export function RemindersClient({
                 reminder={reminder}
                 onDeleted={() => handleReminderDeleted(reminder.id)}
                 onToggled={(newStatus) => handleReminderToggled(reminder.id, newStatus)}
+                onEdit={() => handleEditReminder(reminder)}
               />
             ))
           )}
@@ -258,6 +271,17 @@ export function RemindersClient({
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onCreated={refreshReminders}
+      />
+
+      {/* Edit Reminder Modal */}
+      <EditReminderModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false)
+          setEditingReminder(null)
+        }}
+        onUpdated={handleReminderUpdated}
+        reminder={editingReminder}
       />
     </div>
   )

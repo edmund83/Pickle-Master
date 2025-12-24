@@ -12,6 +12,7 @@ import { CustomFieldsSection } from '@/components/custom-fields'
 import { LotTrackingSection } from '@/components/lots/LotTrackingSection'
 import { SerialTrackingSection } from '@/components/serials/SerialTrackingSection'
 import { createClient } from '@/lib/supabase/client'
+import { useOptionalInventoryContext } from '../../components/inventory-context'
 import type { InventoryItem, ItemTrackingMode } from '@/types/database.types'
 
 interface FeaturesEnabled {
@@ -24,6 +25,7 @@ export default function EditItemPage() {
   const router = useRouter()
   const params = useParams()
   const itemId = params.itemId as string
+  const inventoryContext = useOptionalInventoryContext()
 
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
@@ -150,6 +152,20 @@ export default function EditItemPage() {
 
     fetchItem()
   }, [itemId, router])
+
+  // Set highlighted folder in sidebar when item is loaded
+  useEffect(() => {
+    if (item?.folder_id && inventoryContext) {
+      inventoryContext.setHighlightedFolderId(item.folder_id)
+    }
+
+    // Cleanup: reset highlighted folder when unmounting
+    return () => {
+      if (inventoryContext) {
+        inventoryContext.setHighlightedFolderId(null)
+      }
+    }
+  }, [item?.folder_id, inventoryContext])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

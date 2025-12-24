@@ -11,6 +11,7 @@ import {
   Play,
   Trash2,
   Clock,
+  Pencil,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { formatDistanceToNow } from 'date-fns'
@@ -24,9 +25,10 @@ interface ReminderCardProps {
   reminder: GlobalReminder
   onDeleted: () => void
   onToggled: (newStatus: string) => void
+  onEdit?: () => void
 }
 
-export function ReminderCard({ reminder, onDeleted, onToggled }: ReminderCardProps) {
+export function ReminderCard({ reminder, onDeleted, onToggled, onEdit }: ReminderCardProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -162,6 +164,18 @@ export function ReminderCard({ reminder, onDeleted, onToggled }: ReminderCardPro
                     onClick={() => setIsMenuOpen(false)}
                   />
                   <div className="absolute right-0 top-full z-20 mt-1 w-40 rounded-lg border border-neutral-200 bg-white py-1 shadow-lg">
+                    {onEdit && (
+                      <button
+                        onClick={() => {
+                          setIsMenuOpen(false)
+                          onEdit()
+                        }}
+                        className="flex w-full items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
+                      >
+                        <Pencil className="h-4 w-4" />
+                        Edit
+                      </button>
+                    )}
                     <button
                       onClick={handleToggle}
                       className="flex w-full items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50"
