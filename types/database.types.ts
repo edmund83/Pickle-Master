@@ -1767,6 +1767,10 @@ export interface ShippingDimensions {
 export interface ItemReminderWithDetails extends ItemReminder {
   created_by_name?: string
   trigger_description?: string
+  // Fields for folder reminders displayed on item pages
+  source_type?: 'item' | 'folder'
+  folder_id?: string | null
+  folder_name?: string | null
 }
 
 // Reminder form input type

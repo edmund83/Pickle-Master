@@ -246,6 +246,58 @@ export async function deleteReminder(
 }
 
 /**
+ * Update a reminder (item or folder)
+ */
+export async function updateReminder(
+  reminderId: string,
+  sourceType: 'item' | 'folder',
+  updates: {
+    title?: string
+    message?: string
+    threshold?: number
+    comparisonOperator?: ComparisonOperator
+    daysBeforeExpiry?: number
+    scheduledAt?: string
+    recurrence?: string
+    recurrenceEndDate?: string
+    notifyInApp?: boolean
+    notifyEmail?: boolean
+  }
+): Promise<{ success: boolean; error?: string }> {
+  const supabase = await createClient()
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase as any).rpc('update_reminder', {
+    p_reminder_id: reminderId,
+    p_source_type: sourceType,
+    p_title: updates.title || null,
+    p_message: updates.message || null,
+    p_threshold: updates.threshold || null,
+    p_comparison_operator: updates.comparisonOperator || null,
+    p_days_before_expiry: updates.daysBeforeExpiry || null,
+    p_scheduled_at: updates.scheduledAt || null,
+    p_recurrence: updates.recurrence || null,
+    p_recurrence_end_date: updates.recurrenceEndDate || null,
+    p_notify_in_app: updates.notifyInApp ?? null,
+    p_notify_email: updates.notifyEmail ?? null,
+  })
+
+  if (error) {
+    console.error('Error updating reminder:', error)
+    return { success: false, error: error.message }
+  }
+
+  const result = data as RPCResponse
+
+  if (!result.success) {
+    return { success: false, error: result.error }
+  }
+
+  revalidatePath('/reminders')
+  return { success: true }
+}
+
+/**
  * Toggle reminder status (active/paused)
  */
 export async function toggleReminder(
