@@ -9,6 +9,32 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Security
+
+#### Critical RLS and Multi-Tenancy Fixes (Migration: `00026_security_audit_fixes.sql`)
+
+Based on a comprehensive security audit, the following vulnerabilities were identified and fixed:
+
+- **CRITICAL: Profiles RLS tenant hopping** - Fixed UPDATE policy to prevent users from changing their `tenant_id` to gain access to other tenants' data. Added database trigger as belt-and-suspenders protection.
+
+- **HIGH: `activity_logs_archive` RLS** - Enabled RLS on the archive table and added tenant-scoped SELECT policy. Blocked direct inserts (archive function uses SECURITY DEFINER).
+
+- **HIGH: `items_with_tags` view** - Added `tenant_id` filter to prevent cross-tenant data leakage through the view.
+
+- **HIGH: `tenant_stats` materialized view** - Revoked direct SELECT access from authenticated users. Access now only through tenant-scoped `get_my_tenant_stats()` function.
+
+- **HIGH: Cross-tenant status updates** - Fixed `update_overdue_checkouts()` and `update_expired_lots()` functions to scope updates to current tenant only.
+
+- **HIGH: Internal function exposure** - Revoked EXECUTE permissions on `get_due_reminders()`, `process_reminder_trigger()`, `archive_old_activity_logs()`, `purge_old_archives()`, and `refresh_all_tenant_stats()` from authenticated users. These are now service-role only.
+
+- **MEDIUM: `get_item_details` activity leak** - Added tenant filter to tags and activity subqueries to prevent metadata leakage via guessed item IDs.
+
+- **MEDIUM: Child-table FK validation** - Updated RLS INSERT/UPDATE policies on `location_stock`, `lots`, `stock_transfers`, `item_reminders`, and `checkouts` to validate that referenced `item_id` and `location_id` belong to the same tenant.
+
+- **LOW: Edge Function authentication** - Added `CRON_SECRET` header validation to `process-reminders` Edge Function to prevent unauthorized invocation.
+
+- **Belt-and-suspenders: Tenant ID immutability** - Added `prevent_tenant_id_change()` trigger to `profiles`, `inventory_items`, and `folders` tables to block any attempt to modify `tenant_id` at the database level.
+
 ### Added
 
 #### Sortly-Compatible Label System
