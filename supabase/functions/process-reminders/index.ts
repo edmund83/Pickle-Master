@@ -1,12 +1,15 @@
 // Supabase Edge Function: Process Reminders
 // This function processes scheduled (restock) and expiry reminders
 // It should be invoked on a cron schedule (e.g., every 15 minutes)
+//
+// SECURITY: This function requires a secret key to invoke.
+// Set CRON_SECRET in your Supabase Edge Function secrets.
 
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-cron-secret',
 }
 
 interface DueReminder {
@@ -44,6 +47,26 @@ Deno.serve(async (req) => {
   }
 
   try {
+    // SECURITY: Verify the request is from an authorized source (cron job)
+    const cronSecret = Deno.env.get('CRON_SECRET')
+    const providedSecret = req.headers.get('x-cron-secret')
+
+    if (!cronSecret) {
+      console.error('CRON_SECRET not configured')
+      return new Response(
+        JSON.stringify({ success: false, error: 'Server misconfigured' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    if (!providedSecret || providedSecret !== cronSecret) {
+      console.warn('Unauthorized access attempt to process-reminders')
+      return new Response(
+        JSON.stringify({ success: false, error: 'Unauthorized' }),
+        { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     const supabaseUrl = Deno.env.get('SUPABASE_URL')
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
 
