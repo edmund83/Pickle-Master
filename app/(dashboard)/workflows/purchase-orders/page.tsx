@@ -5,7 +5,8 @@ import { ArrowLeft, Plus, ShoppingCart, Clock, CheckCircle, Truck } from 'lucide
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { PurchaseOrder } from '@/types/database.types'
-import { format } from 'date-fns'
+import { FormattedOrderAmount } from '@/components/workflows/FormattedOrderAmount'
+import { FormattedShortDate } from '@/components/formatting/FormattedDate'
 
 async function getPurchaseOrders(): Promise<PurchaseOrder[]> {
   const supabase = await createClient()
@@ -151,17 +152,13 @@ function OrderRow({ order }: { order: PurchaseOrder }) {
           </p>
           <p className="text-sm text-neutral-500">
             {order.expected_date
-              ? `Expected ${format(new Date(order.expected_date), 'MMM d, yyyy')}`
-              : order.created_at ? `Created ${format(new Date(order.created_at), 'MMM d, yyyy')}` : ''}
+              ? <>Expected <FormattedShortDate date={order.expected_date} /></>
+              : order.created_at ? <>Created <FormattedShortDate date={order.created_at} /></> : ''}
           </p>
         </div>
       </div>
       <div className="flex items-center gap-3">
-        {(order.total_amount ?? 0) > 0 && (
-          <span className="font-medium text-neutral-900">
-            RM {(order.total_amount ?? 0).toFixed(2)}
-          </span>
-        )}
+        <FormattedOrderAmount amount={order.total_amount ?? 0} />
         <span
           className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[order.status || 'draft']}`}
         >

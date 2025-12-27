@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { DollarSign, TrendingUp, Package, FolderOpen } from 'lucide-react'
 import type { InventoryItem, Folder } from '@/types/database.types'
+import { InventoryValueStats, ValueByFolderRow, TopValueItemRow } from '@/components/reports/FormattedReportStats'
 
 interface ValueByFolder {
   folder: Folder | null
@@ -106,32 +106,12 @@ export default async function InventoryValuePage() {
 
       <div className="p-8">
         {/* Summary Stats */}
-        <div className="mb-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard
-            title="Total Value"
-            value={`RM ${totalValue.toLocaleString('en-MY', { minimumFractionDigits: 2 })}`}
-            icon={DollarSign}
-            color="green"
-          />
-          <StatCard
-            title="Total Items"
-            value={totalItems.toLocaleString()}
-            icon={Package}
-            color="blue"
-          />
-          <StatCard
-            title="Total Quantity"
-            value={totalQuantity.toLocaleString()}
-            icon={TrendingUp}
-            color="purple"
-          />
-          <StatCard
-            title="Avg Value/Item"
-            value={`RM ${avgValuePerItem.toLocaleString('en-MY', { minimumFractionDigits: 2 })}`}
-            icon={DollarSign}
-            color="yellow"
-          />
-        </div>
+        <InventoryValueStats
+          totalValue={totalValue}
+          totalItems={totalItems}
+          totalQuantity={totalQuantity}
+          avgValuePerItem={avgValuePerItem}
+        />
 
         <div className="grid gap-8 lg:grid-cols-2">
           {/* Value by Folder */}
@@ -141,42 +121,19 @@ export default async function InventoryValuePage() {
             </div>
             {valueByFolder.length > 0 ? (
               <ul className="divide-y divide-neutral-200">
-                {valueByFolder.map((entry, index) => {
+                {valueByFolder.map((entry) => {
                   const percentage = totalValue > 0 ? (entry.totalValue / totalValue) * 100 : 0
 
                   return (
-                    <li key={entry.folder?.id || 'root'} className="px-6 py-4">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          {entry.folder ? (
-                            <div
-                              className="h-4 w-4 rounded-full"
-                              style={{ backgroundColor: entry.folder.color || '#6b7280' }}
-                            />
-                          ) : (
-                            <FolderOpen className="h-4 w-4 text-neutral-400" />
-                          )}
-                          <span className="font-medium text-neutral-900">
-                            {entry.folder?.name || 'Uncategorized'}
-                          </span>
-                          <span className="text-sm text-neutral-500">
-                            ({entry.itemCount} items)
-                          </span>
-                        </div>
-                        <span className="font-semibold text-neutral-900">
-                          RM {entry.totalValue.toLocaleString('en-MY', { minimumFractionDigits: 2 })}
-                        </span>
-                      </div>
-                      <div className="mt-2 h-2 overflow-hidden rounded-full bg-neutral-100">
-                        <div
-                          className="h-full bg-pickle-500"
-                          style={{ width: `${percentage}%` }}
-                        />
-                      </div>
-                      <p className="mt-1 text-xs text-neutral-500">
-                        {percentage.toFixed(1)}% of total value
-                      </p>
-                    </li>
+                    <ValueByFolderRow
+                      key={entry.folder?.id || 'root'}
+                      folderName={entry.folder?.name || 'Uncategorized'}
+                      folderColor={entry.folder?.color || null}
+                      itemCount={entry.itemCount}
+                      totalValue={entry.totalValue}
+                      percentage={percentage}
+                      isRoot={!entry.folder}
+                    />
                   )
                 })}
               </ul>
@@ -195,22 +152,15 @@ export default async function InventoryValuePage() {
             {topItems.length > 0 ? (
               <ul className="divide-y divide-neutral-200">
                 {topItems.map((item, index) => (
-                  <li key={item.id} className="flex items-center justify-between px-6 py-3">
-                    <div className="flex items-center gap-3">
-                      <span className="flex h-6 w-6 items-center justify-center rounded-full bg-neutral-100 text-xs font-medium text-neutral-600">
-                        {index + 1}
-                      </span>
-                      <div>
-                        <p className="font-medium text-neutral-900">{item.name}</p>
-                        <p className="text-xs text-neutral-500">
-                          {item.quantity} × RM {(item.price ?? 0).toFixed(2)}
-                        </p>
-                      </div>
-                    </div>
-                    <span className="font-semibold text-neutral-900">
-                      RM {item.value.toLocaleString('en-MY', { minimumFractionDigits: 2 })}
-                    </span>
-                  </li>
+                  <TopValueItemRow
+                    key={item.id}
+                    index={index}
+                    id={item.id}
+                    name={item.name}
+                    quantity={item.quantity}
+                    price={item.price ?? 0}
+                    totalValue={item.value}
+                  />
                 ))}
               </ul>
             ) : (
@@ -225,35 +175,3 @@ export default async function InventoryValuePage() {
   )
 }
 
-function StatCard({
-  title,
-  value,
-  icon: Icon,
-  color,
-}: {
-  title: string
-  value: string
-  icon: React.ElementType
-  color: 'blue' | 'green' | 'yellow' | 'purple'
-}) {
-  const colorClasses = {
-    blue: 'bg-blue-50 text-blue-600',
-    green: 'bg-green-50 text-green-600',
-    yellow: 'bg-yellow-50 text-yellow-600',
-    purple: 'bg-purple-50 text-purple-600',
-  }
-
-  return (
-    <div className="rounded-xl border border-neutral-200 bg-white p-6">
-      <div className="flex items-center gap-4">
-        <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${colorClasses[color]}`}>
-          <Icon className="h-6 w-6" />
-        </div>
-        <div>
-          <p className="text-sm text-neutral-500">{title}</p>
-          <p className="text-2xl font-semibold text-neutral-900">{value}</p>
-        </div>
-      </div>
-    </div>
-  )
-}

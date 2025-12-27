@@ -15,6 +15,7 @@ import {
   Calendar
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useFormatting } from '@/hooks/useFormatting'
 
 interface TenantSubscription {
   subscription_tier: string
@@ -104,6 +105,7 @@ export default function BillingPage() {
   const [subscription, setSubscription] = useState<TenantSubscription | null>(null)
   const [usage, setUsage] = useState<UsageStats>({ items: 0, users: 0, folders: 0 })
   const [loading, setLoading] = useState(true)
+  const { formatCurrency } = useFormatting()
 
   useEffect(() => {
     loadBillingData()
@@ -175,7 +177,7 @@ export default function BillingPage() {
   function formatPrice(price: number): string {
     if (price < 0) return 'Contact us'
     if (price === 0) return 'Free'
-    return `RM ${price}/mo`
+    return `${formatCurrency(price)}/mo`
   }
 
   const currentPlan = PLANS.find(p => p.id === subscription?.subscription_tier) || PLANS[0]

@@ -1,8 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import { TrendingUp, TrendingDown, Percent, DollarSign, Package, AlertCircle } from 'lucide-react'
+import { TrendingUp, TrendingDown, DollarSign, AlertCircle } from 'lucide-react'
 import type { InventoryItem } from '@/types/database.types'
+import { ProfitMarginStats, MarginItemRow, ProfitTableRow } from '@/components/reports/FormattedReportStats'
 
 interface ItemWithMargin {
   id: string
@@ -102,32 +103,13 @@ export default async function ProfitMarginPage() {
 
       <div className="p-8">
         {/* Summary Stats */}
-        <div className="mb-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard
-            title="Total Potential Profit"
-            value={`RM ${totalPotentialProfit.toLocaleString('en-MY', { minimumFractionDigits: 2 })}`}
-            icon={DollarSign}
-            color={totalPotentialProfit >= 0 ? 'green' : 'red'}
-          />
-          <StatCard
-            title="Average Margin"
-            value={`${avgMarginPercent.toFixed(1)}%`}
-            icon={Percent}
-            color={avgMarginPercent >= 0 ? 'blue' : 'red'}
-          />
-          <StatCard
-            title="Items with Cost Data"
-            value={`${itemsWithCost.length} / ${items.length}`}
-            icon={Package}
-            color="purple"
-          />
-          <StatCard
-            title="Total Cost Value"
-            value={`RM ${totalCost.toLocaleString('en-MY', { minimumFractionDigits: 2 })}`}
-            icon={TrendingDown}
-            color="yellow"
-          />
-        </div>
+        <ProfitMarginStats
+          totalPotentialProfit={totalPotentialProfit}
+          avgMarginPercent={avgMarginPercent}
+          itemsWithCost={itemsWithCost.length}
+          totalItems={items.length}
+          totalCost={totalCost}
+        />
 
         {/* Missing Cost Data Warning */}
         {itemsWithoutCost.length > 0 && (
@@ -172,29 +154,16 @@ export default async function ProfitMarginPage() {
             {highestMargin.length > 0 ? (
               <ul className="divide-y divide-neutral-200">
                 {highestMargin.map((item, index) => (
-                  <li key={item.id} className="px-6 py-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className="flex h-6 w-6 items-center justify-center rounded-full bg-green-100 text-xs font-medium text-green-700">
-                          {index + 1}
-                        </span>
-                        <div>
-                          <Link
-                            href={`/inventory/${item.id}`}
-                            className="font-medium text-neutral-900 hover:text-pickle-600 hover:underline"
-                          >
-                            {item.name}
-                          </Link>
-                          <p className="text-xs text-neutral-500">
-                            Cost: RM {item.cost_price.toFixed(2)} → Price: RM {item.price.toFixed(2)}
-                          </p>
-                        </div>
-                      </div>
-                      <span className="font-semibold text-green-600">
-                        {item.marginPercent.toFixed(1)}%
-                      </span>
-                    </div>
-                  </li>
+                  <MarginItemRow
+                    key={item.id}
+                    index={index}
+                    name={item.name}
+                    href={`/inventory/${item.id}`}
+                    costPrice={item.cost_price}
+                    price={item.price}
+                    marginPercent={item.marginPercent}
+                    type="highest"
+                  />
                 ))}
               </ul>
             ) : (
@@ -215,29 +184,16 @@ export default async function ProfitMarginPage() {
             {lowestMargin.length > 0 ? (
               <ul className="divide-y divide-neutral-200">
                 {lowestMargin.map((item, index) => (
-                  <li key={item.id} className="px-6 py-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <span className={`flex h-6 w-6 items-center justify-center rounded-full text-xs font-medium ${item.marginPercent < 0 ? 'bg-red-100 text-red-700' : 'bg-yellow-100 text-yellow-700'}`}>
-                          {index + 1}
-                        </span>
-                        <div>
-                          <Link
-                            href={`/inventory/${item.id}`}
-                            className="font-medium text-neutral-900 hover:text-pickle-600 hover:underline"
-                          >
-                            {item.name}
-                          </Link>
-                          <p className="text-xs text-neutral-500">
-                            Cost: RM {item.cost_price.toFixed(2)} → Price: RM {item.price.toFixed(2)}
-                          </p>
-                        </div>
-                      </div>
-                      <span className={`font-semibold ${item.marginPercent < 0 ? 'text-red-600' : 'text-yellow-600'}`}>
-                        {item.marginPercent.toFixed(1)}%
-                      </span>
-                    </div>
-                  </li>
+                  <MarginItemRow
+                    key={item.id}
+                    index={index}
+                    name={item.name}
+                    href={`/inventory/${item.id}`}
+                    costPrice={item.cost_price}
+                    price={item.price}
+                    marginPercent={item.marginPercent}
+                    type="lowest"
+                  />
                 ))}
               </ul>
             ) : (
@@ -275,29 +231,18 @@ export default async function ProfitMarginPage() {
                 </thead>
                 <tbody className="divide-y divide-neutral-200">
                   {topProfitItems.map((item, index) => (
-                    <tr key={item.id} className="hover:bg-neutral-50">
-                      <td className="px-6 py-3 text-neutral-500">{index + 1}</td>
-                      <td className="px-6 py-3">
-                        <Link
-                          href={`/inventory/${item.id}`}
-                          className="font-medium text-neutral-900 hover:text-pickle-600 hover:underline"
-                        >
-                          {item.name}
-                        </Link>
-                        {item.sku && (
-                          <p className="text-xs text-neutral-500">{item.sku}</p>
-                        )}
-                      </td>
-                      <td className="px-6 py-3 text-right text-neutral-900">{item.quantity}</td>
-                      <td className="px-6 py-3 text-right text-neutral-600">RM {item.cost_price.toFixed(2)}</td>
-                      <td className="px-6 py-3 text-right text-neutral-900">RM {item.price.toFixed(2)}</td>
-                      <td className={`px-6 py-3 text-right font-medium ${item.marginPercent >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        {item.marginPercent.toFixed(1)}%
-                      </td>
-                      <td className={`px-6 py-3 text-right font-semibold ${item.totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                        RM {item.totalProfit.toLocaleString('en-MY', { minimumFractionDigits: 2 })}
-                      </td>
-                    </tr>
+                    <ProfitTableRow
+                      key={item.id}
+                      index={index}
+                      id={item.id}
+                      name={item.name}
+                      sku={item.sku}
+                      quantity={item.quantity}
+                      costPrice={item.cost_price}
+                      price={item.price}
+                      marginPercent={item.marginPercent}
+                      totalProfit={item.totalProfit}
+                    />
                   ))}
                 </tbody>
               </table>
@@ -313,36 +258,3 @@ export default async function ProfitMarginPage() {
   )
 }
 
-function StatCard({
-  title,
-  value,
-  icon: Icon,
-  color,
-}: {
-  title: string
-  value: string
-  icon: React.ElementType
-  color: 'blue' | 'green' | 'yellow' | 'purple' | 'red'
-}) {
-  const colorClasses = {
-    blue: 'bg-blue-50 text-blue-600',
-    green: 'bg-green-50 text-green-600',
-    yellow: 'bg-yellow-50 text-yellow-600',
-    purple: 'bg-purple-50 text-purple-600',
-    red: 'bg-red-50 text-red-600',
-  }
-
-  return (
-    <div className="rounded-xl border border-neutral-200 bg-white p-6">
-      <div className="flex items-center gap-4">
-        <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${colorClasses[color]}`}>
-          <Icon className="h-6 w-6" />
-        </div>
-        <div>
-          <p className="text-sm text-neutral-500">{title}</p>
-          <p className="text-2xl font-semibold text-neutral-900">{value}</p>
-        </div>
-      </div>
-    </div>
-  )
-}

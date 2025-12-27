@@ -1,9 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, History, Clock } from 'lucide-react'
+import { ArrowLeft, ArrowRight, History, Clock, Folder } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { format } from 'date-fns'
+import { FormattedShortDate } from '@/components/formatting/FormattedDate'
+import { formatTime } from '@/lib/formatting'
 
 interface PageProps {
   params: Promise<{ itemId: string }>
@@ -16,6 +17,10 @@ interface ActivityLogItem {
   quantity_delta: number | null
   quantity_before: number | null
   quantity_after: number | null
+  from_folder_id: string | null
+  to_folder_id: string | null
+  from_folder_name: string | null
+  to_folder_name: string | null
   user_name: string | null
   created_at: string
   changes: Record<string, unknown> | null
@@ -142,6 +147,23 @@ export default async function ActivityHistoryPage({ params }: PageProps) {
                               Quantity: {log.quantity_before} → {log.quantity_after}
                             </p>
                           )}
+                          {log.action_type === 'move' && (log.from_folder_name !== null || log.to_folder_name !== null) && (
+                            <div className="mt-2 flex items-center gap-2 text-xs text-neutral-600">
+                              <div className="flex items-center gap-1">
+                                <Folder className="h-3 w-3 text-neutral-400" />
+                                <span className="text-neutral-500">
+                                  {log.from_folder_name || 'No Folder'}
+                                </span>
+                              </div>
+                              <ArrowRight className="h-3 w-3 text-orange-500" />
+                              <div className="flex items-center gap-1">
+                                <Folder className="h-3 w-3 text-neutral-400" />
+                                <span className="font-medium text-neutral-700">
+                                  {log.to_folder_name || 'No Folder'}
+                                </span>
+                              </div>
+                            </div>
+                          )}
                           {log.changes && typeof log.changes === 'object' && (
                             <div className="mt-2 text-xs text-neutral-500">
                               {Object.entries(log.changes)
@@ -158,10 +180,10 @@ export default async function ActivityHistoryPage({ params }: PageProps) {
                         <div className="flex-shrink-0 text-right">
                           <p className="text-xs text-neutral-500">
                             <Clock className="inline h-3 w-3 mr-1" />
-                            {format(new Date(log.created_at), 'MMM d, yyyy')}
+                            <FormattedShortDate date={log.created_at} />
                           </p>
                           <p className="text-xs text-neutral-400">
-                            {format(new Date(log.created_at), 'h:mm a')}
+                            {formatTime(log.created_at)}
                           </p>
                         </div>
                       </div>

@@ -11,10 +11,12 @@ interface CustomFieldsSectionProps {
   values: Record<string, unknown>
   onChange: (values: Record<string, unknown>) => void
   disabled?: boolean
+  folderId?: string | null // Current item's folder - used to filter fields
 }
 
-export function CustomFieldsSection({ values, onChange, disabled }: CustomFieldsSectionProps) {
+export function CustomFieldsSection({ values, onChange, disabled, folderId }: CustomFieldsSectionProps) {
   const [fields, setFields] = useState<CustomFieldDefinition[]>([])
+  const [fieldFolders, setFieldFolders] = useState<Record<string, string[]>>({}) // fieldId -> folderIds
   const [loading, setLoading] = useState(true)
   const [isExpanded, setIsExpanded] = useState(false)
 
@@ -42,14 +44,31 @@ export function CustomFieldsSection({ values, onChange, disabled }: CustomFields
 
         if (!profile?.tenant_id) return
 
+        // Load custom fields and field-folder associations in parallel
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { data } = await (supabase as any)
-          .from('custom_field_definitions')
-          .select('*')
-          .eq('tenant_id', profile.tenant_id)
-          .order('sort_order', { ascending: true })
+        const [fieldsResult, fieldFoldersResult] = await Promise.all([
+          (supabase as any)
+            .from('custom_field_definitions')
+            .select('*')
+            .eq('tenant_id', profile.tenant_id)
+            .order('sort_order', { ascending: true }),
+          (supabase as any)
+            .from('custom_field_folders')
+            .select('custom_field_id, folder_id')
+            .eq('tenant_id', profile.tenant_id),
+        ])
 
-        setFields((data || []) as CustomFieldDefinition[])
+        setFields((fieldsResult.data || []) as CustomFieldDefinition[])
+
+        // Build fieldId -> folderIds map
+        const ffMap: Record<string, string[]> = {}
+        for (const row of (fieldFoldersResult.data || [])) {
+          if (!ffMap[row.custom_field_id]) {
+            ffMap[row.custom_field_id] = []
+          }
+          ffMap[row.custom_field_id].push(row.folder_id)
+        }
+        setFieldFolders(ffMap)
       } finally {
         setLoading(false)
       }
@@ -65,8 +84,22 @@ export function CustomFieldsSection({ values, onChange, disabled }: CustomFields
     })
   }
 
-  // Don't render anything if no custom fields are defined
-  if (!loading && fields.length === 0) {
+  // Filter fields based on folder association
+  // A field shows if:
+  // 1. It has no folder associations (global field), OR
+  // 2. It's associated with the current folder
+  const relevantFields = fields.filter(field => {
+    const associatedFolders = fieldFolders[field.id] || []
+    // Global field (no folder associations) - shows for all items
+    if (associatedFolders.length === 0) return true
+    // Folder-specific field - only show if item is in one of the associated folders
+    if (folderId && associatedFolders.includes(folderId)) return true
+    // Item has no folder, only show global fields
+    return false
+  })
+
+  // Don't render anything if no relevant custom fields
+  if (!loading && relevantFields.length === 0) {
     return null
   }
 
@@ -85,9 +118,9 @@ export function CustomFieldsSection({ values, onChange, disabled }: CustomFields
             <ChevronRight className="h-5 w-5 text-neutral-500" />
           )}
           <h3 className="text-lg font-medium text-neutral-900">Custom Fields</h3>
-          {fields.length > 0 && (
+          {relevantFields.length > 0 && (
             <span className="text-sm text-neutral-500">
-              ({fields.length} field{fields.length !== 1 ? 's' : ''})
+              ({relevantFields.length} field{relevantFields.length !== 1 ? 's' : ''})
             </span>
           )}
         </div>
@@ -111,7 +144,7 @@ export function CustomFieldsSection({ values, onChange, disabled }: CustomFields
             </div>
           ) : (
             <div className="space-y-4">
-              {fields.map((field) => (
+              {relevantFields.map((field) => (
                 <div key={field.id}>
                   <label className="mb-1 block text-sm font-medium text-neutral-700">
                     {field.name}

@@ -5,7 +5,8 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Save, User } from 'lucide-react'
+import { Save, User, Lock } from 'lucide-react'
+import Link from 'next/link'
 import type { Profile } from '@/types/database.types'
 
 export default function ProfileSettingsPage() {
@@ -19,6 +20,14 @@ export default function ProfileSettingsPage() {
     email: '',
     phone: '',
   })
+
+  // Password change state
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: '',
+    newPassword: '',
+  })
+  const [savingPassword, setSavingPassword] = useState(false)
+  const [passwordMessage, setPasswordMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   useEffect(() => {
     loadProfile()
@@ -79,6 +88,42 @@ export default function ProfileSettingsPage() {
       setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to update profile' })
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function handlePasswordChange(e: React.FormEvent) {
+    e.preventDefault()
+    setSavingPassword(true)
+    setPasswordMessage(null)
+
+    if (!passwordData.currentPassword || !passwordData.newPassword) {
+      setPasswordMessage({ type: 'error', text: 'Please fill in both password fields' })
+      setSavingPassword(false)
+      return
+    }
+
+    if (passwordData.newPassword.length < 6) {
+      setPasswordMessage({ type: 'error', text: 'New password must be at least 6 characters' })
+      setSavingPassword(false)
+      return
+    }
+
+    try {
+      const supabase = createClient()
+
+      // Update password using Supabase Auth
+      const { error } = await supabase.auth.updateUser({
+        password: passwordData.newPassword,
+      })
+
+      if (error) throw error
+
+      setPasswordMessage({ type: 'success', text: 'Password updated successfully' })
+      setPasswordData({ currentPassword: '', newPassword: '' })
+    } catch (err) {
+      setPasswordMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to update password' })
+    } finally {
+      setSavingPassword(false)
     }
   }
 
@@ -180,6 +225,77 @@ export default function ProfileSettingsPage() {
             Save Changes
           </Button>
         </div>
+      </form>
+
+      {/* Change Password Section */}
+      <form onSubmit={handlePasswordChange} className="max-w-2xl mt-6">
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Lock className="h-5 w-5" />
+              Change Password
+            </CardTitle>
+            <CardDescription>
+              Update your account password
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {passwordMessage && (
+              <div
+                className={`rounded-lg p-4 text-sm ${
+                  passwordMessage.type === 'success'
+                    ? 'bg-green-50 text-green-600'
+                    : 'bg-red-50 text-red-600'
+                }`}
+              >
+                {passwordMessage.text}
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                  Current Password
+                </label>
+                <Input
+                  type="password"
+                  value={passwordData.currentPassword}
+                  onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                  placeholder="Current Password"
+                />
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                  New Password
+                </label>
+                <Input
+                  type="password"
+                  value={passwordData.newPassword}
+                  onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                  placeholder="New Password"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between pt-2">
+              <Button
+                type="submit"
+                variant="outline"
+                loading={savingPassword}
+                className="uppercase tracking-wide text-xs font-semibold"
+              >
+                Save Changes
+              </Button>
+              <Link
+                href="/forgot-password"
+                className="text-sm text-neutral-600 hover:text-neutral-900"
+              >
+                Forgot password?
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
       </form>
     </div>
   )

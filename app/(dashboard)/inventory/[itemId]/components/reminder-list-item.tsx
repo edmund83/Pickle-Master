@@ -13,7 +13,7 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import type { ItemReminderWithDetails } from '@/types/database.types'
 import { toggleReminderStatus, deleteItemReminder } from '../actions/reminder-actions'
-import { format } from 'date-fns'
+import { useFormatting } from '@/hooks/useFormatting'
 
 interface ReminderListItemProps {
   reminder: ItemReminderWithDetails
@@ -47,6 +47,7 @@ export function ReminderListItem({
 }: ReminderListItemProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [showActions, setShowActions] = useState(false)
+  const { formatShortDate } = useFormatting()
 
   const Icon = REMINDER_ICONS[reminder.reminder_type]
   const colorClass = REMINDER_COLORS[reminder.reminder_type]
@@ -124,12 +125,12 @@ export function ReminderListItem({
         <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-neutral-400">
           {reminder.next_trigger_at && reminder.status === 'active' && (
             <span>
-              Next: {format(new Date(reminder.next_trigger_at), 'MMM d, yyyy')}
+              Next: {formatShortDate(reminder.next_trigger_at)}
             </span>
           )}
           {reminder.last_triggered_at && (
             <span>
-              Last: {format(new Date(reminder.last_triggered_at), 'MMM d, yyyy')}
+              Last: {formatShortDate(reminder.last_triggered_at)}
             </span>
           )}
           {reminder.trigger_count > 0 && (

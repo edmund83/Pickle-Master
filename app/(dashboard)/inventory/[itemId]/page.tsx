@@ -11,10 +11,8 @@ import {
   FileText,
   Clock,
   Edit,
-  MoreHorizontal,
   History,
   Ruler,
-  ScanLine,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
@@ -29,6 +27,10 @@ import QRBarcodeSection from './components/qr-barcode-section'
 import { SetHighlightedFolder } from './components/set-highlighted-folder'
 import { ItemDetailCard } from './components/item-detail-card'
 import { InlineReminders } from './components/inline-reminders'
+import { FormattedPricingCard } from './components/FormattedPricingCard'
+import { TrackingCard } from './components/TrackingCard'
+import { FormattedDateTime, FormattedShortDate } from '@/components/formatting/FormattedDate'
+import { ItemMoreOptions } from './components/item-more-options'
 
 interface FeaturesEnabled {
   multi_location?: boolean
@@ -50,6 +52,24 @@ interface ActivityLogItem {
   changes: Record<string, unknown> | null
 }
 
+interface SerialStats {
+  total: number
+  available: number
+  checked_out: number
+  sold: number
+  damaged: number
+  returned: number
+}
+
+interface LotStats {
+  activeLots: number
+  totalQuantity: number
+  expiredCount: number
+  expiringSoonCount: number
+  expiringCount: number
+  daysUntilNextExpiry: number | null
+}
+
 interface ItemWithRelations {
   item: InventoryItem
   folder: Folder | null
@@ -58,6 +78,8 @@ interface ItemWithRelations {
   features: FeaturesEnabled
   tenantLogo: string | null
   userEmail: string | null
+  serialStats: SerialStats | null
+  lotStats: LotStats | null
 }
 
 async function getItemDetails(itemId: string): Promise<ItemWithRelations | null> {
@@ -134,6 +156,80 @@ async function getItemDetails(itemId: string): Promise<ItemWithRelations | null>
   const features = (settings?.features_enabled as FeaturesEnabled) || {}
   const tenantLogo = (tenant?.logo_url as string) || null
 
+  // Fetch tracking stats based on item's tracking mode
+  let serialStats: SerialStats | null = null
+  let lotStats: LotStats | null = null
+
+  if (typedItem.tracking_mode === 'serialized') {
+    // Get serial number stats by status
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: serialData } = await (supabase as any)
+      .from('serial_numbers')
+      .select('status')
+      .eq('item_id', itemId)
+
+    if (serialData && serialData.length > 0) {
+      const statusCounts = (serialData as { status: string }[]).reduce(
+        (acc, row) => {
+          acc[row.status] = (acc[row.status] || 0) + 1
+          return acc
+        },
+        {} as Record<string, number>
+      )
+
+      serialStats = {
+        total: serialData.length,
+        available: statusCounts['available'] || 0,
+        checked_out: statusCounts['checked_out'] || 0,
+        sold: statusCounts['sold'] || 0,
+        damaged: statusCounts['damaged'] || 0,
+        returned: statusCounts['returned'] || 0,
+      }
+    }
+  }
+
+  if (typedItem.tracking_mode === 'lot_expiry') {
+    // Get lots for this item using RPC
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: lotsData } = await (supabase as any)
+      .rpc('get_item_lots', { p_item_id: itemId, p_include_depleted: false })
+
+    if (lotsData && lotsData.length > 0) {
+      interface LotRow {
+        status: string
+        quantity: number
+        expiry_status: string
+        days_until_expiry: number | null
+      }
+      const lots = lotsData as LotRow[]
+      const activeLots = lots.filter((l) => l.status === 'active')
+      const totalQuantity = activeLots.reduce((sum, l) => sum + (l.quantity || 0), 0)
+
+      // Count by expiry status
+      const expiredCount = lots.filter(
+        (l) => l.expiry_status === 'expired' || l.status === 'expired'
+      ).length
+      const expiringSoonCount = lots.filter((l) => l.expiry_status === 'expiring_soon').length
+      const expiringCount = lots.filter((l) => l.expiry_status === 'expiring_month').length
+
+      // Find earliest expiry
+      const lotsWithExpiry = lots.filter((l) => l.days_until_expiry !== null)
+      const daysUntilNextExpiry =
+        lotsWithExpiry.length > 0
+          ? Math.min(...lotsWithExpiry.map((l) => l.days_until_expiry as number))
+          : null
+
+      lotStats = {
+        activeLots: activeLots.length,
+        totalQuantity,
+        expiredCount,
+        expiringSoonCount,
+        expiringCount,
+        daysUntilNextExpiry,
+      }
+    }
+  }
+
   return {
     item: typedItem,
     folder,
@@ -142,6 +238,8 @@ async function getItemDetails(itemId: string): Promise<ItemWithRelations | null>
     features,
     tenantLogo,
     userEmail: user.email || null,
+    serialStats,
+    lotStats,
   }
 }
 
@@ -153,7 +251,7 @@ export default async function ItemDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  const { item, folder, itemTags, activityLogs, features, tenantLogo, userEmail } = data
+  const { item, folder, itemTags, activityLogs, features, tenantLogo, userEmail, serialStats, lotStats } = data
 
   const statusColors: Record<string, string> = {
     in_stock: 'bg-green-100 text-green-700 border-green-200',
@@ -175,13 +273,6 @@ export default async function ItemDetailPage({ params }: PageProps) {
     delete: 'bg-red-500',
     restore: 'bg-teal-500',
   }
-
-  const totalValue = (item.quantity || 0) * (item.price || 0)
-  const marginAmount = (item.price || 0) - (item.cost_price || 0)
-  const marginPercent = item.cost_price && item.cost_price > 0
-    ? ((marginAmount / item.cost_price) * 100)
-    : null
-  const totalProfit = (item.quantity || 0) * marginAmount
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden">
@@ -237,9 +328,12 @@ export default async function ItemDetailPage({ params }: PageProps) {
             tenantLogo={tenantLogo}
             userEmail={userEmail}
           />
-          <Button variant="ghost" size="sm">
-            <MoreHorizontal className="h-4 w-4" />
-          </Button>
+          <ItemMoreOptions
+            itemId={item.id}
+            itemName={item.name}
+            currentFolderId={item.folder_id}
+            currentFolderName={folder?.name || null}
+          />
         </div>
       </div>
 
@@ -370,87 +464,20 @@ export default async function ItemDetailPage({ params }: PageProps) {
             </ItemDetailCard>
 
             {/* Pricing Card */}
-            <ItemDetailCard title="Pricing" icon={<DollarSign className="h-5 w-5" />}>
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span className="text-neutral-500">Selling Price</span>
-                  <span className="font-medium text-neutral-900">
-                    {item.currency || 'RM'} {(item.price || 0).toFixed(2)}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-neutral-500">Cost Price</span>
-                  <span className="font-medium text-neutral-900">
-                    {item.cost_price ? `${item.currency || 'RM'} ${item.cost_price.toFixed(2)}` : '-'}
-                  </span>
-                </div>
-                {marginPercent !== null && (
-                  <div className="flex justify-between">
-                    <span className="text-neutral-500">Margin</span>
-                    <span className={`font-medium ${marginAmount >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {marginPercent.toFixed(1)}% / {item.currency || 'RM'} {marginAmount.toFixed(2)}
-                    </span>
-                  </div>
-                )}
-                <div className="flex justify-between border-t border-neutral-100 pt-2">
-                  <span className="text-neutral-500">Total Value</span>
-                  <span className="font-bold text-pickle-600">
-                    {item.currency || 'RM'} {totalValue.toFixed(2)}
-                  </span>
-                </div>
-                {marginPercent !== null && (
-                  <div className="flex justify-between">
-                    <span className="text-neutral-500">Total Profit</span>
-                    <span className={`font-bold ${totalProfit >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                      {item.currency || 'RM'} {totalProfit.toFixed(2)}
-                    </span>
-                  </div>
-                )}
-              </div>
-            </ItemDetailCard>
+            <FormattedPricingCard
+              price={item.price || 0}
+              costPrice={item.cost_price}
+              quantity={item.quantity || 0}
+            />
 
             {/* Tracking & Traceability Card */}
-            <ItemDetailCard title="Tracking & Traceability" icon={<ScanLine className="h-5 w-5" />}>
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between items-center">
-                  <span className="text-neutral-500">Tracking Mode</span>
-                  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                    item.tracking_mode === 'serialized'
-                      ? 'bg-blue-100 text-blue-700'
-                      : item.tracking_mode === 'lot_expiry'
-                      ? 'bg-purple-100 text-purple-700'
-                      : 'bg-neutral-100 text-neutral-600'
-                  }`}>
-                    {item.tracking_mode === 'serialized'
-                      ? 'Serialized'
-                      : item.tracking_mode === 'lot_expiry'
-                      ? 'Lot / Expiry'
-                      : 'Standard'}
-                  </span>
-                </div>
-                {item.serial_number && (
-                  <div className="flex justify-between">
-                    <span className="text-neutral-500">Serial Number</span>
-                    <span className="font-mono font-medium text-neutral-900">{item.serial_number}</span>
-                  </div>
-                )}
-                {item.tracking_mode === 'serialized' && (
-                  <p className="text-xs text-neutral-400 pt-1 border-t border-neutral-100">
-                    Each unit has a unique serial number for individual tracking.
-                  </p>
-                )}
-                {item.tracking_mode === 'lot_expiry' && (
-                  <p className="text-xs text-neutral-400 pt-1 border-t border-neutral-100">
-                    Track by lot/batch numbers with expiry dates for FEFO picking.
-                  </p>
-                )}
-                {(!item.tracking_mode || item.tracking_mode === 'none') && !item.serial_number && (
-                  <p className="text-xs text-neutral-400">
-                    Standard quantity-based tracking without serial or lot numbers.
-                  </p>
-                )}
-              </div>
-            </ItemDetailCard>
+            <TrackingCard
+              itemId={item.id}
+              trackingMode={item.tracking_mode as 'none' | 'serialized' | 'lot_expiry' | null}
+              serialNumber={item.serial_number}
+              serialStats={serialStats}
+              lotStats={lotStats}
+            />
           </div>
 
           {/* Row 2: Secondary Information */}
@@ -661,7 +688,7 @@ export default async function ItemDetailPage({ params }: PageProps) {
                       </p>
                       <p className="text-xs text-neutral-500 mt-0.5">
                         <Clock className="inline h-3 w-3 mr-1" />
-                        {log.user_name || 'System'} • {format(new Date(log.created_at), 'MMM d, yyyy h:mm a')}
+                        {log.user_name || 'System'} • <FormattedDateTime date={log.created_at} />
                       </p>
                     </div>
                   </div>
@@ -677,10 +704,10 @@ export default async function ItemDetailPage({ params }: PageProps) {
           <div className="mt-6 flex flex-wrap items-center justify-between gap-4 text-xs text-neutral-400">
             <div className="flex flex-wrap gap-4">
               {item.created_at && (
-                <span>Created: {format(new Date(item.created_at), 'MMM d, yyyy')}</span>
+                <span>Created: <FormattedShortDate date={item.created_at} /></span>
               )}
               {item.updated_at && (
-                <span>Updated: {format(new Date(item.updated_at), 'MMM d, yyyy')}</span>
+                <span>Updated: <FormattedShortDate date={item.updated_at} /></span>
               )}
             </div>
             <span className="font-mono text-[10px]">ID: {item.id}</span>

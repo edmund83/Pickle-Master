@@ -177,3 +177,117 @@ export async function returnItem(
     revalidatePath(`/inventory/${checkout.item_id}`)
     return { success: true }
 }
+
+/**
+ * Checkout with specific serial numbers (for serialized items)
+ * Uses the checkout_with_serials RPC function
+ */
+export async function checkoutWithSerials(
+    itemId: string,
+    serialIds: string[],
+    assigneeType: 'person' | 'job' | 'location',
+    assigneeId?: string,
+    assigneeName?: string,
+    dueDate?: string,
+    notes?: string
+): Promise<CheckoutResult> {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) return { success: false, error: 'Unauthorized' }
+
+    if (serialIds.length === 0) {
+        return { success: false, error: 'No serial numbers selected' }
+    }
+
+    // Call the RPC function that handles everything atomically
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase as any).rpc('checkout_with_serials', {
+        p_item_id: itemId,
+        p_serial_ids: serialIds,
+        p_assignee_type: assigneeType,
+        p_assignee_id: assigneeId || null,
+        p_assignee_name: assigneeName || null,
+        p_due_date: dueDate || null,
+        p_notes: notes || null
+    })
+
+    if (error) {
+        console.error('Checkout with serials error:', error)
+        return { success: false, error: error.message }
+    }
+
+    if (data && !data.success) {
+        return { success: false, error: data.error || 'Checkout failed' }
+    }
+
+    revalidatePath(`/inventory/${itemId}`)
+    return { success: true }
+}
+
+/**
+ * Return checkout with per-serial conditions (for serialized items)
+ * Uses the return_checkout_serials RPC function
+ */
+export async function returnCheckoutSerials(
+    checkoutId: string,
+    serialReturns: Array<{ serial_id: string; condition: 'good' | 'damaged' | 'needs_repair' | 'lost' }>,
+    notes?: string
+): Promise<CheckoutResult> {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) return { success: false, error: 'Unauthorized' }
+
+    // Get checkout to find item_id for revalidation
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: checkout } = await (supabase as any)
+        .from('checkouts')
+        .select('item_id')
+        .eq('id', checkoutId)
+        .single()
+
+    // Call the RPC function
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase as any).rpc('return_checkout_serials', {
+        p_checkout_id: checkoutId,
+        p_serial_returns: JSON.stringify(serialReturns),
+        p_notes: notes || null
+    })
+
+    if (error) {
+        console.error('Return checkout serials error:', error)
+        return { success: false, error: error.message }
+    }
+
+    if (data && !data.success) {
+        return { success: false, error: data.error || 'Return failed' }
+    }
+
+    if (checkout?.item_id) {
+        revalidatePath(`/inventory/${checkout.item_id}`)
+    }
+    return { success: true }
+}
+
+/**
+ * Get serials linked to a checkout (for return modal)
+ */
+export async function getCheckoutSerials(checkoutId: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) return { success: false, error: 'Unauthorized', serials: [] }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase as any).rpc('get_checkout_serials', {
+        p_checkout_id: checkoutId
+    })
+
+    if (error) {
+        console.error('Get checkout serials error:', error)
+        return { success: false, error: error.message, serials: [] }
+    }
+
+    return { success: true, serials: data || [] }
+}

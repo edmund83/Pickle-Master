@@ -14,6 +14,7 @@ import { SerialTrackingSection } from '@/components/serials/SerialTrackingSectio
 import { createClient } from '@/lib/supabase/client'
 import { useOptionalInventoryContext } from '../../components/inventory-context'
 import type { InventoryItem, ItemTrackingMode } from '@/types/database.types'
+import { getCurrencySymbol } from '@/lib/formatting'
 
 interface FeaturesEnabled {
   multi_location?: boolean
@@ -534,7 +535,7 @@ export default function EditItemPage() {
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-neutral-600">Margin</span>
                     <span className="font-medium text-pickle-600">
-                      {(((formData.price - formData.cost_price) / formData.cost_price) * 100).toFixed(1)}% / {formData.currency} {(formData.price - formData.cost_price).toFixed(2)}
+                      {(((formData.price - formData.cost_price) / formData.cost_price) * 100).toFixed(1)}% / {getCurrencySymbol(formData.currency)} {(formData.price - formData.cost_price).toFixed(2)}
                     </span>
                   </div>
                 </div>
@@ -772,6 +773,7 @@ export default function EditItemPage() {
             values={customFields}
             onChange={setCustomFields}
             disabled={saving}
+            folderId={item?.folder_id}
           />
         </form>
       </div>

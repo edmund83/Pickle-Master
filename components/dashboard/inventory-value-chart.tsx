@@ -1,6 +1,7 @@
 'use client'
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
+import { useFormatting } from '@/hooks/useFormatting'
 
 interface InventoryValueChartProps {
     data: {
@@ -10,6 +11,8 @@ interface InventoryValueChartProps {
 }
 
 export function InventoryValueChart({ data }: InventoryValueChartProps) {
+    const { formatCurrency, currencySymbol } = useFormatting()
+
     if (data.length === 0 || data.every(d => d.value === 0)) {
         return (
             <div className="flex h-[300px] items-center justify-center text-neutral-400 text-sm">
@@ -45,15 +48,15 @@ export function InventoryValueChart({ data }: InventoryValueChartProps) {
                         axisLine={false}
                         tickLine={false}
                         tick={{ fill: '#6B7280', fontSize: 12 }}
-                        tickFormatter={(value) => `RM${value}`}
+                        tickFormatter={(value) => `${currencySymbol}${value}`}
                     />
                     <Tooltip
                         cursor={{ fill: 'transparent' }}
                         contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
-                        formatter={(value) => [`RM ${(value as number).toLocaleString('en-MY', { minimumFractionDigits: 2 })}`, 'Value']}
+                        formatter={(value) => [formatCurrency(value as number), 'Value']}
                     />
                     <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={40}>
-                        {chartData.map((entry, index) => (
+                        {chartData.map((_, index) => (
                             <Cell key={`cell-${index}`} fill="#10B981" /> /* Pickle Green */
                         ))}
                     </Bar>
