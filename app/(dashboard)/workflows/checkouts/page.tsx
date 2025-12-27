@@ -13,8 +13,8 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { format } from 'date-fns'
 import { CheckoutActions } from './checkout-actions'
+import { FormattedShortDate } from '@/components/formatting/FormattedDate'
 
 interface CheckoutItem {
   id: string
@@ -276,7 +276,7 @@ function CheckoutRow({ checkout }: { checkout: CheckoutItem }) {
               <p className="text-neutral-500">Returned</p>
               <p className="text-neutral-700">
                 {checkout.returned_at
-                  ? format(new Date(checkout.returned_at), 'MMM d, yyyy')
+                  ? <FormattedShortDate date={checkout.returned_at} />
                   : '-'}
               </p>
             </>
@@ -286,14 +286,14 @@ function CheckoutRow({ checkout }: { checkout: CheckoutItem }) {
                 {isOverdue ? `${checkout.days_overdue} days overdue` : 'Due'}
               </p>
               <p className={isOverdue ? 'text-red-600' : 'text-neutral-700'}>
-                {format(new Date(checkout.due_date), 'MMM d, yyyy')}
+                <FormattedShortDate date={checkout.due_date} />
               </p>
             </>
           ) : (
             <>
               <p className="text-neutral-500">No due date</p>
               <p className="text-neutral-700">
-                {format(new Date(checkout.checked_out_at), 'MMM d, yyyy')}
+                <FormattedShortDate date={checkout.checked_out_at} />
               </p>
             </>
           )}

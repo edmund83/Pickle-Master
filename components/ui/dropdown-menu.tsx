@@ -63,13 +63,11 @@ export function DropdownMenuContent({ children, align = 'end', className }: { ch
 
     return (
         <div className={cn(
-            "absolute z-50 mt-2 w-56 rounded-md border border-neutral-200 bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none",
+            "absolute z-50 mt-1 min-w-[180px] rounded-lg border border-neutral-200 bg-white py-1 shadow-lg",
             align === 'end' ? "right-0" : "left-0",
             className
         )}>
-            <div className="py-1">
-                {children}
-            </div>
+            {children}
         </div>
     )
 }
@@ -85,7 +83,7 @@ export function DropdownMenuItem({ children, className, onClick }: { children: R
     return (
         <button
             className={cn(
-                "block w-full px-4 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900",
+                "flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-neutral-700 transition-colors hover:bg-neutral-50",
                 className
             )}
             onClick={handleClick}
@@ -115,13 +113,13 @@ export function DropdownMenuCheckboxItem({
     return (
         <button
             className={cn(
-                "flex w-full items-center px-4 py-2 text-left text-sm text-neutral-700 hover:bg-neutral-100 hover:text-neutral-900",
+                "flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-neutral-700 transition-colors hover:bg-neutral-50",
                 className
             )}
             onClick={handleClick}
         >
             <span className={cn(
-                "mr-2 flex h-4 w-4 items-center justify-center rounded border",
+                "flex h-4 w-4 items-center justify-center rounded border",
                 checked ? "border-pickle-500 bg-pickle-500" : "border-neutral-300"
             )}>
                 {checked && (
@@ -142,7 +140,7 @@ export function DropdownMenuSeparator() {
 export function DropdownMenuLabel({ children, className }: { children: React.ReactNode; className?: string }) {
     return (
         <div className={cn(
-            "px-4 py-2 text-xs font-semibold uppercase tracking-wide text-neutral-500",
+            "px-3 py-1.5 text-xs font-medium text-neutral-500",
             className
         )}>
             {children}

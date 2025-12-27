@@ -23,6 +23,7 @@ import { Breadcrumbs } from './breadcrumbs'
 import { FolderSummaryStats } from './folder-summary-stats'
 import { BulkEditModal } from './bulk-edit-modal'
 import { createClient } from '@/lib/supabase/client'
+import { useFormatting } from '@/hooks/useFormatting'
 
 // Properly escape CSV values
 function escapeCSV(value: string | number | null | undefined): string {
@@ -554,6 +555,7 @@ interface ItemCardProps {
 }
 
 function ItemCard({ item, isSelectionMode, isSelected, onToggleSelect }: ItemCardProps) {
+  const { formatCurrency } = useFormatting()
   const statusColors: Record<string, string> = {
     in_stock: 'bg-green-100 text-green-700',
     low_stock: 'bg-yellow-100 text-yellow-700',
@@ -639,7 +641,7 @@ function ItemCard({ item, isSelectionMode, isSelected, onToggleSelect }: ItemCar
 
       {(item.price ?? 0) > 0 && (
         <p className="mt-1 text-sm text-neutral-500">
-          RM {(item.price ?? 0).toFixed(2)} / {item.unit}
+          {formatCurrency(item.price)} / {item.unit}
         </p>
       )}
     </>

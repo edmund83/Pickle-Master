@@ -15,8 +15,13 @@ import {
   LogIn,
   Loader2
 } from 'lucide-react'
-import { format } from 'date-fns'
 import type { ItemCondition } from '@/types/database.types'
+import { useFormatting } from '@/hooks/useFormatting'
+
+interface CheckoutSerial {
+  serial_number: string
+  return_condition: ItemCondition | null
+}
 
 interface CheckoutHistoryItem {
   id: string
@@ -31,6 +36,7 @@ interface CheckoutHistoryItem {
   return_notes: string | null
   checked_out_by_name: string | null
   returned_by_name: string | null
+  serials?: CheckoutSerial[]
 }
 
 interface CheckoutHistoryProps {
@@ -61,6 +67,7 @@ const conditionLabels: Record<ItemCondition, string> = {
 export function CheckoutHistory({ itemId, limit = 10 }: CheckoutHistoryProps) {
   const [history, setHistory] = useState<CheckoutHistoryItem[]>([])
   const [loading, setLoading] = useState(true)
+  const { formatDateTime, formatDate } = useFormatting()
 
   useEffect(() => {
     loadHistory()
@@ -71,13 +78,13 @@ export function CheckoutHistory({ itemId, limit = 10 }: CheckoutHistoryProps) {
     const supabase = createClient()
 
     try {
+      // Use RPC function that includes linked serials
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: historyData } = await (supabase as any)
-        .from('checkouts')
-        .select('*')
-        .eq('item_id', itemId)
-        .order('created_at', { ascending: false })
-        .limit(limit)
+        .rpc('get_item_checkout_history', {
+          p_item_id: itemId,
+          p_limit: limit
+        })
 
       if (historyData) {
         setHistory(historyData)
@@ -174,7 +181,7 @@ export function CheckoutHistory({ itemId, limit = 10 }: CheckoutHistoryProps) {
                 <div>
                   <span className="text-neutral-500">Checked out:</span>
                   <p className="text-neutral-700">
-                    {format(new Date(item.checked_out_at), 'MMM d, yyyy h:mm a')}
+                    {formatDateTime(item.checked_out_at)}
                   </p>
                   {item.checked_out_by_name && (
                     <p className="text-neutral-500">by {item.checked_out_by_name}</p>
@@ -185,7 +192,7 @@ export function CheckoutHistory({ itemId, limit = 10 }: CheckoutHistoryProps) {
                   <div>
                     <span className="text-neutral-500">Returned:</span>
                     <p className="text-neutral-700">
-                      {format(new Date(item.returned_at), 'MMM d, yyyy h:mm a')}
+                      {formatDateTime(item.returned_at)}
                     </p>
                     {item.returned_by_name && (
                       <p className="text-neutral-500">by {item.returned_by_name}</p>
@@ -196,14 +203,44 @@ export function CheckoutHistory({ itemId, limit = 10 }: CheckoutHistoryProps) {
                     <span className="text-neutral-500">Due date:</span>
                     <p className={`${item.status === 'overdue' ? 'font-medium text-red-600' : 'text-neutral-700'
                       }`}>
-                      {format(new Date(item.due_date), 'MMM d, yyyy')}
+                      {formatDate(item.due_date)}
                     </p>
                   </div>
                 ) : null}
               </div>
 
-              {/* Return condition */}
-              {item.status === 'returned' && item.return_condition && (
+              {/* Serials (if any) */}
+              {item.serials && item.serials.length > 0 && (
+                <div className="mt-3 border-t border-neutral-100 pt-3">
+                  <span className="text-xs font-medium text-neutral-500">Serial Numbers:</span>
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {item.serials.map((serial, idx) => (
+                      <span
+                        key={idx}
+                        className={`inline-flex items-center gap-1 rounded px-2 py-0.5 font-mono text-xs ${
+                          item.status === 'returned' && serial.return_condition
+                            ? serial.return_condition === 'good'
+                              ? 'bg-green-50 text-green-700'
+                              : serial.return_condition === 'lost'
+                              ? 'bg-red-50 text-red-700'
+                              : 'bg-yellow-50 text-yellow-700'
+                            : 'bg-neutral-100 text-neutral-700'
+                        }`}
+                      >
+                        {serial.serial_number}
+                        {item.status === 'returned' && serial.return_condition && serial.return_condition !== 'good' && (
+                          <span className="ml-1">
+                            {conditionIcons[serial.return_condition]}
+                          </span>
+                        )}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Return condition (for non-serialized items) */}
+              {item.status === 'returned' && item.return_condition && (!item.serials || item.serials.length === 0) && (
                 <div className="mt-3 flex items-center gap-2 border-t border-neutral-100 pt-3">
                   {conditionIcons[item.return_condition]}
                   <span className="text-xs text-neutral-600">

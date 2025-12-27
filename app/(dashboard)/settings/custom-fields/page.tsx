@@ -26,7 +26,8 @@ import {
   DollarSign,
   Percent,
 } from 'lucide-react'
-import type { CustomFieldDefinition } from '@/types/database.types'
+import type { CustomFieldDefinition, Folder } from '@/types/database.types'
+import { FolderIcon } from 'lucide-react'
 
 const FIELD_TYPES = [
   { value: 'text', label: 'Text', icon: Type, description: 'Single line text' },
@@ -43,6 +44,21 @@ const FIELD_TYPES = [
   { value: 'percentage', label: 'Percentage', icon: Percent, description: 'Percentage value' },
 ] as const
 
+const MAX_CUSTOM_FIELDS = 20
+
+const SUGGESTED_FIELDS = [
+  { name: 'Serial Number', field_type: 'text' as const, icon: Type },
+  { name: 'Model/Part Number', field_type: 'text' as const, icon: Type },
+  { name: 'Purchase Date', field_type: 'date' as const, icon: Calendar },
+  { name: 'Expiry Date', field_type: 'date' as const, icon: Calendar },
+  { name: 'Product Link', field_type: 'url' as const, icon: Link2 },
+  { name: 'Size', field_type: 'text' as const, icon: Type },
+  { name: 'Purchase Price', field_type: 'currency' as const, icon: DollarSign },
+  { name: 'Warranty Expiry', field_type: 'date' as const, icon: Calendar },
+  { name: 'Supplier/Vendor', field_type: 'text' as const, icon: Type },
+  { name: 'Condition', field_type: 'select' as const, icon: List, options: ['New', 'Good', 'Fair', 'Poor'] },
+]
+
 type FieldType = typeof FIELD_TYPES[number]['value']
 
 interface FormData {
@@ -50,6 +66,7 @@ interface FormData {
   field_type: FieldType
   required: boolean
   options: string[]
+  folderIds: string[] // Empty array = all folders (global)
 }
 
 const defaultFormData: FormData = {
@@ -57,10 +74,13 @@ const defaultFormData: FormData = {
   field_type: 'text',
   required: false,
   options: [],
+  folderIds: [],
 }
 
 export default function CustomFieldsPage() {
   const [fields, setFields] = useState<CustomFieldDefinition[]>([])
+  const [folders, setFolders] = useState<Folder[]>([])
+  const [fieldFolders, setFieldFolders] = useState<Record<string, string[]>>({}) // fieldId -> folderIds
   const [loading, setLoading] = useState(true)
   const [tenantId, setTenantId] = useState<string | null>(null)
   const [showForm, setShowForm] = useState(false)
@@ -88,14 +108,37 @@ export default function CustomFieldsPage() {
       if (!profile?.tenant_id) return
       setTenantId(profile.tenant_id)
 
+      // Load custom fields, folders, and field-folder associations in parallel
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data } = await (supabase as any)
-        .from('custom_field_definitions')
-        .select('*')
-        .eq('tenant_id', profile.tenant_id)
-        .order('sort_order', { ascending: true })
+      const [fieldsResult, foldersResult, fieldFoldersResult] = await Promise.all([
+        (supabase as any)
+          .from('custom_field_definitions')
+          .select('*')
+          .eq('tenant_id', profile.tenant_id)
+          .order('sort_order', { ascending: true }),
+        (supabase as any)
+          .from('folders')
+          .select('*')
+          .eq('tenant_id', profile.tenant_id)
+          .order('name', { ascending: true }),
+        (supabase as any)
+          .from('custom_field_folders')
+          .select('custom_field_id, folder_id')
+          .eq('tenant_id', profile.tenant_id),
+      ])
 
-      setFields((data || []) as CustomFieldDefinition[])
+      setFields((fieldsResult.data || []) as CustomFieldDefinition[])
+      setFolders((foldersResult.data || []) as Folder[])
+
+      // Build fieldId -> folderIds map
+      const ffMap: Record<string, string[]> = {}
+      for (const row of (fieldFoldersResult.data || [])) {
+        if (!ffMap[row.custom_field_id]) {
+          ffMap[row.custom_field_id] = []
+        }
+        ffMap[row.custom_field_id].push(row.folder_id)
+      }
+      setFieldFolders(ffMap)
     } finally {
       setLoading(false)
     }
@@ -108,6 +151,11 @@ export default function CustomFieldsPage() {
   const handleCreate = async () => {
     if (!formData.name.trim() || !tenantId) return
 
+    if (fields.length >= MAX_CUSTOM_FIELDS) {
+      setError(`Maximum of ${MAX_CUSTOM_FIELDS} custom fields allowed`)
+      return
+    }
+
     setSaving(true)
     setError(null)
 
@@ -119,7 +167,7 @@ export default function CustomFieldsPage() {
         : 0
 
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: insertError } = await (supabase as any)
+      const { data: newField, error: insertError } = await (supabase as any)
         .from('custom_field_definitions')
         .insert({
           tenant_id: tenantId,
@@ -129,8 +177,23 @@ export default function CustomFieldsPage() {
           options: formData.options.length > 0 ? formData.options : null,
           sort_order: maxSortOrder + 1,
         })
+        .select('id')
+        .single()
 
       if (insertError) throw insertError
+
+      // Save folder associations if any folders are selected
+      if (formData.folderIds.length > 0 && newField?.id) {
+        const folderAssociations = formData.folderIds.map(folderId => ({
+          custom_field_id: newField.id,
+          folder_id: folderId,
+          tenant_id: tenantId,
+        }))
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase as any)
+          .from('custom_field_folders')
+          .insert(folderAssociations)
+      }
 
       setShowForm(false)
       setFormData(defaultFormData)
@@ -144,7 +207,7 @@ export default function CustomFieldsPage() {
   }
 
   const handleUpdate = async (id: string) => {
-    if (!formData.name.trim()) return
+    if (!formData.name.trim() || !tenantId) return
 
     setSaving(true)
     setError(null)
@@ -164,6 +227,25 @@ export default function CustomFieldsPage() {
         .eq('id', id)
 
       if (updateError) throw updateError
+
+      // Update folder associations: delete existing and insert new
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase as any)
+        .from('custom_field_folders')
+        .delete()
+        .eq('custom_field_id', id)
+
+      if (formData.folderIds.length > 0) {
+        const folderAssociations = formData.folderIds.map(folderId => ({
+          custom_field_id: id,
+          folder_id: folderId,
+          tenant_id: tenantId,
+        }))
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase as any)
+          .from('custom_field_folders')
+          .insert(folderAssociations)
+      }
 
       setEditingId(null)
       setFormData(defaultFormData)
@@ -192,6 +274,51 @@ export default function CustomFieldsPage() {
     }
   }
 
+  const handleAddSuggested = async (suggested: typeof SUGGESTED_FIELDS[number]) => {
+    // Skip if field with same name already exists
+    if (fields.some(f => f.name.toLowerCase() === suggested.name.toLowerCase())) {
+      return
+    }
+
+    if (!tenantId) return
+
+    if (fields.length >= MAX_CUSTOM_FIELDS) {
+      setError(`Maximum of ${MAX_CUSTOM_FIELDS} custom fields allowed`)
+      return
+    }
+
+    setSaving(true)
+    setError(null)
+
+    try {
+      const supabase = createClient()
+
+      const maxSortOrder = fields.length > 0
+        ? Math.max(...fields.map(f => f.sort_order || 0))
+        : 0
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { error: insertError } = await (supabase as any)
+        .from('custom_field_definitions')
+        .insert({
+          tenant_id: tenantId,
+          name: suggested.name,
+          field_type: suggested.field_type,
+          required: false,
+          options: 'options' in suggested ? suggested.options : null,
+          sort_order: maxSortOrder + 1,
+        })
+
+      if (insertError) throw insertError
+
+      loadFields()
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to add field')
+    } finally {
+      setSaving(false)
+    }
+  }
+
   const startEdit = (field: CustomFieldDefinition) => {
     setEditingId(field.id)
     setFormData({
@@ -199,6 +326,7 @@ export default function CustomFieldsPage() {
       field_type: field.field_type as FieldType,
       required: field.required || false,
       options: Array.isArray(field.options) ? field.options as string[] : [],
+      folderIds: fieldFolders[field.id] || [],
     })
     setShowForm(false)
   }
@@ -239,7 +367,16 @@ export default function CustomFieldsPage() {
       {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-neutral-900">Custom Fields</h1>
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-semibold text-neutral-900">Custom Fields</h1>
+            <span className={`rounded-full px-2.5 py-0.5 text-sm font-medium ${
+              fields.length >= MAX_CUSTOM_FIELDS
+                ? 'bg-red-100 text-red-700'
+                : 'bg-neutral-100 text-neutral-600'
+            }`}>
+              {fields.length}/{MAX_CUSTOM_FIELDS}
+            </span>
+          </div>
           <p className="text-neutral-500">
             Define custom fields to capture additional data for your inventory items
           </p>
@@ -251,7 +388,7 @@ export default function CustomFieldsPage() {
             setFormData(defaultFormData)
             setOptionInput('')
           }}
-          disabled={showForm}
+          disabled={showForm || fields.length >= MAX_CUSTOM_FIELDS}
         >
           <Plus className="mr-2 h-4 w-4" />
           New Field
@@ -285,9 +422,50 @@ export default function CustomFieldsPage() {
               setOptionInput('')
               setError(null)
             }}
+            folders={folders}
           />
         </div>
       )}
+
+      {/* Quick Add */}
+      {(() => {
+        const availableSuggestions = SUGGESTED_FIELDS.filter(
+          s => !fields.some(f => f.name.toLowerCase() === s.name.toLowerCase())
+        )
+        const remainingSlots = MAX_CUSTOM_FIELDS - fields.length
+        // Hide Quick Add if at limit or no suggestions available
+        if (availableSuggestions.length === 0 || remainingSlots <= 0) return null
+        return (
+          <div className="mb-6">
+            <div className="mb-3 flex items-center justify-between">
+              <p className="text-xs font-medium uppercase tracking-wider text-neutral-500">
+                Quick Add
+              </p>
+              {remainingSlots < 5 && (
+                <p className="text-xs text-amber-600">
+                  {remainingSlots} slot{remainingSlots !== 1 ? 's' : ''} remaining
+                </p>
+              )}
+            </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+              {availableSuggestions.map((suggested) => {
+                const Icon = suggested.icon
+                return (
+                  <button
+                    key={suggested.name}
+                    onClick={() => handleAddSuggested(suggested)}
+                    disabled={saving || remainingSlots <= 0}
+                    className="flex items-center gap-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-left transition-all hover:border-pickle-500 hover:bg-pickle-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    <Icon className="h-4 w-4 flex-shrink-0 text-neutral-400" />
+                    <span className="text-sm font-medium text-neutral-700">{suggested.name}</span>
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+        )
+      })()}
 
       {/* Fields List */}
       {loading ? (
@@ -315,6 +493,7 @@ export default function CustomFieldsPage() {
                       saving={saving}
                       onSave={() => handleUpdate(field.id)}
                       onCancel={cancelEdit}
+                      folders={folders}
                     />
                   ) : (
                     <div className="flex items-center justify-between">
@@ -340,6 +519,20 @@ export default function CustomFieldsPage() {
                               </span>
                             )}
                           </p>
+                          {/* Folder chips */}
+                          <div className="mt-1 flex items-center gap-1 text-xs text-neutral-400">
+                            <FolderIcon className="h-3 w-3" />
+                            {fieldFolders[field.id]?.length > 0 ? (
+                              <span>
+                                {fieldFolders[field.id]
+                                  .map(fid => folders.find(f => f.id === fid)?.name)
+                                  .filter(Boolean)
+                                  .join(', ')}
+                              </span>
+                            ) : (
+                              <span>All folders</span>
+                            )}
+                          </div>
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -387,6 +580,7 @@ interface FieldFormProps {
   saving: boolean
   onSave: () => void
   onCancel: () => void
+  folders: Folder[]
 }
 
 function FieldForm({
@@ -400,6 +594,7 @@ function FieldForm({
   saving,
   onSave,
   onCancel,
+  folders,
 }: FieldFormProps) {
   return (
     <div className="space-y-4">
@@ -497,6 +692,52 @@ function FieldForm({
           This field is required when adding/editing items
         </label>
       </div>
+
+      {/* Folder Selection */}
+      {folders.length > 0 && (
+        <div>
+          <label className="mb-1 block text-sm font-medium text-neutral-700">
+            Applies to Folders
+          </label>
+          <p className="mb-2 text-xs text-neutral-500">
+            Leave empty to show this field for all items, or select specific folders
+          </p>
+          <div className="max-h-40 overflow-y-auto rounded-lg border border-neutral-200 bg-white p-2">
+            {folders.map((folder) => (
+              <label
+                key={folder.id}
+                className="flex cursor-pointer items-center gap-2 rounded px-2 py-1.5 hover:bg-neutral-50"
+              >
+                <input
+                  type="checkbox"
+                  checked={formData.folderIds.includes(folder.id)}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setFormData(prev => ({
+                        ...prev,
+                        folderIds: [...prev.folderIds, folder.id],
+                      }))
+                    } else {
+                      setFormData(prev => ({
+                        ...prev,
+                        folderIds: prev.folderIds.filter(id => id !== folder.id),
+                      }))
+                    }
+                  }}
+                  className="h-4 w-4 rounded border-neutral-300 text-pickle-600 focus:ring-pickle-500"
+                />
+                <FolderIcon className="h-4 w-4 text-neutral-400" />
+                <span className="text-sm text-neutral-700">{folder.name}</span>
+              </label>
+            ))}
+          </div>
+          {formData.folderIds.length > 0 && (
+            <p className="mt-1 text-xs text-pickle-600">
+              {formData.folderIds.length} folder{formData.folderIds.length > 1 ? 's' : ''} selected
+            </p>
+          )}
+        </div>
+      )}
 
       {/* Actions */}
       <div className="flex justify-end gap-2 pt-2">

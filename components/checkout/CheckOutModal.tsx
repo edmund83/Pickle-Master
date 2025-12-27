@@ -10,9 +10,11 @@ import {
   Calendar,
   Loader2,
   Package,
-  Plus
+  Plus,
+  Check,
+  Search,
 } from 'lucide-react'
-import { checkoutItem } from '@/app/actions/checkouts'
+import { checkoutItem, checkoutWithSerials } from '@/app/actions/checkouts'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import type { Profile, Job, Folder, InventoryItem } from '@/types/database.types'
@@ -31,7 +33,17 @@ interface AssigneeOption {
   name: string
 }
 
+interface SerialOption {
+  id: string
+  serial_number: string
+  status: string
+  notes: string | null
+}
+
 export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModalProps) {
+  // Check if item is serialized
+  const isSerialized = item.tracking_mode === 'serialized'
+
   // Form state
   const [assigneeType, setAssigneeType] = useState<AssigneeType>('person')
   const [assigneeId, setAssigneeId] = useState<string>('')
@@ -39,6 +51,12 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
   const [dueDate, setDueDate] = useState<string>('')
   const [notes, setNotes] = useState<string>('')
   const [quantity, setQuantity] = useState<number>(1)
+
+  // Serial selection state (for serialized items)
+  const [availableSerials, setAvailableSerials] = useState<SerialOption[]>([])
+  const [selectedSerialIds, setSelectedSerialIds] = useState<Set<string>>(new Set())
+  const [serialSearch, setSerialSearch] = useState('')
+  const [loadingSerials, setLoadingSerials] = useState(false)
 
   // Data state
   const [people, setPeople] = useState<AssigneeOption[]>([])
@@ -56,6 +74,9 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
   useEffect(() => {
     if (isOpen) {
       loadOptions()
+      if (isSerialized) {
+        loadSerials()
+      }
       // Reset form
       setAssigneeType('person')
       setAssigneeId('')
@@ -63,9 +84,58 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
       setDueDate('')
       setNotes('')
       setQuantity(1)
+      setSelectedSerialIds(new Set())
+      setSerialSearch('')
       setError(null)
     }
-  }, [isOpen])
+  }, [isOpen, isSerialized])
+
+  async function loadSerials() {
+    setLoadingSerials(true)
+    const supabase = createClient()
+
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data } = await (supabase as any).rpc('get_item_serials', {
+        p_item_id: item.id,
+        p_include_unavailable: false,
+      })
+
+      if (data) {
+        setAvailableSerials(data as SerialOption[])
+      }
+    } catch (err) {
+      console.error('Error loading serials:', err)
+    } finally {
+      setLoadingSerials(false)
+    }
+  }
+
+  function toggleSerial(serialId: string) {
+    setSelectedSerialIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(serialId)) {
+        next.delete(serialId)
+      } else {
+        next.add(serialId)
+      }
+      return next
+    })
+  }
+
+  function selectAllSerials() {
+    const filtered = filteredSerials
+    setSelectedSerialIds(new Set(filtered.map((s) => s.id)))
+  }
+
+  function clearSerialSelection() {
+    setSelectedSerialIds(new Set())
+  }
+
+  // Filter serials by search
+  const filteredSerials = availableSerials.filter((s) =>
+    s.serial_number.toLowerCase().includes(serialSearch.toLowerCase())
+  )
 
   async function loadOptions() {
     setLoading(true)
@@ -185,17 +255,39 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
       return
     }
 
+    // For serialized items, require at least one serial selected
+    if (isSerialized && selectedSerialIds.size === 0) {
+      setError('Please select at least one serial number')
+      return
+    }
+
     setSubmitting(true)
     setError(null)
 
     try {
-      const result = await checkoutItem(
-        item.id,
-        quantity,
-        assigneeName,
-        notes,
-        dueDate
-      )
+      let result
+
+      if (isSerialized) {
+        // Use serial-aware checkout
+        result = await checkoutWithSerials(
+          item.id,
+          Array.from(selectedSerialIds),
+          assigneeType,
+          assigneeId || undefined,
+          assigneeName,
+          dueDate || undefined,
+          notes || undefined
+        )
+      } else {
+        // Use standard quantity-based checkout
+        result = await checkoutItem(
+          item.id,
+          quantity,
+          assigneeName,
+          notes,
+          dueDate
+        )
+      }
 
       if (result.success) {
         onSuccess()
@@ -357,37 +449,122 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
           )}
         </div>
 
-        {/* Quantity */}
-        <div className="mb-4">
-          <label className="mb-2 block text-sm font-medium text-neutral-700">
-            Quantity
-          </label>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setQuantity(Math.max(1, quantity - 1))}
-              className="flex h-10 w-10 items-center justify-center rounded-lg border border-neutral-300 bg-white text-neutral-600 hover:bg-neutral-50"
-            >
-              -
-            </button>
-            <Input
-              type="number"
-              min={1}
-              max={item.quantity}
-              value={quantity}
-              onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-              className="w-20 text-center"
-            />
-            <button
-              onClick={() => setQuantity(Math.min(item.quantity, quantity + 1))}
-              className="flex h-10 w-10 items-center justify-center rounded-lg border border-neutral-300 bg-white text-neutral-600 hover:bg-neutral-50"
-            >
-              +
-            </button>
-            <span className="text-sm text-neutral-500">
-              of {item.quantity} available
-            </span>
+        {/* Serial Selection (for serialized items) */}
+        {isSerialized ? (
+          <div className="mb-4">
+            <div className="mb-2 flex items-center justify-between">
+              <label className="text-sm font-medium text-neutral-700">
+                Select Serial Numbers
+              </label>
+              <span className="text-xs text-neutral-500">
+                {selectedSerialIds.size} of {availableSerials.length} selected
+              </span>
+            </div>
+
+            {/* Search */}
+            <div className="relative mb-2">
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+              <Input
+                value={serialSearch}
+                onChange={(e) => setSerialSearch(e.target.value)}
+                placeholder="Search serial numbers..."
+                className="pl-9"
+              />
+            </div>
+
+            {/* Select all / Clear */}
+            <div className="mb-2 flex gap-2">
+              <button
+                type="button"
+                onClick={selectAllSerials}
+                className="text-xs text-pickle-600 hover:text-pickle-700"
+              >
+                Select all
+              </button>
+              <span className="text-neutral-300">|</span>
+              <button
+                type="button"
+                onClick={clearSerialSelection}
+                className="text-xs text-neutral-500 hover:text-neutral-700"
+              >
+                Clear
+              </button>
+            </div>
+
+            {/* Serial list */}
+            {loadingSerials ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="h-5 w-5 animate-spin text-neutral-400" />
+              </div>
+            ) : filteredSerials.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-neutral-300 py-8 text-center text-sm text-neutral-500">
+                {availableSerials.length === 0
+                  ? 'No serials available for checkout'
+                  : 'No serials match your search'}
+              </div>
+            ) : (
+              <div className="max-h-48 space-y-1 overflow-y-auto rounded-lg border border-neutral-200 p-2">
+                {filteredSerials.map((serial) => (
+                  <button
+                    key={serial.id}
+                    type="button"
+                    onClick={() => toggleSerial(serial.id)}
+                    className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors ${
+                      selectedSerialIds.has(serial.id)
+                        ? 'bg-pickle-50 text-pickle-700'
+                        : 'hover:bg-neutral-50'
+                    }`}
+                  >
+                    <div
+                      className={`flex h-5 w-5 items-center justify-center rounded border ${
+                        selectedSerialIds.has(serial.id)
+                          ? 'border-pickle-500 bg-pickle-500'
+                          : 'border-neutral-300 bg-white'
+                      }`}
+                    >
+                      {selectedSerialIds.has(serial.id) && (
+                        <Check className="h-3 w-3 text-white" />
+                      )}
+                    </div>
+                    <span className="font-mono text-sm">{serial.serial_number}</span>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
-        </div>
+        ) : (
+          /* Quantity (for non-serialized items) */
+          <div className="mb-4">
+            <label className="mb-2 block text-sm font-medium text-neutral-700">
+              Quantity
+            </label>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                className="flex h-10 w-10 items-center justify-center rounded-lg border border-neutral-300 bg-white text-neutral-600 hover:bg-neutral-50"
+              >
+                -
+              </button>
+              <Input
+                type="number"
+                min={1}
+                max={item.quantity}
+                value={quantity}
+                onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
+                className="w-20 text-center"
+              />
+              <button
+                onClick={() => setQuantity(Math.min(item.quantity, quantity + 1))}
+                className="flex h-10 w-10 items-center justify-center rounded-lg border border-neutral-300 bg-white text-neutral-600 hover:bg-neutral-50"
+              >
+                +
+              </button>
+              <span className="text-sm text-neutral-500">
+                of {item.quantity} available
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Due Date */}
         <div className="mb-4">
@@ -434,7 +611,7 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
           <Button
             className="flex-1"
             onClick={handleSubmit}
-            disabled={submitting || !assigneeName}
+            disabled={submitting || !assigneeName || (isSerialized && selectedSerialIds.size === 0)}
           >
             {submitting ? (
               <>
@@ -444,7 +621,9 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
             ) : (
               <>
                 <Package className="mr-2 h-4 w-4" />
-                Check Out
+                {isSerialized
+                  ? `Check Out ${selectedSerialIds.size} Unit${selectedSerialIds.size !== 1 ? 's' : ''}`
+                  : 'Check Out'}
               </>
             )}
           </Button>
