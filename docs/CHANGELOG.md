@@ -9,6 +9,52 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Added
+
+#### Purchase Orders Workflow (Complete Implementation)
+- **New Order Modal** - Full-featured modal for creating purchase orders with:
+  - Vendor dropdown with quick "Add New Vendor" option
+  - Auto-generated or manual order numbers (PO-0001 format)
+  - Expected delivery date picker
+  - Item search from existing inventory or custom item entry
+  - **Low-stock items filter** - Checkbox to show only items below minimum stock level
+  - **Part Number field** - Vendor/manufacturer part number per line item
+  - Quantity and unit price per item
+  - Auto-calculated subtotal/total
+  - Notes field
+  - **Ship To address section** (collapsible) - Name, address, city, state, postal code, country
+  - **Bill To address section** (collapsible) - Same fields with "Same as Ship To" button
+- **Vendor Management** - Quick-add vendor modal with:
+  - Required vendor name
+  - Contact name, email, phone
+  - Full address fields (optional)
+  - Notes
+- **Purchase Order Detail Page** (`/workflows/purchase-orders/[id]`) with:
+  - Full PO header with status badge
+  - Vendor information sidebar with contact details
+  - Order items table with quantities, **part numbers**, prices, and receive progress
+  - Inline quantity editing for draft orders
+  - Add/remove items for draft orders
+  - Status workflow buttons (Submit, Confirm, Cancel, Restore)
+  - Link to Receives page for receiving items
+  - **Ship To address card** in sidebar (when configured)
+  - **Bill To address card** in sidebar (when configured)
+  - **Submitted/Approved date display** in order details
+- **Server Actions** for PO CRUD operations:
+  - `getVendors()`, `createVendor()`
+  - `createPurchaseOrder()`, `getPurchaseOrder()`
+  - `updatePurchaseOrder()`, `updatePurchaseOrderStatus()`
+  - `addPurchaseOrderItem()`, `removePurchaseOrderItem()`, `updatePurchaseOrderItem()`
+  - `deletePurchaseOrder()` (draft only)
+  - `searchInventoryItemsForPO()` - Now supports `lowStockOnly` filter
+
+#### Purchase Orders Schema Enhancements (Migration: `00033_purchase_order_enhancements.sql`)
+- **Ship To address fields**: `ship_to_name`, `ship_to_address1`, `ship_to_address2`, `ship_to_city`, `ship_to_state`, `ship_to_postal_code`, `ship_to_country`
+- **Bill To address fields**: `bill_to_name`, `bill_to_address1`, `bill_to_address2`, `bill_to_city`, `bill_to_state`, `bill_to_postal_code`, `bill_to_country`
+- **Submission tracking**: `submitted_by`, `submitted_at`
+- **Approval tracking**: `approved_by`, `approved_at`
+- **Part number field**: `part_number` column added to `purchase_order_items` table
+
 ### Security
 
 #### Critical RLS and Multi-Tenancy Fixes (Migration: `00026_security_audit_fixes.sql`)

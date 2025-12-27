@@ -979,6 +979,7 @@ export type Database = {
           received_quantity: number | null
           sku: string | null
           unit_price: number | null
+          part_number: string | null
         }
         Insert: {
           id?: string
@@ -990,6 +991,7 @@ export type Database = {
           received_quantity?: number | null
           sku?: string | null
           unit_price?: number | null
+          part_number?: string | null
         }
         Update: {
           id?: string
@@ -1001,6 +1003,7 @@ export type Database = {
           received_quantity?: number | null
           sku?: string | null
           unit_price?: number | null
+          part_number?: string | null
         }
       }
       purchase_orders: {
@@ -1021,6 +1024,27 @@ export type Database = {
           total_amount: number | null
           updated_at: string | null
           vendor_id: string | null
+          // Ship To address fields
+          ship_to_name: string | null
+          ship_to_address1: string | null
+          ship_to_address2: string | null
+          ship_to_city: string | null
+          ship_to_state: string | null
+          ship_to_postal_code: string | null
+          ship_to_country: string | null
+          // Bill To address fields
+          bill_to_name: string | null
+          bill_to_address1: string | null
+          bill_to_address2: string | null
+          bill_to_city: string | null
+          bill_to_state: string | null
+          bill_to_postal_code: string | null
+          bill_to_country: string | null
+          // Submission and approval tracking
+          submitted_by: string | null
+          submitted_at: string | null
+          approved_by: string | null
+          approved_at: string | null
         }
         Insert: {
           created_at?: string | null
@@ -1039,6 +1063,27 @@ export type Database = {
           total_amount?: number | null
           updated_at?: string | null
           vendor_id?: string | null
+          // Ship To address fields
+          ship_to_name?: string | null
+          ship_to_address1?: string | null
+          ship_to_address2?: string | null
+          ship_to_city?: string | null
+          ship_to_state?: string | null
+          ship_to_postal_code?: string | null
+          ship_to_country?: string | null
+          // Bill To address fields
+          bill_to_name?: string | null
+          bill_to_address1?: string | null
+          bill_to_address2?: string | null
+          bill_to_city?: string | null
+          bill_to_state?: string | null
+          bill_to_postal_code?: string | null
+          bill_to_country?: string | null
+          // Submission and approval tracking
+          submitted_by?: string | null
+          submitted_at?: string | null
+          approved_by?: string | null
+          approved_at?: string | null
         }
         Update: {
           created_at?: string | null
@@ -1057,6 +1102,27 @@ export type Database = {
           total_amount?: number | null
           updated_at?: string | null
           vendor_id?: string | null
+          // Ship To address fields
+          ship_to_name?: string | null
+          ship_to_address1?: string | null
+          ship_to_address2?: string | null
+          ship_to_city?: string | null
+          ship_to_state?: string | null
+          ship_to_postal_code?: string | null
+          ship_to_country?: string | null
+          // Bill To address fields
+          bill_to_name?: string | null
+          bill_to_address1?: string | null
+          bill_to_address2?: string | null
+          bill_to_city?: string | null
+          bill_to_state?: string | null
+          bill_to_postal_code?: string | null
+          bill_to_country?: string | null
+          // Submission and approval tracking
+          submitted_by?: string | null
+          submitted_at?: string | null
+          approved_by?: string | null
+          approved_at?: string | null
         }
       }
       tags: {
