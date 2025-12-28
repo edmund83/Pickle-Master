@@ -71,6 +71,7 @@ export default function StockMovesPage() {
   const [success, setSuccess] = useState(false)
   const [filterFolderIds, setFilterFolderIds] = useState<Set<string>>(new Set())
   const [filterStatus, setFilterStatus] = useState<Set<string>>(new Set())
+  const [folderSearchQuery, setFolderSearchQuery] = useState('')
 
   useEffect(() => {
     loadData()
@@ -206,6 +207,11 @@ export default function StockMovesPage() {
 
   const activeFilterCount = filterFolderIds.size + filterStatus.size
 
+  // Filter folders for the dropdown search
+  const filteredFolders = folders.filter(folder =>
+    folder.name.toLowerCase().includes(folderSearchQuery.toLowerCase())
+  )
+
   const targetFolder = folders.find(f => f.id === targetFolderId)
   const folderTree = buildFolderTree(folders)
 
@@ -228,10 +234,18 @@ export default function StockMovesPage() {
 
     return (
       <div key={folder.id}>
-        <button
+        <div
+          role="button"
+          tabIndex={0}
           onClick={() => setTargetFolderId(folder.id)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              setTargetFolderId(folder.id)
+            }
+          }}
           className={cn(
-            'flex w-full items-center gap-2 rounded-lg border px-4 py-3 text-left transition-colors',
+            'flex w-full cursor-pointer items-center gap-2 rounded-lg border px-4 py-3 text-left transition-colors',
             isSelected
               ? 'border-pickle-500 bg-pickle-50'
               : 'border-neutral-200 hover:bg-neutral-50'
@@ -239,11 +253,19 @@ export default function StockMovesPage() {
           style={{ marginLeft: `${depth * 20}px`, width: `calc(100% - ${depth * 20}px)` }}
         >
           {hasChildren && (
-            <button
-              type="button"
+            <span
+              role="button"
+              tabIndex={0}
               onClick={(e) => {
                 e.stopPropagation()
                 toggleFolderExpand(folder.id)
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault()
+                  e.stopPropagation()
+                  toggleFolderExpand(folder.id)
+                }
               }}
               className="flex h-5 w-5 items-center justify-center rounded hover:bg-neutral-200"
             >
@@ -253,17 +275,16 @@ export default function StockMovesPage() {
                   isExpanded && 'rotate-90'
                 )}
               />
-            </button>
+            </span>
           )}
           {!hasChildren && <span className="w-5" />}
           <FolderIcon
-            className="h-5 w-5 flex-shrink-0"
-            style={{ color: folder.color || '#6b7280' }}
-            fill={folder.color || '#e5e5e5'}
+            className="h-5 w-5 flex-shrink-0 text-neutral-400"
+            fill="#e5e5e5"
             strokeWidth={1.5}
           />
           <span className="font-medium text-neutral-900 truncate">{folder.name}</span>
-        </button>
+        </div>
         {isExpanded && hasChildren && (
           <div className="mt-2 space-y-2">
             {folder.children.map(child => renderFolderItem(child, depth + 1))}
@@ -274,9 +295,9 @@ export default function StockMovesPage() {
   }
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex h-full w-full flex-col overflow-hidden">
       {/* Header */}
-      <div className="border-b border-neutral-200 bg-white px-8 py-6">
+      <div className="flex-shrink-0 border-b border-neutral-200 bg-white px-8 py-6">
         <div className="flex items-center gap-4">
           <Link href="/tasks/inventory-operations">
             <Button variant="ghost" size="sm">
@@ -296,17 +317,17 @@ export default function StockMovesPage() {
 
       {/* Success Message */}
       {success && (
-        <div className="mx-8 mt-4 flex items-center gap-2 rounded-lg bg-green-50 p-4 text-green-700">
+        <div className="mx-8 mt-4 flex-shrink-0 flex items-center gap-2 rounded-lg bg-green-50 p-4 text-green-700">
           <Check className="h-5 w-5" />
           Items moved successfully!
         </div>
       )}
 
-      <div className="p-8">
-        <div className="grid gap-8 lg:grid-cols-2">
+      <div className="flex-1 overflow-hidden px-8 py-6">
+        <div className="grid h-full w-full gap-6 lg:grid-cols-2">
           {/* Source Selection */}
-          <div className="rounded-xl border border-neutral-200 bg-white">
-            <div className="border-b border-neutral-200 px-6 py-4">
+          <div className="flex min-w-0 flex-col rounded-xl border border-neutral-200 bg-white overflow-hidden">
+            <div className="flex-shrink-0 border-b border-neutral-200 px-6 py-4">
               <div className="flex items-center justify-between">
                 <h2 className="text-lg font-semibold text-neutral-900">Select Items</h2>
                 <Button variant="ghost" size="sm" onClick={selectAll}>
@@ -335,29 +356,43 @@ export default function StockMovesPage() {
                       )}
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuContent align="end" className="w-64">
                     <DropdownMenuLabel>Filter by Folder</DropdownMenuLabel>
-                    <DropdownMenuCheckboxItem
-                      checked={filterFolderIds.has('root')}
-                      onCheckedChange={() => toggleFolderFilter('root')}
-                    >
-                      No Folder (Root)
-                    </DropdownMenuCheckboxItem>
-                    {folders.map(folder => (
-                      <DropdownMenuCheckboxItem
-                        key={folder.id}
-                        checked={filterFolderIds.has(folder.id)}
-                        onCheckedChange={() => toggleFolderFilter(folder.id)}
-                      >
-                        <span className="flex items-center gap-2">
-                          <span
-                            className="h-2 w-2 rounded-full"
-                            style={{ backgroundColor: folder.color || '#6b7280' }}
-                          />
-                          {folder.name}
-                        </span>
-                      </DropdownMenuCheckboxItem>
-                    ))}
+                    <div className="px-2 pb-2">
+                      <Input
+                        placeholder="Search folders..."
+                        value={folderSearchQuery}
+                        onChange={(e) => setFolderSearchQuery(e.target.value)}
+                        className="h-8 text-sm"
+                        onClick={(e) => e.stopPropagation()}
+                        onKeyDown={(e) => e.stopPropagation()}
+                      />
+                    </div>
+                    <div className="max-h-40 overflow-y-auto">
+                      {!folderSearchQuery && (
+                        <DropdownMenuCheckboxItem
+                          checked={filterFolderIds.has('root')}
+                          onCheckedChange={() => toggleFolderFilter('root')}
+                        >
+                          No Folder (Root)
+                        </DropdownMenuCheckboxItem>
+                      )}
+                      {filteredFolders.length > 0 ? (
+                        filteredFolders.map(folder => (
+                          <DropdownMenuCheckboxItem
+                            key={folder.id}
+                            checked={filterFolderIds.has(folder.id)}
+                            onCheckedChange={() => toggleFolderFilter(folder.id)}
+                          >
+                            <span className="truncate">{folder.name}</span>
+                          </DropdownMenuCheckboxItem>
+                        ))
+                      ) : (
+                        <div className="px-2 py-2 text-sm text-neutral-500">
+                          No folders found
+                        </div>
+                      )}
+                    </div>
                     <DropdownMenuSeparator />
                     <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
                     <DropdownMenuCheckboxItem
@@ -394,7 +429,7 @@ export default function StockMovesPage() {
               </div>
             </div>
 
-            <div className="max-h-96 overflow-y-auto">
+            <div className="flex-1 overflow-y-auto">
               {loading ? (
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="h-8 w-8 animate-spin text-neutral-400" />
@@ -425,13 +460,7 @@ export default function StockMovesPage() {
                             {item.sku && <span>SKU: {item.sku}</span>}
                             <span>Qty: {item.quantity}</span>
                             {folder && (
-                              <span className="flex items-center gap-1">
-                                <span
-                                  className="h-2 w-2 rounded-full"
-                                  style={{ backgroundColor: folder.color }}
-                                />
-                                {folder.name}
-                              </span>
+                              <span>{folder.name}</span>
                             )}
                           </div>
                         </div>
@@ -447,7 +476,7 @@ export default function StockMovesPage() {
             </div>
 
             {selectedItems.size > 0 && (
-              <div className="border-t border-neutral-200 px-6 py-3 bg-neutral-50">
+              <div className="flex-shrink-0 border-t border-neutral-200 px-6 py-3 bg-neutral-50">
                 <span className="text-sm font-medium text-neutral-700">
                   {selectedItems.size} item{selectedItems.size !== 1 ? 's' : ''} selected
                 </span>
@@ -456,12 +485,12 @@ export default function StockMovesPage() {
           </div>
 
           {/* Target Selection */}
-          <div className="rounded-xl border border-neutral-200 bg-white">
-            <div className="border-b border-neutral-200 px-6 py-4">
+          <div className="flex min-w-0 flex-col rounded-xl border border-neutral-200 bg-white overflow-hidden">
+            <div className="flex-shrink-0 border-b border-neutral-200 px-6 py-4">
               <h2 className="text-lg font-semibold text-neutral-900">Move To</h2>
             </div>
 
-            <div className="p-6">
+            <div className="flex-1 overflow-y-auto p-6">
               <div className="space-y-2">
                 <button
                   onClick={() => setTargetFolderId('root')}
@@ -478,25 +507,25 @@ export default function StockMovesPage() {
 
                 {folderTree.map(folder => renderFolderItem(folder))}
               </div>
+            </div>
 
-              {/* Move Button */}
-              <div className="mt-6">
-                <Button
-                  className="w-full"
-                  size="lg"
-                  disabled={selectedItems.size === 0 || !targetFolderId || moving}
-                  onClick={handleMove}
-                >
-                  {moving ? (
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  ) : (
-                    <ArrowRight className="mr-2 h-4 w-4" />
-                  )}
-                  Move {selectedItems.size} Item{selectedItems.size !== 1 ? 's' : ''}
-                  {targetFolder && ` to ${targetFolder.name}`}
-                  {targetFolderId === 'root' && ' to Root'}
-                </Button>
-              </div>
+            {/* Move Button */}
+            <div className="flex-shrink-0 border-t border-neutral-200 p-6">
+              <Button
+                className="w-full"
+                size="lg"
+                disabled={selectedItems.size === 0 || !targetFolderId || moving}
+                onClick={handleMove}
+              >
+                {moving ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <ArrowRight className="mr-2 h-4 w-4" />
+                )}
+                Move {selectedItems.size} Item{selectedItems.size !== 1 ? 's' : ''}
+                {targetFolder && ` to ${targetFolder.name}`}
+                {targetFolderId === 'root' && ' to Root'}
+              </Button>
             </div>
           </div>
         </div>
