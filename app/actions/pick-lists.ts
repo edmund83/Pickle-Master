@@ -10,7 +10,8 @@ export type PickListResult = {
 }
 
 export interface CreatePickListInput {
-    name: string
+    name?: string
+    pick_list_number?: string | null
     assigned_to?: string | null
     due_date?: string | null
     notes?: string | null
@@ -22,6 +23,29 @@ export interface CreatePickListInput {
     ship_to_postal_code?: string | null
     ship_to_country?: string | null
     items: Array<{ item_id: string; requested_quantity: number }>
+}
+
+// Generate next pick list number
+async function generatePickListNumber(supabase: ReturnType<typeof createClient> extends Promise<infer T> ? T : never, tenantId: string): Promise<string> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data } = await (supabase as any)
+        .from('pick_lists')
+        .select('pick_list_number')
+        .eq('tenant_id', tenantId)
+        .not('pick_list_number', 'is', null)
+        .order('created_at', { ascending: false })
+        .limit(1)
+
+    if (data && data.length > 0 && data[0].pick_list_number) {
+        const lastNumber = data[0].pick_list_number
+        const match = lastNumber.match(/PL-(\d+)/)
+        if (match) {
+            const nextNum = parseInt(match[1]) + 1
+            return `PL-${String(nextNum).padStart(4, '0')}`
+        }
+    }
+
+    return 'PL-0001'
 }
 
 export async function createPickList(input: CreatePickListInput): Promise<PickListResult> {
@@ -77,14 +101,8 @@ export async function createDraftPickList(): Promise<PickListResult> {
 
     if (!profile?.tenant_id) return { success: false, error: 'No tenant found' }
 
-    // Generate a name with date
-    const now = new Date()
-    const formattedDate = now.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric'
-    })
-    const name = `Pick List - ${formattedDate}`
+    // Generate pick list number (PL-0001, PL-0002, etc.)
+    const pickListNumber = await generatePickListNumber(supabase, profile.tenant_id)
 
     // Create minimal pick list directly (not using RPC since we don't have items yet)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -92,7 +110,8 @@ export async function createDraftPickList(): Promise<PickListResult> {
         .from('pick_lists')
         .insert({
             tenant_id: profile.tenant_id,
-            name: name,
+            name: pickListNumber, // Use number as name for backwards compatibility
+            pick_list_number: pickListNumber,
             status: 'draft',
             item_outcome: 'decrement',
             created_by: user.id
@@ -111,7 +130,7 @@ export async function createDraftPickList(): Promise<PickListResult> {
 
 export async function updatePickList(
     pickListId: string,
-    updates: Partial<Omit<CreatePickListInput, 'items'>>
+    updates: Partial<Omit<CreatePickListInput, 'items'>> & { pick_list_number?: string | null }
 ): Promise<PickListResult> {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()

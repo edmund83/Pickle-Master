@@ -72,8 +72,8 @@ export function PickListsClient({ pickLists }: PickListsClientProps) {
 
       switch (sortColumn) {
         case 'name':
-          aVal = a.name || `PL-${a.id.slice(0, 8)}`
-          bVal = b.name || `PL-${b.id.slice(0, 8)}`
+          aVal = a.pick_list_number || a.name || `PL-${a.id.slice(0, 8)}`
+          bVal = b.pick_list_number || b.name || `PL-${b.id.slice(0, 8)}`
           break
         case 'assigned_to':
           aVal = a.assigned_to_profile?.full_name || ''
@@ -205,7 +205,7 @@ export function PickListsClient({ pickLists }: PickListsClientProps) {
                         onClick={() => handleRowClick(list.id)}
                       >
                         <td className="px-4 py-3 font-medium text-neutral-900">
-                          {list.name || `PL-${list.id.slice(0, 8)}`}
+                          {list.pick_list_number || list.name || `PL-${list.id.slice(0, 8)}`}
                         </td>
                         <td className="px-4 py-3 text-neutral-600">
                           {list.assigned_to_profile?.full_name || '-'}
