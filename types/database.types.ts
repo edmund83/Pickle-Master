@@ -7,364 +7,13 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "14.1"
+  }
   public: {
     Tables: {
-      checkouts: {
-        Row: {
-          id: string
-          tenant_id: string
-          item_id: string
-          quantity: number
-          assignee_type: 'person' | 'job' | 'location'
-          assignee_id: string | null
-          assignee_name: string | null
-          checked_out_at: string
-          checked_out_by: string | null
-          due_date: string | null
-          status: 'checked_out' | 'returned' | 'overdue'
-          returned_at: string | null
-          returned_by: string | null
-          return_condition: 'good' | 'damaged' | 'needs_repair' | 'lost' | null
-          return_notes: string | null
-          notes: string | null
-          created_at: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          id?: string
-          tenant_id: string
-          item_id: string
-          quantity?: number
-          assignee_type: 'person' | 'job' | 'location'
-          assignee_id?: string | null
-          assignee_name?: string | null
-          checked_out_at?: string
-          checked_out_by?: string | null
-          due_date?: string | null
-          status?: 'checked_out' | 'returned' | 'overdue'
-          returned_at?: string | null
-          returned_by?: string | null
-          return_condition?: 'good' | 'damaged' | 'needs_repair' | 'lost' | null
-          return_notes?: string | null
-          notes?: string | null
-          created_at?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          id?: string
-          tenant_id?: string
-          item_id?: string
-          quantity?: number
-          assignee_type?: 'person' | 'job' | 'location'
-          assignee_id?: string | null
-          assignee_name?: string | null
-          checked_out_at?: string
-          checked_out_by?: string | null
-          due_date?: string | null
-          status?: 'checked_out' | 'returned' | 'overdue'
-          returned_at?: string | null
-          returned_by?: string | null
-          return_condition?: 'good' | 'damaged' | 'needs_repair' | 'lost' | null
-          return_notes?: string | null
-          notes?: string | null
-          created_at?: string | null
-          updated_at?: string | null
-        }
-      }
-      jobs: {
-        Row: {
-          id: string
-          tenant_id: string
-          name: string
-          description: string | null
-          status: string | null
-          start_date: string | null
-          end_date: string | null
-          location: string | null
-          notes: string | null
-          created_by: string | null
-          created_at: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          id?: string
-          tenant_id: string
-          name: string
-          description?: string | null
-          status?: string | null
-          start_date?: string | null
-          end_date?: string | null
-          location?: string | null
-          notes?: string | null
-          created_by?: string | null
-          created_at?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          id?: string
-          tenant_id?: string
-          name?: string
-          description?: string | null
-          status?: string | null
-          start_date?: string | null
-          end_date?: string | null
-          location?: string | null
-          notes?: string | null
-          created_by?: string | null
-          created_at?: string | null
-          updated_at?: string | null
-        }
-      }
-      locations: {
-        Row: {
-          id: string
-          tenant_id: string
-          name: string
-          type: 'warehouse' | 'van' | 'store' | 'job_site'
-          description: string | null
-          is_active: boolean
-          created_by: string | null
-          created_at: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          id?: string
-          tenant_id: string
-          name: string
-          type?: 'warehouse' | 'van' | 'store' | 'job_site'
-          description?: string | null
-          is_active?: boolean
-          created_by?: string | null
-          created_at?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          id?: string
-          tenant_id?: string
-          name?: string
-          type?: 'warehouse' | 'van' | 'store' | 'job_site'
-          description?: string | null
-          is_active?: boolean
-          created_by?: string | null
-          created_at?: string | null
-          updated_at?: string | null
-        }
-      }
-      location_stock: {
-        Row: {
-          id: string
-          tenant_id: string
-          item_id: string
-          location_id: string
-          quantity: number
-          min_quantity: number
-          created_at: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          id?: string
-          tenant_id: string
-          item_id: string
-          location_id: string
-          quantity?: number
-          min_quantity?: number
-          created_at?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          id?: string
-          tenant_id?: string
-          item_id?: string
-          location_id?: string
-          quantity?: number
-          min_quantity?: number
-          created_at?: string | null
-          updated_at?: string | null
-        }
-      }
-      stock_transfers: {
-        Row: {
-          id: string
-          tenant_id: string
-          item_id: string
-          quantity: number
-          from_location_id: string
-          to_location_id: string
-          status: 'pending' | 'in_transit' | 'completed' | 'cancelled'
-          is_ai_suggested: boolean
-          ai_suggestion_reason: string | null
-          requested_by: string | null
-          requested_at: string | null
-          completed_by: string | null
-          completed_at: string | null
-          notes: string | null
-          created_at: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          id?: string
-          tenant_id: string
-          item_id: string
-          quantity: number
-          from_location_id: string
-          to_location_id: string
-          status?: 'pending' | 'in_transit' | 'completed' | 'cancelled'
-          is_ai_suggested?: boolean
-          ai_suggestion_reason?: string | null
-          requested_by?: string | null
-          requested_at?: string | null
-          completed_by?: string | null
-          completed_at?: string | null
-          notes?: string | null
-          created_at?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          id?: string
-          tenant_id?: string
-          item_id?: string
-          quantity?: number
-          from_location_id?: string
-          to_location_id?: string
-          status?: 'pending' | 'in_transit' | 'completed' | 'cancelled'
-          is_ai_suggested?: boolean
-          ai_suggestion_reason?: string | null
-          requested_by?: string | null
-          requested_at?: string | null
-          completed_by?: string | null
-          completed_at?: string | null
-          notes?: string | null
-          created_at?: string | null
-          updated_at?: string | null
-        }
-      }
-      lots: {
-        Row: {
-          id: string
-          tenant_id: string
-          item_id: string
-          location_id: string | null
-          lot_number: string | null
-          batch_code: string | null
-          expiry_date: string | null
-          manufactured_date: string | null
-          received_at: string | null
-          quantity: number
-          status: 'active' | 'expired' | 'depleted' | 'blocked'
-          notes: string | null
-          created_by: string | null
-          created_at: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          id?: string
-          tenant_id: string
-          item_id: string
-          location_id?: string | null
-          lot_number?: string | null
-          batch_code?: string | null
-          expiry_date?: string | null
-          manufactured_date?: string | null
-          received_at?: string | null
-          quantity?: number
-          status?: 'active' | 'expired' | 'depleted' | 'blocked'
-          notes?: string | null
-          created_by?: string | null
-          created_at?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          id?: string
-          tenant_id?: string
-          item_id?: string
-          location_id?: string | null
-          lot_number?: string | null
-          batch_code?: string | null
-          expiry_date?: string | null
-          manufactured_date?: string | null
-          received_at?: string | null
-          quantity?: number
-          status?: 'active' | 'expired' | 'depleted' | 'blocked'
-          notes?: string | null
-          created_by?: string | null
-          created_at?: string | null
-          updated_at?: string | null
-        }
-      }
-      item_reminders: {
-        Row: {
-          id: string
-          tenant_id: string
-          item_id: string
-          created_by: string | null
-          reminder_type: 'low_stock' | 'expiry' | 'restock'
-          title: string | null
-          message: string | null
-          threshold: number | null
-          comparison_operator: 'lte' | 'lt' | 'gt' | 'gte' | 'eq'
-          days_before_expiry: number | null
-          scheduled_at: string | null
-          recurrence: 'once' | 'daily' | 'weekly' | 'monthly'
-          recurrence_end_date: string | null
-          notify_in_app: boolean
-          notify_email: boolean
-          notify_user_ids: string[] | null
-          status: 'active' | 'paused' | 'triggered' | 'expired'
-          last_triggered_at: string | null
-          next_trigger_at: string | null
-          trigger_count: number
-          created_at: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          id?: string
-          tenant_id: string
-          item_id: string
-          created_by?: string | null
-          reminder_type: 'low_stock' | 'expiry' | 'restock'
-          title?: string | null
-          message?: string | null
-          threshold?: number | null
-          comparison_operator?: 'lte' | 'lt' | 'gt' | 'gte' | 'eq'
-          days_before_expiry?: number | null
-          scheduled_at?: string | null
-          recurrence?: 'once' | 'daily' | 'weekly' | 'monthly'
-          recurrence_end_date?: string | null
-          notify_in_app?: boolean
-          notify_email?: boolean
-          notify_user_ids?: string[] | null
-          status?: 'active' | 'paused' | 'triggered' | 'expired'
-          last_triggered_at?: string | null
-          next_trigger_at?: string | null
-          trigger_count?: number
-          created_at?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          id?: string
-          tenant_id?: string
-          item_id?: string
-          created_by?: string | null
-          reminder_type?: 'low_stock' | 'expiry' | 'restock'
-          title?: string | null
-          message?: string | null
-          threshold?: number | null
-          comparison_operator?: 'lte' | 'lt' | 'gt' | 'gte' | 'eq'
-          days_before_expiry?: number | null
-          scheduled_at?: string | null
-          recurrence?: 'once' | 'daily' | 'weekly' | 'monthly'
-          recurrence_end_date?: string | null
-          notify_in_app?: boolean
-          notify_email?: boolean
-          notify_user_ids?: string[] | null
-          status?: 'active' | 'paused' | 'triggered' | 'expired'
-          last_triggered_at?: string | null
-          next_trigger_at?: string | null
-          trigger_count?: number
-          created_at?: string | null
-          updated_at?: string | null
-        }
-      }
       activity_logs: {
         Row: {
           action_type: string
@@ -376,7 +25,7 @@ export type Database = {
           from_folder_id: string | null
           from_folder_name: string | null
           id: string
-          ip_address: string | null
+          ip_address: unknown
           quantity_after: number | null
           quantity_before: number | null
           quantity_delta: number | null
@@ -397,7 +46,7 @@ export type Database = {
           from_folder_id?: string | null
           from_folder_name?: string | null
           id?: string
-          ip_address?: string | null
+          ip_address?: unknown
           quantity_after?: number | null
           quantity_before?: number | null
           quantity_delta?: number | null
@@ -418,7 +67,7 @@ export type Database = {
           from_folder_id?: string | null
           from_folder_name?: string | null
           id?: string
-          ip_address?: string | null
+          ip_address?: unknown
           quantity_after?: number | null
           quantity_before?: number | null
           quantity_delta?: number | null
@@ -429,6 +78,43 @@ export type Database = {
           user_id?: string | null
           user_name?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "activity_logs_from_folder_id_fkey"
+            columns: ["from_folder_id"]
+            isOneToOne: false
+            referencedRelation: "folders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "activity_logs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_logs_to_folder_id_fkey"
+            columns: ["to_folder_id"]
+            isOneToOne: false
+            referencedRelation: "folders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "activity_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       activity_logs_archive: {
         Row: {
@@ -442,7 +128,7 @@ export type Database = {
           from_folder_id: string | null
           from_folder_name: string | null
           id: string
-          ip_address: string | null
+          ip_address: unknown
           quantity_after: number | null
           quantity_before: number | null
           quantity_delta: number | null
@@ -464,7 +150,7 @@ export type Database = {
           from_folder_id?: string | null
           from_folder_name?: string | null
           id: string
-          ip_address?: string | null
+          ip_address?: unknown
           quantity_after?: number | null
           quantity_before?: number | null
           quantity_delta?: number | null
@@ -486,7 +172,7 @@ export type Database = {
           from_folder_id?: string | null
           from_folder_name?: string | null
           id?: string
-          ip_address?: string | null
+          ip_address?: unknown
           quantity_after?: number | null
           quantity_before?: number | null
           quantity_delta?: number | null
@@ -497,6 +183,7 @@ export type Database = {
           user_id?: string | null
           user_name?: string | null
         }
+        Relationships: []
       }
       addresses: {
         Row: {
@@ -547,6 +234,22 @@ export type Database = {
           tenant_id?: string
           updated_at?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "addresses_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "addresses_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       alerts: {
         Row: {
@@ -594,6 +297,182 @@ export type Database = {
           threshold?: number | null
           threshold_date?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "alerts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "alerts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "alerts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      checkout_serials: {
+        Row: {
+          checkout_id: string
+          created_at: string | null
+          id: string
+          return_condition: Database["public"]["Enums"]["item_condition"] | null
+          serial_id: string
+        }
+        Insert: {
+          checkout_id: string
+          created_at?: string | null
+          id?: string
+          return_condition?:
+            | Database["public"]["Enums"]["item_condition"]
+            | null
+          serial_id: string
+        }
+        Update: {
+          checkout_id?: string
+          created_at?: string | null
+          id?: string
+          return_condition?:
+            | Database["public"]["Enums"]["item_condition"]
+            | null
+          serial_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checkout_serials_checkout_id_fkey"
+            columns: ["checkout_id"]
+            isOneToOne: false
+            referencedRelation: "checkouts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checkout_serials_serial_id_fkey"
+            columns: ["serial_id"]
+            isOneToOne: false
+            referencedRelation: "serial_numbers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      checkouts: {
+        Row: {
+          assignee_id: string | null
+          assignee_name: string | null
+          assignee_type: Database["public"]["Enums"]["checkout_assignee_type"]
+          checked_out_at: string
+          checked_out_by: string | null
+          created_at: string | null
+          due_date: string | null
+          id: string
+          item_id: string
+          notes: string | null
+          quantity: number
+          return_condition: Database["public"]["Enums"]["item_condition"] | null
+          return_notes: string | null
+          returned_at: string | null
+          returned_by: string | null
+          status: Database["public"]["Enums"]["checkout_status"] | null
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          assignee_id?: string | null
+          assignee_name?: string | null
+          assignee_type: Database["public"]["Enums"]["checkout_assignee_type"]
+          checked_out_at?: string
+          checked_out_by?: string | null
+          created_at?: string | null
+          due_date?: string | null
+          id?: string
+          item_id: string
+          notes?: string | null
+          quantity?: number
+          return_condition?:
+            | Database["public"]["Enums"]["item_condition"]
+            | null
+          return_notes?: string | null
+          returned_at?: string | null
+          returned_by?: string | null
+          status?: Database["public"]["Enums"]["checkout_status"] | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          assignee_id?: string | null
+          assignee_name?: string | null
+          assignee_type?: Database["public"]["Enums"]["checkout_assignee_type"]
+          checked_out_at?: string
+          checked_out_by?: string | null
+          created_at?: string | null
+          due_date?: string | null
+          id?: string
+          item_id?: string
+          notes?: string | null
+          quantity?: number
+          return_condition?:
+            | Database["public"]["Enums"]["item_condition"]
+            | null
+          return_notes?: string | null
+          returned_at?: string | null
+          returned_by?: string | null
+          status?: Database["public"]["Enums"]["checkout_status"] | null
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checkouts_checked_out_by_fkey"
+            columns: ["checked_out_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checkouts_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checkouts_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items_with_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checkouts_returned_by_fkey"
+            columns: ["returned_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "checkouts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "checkouts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       custom_field_definitions: {
         Row: {
@@ -626,32 +505,226 @@ export type Database = {
           sort_order?: number | null
           tenant_id?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "custom_field_definitions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "custom_field_definitions_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      custom_field_folders: {
+        Row: {
+          created_at: string | null
+          custom_field_id: string
+          folder_id: string
+          id: string
+          tenant_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          custom_field_id: string
+          folder_id: string
+          id?: string
+          tenant_id: string
+        }
+        Update: {
+          created_at?: string | null
+          custom_field_id?: string
+          folder_id?: string
+          id?: string
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "custom_field_folders_custom_field_id_fkey"
+            columns: ["custom_field_id"]
+            isOneToOne: false
+            referencedRelation: "custom_field_definitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "custom_field_folders_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "folders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "custom_field_folders_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "custom_field_folders_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       entity_sequence_counters: {
         Row: {
+          created_at: string | null
+          current_value: number
+          entity_type: string
           id: string
           tenant_id: string
-          entity_type: string
-          current_value: number
-          created_at: string | null
           updated_at: string | null
         }
         Insert: {
+          created_at?: string | null
+          current_value?: number
+          entity_type: string
           id?: string
           tenant_id: string
-          entity_type: string
-          current_value?: number
-          created_at?: string | null
           updated_at?: string | null
         }
         Update: {
+          created_at?: string | null
+          current_value?: number
+          entity_type?: string
           id?: string
           tenant_id?: string
-          entity_type?: string
-          current_value?: number
-          created_at?: string | null
           updated_at?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "entity_sequence_counters_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "entity_sequence_counters_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      folder_reminders: {
+        Row: {
+          comparison_operator:
+            | Database["public"]["Enums"]["comparison_operator_enum"]
+            | null
+          created_at: string | null
+          created_by: string
+          days_before_expiry: number | null
+          folder_id: string
+          id: string
+          last_triggered_at: string | null
+          message: string | null
+          next_trigger_at: string | null
+          notify_email: boolean | null
+          notify_in_app: boolean | null
+          notify_user_ids: string[] | null
+          recurrence:
+            | Database["public"]["Enums"]["reminder_recurrence_enum"]
+            | null
+          recurrence_end_date: string | null
+          reminder_type: Database["public"]["Enums"]["reminder_type_enum"]
+          scheduled_at: string | null
+          status: Database["public"]["Enums"]["reminder_status_enum"] | null
+          tenant_id: string
+          threshold: number | null
+          title: string | null
+          trigger_count: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          comparison_operator?:
+            | Database["public"]["Enums"]["comparison_operator_enum"]
+            | null
+          created_at?: string | null
+          created_by: string
+          days_before_expiry?: number | null
+          folder_id: string
+          id?: string
+          last_triggered_at?: string | null
+          message?: string | null
+          next_trigger_at?: string | null
+          notify_email?: boolean | null
+          notify_in_app?: boolean | null
+          notify_user_ids?: string[] | null
+          recurrence?:
+            | Database["public"]["Enums"]["reminder_recurrence_enum"]
+            | null
+          recurrence_end_date?: string | null
+          reminder_type: Database["public"]["Enums"]["reminder_type_enum"]
+          scheduled_at?: string | null
+          status?: Database["public"]["Enums"]["reminder_status_enum"] | null
+          tenant_id: string
+          threshold?: number | null
+          title?: string | null
+          trigger_count?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          comparison_operator?:
+            | Database["public"]["Enums"]["comparison_operator_enum"]
+            | null
+          created_at?: string | null
+          created_by?: string
+          days_before_expiry?: number | null
+          folder_id?: string
+          id?: string
+          last_triggered_at?: string | null
+          message?: string | null
+          next_trigger_at?: string | null
+          notify_email?: boolean | null
+          notify_in_app?: boolean | null
+          notify_user_ids?: string[] | null
+          recurrence?:
+            | Database["public"]["Enums"]["reminder_recurrence_enum"]
+            | null
+          recurrence_end_date?: string | null
+          reminder_type?: Database["public"]["Enums"]["reminder_type_enum"]
+          scheduled_at?: string | null
+          status?: Database["public"]["Enums"]["reminder_status_enum"] | null
+          tenant_id?: string
+          threshold?: number | null
+          title?: string | null
+          trigger_count?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "folder_reminders_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "folders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "folder_reminders_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "folder_reminders_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       folders: {
         Row: {
@@ -699,6 +772,36 @@ export type Database = {
           tenant_id?: string
           updated_at?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "folders_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "folders_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "folders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "folders_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "folders_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       inventory_items: {
         Row: {
@@ -710,13 +813,16 @@ export type Database = {
           custom_fields: Json | null
           deleted_at: string | null
           description: string | null
+          dimension_unit: string | null
           display_id: string | null
           embedding: string | null
           embedding_updated_at: string | null
           folder_id: string | null
+          height: number | null
           id: string
           image_urls: string[] | null
           last_modified_by: string | null
+          length: number | null
           location: string | null
           min_quantity: number | null
           name: string
@@ -724,22 +830,18 @@ export type Database = {
           price: number | null
           qr_code: string | null
           quantity: number
+          search_vector: unknown
           serial_number: string | null
           sku: string | null
           status: string | null
           tags: string[] | null
           tenant_id: string
+          tracking_mode: string | null
           unit: string | null
           updated_at: string | null
-          // Tracking mode
-          tracking_mode: 'none' | 'serialized' | 'lot_expiry' | null
-          // Shipping dimensions
           weight: number | null
           weight_unit: string | null
-          length: number | null
           width: number | null
-          height: number | null
-          dimension_unit: string | null
         }
         Insert: {
           barcode?: string | null
@@ -750,13 +852,16 @@ export type Database = {
           custom_fields?: Json | null
           deleted_at?: string | null
           description?: string | null
+          dimension_unit?: string | null
           display_id?: string | null
           embedding?: string | null
           embedding_updated_at?: string | null
           folder_id?: string | null
+          height?: number | null
           id?: string
           image_urls?: string[] | null
           last_modified_by?: string | null
+          length?: number | null
           location?: string | null
           min_quantity?: number | null
           name: string
@@ -764,22 +869,18 @@ export type Database = {
           price?: number | null
           qr_code?: string | null
           quantity?: number
+          search_vector?: unknown
           serial_number?: string | null
           sku?: string | null
           status?: string | null
           tags?: string[] | null
           tenant_id: string
+          tracking_mode?: string | null
           unit?: string | null
           updated_at?: string | null
-          // Tracking mode
-          tracking_mode?: 'none' | 'serialized' | 'lot_expiry' | null
-          // Shipping dimensions
           weight?: number | null
           weight_unit?: string | null
-          length?: number | null
           width?: number | null
-          height?: number | null
-          dimension_unit?: string | null
         }
         Update: {
           barcode?: string | null
@@ -790,13 +891,16 @@ export type Database = {
           custom_fields?: Json | null
           deleted_at?: string | null
           description?: string | null
+          dimension_unit?: string | null
           display_id?: string | null
           embedding?: string | null
           embedding_updated_at?: string | null
           folder_id?: string | null
+          height?: number | null
           id?: string
           image_urls?: string[] | null
           last_modified_by?: string | null
+          length?: number | null
           location?: string | null
           min_quantity?: number | null
           name?: string
@@ -804,23 +908,179 @@ export type Database = {
           price?: number | null
           qr_code?: string | null
           quantity?: number
+          search_vector?: unknown
           serial_number?: string | null
           sku?: string | null
           status?: string | null
           tags?: string[] | null
           tenant_id?: string
+          tracking_mode?: string | null
           unit?: string | null
           updated_at?: string | null
-          // Tracking mode
-          tracking_mode?: 'none' | 'serialized' | 'lot_expiry' | null
-          // Shipping dimensions
           weight?: number | null
           weight_unit?: string | null
-          length?: number | null
           width?: number | null
-          height?: number | null
-          dimension_unit?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_items_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_items_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "folders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_items_last_modified_by_fkey"
+            columns: ["last_modified_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "inventory_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      item_reminders: {
+        Row: {
+          comparison_operator:
+            | Database["public"]["Enums"]["comparison_operator_enum"]
+            | null
+          created_at: string | null
+          created_by: string | null
+          days_before_expiry: number | null
+          id: string
+          item_id: string
+          last_triggered_at: string | null
+          message: string | null
+          next_trigger_at: string | null
+          notify_email: boolean | null
+          notify_in_app: boolean | null
+          notify_user_ids: string[] | null
+          recurrence:
+            | Database["public"]["Enums"]["reminder_recurrence_enum"]
+            | null
+          recurrence_end_date: string | null
+          reminder_type: Database["public"]["Enums"]["reminder_type_enum"]
+          scheduled_at: string | null
+          status: Database["public"]["Enums"]["reminder_status_enum"] | null
+          tenant_id: string
+          threshold: number | null
+          title: string | null
+          trigger_count: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          comparison_operator?:
+            | Database["public"]["Enums"]["comparison_operator_enum"]
+            | null
+          created_at?: string | null
+          created_by?: string | null
+          days_before_expiry?: number | null
+          id?: string
+          item_id: string
+          last_triggered_at?: string | null
+          message?: string | null
+          next_trigger_at?: string | null
+          notify_email?: boolean | null
+          notify_in_app?: boolean | null
+          notify_user_ids?: string[] | null
+          recurrence?:
+            | Database["public"]["Enums"]["reminder_recurrence_enum"]
+            | null
+          recurrence_end_date?: string | null
+          reminder_type: Database["public"]["Enums"]["reminder_type_enum"]
+          scheduled_at?: string | null
+          status?: Database["public"]["Enums"]["reminder_status_enum"] | null
+          tenant_id: string
+          threshold?: number | null
+          title?: string | null
+          trigger_count?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          comparison_operator?:
+            | Database["public"]["Enums"]["comparison_operator_enum"]
+            | null
+          created_at?: string | null
+          created_by?: string | null
+          days_before_expiry?: number | null
+          id?: string
+          item_id?: string
+          last_triggered_at?: string | null
+          message?: string | null
+          next_trigger_at?: string | null
+          notify_email?: boolean | null
+          notify_in_app?: boolean | null
+          notify_user_ids?: string[] | null
+          recurrence?:
+            | Database["public"]["Enums"]["reminder_recurrence_enum"]
+            | null
+          recurrence_end_date?: string | null
+          reminder_type?: Database["public"]["Enums"]["reminder_type_enum"]
+          scheduled_at?: string | null
+          status?: Database["public"]["Enums"]["reminder_status_enum"] | null
+          tenant_id?: string
+          threshold?: number | null
+          title?: string | null
+          trigger_count?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_reminders_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "item_reminders_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "item_reminders_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items_with_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "item_reminders_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "item_reminders_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       item_tags: {
         Row: {
@@ -841,6 +1101,327 @@ export type Database = {
           item_id?: string
           tag_id?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "item_tags_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "item_tags_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "item_tags_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items_with_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "item_tags_tag_id_fkey"
+            columns: ["tag_id"]
+            isOneToOne: false
+            referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      jobs: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          end_date: string | null
+          id: string
+          location: string | null
+          name: string
+          notes: string | null
+          start_date: string | null
+          status: string | null
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          location?: string | null
+          name: string
+          notes?: string | null
+          start_date?: string | null
+          status?: string | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          end_date?: string | null
+          id?: string
+          location?: string | null
+          name?: string
+          notes?: string | null
+          start_date?: string | null
+          status?: string | null
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "jobs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "jobs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "jobs_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      location_stock: {
+        Row: {
+          created_at: string | null
+          id: string
+          item_id: string
+          location_id: string
+          min_quantity: number | null
+          quantity: number
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          item_id: string
+          location_id: string
+          min_quantity?: number | null
+          quantity?: number
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          item_id?: string
+          location_id?: string
+          min_quantity?: number | null
+          quantity?: number
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "location_stock_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "location_stock_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items_with_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "location_stock_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "location_stock_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "location_stock_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      locations: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          tenant_id: string
+          type: Database["public"]["Enums"]["location_type"]
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          tenant_id: string
+          type?: Database["public"]["Enums"]["location_type"]
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          tenant_id?: string
+          type?: Database["public"]["Enums"]["location_type"]
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "locations_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "locations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "locations_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lots: {
+        Row: {
+          batch_code: string | null
+          created_at: string | null
+          created_by: string | null
+          expiry_date: string | null
+          id: string
+          item_id: string
+          location_id: string | null
+          lot_number: string | null
+          manufactured_date: string | null
+          notes: string | null
+          quantity: number
+          received_at: string | null
+          status: Database["public"]["Enums"]["lot_status"] | null
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          batch_code?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          expiry_date?: string | null
+          id?: string
+          item_id: string
+          location_id?: string | null
+          lot_number?: string | null
+          manufactured_date?: string | null
+          notes?: string | null
+          quantity?: number
+          received_at?: string | null
+          status?: Database["public"]["Enums"]["lot_status"] | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          batch_code?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          expiry_date?: string | null
+          id?: string
+          item_id?: string
+          location_id?: string | null
+          lot_number?: string | null
+          manufactured_date?: string | null
+          notes?: string | null
+          quantity?: number
+          received_at?: string | null
+          status?: Database["public"]["Enums"]["lot_status"] | null
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lots_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lots_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lots_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items_with_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lots_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lots_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "lots_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       notifications: {
         Row: {
@@ -882,6 +1463,29 @@ export type Database = {
           title?: string
           user_id?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "notifications_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pick_list_items: {
         Row: {
@@ -914,6 +1518,36 @@ export type Database = {
           picked_quantity?: number | null
           requested_quantity?: number
         }
+        Relationships: [
+          {
+            foreignKeyName: "pick_list_items_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pick_list_items_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items_with_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pick_list_items_pick_list_id_fkey"
+            columns: ["pick_list_id"]
+            isOneToOne: false
+            referencedRelation: "pick_lists"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pick_list_items_picked_by_fkey"
+            columns: ["picked_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       pick_lists: {
         Row: {
@@ -925,7 +1559,9 @@ export type Database = {
           display_id: string | null
           due_date: string | null
           id: string
-          item_outcome: string | null
+          item_outcome:
+            | Database["public"]["Enums"]["pick_list_item_outcome"]
+            | null
           name: string | null
           notes: string | null
           pick_list_number: string | null
@@ -949,7 +1585,9 @@ export type Database = {
           display_id?: string | null
           due_date?: string | null
           id?: string
-          item_outcome?: string | null
+          item_outcome?:
+            | Database["public"]["Enums"]["pick_list_item_outcome"]
+            | null
           name?: string | null
           notes?: string | null
           pick_list_number?: string | null
@@ -973,7 +1611,9 @@ export type Database = {
           display_id?: string | null
           due_date?: string | null
           id?: string
-          item_outcome?: string | null
+          item_outcome?:
+            | Database["public"]["Enums"]["pick_list_item_outcome"]
+            | null
           name?: string | null
           notes?: string | null
           pick_list_number?: string | null
@@ -988,6 +1628,36 @@ export type Database = {
           tenant_id?: string
           updated_at?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "pick_lists_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pick_lists_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pick_lists_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "pick_lists_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -1032,6 +1702,22 @@ export type Database = {
           tenant_id?: string | null
           updated_at?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "profiles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "profiles_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       purchase_order_items: {
         Row: {
@@ -1040,11 +1726,11 @@ export type Database = {
           item_name: string
           notes: string | null
           ordered_quantity: number
+          part_number: string | null
           purchase_order_id: string
           received_quantity: number | null
           sku: string | null
           unit_price: number | null
-          part_number: string | null
         }
         Insert: {
           id?: string
@@ -1052,11 +1738,11 @@ export type Database = {
           item_name: string
           notes?: string | null
           ordered_quantity: number
+          part_number?: string | null
           purchase_order_id: string
           received_quantity?: number | null
           sku?: string | null
           unit_price?: number | null
-          part_number?: string | null
         }
         Update: {
           id?: string
@@ -1064,15 +1750,47 @@ export type Database = {
           item_name?: string
           notes?: string | null
           ordered_quantity?: number
+          part_number?: string | null
           purchase_order_id?: string
           received_quantity?: number | null
           sku?: string | null
           unit_price?: number | null
-          part_number?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_order_items_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_order_items_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items_with_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_order_items_purchase_order_id_fkey"
+            columns: ["purchase_order_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       purchase_orders: {
         Row: {
+          approved_at: string | null
+          approved_by: string | null
+          bill_to_address1: string | null
+          bill_to_address2: string | null
+          bill_to_city: string | null
+          bill_to_country: string | null
+          bill_to_name: string | null
+          bill_to_postal_code: string | null
+          bill_to_state: string | null
           created_at: string | null
           created_by: string | null
           currency: string | null
@@ -1082,116 +1800,735 @@ export type Database = {
           notes: string | null
           order_number: string | null
           received_date: string | null
-          shipping: number | null
-          status: string | null
-          subtotal: number | null
-          tax: number | null
-          tenant_id: string
-          total_amount: number | null
-          updated_at: string | null
-          vendor_id: string | null
-          // Ship To address fields
-          ship_to_name: string | null
           ship_to_address1: string | null
           ship_to_address2: string | null
           ship_to_city: string | null
-          ship_to_state: string | null
-          ship_to_postal_code: string | null
           ship_to_country: string | null
-          // Bill To address fields
-          bill_to_name: string | null
-          bill_to_address1: string | null
-          bill_to_address2: string | null
-          bill_to_city: string | null
-          bill_to_state: string | null
-          bill_to_postal_code: string | null
-          bill_to_country: string | null
-          // Submission and approval tracking
-          submitted_by: string | null
+          ship_to_name: string | null
+          ship_to_postal_code: string | null
+          ship_to_state: string | null
+          shipping: number | null
+          status: string | null
           submitted_at: string | null
-          approved_by: string | null
-          approved_at: string | null
+          submitted_by: string | null
+          subtotal: number | null
+          tax: number | null
+          tenant_id: string
+          total: number | null
+          total_amount: number | null
+          updated_at: string | null
+          vendor_id: string | null
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          bill_to_address1?: string | null
+          bill_to_address2?: string | null
+          bill_to_city?: string | null
+          bill_to_country?: string | null
+          bill_to_name?: string | null
+          bill_to_postal_code?: string | null
+          bill_to_state?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string | null
+          display_id?: string | null
+          expected_date?: string | null
+          id?: string
+          notes?: string | null
+          order_number?: string | null
+          received_date?: string | null
+          ship_to_address1?: string | null
+          ship_to_address2?: string | null
+          ship_to_city?: string | null
+          ship_to_country?: string | null
+          ship_to_name?: string | null
+          ship_to_postal_code?: string | null
+          ship_to_state?: string | null
+          shipping?: number | null
+          status?: string | null
+          submitted_at?: string | null
+          submitted_by?: string | null
+          subtotal?: number | null
+          tax?: number | null
+          tenant_id: string
+          total?: number | null
+          total_amount?: number | null
+          updated_at?: string | null
+          vendor_id?: string | null
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          bill_to_address1?: string | null
+          bill_to_address2?: string | null
+          bill_to_city?: string | null
+          bill_to_country?: string | null
+          bill_to_name?: string | null
+          bill_to_postal_code?: string | null
+          bill_to_state?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          currency?: string | null
+          display_id?: string | null
+          expected_date?: string | null
+          id?: string
+          notes?: string | null
+          order_number?: string | null
+          received_date?: string | null
+          ship_to_address1?: string | null
+          ship_to_address2?: string | null
+          ship_to_city?: string | null
+          ship_to_country?: string | null
+          ship_to_name?: string | null
+          ship_to_postal_code?: string | null
+          ship_to_state?: string | null
+          shipping?: number | null
+          status?: string | null
+          submitted_at?: string | null
+          submitted_by?: string | null
+          subtotal?: number | null
+          tax?: number | null
+          tenant_id?: string
+          total?: number | null
+          total_amount?: number | null
+          updated_at?: string | null
+          vendor_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "purchase_orders_approved_by_fkey"
+            columns: ["approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_submitted_by_fkey"
+            columns: ["submitted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "purchase_orders_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      receive_item_serials: {
+        Row: {
+          created_at: string | null
+          id: string
+          receive_item_id: string
+          serial_number: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          receive_item_id: string
+          serial_number: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          receive_item_id?: string
+          serial_number?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receive_item_serials_receive_item_id_fkey"
+            columns: ["receive_item_id"]
+            isOneToOne: false
+            referencedRelation: "receive_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      receive_items: {
+        Row: {
+          batch_code: string | null
+          condition: Database["public"]["Enums"]["receive_item_condition"]
+          created_at: string | null
+          expiry_date: string | null
+          id: string
+          item_id: string | null
+          location_id: string | null
+          lot_number: string | null
+          manufactured_date: string | null
+          notes: string | null
+          purchase_order_item_id: string
+          quantity_received: number
+          receive_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          batch_code?: string | null
+          condition?: Database["public"]["Enums"]["receive_item_condition"]
+          created_at?: string | null
+          expiry_date?: string | null
+          id?: string
+          item_id?: string | null
+          location_id?: string | null
+          lot_number?: string | null
+          manufactured_date?: string | null
+          notes?: string | null
+          purchase_order_item_id: string
+          quantity_received: number
+          receive_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          batch_code?: string | null
+          condition?: Database["public"]["Enums"]["receive_item_condition"]
+          created_at?: string | null
+          expiry_date?: string | null
+          id?: string
+          item_id?: string | null
+          location_id?: string | null
+          lot_number?: string | null
+          manufactured_date?: string | null
+          notes?: string | null
+          purchase_order_item_id?: string
+          quantity_received?: number
+          receive_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receive_items_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receive_items_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items_with_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receive_items_location_id_fkey"
+            columns: ["location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receive_items_purchase_order_item_id_fkey"
+            columns: ["purchase_order_item_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_order_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receive_items_receive_id_fkey"
+            columns: ["receive_id"]
+            isOneToOne: false
+            referencedRelation: "receives"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      receives: {
+        Row: {
+          cancelled_at: string | null
+          carrier: string | null
+          completed_at: string | null
+          created_at: string | null
+          created_by: string | null
+          default_location_id: string | null
+          delivery_note_number: string | null
+          display_id: string | null
+          id: string
+          notes: string | null
+          purchase_order_id: string
+          received_by: string | null
+          received_date: string
+          status: Database["public"]["Enums"]["receive_status"]
+          tenant_id: string
+          tracking_number: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          cancelled_at?: string | null
+          carrier?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          default_location_id?: string | null
+          delivery_note_number?: string | null
+          display_id?: string | null
+          id?: string
+          notes?: string | null
+          purchase_order_id: string
+          received_by?: string | null
+          received_date?: string
+          status?: Database["public"]["Enums"]["receive_status"]
+          tenant_id: string
+          tracking_number?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          cancelled_at?: string | null
+          carrier?: string | null
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          default_location_id?: string | null
+          delivery_note_number?: string | null
+          display_id?: string | null
+          id?: string
+          notes?: string | null
+          purchase_order_id?: string
+          received_by?: string | null
+          received_date?: string
+          status?: Database["public"]["Enums"]["receive_status"]
+          tenant_id?: string
+          tracking_number?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "receives_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receives_default_location_id_fkey"
+            columns: ["default_location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receives_purchase_order_id_fkey"
+            columns: ["purchase_order_id"]
+            isOneToOne: false
+            referencedRelation: "purchase_orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receives_received_by_fkey"
+            columns: ["received_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "receives_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "receives_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      serial_numbers: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          item_id: string
+          location_id: string | null
+          notes: string | null
+          serial_number: string
+          status: Database["public"]["Enums"]["serial_status"] | null
+          tenant_id: string
+          updated_at: string | null
         }
         Insert: {
           created_at?: string | null
           created_by?: string | null
-          currency?: string | null
-          display_id?: string | null
-          expected_date?: string | null
           id?: string
+          item_id: string
+          location_id?: string | null
           notes?: string | null
-          order_number?: string | null
-          received_date?: string | null
-          shipping?: number | null
-          status?: string | null
-          subtotal?: number | null
-          tax?: number | null
+          serial_number: string
+          status?: Database["public"]["Enums"]["serial_status"] | null
           tenant_id: string
-          total_amount?: number | null
           updated_at?: string | null
-          vendor_id?: string | null
-          // Ship To address fields
-          ship_to_name?: string | null
-          ship_to_address1?: string | null
-          ship_to_address2?: string | null
-          ship_to_city?: string | null
-          ship_to_state?: string | null
-          ship_to_postal_code?: string | null
-          ship_to_country?: string | null
-          // Bill To address fields
-          bill_to_name?: string | null
-          bill_to_address1?: string | null
-          bill_to_address2?: string | null
-          bill_to_city?: string | null
-          bill_to_state?: string | null
-          bill_to_postal_code?: string | null
-          bill_to_country?: string | null
-          // Submission and approval tracking
-          submitted_by?: string | null
-          submitted_at?: string | null
-          approved_by?: string | null
-          approved_at?: string | null
         }
         Update: {
           created_at?: string | null
           created_by?: string | null
-          currency?: string | null
-          display_id?: string | null
-          expected_date?: string | null
           id?: string
+          item_id?: string
+          location_id?: string | null
           notes?: string | null
-          order_number?: string | null
-          received_date?: string | null
-          shipping?: number | null
-          status?: string | null
-          subtotal?: number | null
-          tax?: number | null
+          serial_number?: string
+          status?: Database["public"]["Enums"]["serial_status"] | null
           tenant_id?: string
-          total_amount?: number | null
           updated_at?: string | null
-          vendor_id?: string | null
-          // Ship To address fields
-          ship_to_name?: string | null
-          ship_to_address1?: string | null
-          ship_to_address2?: string | null
-          ship_to_city?: string | null
-          ship_to_state?: string | null
-          ship_to_postal_code?: string | null
-          ship_to_country?: string | null
-          // Bill To address fields
-          bill_to_name?: string | null
-          bill_to_address1?: string | null
-          bill_to_address2?: string | null
-          bill_to_city?: string | null
-          bill_to_state?: string | null
-          bill_to_postal_code?: string | null
-          bill_to_country?: string | null
-          // Submission and approval tracking
-          submitted_by?: string | null
-          submitted_at?: string | null
-          approved_by?: string | null
-          approved_at?: string | null
         }
+        Relationships: [
+          {
+            foreignKeyName: "serial_numbers_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "serial_numbers_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "serial_numbers_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items_with_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "serial_numbers_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "serial_numbers_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_count_items: {
+        Row: {
+          counted_at: string | null
+          counted_by: string | null
+          counted_quantity: number | null
+          created_at: string | null
+          expected_quantity: number
+          id: string
+          item_id: string
+          status: Database["public"]["Enums"]["stock_count_item_status"]
+          stock_count_id: string
+          updated_at: string | null
+          variance: number | null
+          variance_notes: string | null
+          variance_resolved: boolean | null
+        }
+        Insert: {
+          counted_at?: string | null
+          counted_by?: string | null
+          counted_quantity?: number | null
+          created_at?: string | null
+          expected_quantity: number
+          id?: string
+          item_id: string
+          status?: Database["public"]["Enums"]["stock_count_item_status"]
+          stock_count_id: string
+          updated_at?: string | null
+          variance?: number | null
+          variance_notes?: string | null
+          variance_resolved?: boolean | null
+        }
+        Update: {
+          counted_at?: string | null
+          counted_by?: string | null
+          counted_quantity?: number | null
+          created_at?: string | null
+          expected_quantity?: number
+          id?: string
+          item_id?: string
+          status?: Database["public"]["Enums"]["stock_count_item_status"]
+          stock_count_id?: string
+          updated_at?: string | null
+          variance?: number | null
+          variance_notes?: string | null
+          variance_resolved?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_count_items_counted_by_fkey"
+            columns: ["counted_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_count_items_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_count_items_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items_with_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_count_items_stock_count_id_fkey"
+            columns: ["stock_count_id"]
+            isOneToOne: false
+            referencedRelation: "stock_counts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_counts: {
+        Row: {
+          assigned_at: string | null
+          assigned_to: string | null
+          completed_at: string | null
+          counted_items: number | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          display_id: string | null
+          due_date: string | null
+          id: string
+          name: string | null
+          notes: string | null
+          scope_folder_id: string | null
+          scope_type: Database["public"]["Enums"]["stock_count_scope_type"]
+          started_at: string | null
+          status: Database["public"]["Enums"]["stock_count_status"]
+          tenant_id: string
+          total_items: number | null
+          updated_at: string | null
+          variance_items: number | null
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_to?: string | null
+          completed_at?: string | null
+          counted_items?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          display_id?: string | null
+          due_date?: string | null
+          id?: string
+          name?: string | null
+          notes?: string | null
+          scope_folder_id?: string | null
+          scope_type?: Database["public"]["Enums"]["stock_count_scope_type"]
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["stock_count_status"]
+          tenant_id: string
+          total_items?: number | null
+          updated_at?: string | null
+          variance_items?: number | null
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_to?: string | null
+          completed_at?: string | null
+          counted_items?: number | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          display_id?: string | null
+          due_date?: string | null
+          id?: string
+          name?: string | null
+          notes?: string | null
+          scope_folder_id?: string | null
+          scope_type?: Database["public"]["Enums"]["stock_count_scope_type"]
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["stock_count_status"]
+          tenant_id?: string
+          total_items?: number | null
+          updated_at?: string | null
+          variance_items?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_counts_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_counts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_counts_scope_folder_id_fkey"
+            columns: ["scope_folder_id"]
+            isOneToOne: false
+            referencedRelation: "folders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_counts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "stock_counts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      stock_transfers: {
+        Row: {
+          ai_suggestion_reason: string | null
+          completed_at: string | null
+          completed_by: string | null
+          created_at: string | null
+          from_location_id: string
+          id: string
+          is_ai_suggested: boolean | null
+          item_id: string
+          notes: string | null
+          quantity: number
+          requested_at: string | null
+          requested_by: string | null
+          status: Database["public"]["Enums"]["transfer_status"] | null
+          tenant_id: string
+          to_location_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          ai_suggestion_reason?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string | null
+          from_location_id: string
+          id?: string
+          is_ai_suggested?: boolean | null
+          item_id: string
+          notes?: string | null
+          quantity: number
+          requested_at?: string | null
+          requested_by?: string | null
+          status?: Database["public"]["Enums"]["transfer_status"] | null
+          tenant_id: string
+          to_location_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          ai_suggestion_reason?: string | null
+          completed_at?: string | null
+          completed_by?: string | null
+          created_at?: string | null
+          from_location_id?: string
+          id?: string
+          is_ai_suggested?: boolean | null
+          item_id?: string
+          notes?: string | null
+          quantity?: number
+          requested_at?: string | null
+          requested_by?: string | null
+          status?: Database["public"]["Enums"]["transfer_status"] | null
+          tenant_id?: string
+          to_location_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_transfers_completed_by_fkey"
+            columns: ["completed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_transfers_from_location_id_fkey"
+            columns: ["from_location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_transfers_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_transfers_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items_with_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_transfers_requested_by_fkey"
+            columns: ["requested_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_transfers_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "stock_transfers_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_transfers_to_location_id_fkey"
+            columns: ["to_location_id"]
+            isOneToOne: false
+            referencedRelation: "locations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tags: {
         Row: {
@@ -1215,6 +2552,22 @@ export type Database = {
           name?: string
           tenant_id?: string
         }
+        Relationships: [
+          {
+            foreignKeyName: "tags_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "tags_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tenants: {
         Row: {
@@ -1239,7 +2592,7 @@ export type Database = {
           max_items?: number | null
           max_users?: number | null
           name: string
-          org_code?: string
+          org_code: string
           primary_color?: string | null
           settings?: Json | null
           slug: string
@@ -1262,6 +2615,7 @@ export type Database = {
           subscription_tier?: string | null
           updated_at?: string | null
         }
+        Relationships: []
       }
       vendors: {
         Row: {
@@ -1315,115 +2669,22 @@ export type Database = {
           tenant_id?: string
           updated_at?: string | null
         }
-      }
-      receives: {
-        Row: {
-          id: string
-          tenant_id: string
-          display_id: string | null
-          purchase_order_id: string
-          received_date: string
-          received_by: string | null
-          status: 'draft' | 'completed' | 'cancelled'
-          delivery_note_number: string | null
-          carrier: string | null
-          tracking_number: string | null
-          default_location_id: string | null
-          notes: string | null
-          completed_at: string | null
-          cancelled_at: string | null
-          created_by: string | null
-          created_at: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          id?: string
-          tenant_id: string
-          display_id?: string | null
-          purchase_order_id: string
-          received_date?: string
-          received_by?: string | null
-          status?: 'draft' | 'completed' | 'cancelled'
-          delivery_note_number?: string | null
-          carrier?: string | null
-          tracking_number?: string | null
-          default_location_id?: string | null
-          notes?: string | null
-          completed_at?: string | null
-          cancelled_at?: string | null
-          created_by?: string | null
-          created_at?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          id?: string
-          tenant_id?: string
-          display_id?: string | null
-          purchase_order_id?: string
-          received_date?: string
-          received_by?: string | null
-          status?: 'draft' | 'completed' | 'cancelled'
-          delivery_note_number?: string | null
-          carrier?: string | null
-          tracking_number?: string | null
-          default_location_id?: string | null
-          notes?: string | null
-          completed_at?: string | null
-          cancelled_at?: string | null
-          created_by?: string | null
-          created_at?: string | null
-          updated_at?: string | null
-        }
-      }
-      receive_items: {
-        Row: {
-          id: string
-          receive_id: string
-          purchase_order_item_id: string
-          item_id: string | null
-          quantity_received: number
-          lot_number: string | null
-          batch_code: string | null
-          expiry_date: string | null
-          manufactured_date: string | null
-          location_id: string | null
-          condition: 'good' | 'damaged' | 'rejected'
-          notes: string | null
-          created_at: string | null
-          updated_at: string | null
-        }
-        Insert: {
-          id?: string
-          receive_id: string
-          purchase_order_item_id: string
-          item_id?: string | null
-          quantity_received: number
-          lot_number?: string | null
-          batch_code?: string | null
-          expiry_date?: string | null
-          manufactured_date?: string | null
-          location_id?: string | null
-          condition?: 'good' | 'damaged' | 'rejected'
-          notes?: string | null
-          created_at?: string | null
-          updated_at?: string | null
-        }
-        Update: {
-          id?: string
-          receive_id?: string
-          purchase_order_item_id?: string
-          item_id?: string | null
-          quantity_received?: number
-          lot_number?: string | null
-          batch_code?: string | null
-          expiry_date?: string | null
-          manufactured_date?: string | null
-          location_id?: string | null
-          condition?: 'good' | 'damaged' | 'rejected'
-          notes?: string | null
-          created_at?: string | null
-          updated_at?: string | null
-        }
+        Relationships: [
+          {
+            foreignKeyName: "vendors_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "vendors_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -1438,7 +2699,7 @@ export type Database = {
           from_folder_id: string | null
           from_folder_name: string | null
           id: string | null
-          ip_address: string | null
+          ip_address: unknown
           is_archived: boolean | null
           quantity_after: number | null
           quantity_before: number | null
@@ -1450,6 +2711,85 @@ export type Database = {
           user_id: string | null
           user_name: string | null
         }
+        Relationships: []
+      }
+      items_with_tags: {
+        Row: {
+          barcode: string | null
+          cost_price: number | null
+          created_at: string | null
+          created_by: string | null
+          currency: string | null
+          custom_fields: Json | null
+          deleted_at: string | null
+          description: string | null
+          dimension_unit: string | null
+          embedding: string | null
+          embedding_updated_at: string | null
+          folder_id: string | null
+          height: number | null
+          id: string | null
+          image_urls: string[] | null
+          last_modified_by: string | null
+          length: number | null
+          location: string | null
+          min_quantity: number | null
+          name: string | null
+          notes: string | null
+          price: number | null
+          qr_code: string | null
+          quantity: number | null
+          search_vector: unknown
+          serial_number: string | null
+          sku: string | null
+          status: string | null
+          tag_list: Json[] | null
+          tags: string[] | null
+          tenant_id: string | null
+          tracking_mode: string | null
+          unit: string | null
+          updated_at: string | null
+          weight: number | null
+          weight_unit: string | null
+          width: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_items_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_items_folder_id_fkey"
+            columns: ["folder_id"]
+            isOneToOne: false
+            referencedRelation: "folders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_items_last_modified_by_fkey"
+            columns: ["last_modified_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "inventory_items_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tenant_stats: {
         Row: {
@@ -1470,9 +2810,25 @@ export type Database = {
           total_quantity: number | null
           vendor_count: number | null
         }
+        Relationships: []
       }
     }
     Functions: {
+      add_receive_item: {
+        Args: {
+          p_batch_code?: string
+          p_condition?: Database["public"]["Enums"]["receive_item_condition"]
+          p_expiry_date?: string
+          p_location_id?: string
+          p_lot_number?: string
+          p_manufactured_date?: string
+          p_notes?: string
+          p_purchase_order_item_id: string
+          p_quantity_received: number
+          p_receive_id: string
+        }
+        Returns: Json
+      }
       add_tags_to_item: {
         Args: { p_item_id: string; p_tag_ids: string[] }
         Returns: number
@@ -1481,6 +2837,7 @@ export type Database = {
         Args: { retention_days?: number }
         Returns: number
       }
+      batch_create_items: { Args: { p_items: Json }; Returns: Json }
       bulk_adjust_quantities: { Args: { adjustments: Json }; Returns: Json }
       bulk_delete_items: { Args: { item_ids: string[] }; Returns: Json }
       bulk_move_items: {
@@ -1488,9 +2845,11 @@ export type Database = {
         Returns: Json
       }
       bulk_restore_items: { Args: { item_ids: string[] }; Returns: Json }
-      can_edit: { Args: Record<string, never>; Returns: boolean }
+      can_edit: { Args: never; Returns: boolean }
+      cancel_receive: { Args: { p_receive_id: string }; Returns: Json }
+      cancel_stock_count: { Args: { p_stock_count_id: string }; Returns: Json }
       check_subscription_limits: {
-        Args: Record<string, never>
+        Args: never
         Returns: {
           current_usage: number
           is_exceeded: boolean
@@ -1498,8 +2857,237 @@ export type Database = {
           resource_type: string
         }[]
       }
+      checkout_with_serials: {
+        Args: {
+          p_assignee_id?: string
+          p_assignee_name?: string
+          p_assignee_type: Database["public"]["Enums"]["checkout_assignee_type"]
+          p_due_date?: string
+          p_item_id: string
+          p_notes?: string
+          p_serial_ids: string[]
+        }
+        Returns: Json
+      }
+      complete_pick_list: { Args: { p_pick_list_id: string }; Returns: Json }
+      complete_receive: { Args: { p_receive_id: string }; Returns: Json }
+      complete_stock_count: {
+        Args: { p_apply_adjustments?: boolean; p_stock_count_id: string }
+        Returns: Json
+      }
+      create_bulk_item_reminders: {
+        Args: {
+          p_comparison_operator?: string
+          p_days_before_expiry?: number
+          p_item_ids: string[]
+          p_message?: string
+          p_notify_email?: boolean
+          p_notify_in_app?: boolean
+          p_notify_user_ids?: string[]
+          p_recurrence?: string
+          p_recurrence_end_date?: string
+          p_reminder_type: string
+          p_scheduled_at?: string
+          p_threshold?: number
+          p_title?: string
+        }
+        Returns: Json
+      }
+      create_folder_reminder: {
+        Args: {
+          p_comparison_operator?: string
+          p_days_before_expiry?: number
+          p_folder_id: string
+          p_message?: string
+          p_notify_email?: boolean
+          p_notify_in_app?: boolean
+          p_notify_user_ids?: string[]
+          p_recurrence?: string
+          p_recurrence_end_date?: string
+          p_reminder_type: string
+          p_scheduled_at?: string
+          p_threshold?: number
+          p_title?: string
+        }
+        Returns: Json
+      }
+      create_folder_v2: {
+        Args: {
+          p_color?: string
+          p_icon?: string
+          p_name: string
+          p_parent_id?: string
+        }
+        Returns: Json
+      }
+      create_inventory_item_v2: {
+        Args: {
+          p_barcode?: string
+          p_cost_price?: number
+          p_currency?: string
+          p_custom_fields?: Json
+          p_description?: string
+          p_folder_id?: string
+          p_image_urls?: string[]
+          p_min_quantity?: number
+          p_name: string
+          p_notes?: string
+          p_price?: number
+          p_quantity?: number
+          p_serial_number?: string
+          p_sku?: string
+          p_tags?: string[]
+          p_unit?: string
+        }
+        Returns: Json
+      }
+      create_item_reminder:
+        | {
+            Args: {
+              p_days_before_expiry?: number
+              p_item_id: string
+              p_message?: string
+              p_notify_email?: boolean
+              p_notify_in_app?: boolean
+              p_notify_user_ids?: string[]
+              p_recurrence?: string
+              p_recurrence_end_date?: string
+              p_reminder_type: string
+              p_scheduled_at?: string
+              p_threshold?: number
+              p_title?: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_comparison_operator?: string
+              p_days_before_expiry?: number
+              p_item_id: string
+              p_message?: string
+              p_notify_email?: boolean
+              p_notify_in_app?: boolean
+              p_notify_user_ids?: string[]
+              p_recurrence?: string
+              p_recurrence_end_date?: string
+              p_reminder_type: string
+              p_scheduled_at?: string
+              p_threshold?: number
+              p_title?: string
+            }
+            Returns: Json
+          }
       create_item_with_tags: {
         Args: { p_item: Json; p_tag_ids?: string[] }
+        Returns: Json
+      }
+      create_job: {
+        Args: {
+          p_description?: string
+          p_end_date?: string
+          p_location?: string
+          p_name: string
+          p_start_date?: string
+        }
+        Returns: Json
+      }
+      create_pick_list_v2: {
+        Args: {
+          p_assigned_to?: string
+          p_due_date?: string
+          p_item_outcome?: string
+          p_items?: Json
+          p_name?: string
+          p_notes?: string
+          p_ship_to_address1?: string
+          p_ship_to_address2?: string
+          p_ship_to_city?: string
+          p_ship_to_country?: string
+          p_ship_to_name?: string
+          p_ship_to_postal_code?: string
+          p_ship_to_state?: string
+        }
+        Returns: Json
+      }
+      create_pick_list_with_items: {
+        Args: {
+          p_assigned_to?: string
+          p_due_date?: string
+          p_item_outcome?: Database["public"]["Enums"]["pick_list_item_outcome"]
+          p_items?: Json
+          p_name: string
+          p_notes?: string
+          p_ship_to_address1?: string
+          p_ship_to_address2?: string
+          p_ship_to_city?: string
+          p_ship_to_country?: string
+          p_ship_to_name?: string
+          p_ship_to_postal_code?: string
+          p_ship_to_state?: string
+        }
+        Returns: Json
+      }
+      create_purchase_order_v2: {
+        Args: {
+          p_bill_to_address1?: string
+          p_bill_to_address2?: string
+          p_bill_to_city?: string
+          p_bill_to_country?: string
+          p_bill_to_name?: string
+          p_bill_to_postal_code?: string
+          p_bill_to_state?: string
+          p_currency?: string
+          p_expected_date?: string
+          p_items?: Json
+          p_notes?: string
+          p_ship_to_address1?: string
+          p_ship_to_address2?: string
+          p_ship_to_city?: string
+          p_ship_to_country?: string
+          p_ship_to_name?: string
+          p_ship_to_postal_code?: string
+          p_ship_to_state?: string
+          p_vendor_id?: string
+        }
+        Returns: Json
+      }
+      create_receive: {
+        Args: {
+          p_carrier?: string
+          p_default_location_id?: string
+          p_delivery_note_number?: string
+          p_notes?: string
+          p_purchase_order_id: string
+          p_tracking_number?: string
+        }
+        Returns: Json
+      }
+      create_receive_with_items: {
+        Args: {
+          p_carrier?: string
+          p_default_location_id?: string
+          p_delivery_note_number?: string
+          p_notes?: string
+          p_purchase_order_id: string
+          p_tracking_number?: string
+        }
+        Returns: Json
+      }
+      create_stock_count: {
+        Args: {
+          p_assigned_to?: string
+          p_description?: string
+          p_due_date?: string
+          p_name?: string
+          p_notes?: string
+          p_scope_folder_id?: string
+          p_scope_type?: Database["public"]["Enums"]["stock_count_scope_type"]
+        }
+        Returns: Json
+      }
+      delete_item_reminder: { Args: { p_reminder_id: string }; Returns: Json }
+      delete_reminder: {
+        Args: { p_reminder_id: string; p_source_type: string }
         Returns: Json
       }
       export_inventory_data: {
@@ -1515,6 +3103,16 @@ export type Database = {
           sku: string
         }[]
       }
+      generate_display_id: {
+        Args: { p_entity_type: string; p_tenant_id: string }
+        Returns: string
+      }
+      generate_display_id_for_current_user: {
+        Args: { p_entity_type: string }
+        Returns: string
+      }
+      generate_org_code: { Args: { p_company_name: string }; Returns: string }
+      get_active_checkout: { Args: { p_item_id: string }; Returns: Json }
       get_activity_logs: {
         Args: {
           p_action_type?: string
@@ -1551,8 +3149,28 @@ export type Database = {
         }
         Returns: number
       }
+      get_all_reminders: {
+        Args: {
+          p_limit?: number
+          p_offset?: number
+          p_status?: string
+          p_type?: string
+        }
+        Returns: Json
+      }
+      get_checkout_serials: { Args: { p_checkout_id: string }; Returns: Json }
+      get_checkouts: {
+        Args: {
+          p_assignee_type?: string
+          p_limit?: number
+          p_offset?: number
+          p_overdue_only?: boolean
+          p_status?: string
+        }
+        Returns: Json
+      }
       get_current_user_profile: {
-        Args: Record<string, never>
+        Args: never
         Returns: {
           email: string
           full_name: string
@@ -1561,9 +3179,35 @@ export type Database = {
           user_id: string
         }[]
       }
-      get_dashboard_data: { Args: Record<string, never>; Returns: Json }
+      get_dashboard_data: { Args: never; Returns: Json }
+      get_due_reminders: {
+        Args: never
+        Returns: {
+          created_by: string
+          days_before_expiry: number
+          id: string
+          item_id: string
+          item_name: string
+          message: string
+          notify_email: boolean
+          notify_in_app: boolean
+          notify_user_ids: string[]
+          recurrence: Database["public"]["Enums"]["reminder_recurrence_enum"]
+          recurrence_end_date: string
+          reminder_type: Database["public"]["Enums"]["reminder_type_enum"]
+          scheduled_at: string
+          tenant_id: string
+          threshold: number
+          title: string
+          trigger_count: number
+        }[]
+      }
+      get_entity_by_display_id: {
+        Args: { p_display_id: string }
+        Returns: Json
+      }
       get_folder_stats: {
-        Args: Record<string, never>
+        Args: never
         Returns: {
           folder_color: string
           folder_id: string
@@ -1585,7 +3229,16 @@ export type Database = {
         }
         Returns: Json
       }
+      get_item_checkout_history: {
+        Args: { p_item_id: string; p_limit?: number }
+        Returns: Json
+      }
       get_item_details: { Args: { p_item_id: string }; Returns: Json }
+      get_item_reminders: { Args: { p_item_id: string }; Returns: Json }
+      get_item_serials: {
+        Args: { p_include_unavailable?: boolean; p_item_id: string }
+        Returns: Json
+      }
       get_item_tags: {
         Args: { p_item_id: string }
         Returns: {
@@ -1613,6 +3266,9 @@ export type Database = {
           sku: string
         }[]
       }
+      get_jobs: { Args: { p_limit?: number; p_status?: string }; Returns: Json }
+      get_letter_prefix: { Args: { p_sequence: number }; Returns: string }
+      get_my_checkouts: { Args: never; Returns: Json }
       get_my_tenant_stats: {
         Args: { force_refresh?: boolean }
         Returns: {
@@ -1634,7 +3290,29 @@ export type Database = {
           vendor_count: number
         }[]
       }
-      get_my_tenant_stats_realtime: { Args: Record<string, never>; Returns: Json }
+      get_my_tenant_stats_realtime: { Args: never; Returns: Json }
+      get_next_entity_number: {
+        Args: { p_entity_type: string; p_tenant_id: string }
+        Returns: number
+      }
+      get_overdue_summary: { Args: never; Returns: Json }
+      get_pick_list_with_items: {
+        Args: { p_pick_list_id: string }
+        Returns: Json
+      }
+      get_po_receives: { Args: { p_purchase_order_id: string }; Returns: Json }
+      get_quota_usage: {
+        Args: never
+        Returns: {
+          current_usage: number
+          is_exceeded: boolean
+          is_warning: boolean
+          max_allowed: number
+          resource_type: string
+          usage_percent: number
+        }[]
+      }
+      get_receive_with_items: { Args: { p_receive_id: string }; Returns: Json }
       get_recent_activity_summary: {
         Args: { p_days?: number }
         Returns: {
@@ -1643,16 +3321,21 @@ export type Database = {
           date: string
         }[]
       }
+      get_reminder_stats: { Args: never; Returns: Json }
       get_status_distribution: {
-        Args: Record<string, never>
+        Args: never
         Returns: {
           count: number
           percentage: number
           status: string
         }[]
       }
+      get_stock_count_with_items: {
+        Args: { p_stock_count_id: string }
+        Returns: Json
+      }
       get_tag_stats: {
-        Args: Record<string, never>
+        Args: never
         Returns: {
           item_count: number
           tag_color: string
@@ -1660,8 +3343,9 @@ export type Database = {
           tag_name: string
         }[]
       }
-      get_user_tenant_id: { Args: Record<string, never>; Returns: string }
-      is_admin_or_owner: { Args: Record<string, never>; Returns: boolean }
+      get_tenant_org_code: { Args: never; Returns: Json }
+      get_user_tenant_id: { Args: never; Returns: string }
+      is_admin_or_owner: { Args: never; Returns: boolean }
       log_activity: {
         Args: {
           p_action_type: string
@@ -1677,11 +3361,63 @@ export type Database = {
         }
         Returns: string
       }
+      perform_checkin: {
+        Args: {
+          p_checkout_id: string
+          p_condition?: Database["public"]["Enums"]["item_condition"]
+          p_notes?: string
+        }
+        Returns: Json
+      }
+      perform_checkout: {
+        Args: {
+          p_assignee_id?: string
+          p_assignee_name?: string
+          p_assignee_type?: Database["public"]["Enums"]["checkout_assignee_type"]
+          p_due_date?: string
+          p_item_id: string
+          p_notes?: string
+          p_quantity?: number
+        }
+        Returns: Json
+      }
+      pick_pick_list_item: {
+        Args: { p_pick_list_item_id: string; p_picked_quantity: number }
+        Returns: Json
+      }
+      process_reminder_trigger: {
+        Args: { p_mark_triggered?: boolean; p_reminder_id: string }
+        Returns: Json
+      }
       purge_old_archives: { Args: { retention_days?: number }; Returns: number }
-      refresh_all_tenant_stats: { Args: Record<string, never>; Returns: undefined }
+      record_stock_count: {
+        Args: {
+          p_counted_quantity: number
+          p_notes?: string
+          p_stock_count_item_id: string
+        }
+        Returns: Json
+      }
+      refresh_all_tenant_stats: { Args: never; Returns: undefined }
+      remove_receive_item: {
+        Args: { p_receive_item_id: string }
+        Returns: Json
+      }
       remove_tags_from_item: {
         Args: { p_item_id: string; p_tag_ids: string[] }
         Returns: number
+      }
+      return_checkout_serials: {
+        Args: {
+          p_checkout_id: string
+          p_notes?: string
+          p_serial_returns: Json
+        }
+        Returns: Json
+      }
+      search_by_display_id: {
+        Args: { p_entity_types?: string[]; p_limit?: number; p_query: string }
+        Returns: Json
       }
       search_items_fulltext: {
         Args: { p_folder_id?: string; p_limit?: number; search_query: string }
@@ -1735,13 +3471,77 @@ export type Database = {
         Args: { p_item_id: string; p_tag_ids: string[] }
         Returns: number
       }
-      set_tenant_context: { Args: Record<string, never>; Returns: undefined }
+      set_tenant_context: { Args: never; Returns: undefined }
+      show_limit: { Args: never; Returns: number }
+      show_trgm: { Args: { "": string }; Returns: string[] }
+      start_stock_count: { Args: { p_stock_count_id: string }; Returns: Json }
+      submit_stock_count_for_review: {
+        Args: { p_stock_count_id: string }
+        Returns: Json
+      }
+      toggle_reminder: {
+        Args: { p_reminder_id: string; p_source_type: string }
+        Returns: Json
+      }
+      toggle_reminder_status: { Args: { p_reminder_id: string }; Returns: Json }
       update_item_embedding: {
         Args: { p_embedding: string; p_item_id: string }
         Returns: boolean
       }
+      update_item_reminder: {
+        Args: {
+          p_days_before_expiry?: number
+          p_message?: string
+          p_notify_email?: boolean
+          p_notify_in_app?: boolean
+          p_recurrence?: string
+          p_recurrence_end_date?: string
+          p_reminder_id: string
+          p_scheduled_at?: string
+          p_status?: string
+          p_threshold?: number
+          p_title?: string
+        }
+        Returns: Json
+      }
       update_item_with_tags: {
         Args: { p_item_id: string; p_tag_ids?: string[]; p_updates: Json }
+        Returns: Json
+      }
+      update_overdue_checkouts: { Args: never; Returns: number }
+      update_receive_item: {
+        Args: {
+          p_batch_code?: string
+          p_condition?: Database["public"]["Enums"]["receive_item_condition"]
+          p_expiry_date?: string
+          p_location_id?: string
+          p_lot_number?: string
+          p_manufactured_date?: string
+          p_notes?: string
+          p_quantity_received?: number
+          p_receive_item_id: string
+        }
+        Returns: Json
+      }
+      update_reminder: {
+        Args: {
+          p_comparison_operator?: string
+          p_days_before_expiry?: number
+          p_message?: string
+          p_notify_email?: boolean
+          p_notify_in_app?: boolean
+          p_recurrence?: string
+          p_recurrence_end_date?: string
+          p_reminder_id: string
+          p_scheduled_at?: string
+          p_source_type: string
+          p_threshold?: number
+          p_title?: string
+        }
+        Returns: Json
+      }
+      upsert_item_serials: {
+        Args: { p_item_id: string; p_serials: string[] }
         Returns: Json
       }
       user_has_role: { Args: { required_roles: string[] }; Returns: boolean }
@@ -1756,316 +3556,346 @@ export type Database = {
     }
     Enums: {
       activity_action_enum:
-        | 'create'
-        | 'update'
-        | 'delete'
-        | 'restore'
-        | 'adjust_quantity'
-        | 'move'
-        | 'archive'
-        | 'login'
-        | 'logout'
-        | 'export'
-        | 'import'
-        | 'bulk_update'
-        | 'assign'
-        | 'complete'
+        | "create"
+        | "update"
+        | "delete"
+        | "restore"
+        | "adjust_quantity"
+        | "move"
+        | "archive"
+        | "login"
+        | "logout"
+        | "export"
+        | "import"
+        | "bulk_update"
+        | "assign"
+        | "complete"
       alert_type_enum:
-        | 'low_stock'
-        | 'out_of_stock'
-        | 'expiring_soon'
-        | 'reorder_point'
-        | 'custom'
+        | "low_stock"
+        | "out_of_stock"
+        | "expiring_soon"
+        | "reorder_point"
+        | "custom"
+      checkout_assignee_type: "person" | "job" | "location"
+      checkout_status: "checked_out" | "returned" | "overdue"
+      comparison_operator_enum: "lte" | "lt" | "gt" | "gte" | "eq"
       entity_type_enum:
-        | 'item'
-        | 'folder'
-        | 'tag'
-        | 'pick_list'
-        | 'purchase_order'
-        | 'vendor'
-        | 'address'
-        | 'profile'
-        | 'tenant'
-        | 'alert'
-        | 'notification'
+        | "item"
+        | "folder"
+        | "tag"
+        | "pick_list"
+        | "purchase_order"
+        | "vendor"
+        | "address"
+        | "profile"
+        | "tenant"
+        | "alert"
+        | "notification"
       field_type_enum:
-        | 'text'
-        | 'number'
-        | 'date'
-        | 'datetime'
-        | 'boolean'
-        | 'select'
-        | 'multi_select'
-        | 'url'
-        | 'email'
-        | 'phone'
-        | 'currency'
-        | 'percentage'
-      item_status_enum: 'in_stock' | 'low_stock' | 'out_of_stock'
+        | "text"
+        | "number"
+        | "date"
+        | "datetime"
+        | "boolean"
+        | "select"
+        | "multi_select"
+        | "url"
+        | "email"
+        | "phone"
+        | "currency"
+        | "percentage"
+      item_condition: "good" | "damaged" | "needs_repair" | "lost"
+      item_status_enum: "in_stock" | "low_stock" | "out_of_stock"
+      location_type: "warehouse" | "van" | "store" | "job_site"
+      lot_status: "active" | "expired" | "depleted" | "blocked"
       notification_type_enum:
-        | 'low_stock'
-        | 'out_of_stock'
-        | 'order_update'
-        | 'pick_list_assigned'
-        | 'system'
-        | 'team'
-        | 'alert'
-        | 'welcome'
-        | 'reminder_low_stock'
-        | 'reminder_expiry'
-        | 'reminder_restock'
-      reminder_type_enum: 'low_stock' | 'expiry' | 'restock'
-      reminder_recurrence_enum: 'once' | 'daily' | 'weekly' | 'monthly'
-      reminder_status_enum: 'active' | 'paused' | 'triggered' | 'expired'
-      comparison_operator_enum: 'lte' | 'lt' | 'gt' | 'gte' | 'eq'
-      pick_list_status_enum: 'draft' | 'in_progress' | 'completed' | 'cancelled'
+        | "low_stock"
+        | "out_of_stock"
+        | "order_update"
+        | "pick_list_assigned"
+        | "system"
+        | "team"
+        | "alert"
+        | "welcome"
+        | "reminder_low_stock"
+        | "reminder_expiry"
+        | "reminder_restock"
+      pick_list_item_outcome: "decrement" | "checkout" | "transfer"
+      pick_list_status_enum: "draft" | "in_progress" | "completed" | "cancelled"
       po_status_enum:
-        | 'draft'
-        | 'submitted'
-        | 'confirmed'
-        | 'partial'
-        | 'received'
-        | 'cancelled'
+        | "draft"
+        | "submitted"
+        | "confirmed"
+        | "partial"
+        | "received"
+        | "cancelled"
+      receive_item_condition: "good" | "damaged" | "rejected"
+      receive_status: "draft" | "completed" | "cancelled"
+      reminder_recurrence_enum: "once" | "daily" | "weekly" | "monthly"
+      reminder_status_enum: "active" | "paused" | "triggered" | "expired"
+      reminder_type_enum: "low_stock" | "expiry" | "restock"
+      serial_status:
+        | "available"
+        | "checked_out"
+        | "sold"
+        | "damaged"
+        | "returned"
+      stock_count_item_status: "pending" | "counted" | "verified" | "adjusted"
+      stock_count_scope_type: "full" | "folder" | "custom"
+      stock_count_status:
+        | "draft"
+        | "in_progress"
+        | "review"
+        | "completed"
+        | "cancelled"
       subscription_status_enum:
-        | 'active'
-        | 'trial'
-        | 'past_due'
-        | 'cancelled'
-        | 'suspended'
-      subscription_tier_enum: 'free' | 'starter' | 'professional' | 'enterprise'
-      user_role_enum: 'owner' | 'admin' | 'editor' | 'viewer' | 'member'
+        | "active"
+        | "trial"
+        | "past_due"
+        | "cancelled"
+        | "suspended"
+      subscription_tier_enum: "free" | "starter" | "professional" | "enterprise"
+      transfer_status: "pending" | "in_transit" | "completed" | "cancelled"
+      user_role_enum: "owner" | "admin" | "editor" | "viewer" | "member"
+    }
+    CompositeTypes: {
+      [_ in never]: never
     }
   }
 }
 
-// Helper types
-export type Tables<T extends keyof Database['public']['Tables']> =
-  Database['public']['Tables'][T]['Row']
-export type Insertable<T extends keyof Database['public']['Tables']> =
-  Database['public']['Tables'][T]['Insert']
-export type Updatable<T extends keyof Database['public']['Tables']> =
-  Database['public']['Tables'][T]['Update']
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
 
-// Convenience type aliases
-export type Tenant = Tables<'tenants'>
-export type Profile = Tables<'profiles'>
-export type Folder = Tables<'folders'>
-export type InventoryItem = Tables<'inventory_items'>
-export type ActivityLog = Tables<'activity_logs'>
-export type Tag = Tables<'tags'>
-export type ItemTag = Tables<'item_tags'>
-export type Address = Tables<'addresses'>
-export type Vendor = Tables<'vendors'>
-export type CustomFieldDefinition = Tables<'custom_field_definitions'>
-export type Alert = Tables<'alerts'>
-export type Notification = Tables<'notifications'>
-export type PickList = Tables<'pick_lists'>
-export type PickListItem = Tables<'pick_list_items'>
-export type EntitySequenceCounter = Tables<'entity_sequence_counters'>
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
-// Extended type for Pick List with joined relations
-export type PickListWithRelations = PickList & {
-  assigned_to_profile: { id: string; full_name: string | null } | null
-  created_by_profile: { id: string; full_name: string | null } | null
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
 }
-export type PurchaseOrder = Tables<'purchase_orders'>
-export type PurchaseOrderItem = Tables<'purchase_order_items'>
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] &
+        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
 
-// Extended type for PO list with joined relations
-export type PurchaseOrderWithRelations = PurchaseOrder & {
-  vendors: { id: string; name: string } | null
-  created_by_profile: { id: string; full_name: string | null } | null
-  submitted_by_profile: { id: string; full_name: string | null } | null
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
 }
-export type Checkout = Tables<'checkouts'>
-export type Job = Tables<'jobs'>
-export type Location = Tables<'locations'>
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
 
-// Receives (GRN) types
-export type Receive = Tables<'receives'>
-export type ReceiveItem = Tables<'receive_items'>
-export type ReceiveStatus = 'draft' | 'completed' | 'cancelled'
-export type ReceiveItemCondition = 'good' | 'damaged' | 'rejected'
-
-// Extended type for Receive with joined relations
-export type ReceiveWithRelations = Receive & {
-  purchase_order: {
-    id: string
-    display_id: string | null
-    order_number: string | null
-    status: string | null
-    vendor: { id: string; name: string } | null
-  } | null
-  received_by_profile: { id: string; full_name: string | null } | null
-  created_by_profile: { id: string; full_name: string | null } | null
-  default_location: { id: string; name: string } | null
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
 }
-export type LocationStock = Tables<'location_stock'>
-export type StockTransfer = Tables<'stock_transfers'>
-export type Lot = Tables<'lots'>
-export type ItemReminder = Tables<'item_reminders'>
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
 
-// Enum types
-export type ItemStatus = Database['public']['Enums']['item_status_enum']
-export type UserRole = Database['public']['Enums']['user_role_enum']
-export type SubscriptionTier = Database['public']['Enums']['subscription_tier_enum']
-export type SubscriptionStatus = Database['public']['Enums']['subscription_status_enum']
-export type PickListStatus = Database['public']['Enums']['pick_list_status_enum']
-export type POStatus = Database['public']['Enums']['po_status_enum']
-export type NotificationType = Database['public']['Enums']['notification_type_enum']
-export type ActivityAction = Database['public']['Enums']['activity_action_enum']
-export type EntityType = Database['public']['Enums']['entity_type_enum']
-export type AlertType = Database['public']['Enums']['alert_type_enum']
-export type FieldType = Database['public']['Enums']['field_type_enum']
-export type ReminderType = Database['public']['Enums']['reminder_type_enum']
-export type ReminderRecurrence = Database['public']['Enums']['reminder_recurrence_enum']
-export type ReminderStatus = Database['public']['Enums']['reminder_status_enum']
-export type ComparisonOperator = Database['public']['Enums']['comparison_operator_enum']
-
-// Checkout-related types
-export type CheckoutAssigneeType = 'person' | 'job' | 'location'
-export type CheckoutStatus = 'checked_out' | 'returned' | 'overdue'
-export type ItemCondition = 'good' | 'damaged' | 'needs_repair' | 'lost'
-
-// Extended checkout type with item details (for list views)
-export interface CheckoutWithItem extends Checkout {
-  item_name?: string
-  item_sku?: string
-  item_image?: string
-  checked_out_by_name?: string
-  days_overdue?: number
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
 }
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never
 
-// Location-related types
-export type LocationType = 'warehouse' | 'van' | 'store' | 'job_site'
-export type TransferStatus = 'pending' | 'in_transit' | 'completed' | 'cancelled'
-
-// Extended location type with stats (for list views)
-export interface LocationWithStats extends Location {
-  item_count?: number
-  total_quantity?: number
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
 }
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
 
-// Extended stock transfer type with details (for list views)
-export interface StockTransferWithDetails extends StockTransfer {
-  item_name?: string
-  item_sku?: string
-  item_image?: string
-  from_location_name?: string
-  from_location_type?: LocationType
-  to_location_name?: string
-  to_location_type?: LocationType
-  requested_by_name?: string
-}
+export const Constants = {
+  public: {
+    Enums: {
+      activity_action_enum: [
+        "create",
+        "update",
+        "delete",
+        "restore",
+        "adjust_quantity",
+        "move",
+        "archive",
+        "login",
+        "logout",
+        "export",
+        "import",
+        "bulk_update",
+        "assign",
+        "complete",
+      ],
+      alert_type_enum: [
+        "low_stock",
+        "out_of_stock",
+        "expiring_soon",
+        "reorder_point",
+        "custom",
+      ],
+      checkout_assignee_type: ["person", "job", "location"],
+      checkout_status: ["checked_out", "returned", "overdue"],
+      comparison_operator_enum: ["lte", "lt", "gt", "gte", "eq"],
+      entity_type_enum: [
+        "item",
+        "folder",
+        "tag",
+        "pick_list",
+        "purchase_order",
+        "vendor",
+        "address",
+        "profile",
+        "tenant",
+        "alert",
+        "notification",
+      ],
+      field_type_enum: [
+        "text",
+        "number",
+        "date",
+        "datetime",
+        "boolean",
+        "select",
+        "multi_select",
+        "url",
+        "email",
+        "phone",
+        "currency",
+        "percentage",
+      ],
+      item_condition: ["good", "damaged", "needs_repair", "lost"],
+      item_status_enum: ["in_stock", "low_stock", "out_of_stock"],
+      location_type: ["warehouse", "van", "store", "job_site"],
+      lot_status: ["active", "expired", "depleted", "blocked"],
+      notification_type_enum: [
+        "low_stock",
+        "out_of_stock",
+        "order_update",
+        "pick_list_assigned",
+        "system",
+        "team",
+        "alert",
+        "welcome",
+        "reminder_low_stock",
+        "reminder_expiry",
+        "reminder_restock",
+      ],
+      pick_list_item_outcome: ["decrement", "checkout", "transfer"],
+      pick_list_status_enum: ["draft", "in_progress", "completed", "cancelled"],
+      po_status_enum: [
+        "draft",
+        "submitted",
+        "confirmed",
+        "partial",
+        "received",
+        "cancelled",
+      ],
+      receive_item_condition: ["good", "damaged", "rejected"],
+      receive_status: ["draft", "completed", "cancelled"],
+      reminder_recurrence_enum: ["once", "daily", "weekly", "monthly"],
+      reminder_status_enum: ["active", "paused", "triggered", "expired"],
+      reminder_type_enum: ["low_stock", "expiry", "restock"],
+      serial_status: [
+        "available",
+        "checked_out",
+        "sold",
+        "damaged",
+        "returned",
+      ],
+      stock_count_item_status: ["pending", "counted", "verified", "adjusted"],
+      stock_count_scope_type: ["full", "folder", "custom"],
+      stock_count_status: [
+        "draft",
+        "in_progress",
+        "review",
+        "completed",
+        "cancelled",
+      ],
+      subscription_status_enum: [
+        "active",
+        "trial",
+        "past_due",
+        "cancelled",
+        "suspended",
+      ],
+      subscription_tier_enum: ["free", "starter", "professional", "enterprise"],
+      transfer_status: ["pending", "in_transit", "completed", "cancelled"],
+      user_role_enum: ["owner", "admin", "editor", "viewer", "member"],
+    },
+  },
+} as const
 
-// AI Transfer Suggestion type
-export interface TransferSuggestion {
-  item_id: string
-  item_name: string
-  item_sku?: string
-  item_image?: string
-  to_location_id: string
-  to_location_name: string
-  to_location_type: LocationType
-  current_qty: number
-  min_quantity: number
-  from_location_id: string
-  from_location_name: string
-  from_location_type: LocationType
-  available_qty: number
-  suggested_qty: number
-  reason: string
-}
-
-// Location inventory item type
-export interface LocationInventoryItem {
-  item_id: string
-  item_name: string
-  sku?: string
-  quantity: number
-  min_quantity: number
-  item_image?: string
-  location_status: 'in_stock' | 'low_stock' | 'out_of_stock'
-}
-
-// Item location distribution type
-export interface ItemLocationDistribution {
-  location_id: string
-  location_name: string
-  location_type: LocationType
-  quantity: number
-  min_quantity: number
-  status: 'in_stock' | 'low_stock' | 'out_of_stock'
-}
-
-// Lot-related types
-export type LotStatus = 'active' | 'expired' | 'depleted' | 'blocked'
-export type ItemTrackingMode = 'none' | 'serialized' | 'lot_expiry'
-export type ExpiryUrgency = 'expired' | 'critical' | 'warning' | 'upcoming' | 'ok' | 'no_expiry'
-
-// Extended lot type with computed fields
-export interface LotWithDetails extends Lot {
-  location_name?: string
-  days_until_expiry?: number | null
-  expiry_status?: ExpiryUrgency
-  item_name?: string
-  item_sku?: string
-  item_image?: string
-}
-
-// Expiring lots summary for dashboard
-export interface ExpiringLotsSummary {
-  expired_count: number
-  expiring_7_days: number
-  expiring_30_days: number
-  total_value_at_risk: number
-}
-
-// FEFO picking suggestion
-export interface FEFOSuggestion {
-  lot_id: string
-  lot_number: string | null
-  batch_code: string | null
-  expiry_date: string | null
-  available_quantity: number
-  location_id: string | null
-  location_name: string | null
-  pick_quantity: number
-}
-
-// Shipping dimensions type
-export interface ShippingDimensions {
-  weight: number | null
-  weight_unit: string
-  length: number | null
-  width: number | null
-  height: number | null
-  dimension_unit: string
-}
-
-// Reminder-related types
-export interface ItemReminderWithDetails extends ItemReminder {
-  created_by_name?: string
-  trigger_description?: string
-  // Fields for folder reminders displayed on item pages
-  source_type?: 'item' | 'folder'
-  folder_id?: string | null
-  folder_name?: string | null
-}
-
-// Reminder form input type
-export interface CreateReminderInput {
-  itemId: string
-  reminderType: ReminderType
-  title?: string
-  message?: string
-  threshold?: number
-  comparisonOperator?: ComparisonOperator
-  daysBeforeExpiry?: number
-  scheduledAt?: string
-  recurrence?: ReminderRecurrence
-  recurrenceEndDate?: string
-  notifyInApp?: boolean
-  notifyEmail?: boolean
-  notifyUserIds?: string[]
-}
