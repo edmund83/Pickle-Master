@@ -33,10 +33,10 @@ const navigation = [
   { name: 'Reports', href: '/reports', icon: FileText },
 ]
 
-const workflowSubmenuItems: SubmenuItem[] = [
-  { name: 'Inbound', href: '/workflows/inbound', icon: PackageOpen },
-  { name: 'Fulfillment', href: '/workflows/fulfillment', icon: ClipboardList },
-  { name: 'Inventory Ops', href: '/workflows/inventory-operations', icon: ArrowRightLeft },
+const taskSubmenuItems: SubmenuItem[] = [
+  { name: 'Receiving', href: '/tasks/inbound', icon: PackageOpen },
+  { name: 'Orders Out', href: '/tasks/fulfillment', icon: ClipboardList },
+  { name: 'Adjustments', href: '/tasks/inventory-operations', icon: ArrowRightLeft },
 ]
 
 const bottomNavigation = [
@@ -116,13 +116,13 @@ export function PrimarySidebar({ isExpanded = false, onToggle }: PrimarySidebarP
           )
         })}
 
-        {/* Workflows with submenu */}
+        {/* Tasks with submenu */}
         <NavSubmenu
           icon={ClipboardList}
-          label="Workflows"
-          items={workflowSubmenuItems}
+          label="Tasks"
+          items={taskSubmenuItems}
           sidebarExpanded={isExpanded}
-          storageKey="workflows-submenu-expanded"
+          storageKey="tasks-submenu-expanded"
         />
 
         {/* Reports */}

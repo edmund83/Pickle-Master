@@ -13,19 +13,19 @@ interface ShortcutItem {
 const shortcuts: ShortcutItem[] = [
   {
     name: 'RECEIVE NEW',
-    href: '/workflows/receives',
+    href: '/tasks/receives',
     icon: Package,
     color: 'primary',
   },
   {
     name: 'MOVE ITEMS',
-    href: '/workflows/moves',
+    href: '/tasks/moves',
     icon: Shuffle,
     color: 'secondary',
   },
   {
     name: 'CHECK OUT',
-    href: '/workflows/checkouts',
+    href: '/tasks/checkouts',
     icon: LogOut,
     color: 'tertiary',
   },

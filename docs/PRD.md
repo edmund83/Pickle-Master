@@ -627,8 +627,93 @@ Connect-once integration for inventory value, COGS, and product sync.
 | **Basic Reporting** | Stock value, aging, usage reports with export | 58% |
 | **Role-Based Permissions** | Admin, Editor, Viewer roles | 55% |
 | **Multi-Location Support** | Separate warehouses, vans, job sites | 52% |
-| **Purchase Orders** | Auto-generate PO from low-stock items | 48% |
+| **Purchase Orders & Receiving** | Full PO lifecycle with formal goods receiving | 48% |
 | **Historical Snapshots** | Month-end inventory value for accounting | 40% |
+
+---
+
+### Purchase Order & Receiving Workflow
+
+**Status:** Implemented (beyond original P2 scope)
+
+This workflow covers the complete purchase order lifecycle from creation to goods receipt.
+
+#### Purchase Orders (PO)
+
+Create and manage purchase orders for restocking inventory from vendors.
+
+**Features:**
+- Create PO with vendor, expected delivery date, and line items
+- Display ID format: `PO-{ORG_CODE}-{SEQUENCE}` (e.g., PO-ACM01-00001)
+- Status workflow: `draft` → `submitted` → `confirmed` → `partial` → `received` / `cancelled`
+- Ship-to and bill-to address management
+- Submission and approval tracking (who submitted/approved, when)
+- Line items with part numbers, quantities, and unit prices
+- Automatic order total calculation (subtotal, tax, shipping)
+
+**PO Status Definitions:**
+| Status | Description |
+|--------|-------------|
+| `draft` | PO is being created, can be edited freely |
+| `submitted` | PO sent to vendor, awaiting confirmation |
+| `confirmed` | Vendor confirmed the order |
+| `partial` | Some items received, awaiting remaining |
+| `received` | All items fully received |
+| `cancelled` | PO was cancelled |
+
+#### Goods Receiving (GRN)
+
+Formal receiving documents for tracking incoming shipments against purchase orders.
+
+**Features:**
+- Multiple receives per PO (supports partial shipments)
+- Display ID format: `RCV-{ORG_CODE}-{SEQUENCE}` (e.g., RCV-ACM01-00001)
+- Status workflow: `draft` → `completed` / `cancelled`
+- Delivery reference tracking (delivery note #, carrier, tracking number)
+- Lot/batch tracking during receive (lot number, batch code, expiry date)
+- Location assignment for received items
+- Item condition tracking (good, damaged, rejected)
+
+**Receive Status Definitions:**
+| Status | Description |
+|--------|-------------|
+| `draft` | Receive being recorded, items can be added/edited |
+| `completed` | Receive finalized, inventory updated |
+| `cancelled` | Receive was cancelled before completion |
+
+#### PO → Receive Relationship
+
+```
+purchase_orders (1) ───────> (*) receives
+       │                           │
+       ▼                           ▼
+purchase_order_items (1) ──> (*) receive_items
+       │                           │
+       ▼                           ▼
+inventory_items               lots (created on receive)
+                                   │
+                                   ▼
+                              location_stock (updated)
+```
+
+**On Receive Completion:**
+1. Updates `purchase_order_items.received_quantity` for each received item
+2. Creates `lots` records if lot tracking info provided (for lot-tracked items)
+3. Updates `location_stock` with received quantities at specified locations
+4. Updates `inventory_items.quantity` (direct or via lot trigger)
+5. Transitions PO status: `partial` if items remain, `received` if all complete
+
+#### User Workflow
+
+1. **Create PO**: Select vendor → add items from inventory → set quantities and prices → submit
+2. **Vendor Confirms**: Update PO status to confirmed
+3. **Receive Shipment**: From PO detail → click "Create Receive" → record quantities received
+4. **Assign Locations**: Optionally specify which location each item goes to
+5. **Track Lots**: Optionally enter lot numbers, batch codes, expiry dates
+6. **Complete Receive**: Finalize to update inventory counts
+7. **Repeat**: Create additional receives for partial shipments until PO is fully received
+
+---
 
 ### P3 - Low Priority (Future Roadmap)
 

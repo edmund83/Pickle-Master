@@ -61,6 +61,14 @@ Do not introduce other frameworks/platforms (e.g., Firebase, Prisma, tRPC, Chakr
 - UI: mobile-first, accessible (labels, focus states, keyboard support), and built with Tailwind utilities (no custom CSS unless unavoidable).
 - Data: enforce security with Supabase RLS; never put service-role keys in client code; keep secrets in env vars (use `.env.example` as the reference).
 
+## UI consistency rules (mandatory)
+
+- Build all common controls and surfaces from `components/ui/*` (Button, Input, Card, DropdownMenu, etc.). Do not hand-roll styling in page components.
+- When a new variant or primitive is needed, add it to `components/ui/` (or extend an existing component) and reuse everywhere.
+- Use theme tokens and semantic colors (`pickle-*`, `neutral-*`, `red-*`) from `app/globals.css`/`tailwind.config.ts`. Avoid raw hex values in class names; only use inline styles for dynamic, user-provided colors.
+- Keep sizes and spacing aligned with existing primitives (Input `h-10`, Button size variants, Card padding). Stick to the established radii (`rounded-lg` for controls, `rounded-2xl` for cards) and `shadow-sm` for surfaces.
+- Compose class names with `cn` from `lib/utils` and avoid duplicating long class strings across files.
+
 ## Supabase usage
 
 - Use `@supabase/ssr` for server/route-handler auth flows where applicable.

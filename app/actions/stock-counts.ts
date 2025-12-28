@@ -139,7 +139,7 @@ export async function createStockCount(input: {
     return { success: false, error: error.message }
   }
 
-  revalidatePath('/workflows/stock-count')
+  revalidatePath('/tasks/stock-count')
   return data as { success: boolean; id?: string; display_id?: string; error?: string }
 }
 
@@ -156,8 +156,8 @@ export async function startStockCount(id: string): Promise<{ success: boolean; e
     return { success: false, error: error.message }
   }
 
-  revalidatePath(`/workflows/stock-count/${id}`)
-  revalidatePath('/workflows/stock-count')
+  revalidatePath(`/tasks/stock-count/${id}`)
+  revalidatePath('/tasks/stock-count')
   return data as { success: boolean; error?: string }
 }
 
@@ -180,7 +180,7 @@ export async function recordCount(
     return { success: false, error: error.message }
   }
 
-  revalidatePath('/workflows/stock-count')
+  revalidatePath('/tasks/stock-count')
   return data as { success: boolean; error?: string }
 }
 
@@ -197,8 +197,8 @@ export async function submitForReview(id: string): Promise<{ success: boolean; e
     return { success: false, error: error.message }
   }
 
-  revalidatePath(`/workflows/stock-count/${id}`)
-  revalidatePath('/workflows/stock-count')
+  revalidatePath(`/tasks/stock-count/${id}`)
+  revalidatePath('/tasks/stock-count')
   return data as { success: boolean; error?: string }
 }
 
@@ -219,8 +219,8 @@ export async function completeStockCount(
     return { success: false, error: error.message }
   }
 
-  revalidatePath(`/workflows/stock-count/${id}`)
-  revalidatePath('/workflows/stock-count')
+  revalidatePath(`/tasks/stock-count/${id}`)
+  revalidatePath('/tasks/stock-count')
   revalidatePath('/inventory')
   return data as { success: boolean; adjustments_applied?: boolean; adjusted_count?: number; error?: string }
 }
@@ -238,7 +238,7 @@ export async function cancelStockCount(id: string): Promise<{ success: boolean; 
     return { success: false, error: error.message }
   }
 
-  revalidatePath(`/workflows/stock-count/${id}`)
-  revalidatePath('/workflows/stock-count')
+  revalidatePath(`/tasks/stock-count/${id}`)
+  revalidatePath('/tasks/stock-count')
   return data as { success: boolean; error?: string }
 }

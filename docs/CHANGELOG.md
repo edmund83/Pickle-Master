@@ -69,6 +69,67 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
   - `deletePurchaseOrder()` (draft only)
   - `searchInventoryItemsForPO()` - Now supports `lowStockOnly` filter
 
+#### Goods Receiving (GRN) Workflow (Migration: `00045_receives.sql`)
+- **Formal Receive Documents** - Multiple receives per PO (supports partial shipments)
+  - Display ID format: `RCV-{ORG_CODE}-{SEQUENCE}` (e.g., RCV-ACM01-00001)
+  - Status workflow: draft → completed / cancelled
+- **Receives List Page** (`/workflows/receives`) with:
+  - Tabbed interface: "Receives" list + "Pending POs" list
+  - Quick "Receive" button to create new receive from pending PO
+  - Status badges and date display
+- **Receive Detail Page** (`/workflows/receives/[id]`) with:
+  - Header info: received date, delivery note #, carrier, tracking number
+  - Default location selector for all items
+  - Items table with:
+    - Quantity received (editable in draft)
+    - Lot/batch tracking (lot number, batch code, expiry date)
+    - Per-item location override
+    - Item condition (good, damaged, rejected)
+  - Complete/Cancel actions
+- **Integration with PO**:
+  - "Receive Items" button on PO detail page creates new receive
+  - Auto-updates PO item received quantities on completion
+  - Auto-transitions PO status (partial → received when complete)
+- **Lot Tracking Integration**:
+  - Creates lot records during receive for lot-tracked items
+  - Captures lot number, batch code, expiry date, manufactured date
+- **Location Stock Integration**:
+  - Upserts location_stock with received quantities
+  - Supports per-item location assignment
+- **Server Actions**:
+  - `createReceive()`, `getReceive()`, `getReceives()`, `getPOReceives()`
+  - `addReceiveItem()`, `updateReceiveItem()`, `removeReceiveItem()`
+  - `completeReceive()`, `cancelReceive()`, `updateReceive()`
+  - `getLocations()`, `getPendingPurchaseOrders()`
+- **RPC Functions**:
+  - `create_receive()` - Atomic creation with display_id generation
+  - `create_receive_with_items()` - Creates receive and pre-populates all PO items with remaining quantities
+  - `add_receive_item()`, `update_receive_item()`, `remove_receive_item()`
+  - `complete_receive()` - Updates inventory, creates lots, updates PO status
+  - `cancel_receive()`, `get_po_receives()`, `get_receive_with_items()`
+- **Pre-populated Receive Items**: When creating a receive from a PO, all PO items are automatically added to the receive document with their remaining quantities (ordered - already received). Users can then review and adjust quantities, add lot/batch info before completing.
+
+#### Serial Number Entry for Serialized Items (Migration: `00047_receive_item_serials.sql`)
+- **Serial Number Tracking** - For items with `tracking_mode = 'serial'`:
+  - **Scan-focused entry modal** with auto-focus input for barcode scanner workflows
+  - **Progress indicator** showing "X of Y serials entered" with visual progress bar
+  - **Duplicate detection** - Immediate warning if serial already in list
+  - **Bulk entry mode** - Paste multiple serials (newline/comma separated)
+  - **Remove serials** - Trash icon to remove mistaken entries
+  - **Additional options** - Location, condition, expiry date apply to all serials
+- **Database Schema**:
+  - `receive_item_serials` table linking serial numbers to receive items
+  - Unique constraint per receive item to prevent duplicate serials
+  - RLS policies for tenant isolation
+- **Server Actions**:
+  - `addReceiveItemSerial()` - Add single serial with duplicate check
+  - `removeReceiveItemSerial()` - Remove a serial number
+  - `bulkAddReceiveItemSerials()` - Parse and add multiple serials
+  - `getReceiveItemSerials()` - Fetch serials for a receive item
+- **UI Indicators**:
+  - Purple barcode icon with serial count in items table for serialized items
+  - Auto-detects `tracking_mode` to show appropriate modal (lot/batch vs serial)
+
 #### Purchase Orders Schema Enhancements (Migration: `00033_purchase_order_enhancements.sql`)
 - **Ship To address fields**: `ship_to_name`, `ship_to_address1`, `ship_to_address2`, `ship_to_city`, `ship_to_state`, `ship_to_postal_code`, `ship_to_country`
 - **Bill To address fields**: `bill_to_name`, `bill_to_address1`, `bill_to_address2`, `bill_to_city`, `bill_to_state`, `bill_to_postal_code`, `bill_to_country`

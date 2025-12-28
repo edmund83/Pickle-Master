@@ -360,7 +360,7 @@ export function PickListDetailClient({ data, teamMembers }: PickListDetailClient
     try {
       const result = await cancelPickList(pickList.id)
       if (result.success) {
-        router.push('/workflows/pick-lists')
+        router.push('/tasks/pick-lists')
       }
     } catch (err) {
       console.error('Cancel pick list error:', err)
@@ -376,7 +376,7 @@ export function PickListDetailClient({ data, teamMembers }: PickListDetailClient
     try {
       const result = await deletePickList(pickList.id)
       if (result.success) {
-        router.push('/workflows/pick-lists')
+        router.push('/tasks/pick-lists')
       }
     } catch (err) {
       console.error('Delete pick list error:', err)
@@ -393,7 +393,7 @@ export function PickListDetailClient({ data, teamMembers }: PickListDetailClient
         <div className="border-b border-neutral-200 bg-white px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link href="/workflows/pick-lists" className="text-sm text-neutral-500 hover:text-neutral-700">
+              <Link href="/tasks/pick-lists" className="text-sm text-neutral-500 hover:text-neutral-700">
                 Pick Lists
               </Link>
               <span className="text-neutral-300">/</span>
@@ -853,7 +853,7 @@ export function PickListDetailClient({ data, teamMembers }: PickListDetailClient
       {/* Header */}
       <div className="flex items-center justify-between border-b border-neutral-200 bg-white px-6 py-4">
         <div className="flex items-center gap-4">
-          <Link href="/workflows/pick-lists">
+          <Link href="/tasks/pick-lists">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back

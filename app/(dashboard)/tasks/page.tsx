@@ -4,39 +4,39 @@ import { ClipboardList, PackageOpen, ArrowRightLeft } from 'lucide-react'
 
 const categories = [
   {
-    href: '/workflows/inbound',
+    href: '/tasks/inbound',
     title: 'Inbound',
     description: 'Purchase orders and receiving stock from suppliers',
     icon: PackageOpen,
     color: 'text-green-500',
     bgColor: 'bg-green-50',
-    workflows: ['Purchase Orders', 'Receives'],
+    tasks: ['Purchase Orders', 'Receives'],
   },
   {
-    href: '/workflows/fulfillment',
+    href: '/tasks/fulfillment',
     title: 'Fulfillment',
     description: 'Pick lists for order processing and shipping',
     icon: ClipboardList,
     color: 'text-blue-500',
     bgColor: 'bg-blue-50',
-    workflows: ['Pick Lists'],
+    tasks: ['Pick Lists'],
   },
   {
-    href: '/workflows/inventory-operations',
+    href: '/tasks/inventory-operations',
     title: 'Inventory Operations',
     description: 'Asset tracking, transfers, moves, and stock counts',
     icon: ArrowRightLeft,
     color: 'text-purple-500',
     bgColor: 'bg-purple-50',
-    workflows: ['Check-In/Out', 'Transfers', 'Moves', 'Stock Count'],
+    tasks: ['Check-In/Out', 'Transfers', 'Moves', 'Stock Count'],
   },
 ]
 
-export default function WorkflowsPage() {
+export default function TasksPage() {
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="border-b border-neutral-200 bg-white px-6 py-4">
-        <h1 className="text-xl font-semibold text-neutral-900">Workflows</h1>
+        <h1 className="text-xl font-semibold text-neutral-900">Tasks</h1>
         <p className="text-neutral-500">Manage inventory operations</p>
       </div>
 
@@ -58,12 +58,12 @@ export default function WorkflowsPage() {
                   </CardHeader>
                   <CardContent className="pt-0">
                     <div className="flex flex-wrap gap-1.5">
-                      {category.workflows.map((workflow) => (
+                      {category.tasks.map((task) => (
                         <span
-                          key={workflow}
+                          key={task}
                           className="inline-flex items-center rounded-full bg-neutral-100 px-2.5 py-0.5 text-xs font-medium text-neutral-600"
                         >
-                          {workflow}
+                          {task}
                         </span>
                       ))}
                     </div>

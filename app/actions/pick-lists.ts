@@ -74,7 +74,7 @@ export async function createPickList(input: CreatePickListInput): Promise<PickLi
         return { success: false, error: data.error || 'Failed to create pick list' }
     }
 
-    revalidatePath('/workflows/pick-lists')
+    revalidatePath('/tasks/pick-lists')
     return { success: true, pick_list_id: data?.pick_list_id, display_id: data?.display_id }
 }
 
@@ -113,7 +113,7 @@ export async function createDraftPickList(): Promise<PickListResult> {
         return { success: false, error: data.error || 'Failed to create pick list' }
     }
 
-    revalidatePath('/workflows/pick-lists')
+    revalidatePath('/tasks/pick-lists')
     return { success: true, pick_list_id: data?.pick_list_id, display_id: data?.display_id }
 }
 
@@ -144,8 +144,8 @@ export async function updatePickList(
         return { success: false, error: error.message }
     }
 
-    revalidatePath('/workflows/pick-lists')
-    revalidatePath(`/workflows/pick-lists/${pickListId}`)
+    revalidatePath('/tasks/pick-lists')
+    revalidatePath(`/tasks/pick-lists/${pickListId}`)
     return { success: true }
 }
 
@@ -166,7 +166,7 @@ export async function deletePickList(pickListId: string): Promise<PickListResult
         return { success: false, error: error.message }
     }
 
-    revalidatePath('/workflows/pick-lists')
+    revalidatePath('/tasks/pick-lists')
     return { success: true }
 }
 
@@ -194,7 +194,7 @@ export async function addPickListItem(
         return { success: false, error: error.message }
     }
 
-    revalidatePath(`/workflows/pick-lists/${pickListId}`)
+    revalidatePath(`/tasks/pick-lists/${pickListId}`)
     return { success: true }
 }
 
@@ -224,7 +224,7 @@ export async function removePickListItem(pickListItemId: string): Promise<PickLi
     }
 
     if (item?.pick_list_id) {
-        revalidatePath(`/workflows/pick-lists/${item.pick_list_id}`)
+        revalidatePath(`/tasks/pick-lists/${item.pick_list_id}`)
     }
     return { success: true }
 }
@@ -258,7 +258,7 @@ export async function updatePickListItem(
     }
 
     if (item?.pick_list_id) {
-        revalidatePath(`/workflows/pick-lists/${item.pick_list_id}`)
+        revalidatePath(`/tasks/pick-lists/${item.pick_list_id}`)
     }
     return { success: true }
 }
@@ -287,7 +287,7 @@ export async function pickItem(
         return { success: false, error: data.error || 'Failed to pick item' }
     }
 
-    revalidatePath('/workflows/pick-lists')
+    revalidatePath('/tasks/pick-lists')
     return { success: true }
 }
 
@@ -311,8 +311,8 @@ export async function completePickList(pickListId: string): Promise<PickListResu
         return { success: false, error: data.error || 'Failed to complete pick list' }
     }
 
-    revalidatePath('/workflows/pick-lists')
-    revalidatePath(`/workflows/pick-lists/${pickListId}`)
+    revalidatePath('/tasks/pick-lists')
+    revalidatePath(`/tasks/pick-lists/${pickListId}`)
     return { success: true }
 }
 
@@ -333,8 +333,8 @@ export async function startPickList(pickListId: string): Promise<PickListResult>
         return { success: false, error: error.message }
     }
 
-    revalidatePath('/workflows/pick-lists')
-    revalidatePath(`/workflows/pick-lists/${pickListId}`)
+    revalidatePath('/tasks/pick-lists')
+    revalidatePath(`/tasks/pick-lists/${pickListId}`)
     return { success: true }
 }
 
@@ -355,8 +355,8 @@ export async function cancelPickList(pickListId: string): Promise<PickListResult
         return { success: false, error: error.message }
     }
 
-    revalidatePath('/workflows/pick-lists')
-    revalidatePath(`/workflows/pick-lists/${pickListId}`)
+    revalidatePath('/tasks/pick-lists')
+    revalidatePath(`/tasks/pick-lists/${pickListId}`)
     return { success: true }
 }
 

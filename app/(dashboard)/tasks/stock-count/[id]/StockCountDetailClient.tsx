@@ -175,7 +175,7 @@ export function StockCountDetailClient({ data, teamMembers, folders }: StockCoun
     try {
       const result = await cancelStockCount(stockCount.id)
       if (result.success) {
-        router.push('/workflows/stock-count')
+        router.push('/tasks/stock-count')
       } else {
         console.error('Failed to cancel stock count:', result.error)
       }
@@ -231,7 +231,7 @@ export function StockCountDetailClient({ data, teamMembers, folders }: StockCoun
       <div className="border-b border-neutral-200 bg-white px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/workflows/stock-count">
+            <Link href="/tasks/stock-count">
               <Button variant="ghost" size="sm">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back

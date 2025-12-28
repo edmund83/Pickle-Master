@@ -1316,6 +1316,115 @@ export type Database = {
           updated_at?: string | null
         }
       }
+      receives: {
+        Row: {
+          id: string
+          tenant_id: string
+          display_id: string | null
+          purchase_order_id: string
+          received_date: string
+          received_by: string | null
+          status: 'draft' | 'completed' | 'cancelled'
+          delivery_note_number: string | null
+          carrier: string | null
+          tracking_number: string | null
+          default_location_id: string | null
+          notes: string | null
+          completed_at: string | null
+          cancelled_at: string | null
+          created_by: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          display_id?: string | null
+          purchase_order_id: string
+          received_date?: string
+          received_by?: string | null
+          status?: 'draft' | 'completed' | 'cancelled'
+          delivery_note_number?: string | null
+          carrier?: string | null
+          tracking_number?: string | null
+          default_location_id?: string | null
+          notes?: string | null
+          completed_at?: string | null
+          cancelled_at?: string | null
+          created_by?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          display_id?: string | null
+          purchase_order_id?: string
+          received_date?: string
+          received_by?: string | null
+          status?: 'draft' | 'completed' | 'cancelled'
+          delivery_note_number?: string | null
+          carrier?: string | null
+          tracking_number?: string | null
+          default_location_id?: string | null
+          notes?: string | null
+          completed_at?: string | null
+          cancelled_at?: string | null
+          created_by?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+      }
+      receive_items: {
+        Row: {
+          id: string
+          receive_id: string
+          purchase_order_item_id: string
+          item_id: string | null
+          quantity_received: number
+          lot_number: string | null
+          batch_code: string | null
+          expiry_date: string | null
+          manufactured_date: string | null
+          location_id: string | null
+          condition: 'good' | 'damaged' | 'rejected'
+          notes: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          receive_id: string
+          purchase_order_item_id: string
+          item_id?: string | null
+          quantity_received: number
+          lot_number?: string | null
+          batch_code?: string | null
+          expiry_date?: string | null
+          manufactured_date?: string | null
+          location_id?: string | null
+          condition?: 'good' | 'damaged' | 'rejected'
+          notes?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          receive_id?: string
+          purchase_order_item_id?: string
+          item_id?: string | null
+          quantity_received?: number
+          lot_number?: string | null
+          batch_code?: string | null
+          expiry_date?: string | null
+          manufactured_date?: string | null
+          location_id?: string | null
+          condition?: 'good' | 'damaged' | 'rejected'
+          notes?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+      }
     }
     Views: {
       all_activity_logs: {
@@ -1771,6 +1880,26 @@ export type PurchaseOrderWithRelations = PurchaseOrder & {
 export type Checkout = Tables<'checkouts'>
 export type Job = Tables<'jobs'>
 export type Location = Tables<'locations'>
+
+// Receives (GRN) types
+export type Receive = Tables<'receives'>
+export type ReceiveItem = Tables<'receive_items'>
+export type ReceiveStatus = 'draft' | 'completed' | 'cancelled'
+export type ReceiveItemCondition = 'good' | 'damaged' | 'rejected'
+
+// Extended type for Receive with joined relations
+export type ReceiveWithRelations = Receive & {
+  purchase_order: {
+    id: string
+    display_id: string | null
+    order_number: string | null
+    status: string | null
+    vendor: { id: string; name: string } | null
+  } | null
+  received_by_profile: { id: string; full_name: string | null } | null
+  created_by_profile: { id: string; full_name: string | null } | null
+  default_location: { id: string; name: string } | null
+}
 export type LocationStock = Tables<'location_stock'>
 export type StockTransfer = Tables<'stock_transfers'>
 export type Lot = Tables<'lots'>
