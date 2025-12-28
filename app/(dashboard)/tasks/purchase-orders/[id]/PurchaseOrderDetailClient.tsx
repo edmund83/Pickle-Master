@@ -42,6 +42,7 @@ import {
   updatePurchaseOrderItem,
   searchInventoryItemsForPO
 } from '@/app/actions/purchase-orders'
+import { createReceive } from '@/app/actions/receives'
 import type { PurchaseOrderWithDetails, TeamMember, Vendor } from './page'
 import { BarcodeScanner } from '@/components/scanner/BarcodeScanner'
 import type { ScanResult } from '@/lib/scanner/useBarcodeScanner'
@@ -360,7 +361,7 @@ export function PurchaseOrderDetailClient({
     const result = await deletePurchaseOrder(purchaseOrder.id)
 
     if (result.success) {
-      router.push('/workflows/purchase-orders')
+      router.push('/tasks/purchase-orders')
     } else {
       setError(result.error || 'Failed to delete purchase order')
       setActionLoading(null)
@@ -372,6 +373,20 @@ export function PurchaseOrderDetailClient({
     await handleStatusChange('cancelled')
   }
 
+  async function handleCreateReceive() {
+    setActionLoading('create-receive')
+    setError(null)
+
+    const result = await createReceive({ purchase_order_id: purchaseOrder.id })
+
+    if (result.success && result.receive_id) {
+      router.push(`/tasks/receives/${result.receive_id}`)
+    } else {
+      setError(result.error || 'Failed to create receive')
+      setActionLoading(null)
+    }
+  }
+
   // Draft Mode UI - Single column form layout matching Pick List
   if (isDraft) {
     return (
@@ -380,7 +395,7 @@ export function PurchaseOrderDetailClient({
         <div className="border-b border-neutral-200 bg-white px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link href="/workflows/purchase-orders" className="text-sm text-neutral-500 hover:text-neutral-700">
+              <Link href="/tasks/purchase-orders" className="text-sm text-neutral-500 hover:text-neutral-700">
                 Purchase Orders
               </Link>
               <span className="text-neutral-300">/</span>
@@ -1050,7 +1065,7 @@ export function PurchaseOrderDetailClient({
       <div className="border-b border-neutral-200 bg-white px-6 py-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Link href="/workflows/purchase-orders">
+            <Link href="/tasks/purchase-orders">
               <Button variant="ghost" size="sm">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back
@@ -1099,12 +1114,17 @@ export function PurchaseOrderDetailClient({
             )}
 
             {canReceive && (
-              <Link href="/workflows/receives">
-                <Button>
+              <Button
+                onClick={handleCreateReceive}
+                disabled={actionLoading !== null}
+              >
+                {actionLoading === 'create-receive' ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
                   <Package className="mr-2 h-4 w-4" />
-                  Receive Items
-                </Button>
-              </Link>
+                )}
+                Receive Items
+              </Button>
             )}
 
             {status === 'cancelled' && (

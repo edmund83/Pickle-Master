@@ -121,7 +121,7 @@ export function StockCountClient({ stockCounts }: StockCountClientProps) {
     try {
       const result = await createStockCount({})
       if (result.success && result.id) {
-        router.push(`/workflows/stock-count/${result.id}`)
+        router.push(`/tasks/stock-count/${result.id}`)
       } else {
         console.error('Failed to create stock count:', result.error)
         setIsCreating(false)
@@ -133,7 +133,7 @@ export function StockCountClient({ stockCounts }: StockCountClientProps) {
   }
 
   function handleRowClick(stockCountId: string) {
-    router.push(`/workflows/stock-count/${stockCountId}`)
+    router.push(`/tasks/stock-count/${stockCountId}`)
   }
 
   function getProgressDisplay(counted: number, total: number) {
@@ -147,7 +147,7 @@ export function StockCountClient({ stockCounts }: StockCountClientProps) {
       <div className="flex-1 overflow-y-auto">
         <div className="flex items-center justify-between border-b border-neutral-200 bg-white px-6 py-4">
           <div className="flex items-center gap-4">
-            <Link href="/workflows/inventory-operations">
+            <Link href="/tasks/inventory-operations">
               <Button variant="ghost" size="sm">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back

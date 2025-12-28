@@ -126,7 +126,7 @@ export function PickListsClient({ pickLists }: PickListsClientProps) {
     try {
       const result = await createDraftPickList()
       if (result.success && result.pick_list_id) {
-        router.push(`/workflows/pick-lists/${result.pick_list_id}`)
+        router.push(`/tasks/pick-lists/${result.pick_list_id}`)
       } else {
         console.error('Failed to create draft pick list:', result.error)
         setIsCreating(false)
@@ -138,7 +138,7 @@ export function PickListsClient({ pickLists }: PickListsClientProps) {
   }
 
   function handleRowClick(pickListId: string) {
-    router.push(`/workflows/pick-lists/${pickListId}`)
+    router.push(`/tasks/pick-lists/${pickListId}`)
   }
 
   return (
@@ -146,7 +146,7 @@ export function PickListsClient({ pickLists }: PickListsClientProps) {
       <div className="flex-1 overflow-y-auto">
         <div className="flex items-center justify-between border-b border-neutral-200 bg-white px-6 py-4">
           <div className="flex items-center gap-4">
-            <Link href="/workflows/fulfillment">
+            <Link href="/tasks/fulfillment">
               <Button variant="ghost" size="sm">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back

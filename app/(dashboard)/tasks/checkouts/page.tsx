@@ -99,7 +99,7 @@ export default async function CheckoutsPage() {
       {/* Header */}
       <div className="flex items-center justify-between border-b border-neutral-200 bg-white px-6 py-4">
         <div className="flex items-center gap-4">
-          <Link href="/workflows/inventory-operations">
+          <Link href="/tasks/inventory-operations">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back
@@ -113,38 +113,38 @@ export default async function CheckoutsPage() {
       </div>
 
       <div className="p-6">
-        {/* Stats Summary */}
+        {/* Stats Summary - Matching dashboard card style */}
         <div className="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-3">
-          <div className="rounded-lg border border-amber-200 bg-amber-50 p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100">
-                <Clock className="h-5 w-5 text-amber-600" />
+          <div className="rounded-xl border border-neutral-200 bg-white p-4">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-amber-50">
+                <Clock className="h-6 w-6 text-amber-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-amber-700">{active.length}</p>
-                <p className="text-sm text-amber-600">Active Checkouts</p>
+                <p className="text-xs text-neutral-500 font-medium">Active Checkouts</p>
+                <p className="text-2xl font-bold text-neutral-900">{active.length}</p>
               </div>
             </div>
           </div>
-          <div className="rounded-lg border border-red-200 bg-red-50 p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-red-100">
-                <AlertTriangle className="h-5 w-5 text-red-600" />
+          <div className="rounded-xl border border-neutral-200 bg-white p-4">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-50">
+                <AlertTriangle className="h-6 w-6 text-red-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-red-700">{overdue.length}</p>
-                <p className="text-sm text-red-600">Overdue Items</p>
+                <p className="text-xs text-neutral-500 font-medium">Overdue Items</p>
+                <p className="text-2xl font-bold text-neutral-900">{overdue.length}</p>
               </div>
             </div>
           </div>
-          <div className="rounded-lg border border-green-200 bg-green-50 p-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-green-100">
-                <CheckCircle className="h-5 w-5 text-green-600" />
+          <div className="rounded-xl border border-neutral-200 bg-white p-4">
+            <div className="flex items-center gap-4">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-50">
+                <CheckCircle className="h-6 w-6 text-green-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-green-700">{returned.length}</p>
-                <p className="text-sm text-green-600">Returned Recently</p>
+                <p className="text-xs text-neutral-500 font-medium">Returned Recently</p>
+                <p className="text-2xl font-bold text-neutral-900">{returned.length}</p>
               </div>
             </div>
           </div>

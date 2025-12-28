@@ -133,7 +133,7 @@ export function PurchaseOrdersClient({ purchaseOrders }: PurchaseOrdersClientPro
     try {
       const result = await createDraftPurchaseOrder()
       if (result.success && result.purchase_order_id) {
-        router.push(`/workflows/purchase-orders/${result.purchase_order_id}`)
+        router.push(`/tasks/purchase-orders/${result.purchase_order_id}`)
       } else {
         console.error('Failed to create draft PO:', result.error)
         setIsCreating(false)
@@ -145,7 +145,7 @@ export function PurchaseOrdersClient({ purchaseOrders }: PurchaseOrdersClientPro
   }
 
   function handleRowClick(orderId: string) {
-    router.push(`/workflows/purchase-orders/${orderId}`)
+    router.push(`/tasks/purchase-orders/${orderId}`)
   }
 
   return (
@@ -153,7 +153,7 @@ export function PurchaseOrdersClient({ purchaseOrders }: PurchaseOrdersClientPro
       <div className="flex-1 overflow-y-auto">
         <div className="flex items-center justify-between border-b border-neutral-200 bg-white px-6 py-4">
           <div className="flex items-center gap-4">
-            <Link href="/workflows/inbound">
+            <Link href="/tasks/inbound">
               <Button variant="ghost" size="sm">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back

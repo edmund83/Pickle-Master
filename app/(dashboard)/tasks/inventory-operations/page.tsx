@@ -1,10 +1,10 @@
 import Link from 'next/link'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { UserCheck, ArrowRightLeft, FolderInput, Calculator, ArrowLeft } from 'lucide-react'
+import { UserCheck, FolderInput, Calculator, ArrowLeft } from 'lucide-react'
 
-const workflows = [
+const tasks = [
   {
-    href: '/workflows/checkouts',
+    href: '/tasks/checkouts',
     title: 'Check-In / Check-Out',
     description: 'Track items assigned to people, jobs, and locations',
     icon: UserCheck,
@@ -12,41 +12,33 @@ const workflows = [
     bgColor: 'bg-amber-50',
   },
   {
-    href: '/workflows/transfers',
-    title: 'Stock Transfers',
-    description: 'Transfer items between locations with AI suggestions',
-    icon: ArrowRightLeft,
-    color: 'text-purple-500',
-    bgColor: 'bg-purple-50',
-  },
-  {
-    href: '/workflows/moves',
-    title: 'Moves',
-    description: 'Move items between folders',
+    href: '/tasks/moves',
+    title: 'Move Items',
+    description: 'Reorganize items between folders',
     icon: FolderInput,
     color: 'text-teal-500',
     bgColor: 'bg-teal-50',
   },
   {
-    href: '/workflows/stock-count',
+    href: '/tasks/stock-count',
     title: 'Stock Count',
-    description: 'Conduct physical inventory counts and reconciliation',
+    description: 'Count your inventory and fix any differences',
     icon: Calculator,
     color: 'text-indigo-500',
     bgColor: 'bg-indigo-50',
   },
 ]
 
-export default function InventoryOperationsWorkflowsPage() {
+export default function InventoryOperationsTasksPage() {
   return (
     <div className="flex-1 overflow-y-auto">
       <div className="border-b border-neutral-200 bg-white px-6 py-4">
         <Link
-          href="/workflows"
+          href="/tasks"
           className="mb-2 inline-flex items-center gap-1 text-sm text-neutral-500 hover:text-neutral-700"
         >
           <ArrowLeft className="h-4 w-4" />
-          Back to Workflows
+          Back to Tasks
         </Link>
         <h1 className="text-xl font-semibold text-neutral-900">Inventory Operations</h1>
         <p className="text-neutral-500">Asset tracking, transfers, moves, and stock counts</p>
@@ -54,19 +46,19 @@ export default function InventoryOperationsWorkflowsPage() {
 
       <div className="p-6">
         <div className="grid gap-4 sm:grid-cols-2">
-          {workflows.map((workflow) => {
-            const Icon = workflow.icon
+          {tasks.map((task) => {
+            const Icon = task.icon
             return (
-              <Link key={workflow.href} href={workflow.href}>
+              <Link key={task.href} href={task.href}>
                 <Card className="h-full transition-shadow hover:shadow-md">
                   <CardHeader>
                     <div
-                      className={`mb-2 flex h-12 w-12 items-center justify-center rounded-lg ${workflow.bgColor}`}
+                      className={`mb-2 flex h-12 w-12 items-center justify-center rounded-lg ${task.bgColor}`}
                     >
-                      <Icon className={`h-6 w-6 ${workflow.color}`} />
+                      <Icon className={`h-6 w-6 ${task.color}`} />
                     </div>
-                    <CardTitle>{workflow.title}</CardTitle>
-                    <CardDescription>{workflow.description}</CardDescription>
+                    <CardTitle>{task.title}</CardTitle>
+                    <CardDescription>{task.description}</CardDescription>
                   </CardHeader>
                 </Card>
               </Link>

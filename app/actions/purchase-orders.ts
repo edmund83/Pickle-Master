@@ -194,7 +194,7 @@ export async function createDraftPurchaseOrder(): Promise<PurchaseOrderResult> {
         return { success: false, error: data.error || 'Failed to create purchase order' }
     }
 
-    revalidatePath('/workflows/purchase-orders')
+    revalidatePath('/tasks/purchase-orders')
     return { success: true, purchase_order_id: data?.purchase_order_id, display_id: data?.display_id }
 }
 
@@ -261,7 +261,7 @@ export async function createPurchaseOrder(input: CreatePurchaseOrderInput): Prom
         return { success: false, error: data.error || 'Failed to create purchase order' }
     }
 
-    revalidatePath('/workflows/purchase-orders')
+    revalidatePath('/tasks/purchase-orders')
     return { success: true, purchase_order_id: data?.purchase_order_id, display_id: data?.display_id }
 }
 
@@ -317,8 +317,8 @@ export async function updatePurchaseOrder(
         return { success: false, error: error.message }
     }
 
-    revalidatePath('/workflows/purchase-orders')
-    revalidatePath(`/workflows/purchase-orders/${purchaseOrderId}`)
+    revalidatePath('/tasks/purchase-orders')
+    revalidatePath(`/tasks/purchase-orders/${purchaseOrderId}`)
     return { success: true }
 }
 
@@ -353,8 +353,8 @@ export async function updatePurchaseOrderStatus(
         return { success: false, error: error.message }
     }
 
-    revalidatePath('/workflows/purchase-orders')
-    revalidatePath(`/workflows/purchase-orders/${purchaseOrderId}`)
+    revalidatePath('/tasks/purchase-orders')
+    revalidatePath(`/tasks/purchase-orders/${purchaseOrderId}`)
     return { success: true }
 }
 
@@ -397,7 +397,7 @@ export async function addPurchaseOrderItem(
     // Recalculate totals
     await recalculatePurchaseOrderTotals(supabase, purchaseOrderId)
 
-    revalidatePath(`/workflows/purchase-orders/${purchaseOrderId}`)
+    revalidatePath(`/tasks/purchase-orders/${purchaseOrderId}`)
     return { success: true }
 }
 
@@ -429,7 +429,7 @@ export async function removePurchaseOrderItem(purchaseOrderItemId: string): Prom
 
     if (item?.purchase_order_id) {
         await recalculatePurchaseOrderTotals(supabase, item.purchase_order_id)
-        revalidatePath(`/workflows/purchase-orders/${item.purchase_order_id}`)
+        revalidatePath(`/tasks/purchase-orders/${item.purchase_order_id}`)
     }
 
     return { success: true }
@@ -469,7 +469,7 @@ export async function updatePurchaseOrderItem(
 
     if (item?.purchase_order_id) {
         await recalculatePurchaseOrderTotals(supabase, item.purchase_order_id)
-        revalidatePath(`/workflows/purchase-orders/${item.purchase_order_id}`)
+        revalidatePath(`/tasks/purchase-orders/${item.purchase_order_id}`)
     }
 
     return { success: true }
@@ -540,7 +540,7 @@ export async function deletePurchaseOrder(purchaseOrderId: string): Promise<Purc
         return { success: false, error: error.message }
     }
 
-    revalidatePath('/workflows/purchase-orders')
+    revalidatePath('/tasks/purchase-orders')
     return { success: true }
 }
 

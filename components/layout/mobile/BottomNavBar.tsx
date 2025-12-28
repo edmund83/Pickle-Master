@@ -95,7 +95,7 @@ const quickActions: QuickAction[] = [
     label: 'In',
     color: 'text-white',
     bgColor: 'bg-green-500',
-    href: '/workflows/checkouts?filter=active',
+    href: '/tasks/checkouts?filter=active',
     position: { x: 70, y: -70 }, // Top right
   },
 ]
