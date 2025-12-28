@@ -11,6 +11,78 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Added
 
+#### Tasks Section (New Unified Workflow Interface)
+- **Tasks Hub** (`/tasks`) - New centralized task management interface replacing `/workflows`
+- **Consolidated Navigation** with sub-menu categories:
+  - **Inbound** (`/tasks/inbound`) - Purchase Orders, Receives
+  - **Fulfillment** (`/tasks/fulfillment`) - Pick Lists
+  - **Inventory Operations** (`/tasks/inventory-operations`) - Checkouts, Transfers, Moves, Stock Count
+- **Sidebar Sub-Menu Navigation** - Expandable sub-menus in primary sidebar for workflow categories
+- **Mobile Bottom Navigation** updated with Tasks tab
+
+#### Display ID System (Human-Readable Document Numbers)
+- **Organization Codes** (Migration: `00036_tenant_org_code.sql`):
+  - Auto-generated 5-character org code per tenant (e.g., "ACM01" for "Acme Corp")
+  - 3 letters from company name + 2-digit suffix
+  - Immutable after creation to ensure document ID consistency
+- **Entity Display IDs** with format: `{PREFIX}-{ORG_CODE}-{SEQUENCE}`:
+  - Purchase Orders: `PO-ACM01-00001`
+  - Pick Lists: `PL-ACM01-00001`
+  - Receives: `RCV-ACM01-00001`
+  - Stock Counts: `SC-ACM01-00001`
+- **Database Schema** (Migrations: `00036-00043`):
+  - `entity_sequence_counters` table for per-entity-type sequence tracking
+  - `display_id` column added to `purchase_orders`, `pick_lists`, `receives`, `stock_counts`
+  - Atomic RPC functions for entity creation with display ID generation
+  - Search functions to find entities by display ID
+  - Immutability triggers to prevent display ID modification after creation
+
+#### Item Reminders System (Migrations: `00021-00025`)
+- **Reminder Types**:
+  - **Low Stock** - Trigger when quantity falls below threshold
+  - **Expiry** - Trigger N days before expiry date
+  - **Restock** - Scheduled reminders for reordering
+- **Recurrence Options**: Once, Daily, Weekly, Monthly
+- **Notification Channels**: In-app notifications, Email (optional)
+- **Reminder Management Page** (`/reminders`) with:
+  - Tabbed view: All, Low Stock, Expiry, Restock
+  - Reminder cards showing item, type, status, last triggered
+  - Edit/Delete actions
+  - Status badges (Active, Paused, Triggered, Expired)
+- **Item Detail Integration**:
+  - Inline reminders card showing item-specific reminders
+  - Quick add reminder modal
+  - Edit reminder modal with full configuration
+- **Edge Function** (`process-reminders`) for daily reminder processing
+- **GitHub Actions Workflow** (`.github/workflows/process-reminders.yml`) for daily CRON trigger
+
+#### Checkout Serial Tracking (Migration: `00030_checkout_serials.sql`)
+- **Serial-Aware Checkouts** - Link checkouts to specific serial numbers
+- `checkout_serials` junction table tracking which serials are checked out
+- Per-serial return condition tracking
+- Constraint ensuring each serial can only be in one active checkout
+
+#### Pick List Enhancements (Migration: `00031_pick_list_enhancements.sql`)
+- **Item Outcome Options**: `decrement` (default), `checkout`, `transfer`
+- **Ship To Address** fields: name, address1, address2, city, state, postal code, country
+- **Assigned At** timestamp (Migration: `00034_pick_list_assigned_at.sql`)
+- **Pick List Number** auto-generation (Migration: `00035_pick_list_number.sql`)
+- **Pick List Detail Page** (`/tasks/pick-lists/[pickListId]`) with:
+  - Items table with pick status
+  - Assignee management
+  - Status workflow (Draft → Assigned → In Progress → Completed)
+
+#### Activity Log Enhancements (Migration: `00032_activity_logs_move_details.sql`)
+- **Move Details** in activity logs for item relocations
+- Tracks source/destination folder information
+
+#### Custom Field Enhancements (Migrations: `00028-00029`)
+- **Folder-Scoped Custom Fields** - Custom fields can be limited to specific folders
+- **Custom Field Limits** - Per-tenant limits on number of custom fields
+
+#### Tenant Settings Validation (Migration: `00027_tenant_settings_validation.sql`)
+- Database-level validation for tenant settings
+
 #### Workflow Reorganization & Stock Count Feature
 - **Workflow Hub Restructured** into 3 category-based sub-hubs:
   - **Inbound** (`/workflows/inbound`) - Purchase Orders, Receives
@@ -192,6 +264,18 @@ Based on a comprehensive security audit, the following vulnerabilities were iden
 
 ### Changed
 
+#### UI/UX Improvements
+- **Item Detail Page Redesign**:
+  - New Quick Actions card with inline quantity adjustment (+1/-1 buttons)
+  - Improved QR/Barcode card layout
+  - Enhanced checkout section for borrow/return workflows
+  - Serial number and shipping dimension display
+- **Expandable Edge Button** - Touch 'n Go style floating action button with slide-out menu
+- **Notification Bell Improvements** - Badge count display in sidebar navigation
+- **Sidebar State Persistence** - Remembers collapsed/expanded state via `useSidebarState` hook
+- **Inventory Desktop View** - Improved folder tree navigation and item highlighting
+- **Edit Page Highlighting** - Visual feedback when editing items
+
 - **Label Extras Section**: Replaced toggle switches with image selector fields for photo and logo
   - Photo: Select from item's existing photos or upload a custom image
   - Logo: Select company logo or upload a custom image
@@ -207,6 +291,40 @@ Based on a comprehensive security audit, the following vulnerabilities were iden
 
 - **Auto-generate barcode** is now disabled for formats that require specific numeric patterns (EAN-13, EAN-8, UPC-A, ITF-14, GS1-128). Auto-generate creates alphanumeric barcodes (e.g., `PKL12345678`) which are only compatible with Code 128 and Code 39.
 - When selecting a numeric-only barcode format with "Auto-generate" active, the system now automatically switches to "Use existing barcode" (if available) or "Enter manually".
+
+### Database Migrations
+
+| Migration | Purpose |
+|-----------|---------|
+| `00019_saved_searches.sql` | Saved search functionality |
+| `00020_serial_numbers.sql` | Serial number tracking tables |
+| `00021_item_reminders.sql` | Item reminders system |
+| `00022_reminder_comparison_operator.sql` | Reminder comparison operators |
+| `00023_reminder_management_system.sql` | Full reminder management |
+| `00024_update_reminder_function.sql` | Reminder update functions |
+| `00025_get_item_reminders_with_folder.sql` | Reminders with folder context |
+| `00026_security_audit_fixes.sql` | Critical RLS security fixes |
+| `00027_tenant_settings_validation.sql` | Tenant settings validation |
+| `00028_custom_field_folders.sql` | Folder-scoped custom fields |
+| `00029_custom_field_limit.sql` | Custom field limits |
+| `00030_checkout_serials.sql` | Checkout serial tracking |
+| `00031_pick_list_enhancements.sql` | Pick list ship-to & outcomes |
+| `00032_activity_logs_move_details.sql` | Move details in activity logs |
+| `00033_purchase_order_enhancements.sql` | PO ship/bill-to addresses |
+| `00034_pick_list_assigned_at.sql` | Pick list assigned timestamp |
+| `00035_pick_list_number.sql` | Pick list auto-numbering |
+| `00036_tenant_org_code.sql` | Organization codes for tenants |
+| `00037_entity_sequence_counters.sql` | Sequence counters for display IDs |
+| `00038_entity_display_ids.sql` | Display ID columns |
+| `00039_backfill_display_ids.sql` | Backfill existing entity IDs |
+| `00040_entity_creation_rpcs.sql` | Atomic entity creation RPCs |
+| `00041_search_by_display_id.sql` | Search by display ID functions |
+| `00042_display_id_letter_prefix.sql` | Letter prefix for display IDs |
+| `00043_display_id_immutability.sql` | Prevent display ID changes |
+| `00044_stock_counts.sql` | Stock count workflow tables |
+| `00045_receives.sql` | Goods receiving (GRN) tables |
+| `00046_create_receive_with_items.sql` | Pre-populate receive items RPC |
+| `00047_receive_item_serials.sql` | Serial tracking for receives |
 
 ---
 
