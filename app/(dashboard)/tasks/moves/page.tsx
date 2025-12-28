@@ -3,20 +3,74 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
-import { ArrowRight, ArrowLeft, Package, FolderOpen, Check, Loader2, Search } from 'lucide-react'
+import { ArrowRight, ArrowLeft, Package, FolderOpen, Check, Loader2, Search, Folder as FolderIcon, ChevronRight, Filter } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from '@/components/ui/dropdown-menu'
 import type { InventoryItem, Folder } from '@/types/database.types'
+import { cn } from '@/lib/utils'
+
+interface FolderNode extends Folder {
+  children: FolderNode[]
+}
+
+function buildFolderTree(folders: Folder[]): FolderNode[] {
+  const folderMap = new Map<string, FolderNode>()
+
+  // First pass: create nodes
+  folders.forEach(folder => {
+    folderMap.set(folder.id, { ...folder, children: [] })
+  })
+
+  // Second pass: build hierarchy
+  const roots: FolderNode[] = []
+  folders.forEach(folder => {
+    const node = folderMap.get(folder.id)!
+    if (folder.parent_id === null) {
+      roots.push(node)
+    } else {
+      const parent = folderMap.get(folder.parent_id)
+      if (parent) {
+        parent.children.push(node)
+      } else {
+        roots.push(node)
+      }
+    }
+  })
+
+  // Sort by name
+  const sortFolders = (a: FolderNode, b: FolderNode) => a.name.localeCompare(b.name)
+  roots.sort(sortFolders)
+  const sortChildren = (nodes: FolderNode[]) => {
+    nodes.forEach(node => {
+      node.children.sort(sortFolders)
+      sortChildren(node.children)
+    })
+  }
+  sortChildren(roots)
+
+  return roots
+}
 
 export default function StockMovesPage() {
   const [items, setItems] = useState<InventoryItem[]>([])
   const [folders, setFolders] = useState<Folder[]>([])
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set())
   const [targetFolderId, setTargetFolderId] = useState<string>('')
+  const [expandedFolders, setExpandedFolders] = useState<Set<string>>(new Set())
   const [loading, setLoading] = useState(true)
   const [moving, setMoving] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [success, setSuccess] = useState(false)
+  const [filterFolderIds, setFilterFolderIds] = useState<Set<string>>(new Set())
+  const [filterStatus, setFilterStatus] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     loadData()
@@ -105,12 +159,119 @@ export default function StockMovesPage() {
     }
   }
 
-  const filteredItems = items.filter(item =>
-    item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    (item.sku && item.sku.toLowerCase().includes(searchQuery.toLowerCase()))
-  )
+  function toggleFolderFilter(folderId: string) {
+    setFilterFolderIds(prev => {
+      const next = new Set(prev)
+      if (next.has(folderId)) {
+        next.delete(folderId)
+      } else {
+        next.add(folderId)
+      }
+      return next
+    })
+  }
+
+  function toggleStatusFilter(status: string) {
+    setFilterStatus(prev => {
+      const next = new Set(prev)
+      if (next.has(status)) {
+        next.delete(status)
+      } else {
+        next.add(status)
+      }
+      return next
+    })
+  }
+
+  function clearFilters() {
+    setFilterFolderIds(new Set())
+    setFilterStatus(new Set())
+  }
+
+  const filteredItems = items.filter(item => {
+    // Search filter
+    const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.sku && item.sku.toLowerCase().includes(searchQuery.toLowerCase()))
+
+    // Folder filter
+    const matchesFolder = filterFolderIds.size === 0 ||
+      (item.folder_id && filterFolderIds.has(item.folder_id)) ||
+      (item.folder_id === null && filterFolderIds.has('root'))
+
+    // Status filter
+    const matchesStatus = filterStatus.size === 0 || (item.status && filterStatus.has(item.status))
+
+    return matchesSearch && matchesFolder && matchesStatus
+  })
+
+  const activeFilterCount = filterFolderIds.size + filterStatus.size
 
   const targetFolder = folders.find(f => f.id === targetFolderId)
+  const folderTree = buildFolderTree(folders)
+
+  function toggleFolderExpand(folderId: string) {
+    setExpandedFolders(prev => {
+      const next = new Set(prev)
+      if (next.has(folderId)) {
+        next.delete(folderId)
+      } else {
+        next.add(folderId)
+      }
+      return next
+    })
+  }
+
+  function renderFolderItem(folder: FolderNode, depth: number = 0): React.ReactNode {
+    const hasChildren = folder.children.length > 0
+    const isExpanded = expandedFolders.has(folder.id)
+    const isSelected = targetFolderId === folder.id
+
+    return (
+      <div key={folder.id}>
+        <button
+          onClick={() => setTargetFolderId(folder.id)}
+          className={cn(
+            'flex w-full items-center gap-2 rounded-lg border px-4 py-3 text-left transition-colors',
+            isSelected
+              ? 'border-pickle-500 bg-pickle-50'
+              : 'border-neutral-200 hover:bg-neutral-50'
+          )}
+          style={{ marginLeft: `${depth * 20}px`, width: `calc(100% - ${depth * 20}px)` }}
+        >
+          {hasChildren && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation()
+                toggleFolderExpand(folder.id)
+              }}
+              className="flex h-5 w-5 items-center justify-center rounded hover:bg-neutral-200"
+            >
+              <ChevronRight
+                className={cn(
+                  'h-4 w-4 text-neutral-400 transition-transform',
+                  isExpanded && 'rotate-90'
+                )}
+              />
+            </button>
+          )}
+          {!hasChildren && <span className="w-5" />}
+          <FolderIcon
+            className="h-5 w-5 flex-shrink-0"
+            style={{ color: folder.color || '#6b7280' }}
+            fill={folder.color || '#e5e5e5'}
+            strokeWidth={1.5}
+          />
+          <span className="font-medium text-neutral-900 truncate">{folder.name}</span>
+        </button>
+        {isExpanded && hasChildren && (
+          <div className="mt-2 space-y-2">
+            {folder.children.map(child => renderFolderItem(child, depth + 1))}
+          </div>
+        )}
+      </div>
+    )
+  }
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -152,14 +313,84 @@ export default function StockMovesPage() {
                   {selectedItems.size === filteredItems.length ? 'Deselect All' : 'Select All'}
                 </Button>
               </div>
-              <div className="mt-3 relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
-                <Input
-                  placeholder="Search items..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9"
-                />
+              <div className="mt-3 flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400" />
+                  <Input
+                    placeholder="Search items..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9"
+                  />
+                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="default" className="gap-2">
+                      <Filter className="h-4 w-4" />
+                      Filter
+                      {activeFilterCount > 0 && (
+                        <span className="rounded-full bg-pickle-500 px-1.5 text-xs text-white">
+                          {activeFilterCount}
+                        </span>
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56">
+                    <DropdownMenuLabel>Filter by Folder</DropdownMenuLabel>
+                    <DropdownMenuCheckboxItem
+                      checked={filterFolderIds.has('root')}
+                      onCheckedChange={() => toggleFolderFilter('root')}
+                    >
+                      No Folder (Root)
+                    </DropdownMenuCheckboxItem>
+                    {folders.map(folder => (
+                      <DropdownMenuCheckboxItem
+                        key={folder.id}
+                        checked={filterFolderIds.has(folder.id)}
+                        onCheckedChange={() => toggleFolderFilter(folder.id)}
+                      >
+                        <span className="flex items-center gap-2">
+                          <span
+                            className="h-2 w-2 rounded-full"
+                            style={{ backgroundColor: folder.color || '#6b7280' }}
+                          />
+                          {folder.name}
+                        </span>
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel>Filter by Status</DropdownMenuLabel>
+                    <DropdownMenuCheckboxItem
+                      checked={filterStatus.has('in_stock')}
+                      onCheckedChange={() => toggleStatusFilter('in_stock')}
+                    >
+                      In Stock
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      checked={filterStatus.has('low_stock')}
+                      onCheckedChange={() => toggleStatusFilter('low_stock')}
+                    >
+                      Low Stock
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      checked={filterStatus.has('out_of_stock')}
+                      onCheckedChange={() => toggleStatusFilter('out_of_stock')}
+                    >
+                      Out of Stock
+                    </DropdownMenuCheckboxItem>
+                    {activeFilterCount > 0 && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <button
+                          onClick={clearFilters}
+                          className="w-full px-2 py-1.5 text-left text-sm text-red-600 hover:bg-neutral-50"
+                        >
+                          Clear all filters
+                        </button>
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </div>
 
@@ -234,33 +465,18 @@ export default function StockMovesPage() {
               <div className="space-y-2">
                 <button
                   onClick={() => setTargetFolderId('root')}
-                  className={`flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors ${
+                  className={cn(
+                    'flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors',
                     targetFolderId === 'root'
                       ? 'border-pickle-500 bg-pickle-50'
                       : 'border-neutral-200 hover:bg-neutral-50'
-                  }`}
+                  )}
                 >
                   <FolderOpen className="h-5 w-5 text-neutral-400" />
                   <span className="font-medium text-neutral-900">Root (No Folder)</span>
                 </button>
 
-                {folders.map((folder) => (
-                  <button
-                    key={folder.id}
-                    onClick={() => setTargetFolderId(folder.id)}
-                    className={`flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors ${
-                      targetFolderId === folder.id
-                        ? 'border-pickle-500 bg-pickle-50'
-                        : 'border-neutral-200 hover:bg-neutral-50'
-                    }`}
-                  >
-                    <div
-                      className="h-4 w-4 rounded-full"
-                      style={{ backgroundColor: folder.color || '#6b7280' }}
-                    />
-                    <span className="font-medium text-neutral-900">{folder.name}</span>
-                  </button>
-                ))}
+                {folderTree.map(folder => renderFolderItem(folder))}
               </div>
 
               {/* Move Button */}
