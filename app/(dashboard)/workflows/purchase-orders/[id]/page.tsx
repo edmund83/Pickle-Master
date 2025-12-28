@@ -2,6 +2,26 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { PurchaseOrderDetailClient } from './PurchaseOrderDetailClient'
 
+export interface TeamMember {
+  id: string
+  full_name: string | null
+  email: string
+}
+
+export interface Vendor {
+  id: string
+  name: string
+  contact_name: string | null
+  email: string | null
+  phone: string | null
+  address_line1: string | null
+  address_line2: string | null
+  city: string | null
+  state: string | null
+  postal_code: string | null
+  country: string | null
+}
+
 export interface PurchaseOrderWithDetails {
   id: string
   tenant_id: string
@@ -106,17 +126,95 @@ async function getPurchaseOrderWithDetails(id: string): Promise<PurchaseOrderWit
   }
 }
 
+async function getTeamMembers(): Promise<TeamMember[]> {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: profile } = await (supabase as any)
+    .from('profiles')
+    .select('tenant_id')
+    .eq('id', user.id)
+    .single()
+
+  if (!profile?.tenant_id) return []
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data } = await (supabase as any)
+    .from('profiles')
+    .select('id, full_name, email')
+    .eq('tenant_id', profile.tenant_id)
+    .order('full_name')
+
+  return data || []
+}
+
+async function getVendorsList(): Promise<Vendor[]> {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: profile } = await (supabase as any)
+    .from('profiles')
+    .select('tenant_id')
+    .eq('id', user.id)
+    .single()
+
+  if (!profile?.tenant_id) return []
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data } = await (supabase as any)
+    .from('vendors')
+    .select('id, name, contact_name, email, phone, address_line1, address_line2, city, state, postal_code, country')
+    .eq('tenant_id', profile.tenant_id)
+    .order('name')
+
+  return data || []
+}
+
+async function getCreatorName(userId: string | null): Promise<string | null> {
+  if (!userId) return null
+
+  const supabase = await createClient()
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data } = await (supabase as any)
+    .from('profiles')
+    .select('full_name')
+    .eq('id', userId)
+    .single()
+
+  return data?.full_name || null
+}
+
 export default async function PurchaseOrderDetailPage({
   params
 }: {
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const purchaseOrder = await getPurchaseOrderWithDetails(id)
+  const [purchaseOrder, teamMembers, vendors] = await Promise.all([
+    getPurchaseOrderWithDetails(id),
+    getTeamMembers(),
+    getVendorsList()
+  ])
 
   if (!purchaseOrder) {
     notFound()
   }
 
-  return <PurchaseOrderDetailClient purchaseOrder={purchaseOrder} />
+  const createdByName = await getCreatorName(purchaseOrder.created_by)
+
+  return (
+    <PurchaseOrderDetailClient
+      purchaseOrder={purchaseOrder}
+      teamMembers={teamMembers}
+      vendors={vendors}
+      createdByName={createdByName}
+    />
+  )
 }

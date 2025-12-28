@@ -61,6 +61,22 @@ export interface UpdatePurchaseOrderInput {
     expected_date?: string | null
     notes?: string | null
     status?: string
+    // Ship To address
+    ship_to_name?: string | null
+    ship_to_address1?: string | null
+    ship_to_address2?: string | null
+    ship_to_city?: string | null
+    ship_to_state?: string | null
+    ship_to_postal_code?: string | null
+    ship_to_country?: string | null
+    // Bill To address
+    bill_to_name?: string | null
+    bill_to_address1?: string | null
+    bill_to_address2?: string | null
+    bill_to_city?: string | null
+    bill_to_state?: string | null
+    bill_to_postal_code?: string | null
+    bill_to_country?: string | null
 }
 
 // Get all vendors for dropdown
@@ -134,6 +150,50 @@ export async function createVendor(input: CreateVendorInput): Promise<PurchaseOr
     }
 
     return { success: true, vendor_id: data.id }
+}
+
+// Create a draft purchase order with minimal data (for quick-create flow)
+export async function createDraftPurchaseOrder(): Promise<PurchaseOrderResult> {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) return { success: false, error: 'Unauthorized' }
+
+    // Get user's tenant
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: profile } = await (supabase as any)
+        .from('profiles')
+        .select('tenant_id')
+        .eq('id', user.id)
+        .single()
+
+    if (!profile?.tenant_id) return { success: false, error: 'No tenant found' }
+
+    // Generate order number
+    const orderNumber = await generateOrderNumber(supabase, profile.tenant_id)
+
+    // Create minimal purchase order
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: po, error } = await (supabase as any)
+        .from('purchase_orders')
+        .insert({
+            tenant_id: profile.tenant_id,
+            order_number: orderNumber,
+            status: 'draft',
+            subtotal: 0,
+            total: 0,
+            created_by: user.id
+        })
+        .select('id')
+        .single()
+
+    if (error) {
+        console.error('Create draft PO error:', error)
+        return { success: false, error: error.message }
+    }
+
+    revalidatePath('/workflows/purchase-orders')
+    return { success: true, purchase_order_id: po.id }
 }
 
 // Generate next order number

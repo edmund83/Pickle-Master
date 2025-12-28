@@ -60,6 +60,55 @@ export async function createPickList(input: CreatePickListInput): Promise<PickLi
     return { success: true, pick_list_id: data?.pick_list_id }
 }
 
+// Create a draft pick list with minimal data (for quick-create flow)
+export async function createDraftPickList(): Promise<PickListResult> {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) return { success: false, error: 'Unauthorized' }
+
+    // Get user's tenant
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: profile } = await (supabase as any)
+        .from('profiles')
+        .select('tenant_id')
+        .eq('id', user.id)
+        .single()
+
+    if (!profile?.tenant_id) return { success: false, error: 'No tenant found' }
+
+    // Generate a name with date
+    const now = new Date()
+    const formattedDate = now.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric'
+    })
+    const name = `Pick List - ${formattedDate}`
+
+    // Create minimal pick list directly (not using RPC since we don't have items yet)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: pickList, error } = await (supabase as any)
+        .from('pick_lists')
+        .insert({
+            tenant_id: profile.tenant_id,
+            name: name,
+            status: 'draft',
+            item_outcome: 'decrement',
+            created_by: user.id
+        })
+        .select('id')
+        .single()
+
+    if (error) {
+        console.error('Create draft pick list error:', error)
+        return { success: false, error: error.message }
+    }
+
+    revalidatePath('/workflows/pick-lists')
+    return { success: true, pick_list_id: pickList.id }
+}
+
 export async function updatePickList(
     pickListId: string,
     updates: Partial<Omit<CreatePickListInput, 'items'>>
@@ -159,6 +208,40 @@ export async function removePickListItem(pickListItemId: string): Promise<PickLi
 
     if (error) {
         console.error('Remove pick list item error:', error)
+        return { success: false, error: error.message }
+    }
+
+    if (item?.pick_list_id) {
+        revalidatePath(`/workflows/pick-lists/${item.pick_list_id}`)
+    }
+    return { success: true }
+}
+
+export async function updatePickListItem(
+    pickListItemId: string,
+    requestedQuantity: number
+): Promise<PickListResult> {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) return { success: false, error: 'Unauthorized' }
+
+    // Get pick list id for revalidation
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: item } = await (supabase as any)
+        .from('pick_list_items')
+        .select('pick_list_id')
+        .eq('id', pickListItemId)
+        .single()
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error } = await (supabase as any)
+        .from('pick_list_items')
+        .update({ requested_quantity: requestedQuantity })
+        .eq('id', pickListItemId)
+
+    if (error) {
+        console.error('Update pick list item error:', error)
         return { success: false, error: error.message }
     }
 

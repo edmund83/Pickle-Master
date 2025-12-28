@@ -2,6 +2,12 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { PickListDetailClient } from './PickListDetailClient'
 
+interface TeamMember {
+  id: string
+  full_name: string | null
+  email: string
+}
+
 interface PickListWithItems {
   pick_list: {
     id: string
@@ -19,6 +25,8 @@ interface PickListWithItems {
     ship_to_country: string | null
     assigned_to: string | null
     created_at: string
+    created_by: string | null
+    updated_at: string | null
     completed_at: string | null
   }
   items: Array<{
@@ -34,6 +42,7 @@ interface PickListWithItems {
     notes: string | null
   }>
   assigned_to_name: string | null
+  created_by_name: string | null
 }
 
 async function getPickListWithItems(pickListId: string): Promise<PickListWithItems | null> {
@@ -52,7 +61,44 @@ async function getPickListWithItems(pickListId: string): Promise<PickListWithIte
     return null
   }
 
+  // Get the created_by user name if we have the pick list
+  if (data?.pick_list?.created_by) {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: creator } = await (supabase as any)
+      .from('profiles')
+      .select('full_name')
+      .eq('id', data.pick_list.created_by)
+      .single()
+
+    data.created_by_name = creator?.full_name || null
+  }
+
   return data
+}
+
+async function getTeamMembers(): Promise<TeamMember[]> {
+  const supabase = await createClient()
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return []
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: profile } = await (supabase as any)
+    .from('profiles')
+    .select('tenant_id')
+    .eq('id', user.id)
+    .single()
+
+  if (!profile?.tenant_id) return []
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data } = await (supabase as any)
+    .from('profiles')
+    .select('id, full_name, email')
+    .eq('tenant_id', profile.tenant_id)
+    .order('full_name')
+
+  return data || []
 }
 
 export default async function PickListDetailPage({
@@ -61,11 +107,14 @@ export default async function PickListDetailPage({
   params: Promise<{ pickListId: string }>
 }) {
   const { pickListId } = await params
-  const data = await getPickListWithItems(pickListId)
+  const [data, teamMembers] = await Promise.all([
+    getPickListWithItems(pickListId),
+    getTeamMembers()
+  ])
 
   if (!data || !data.pick_list) {
     notFound()
   }
 
-  return <PickListDetailClient data={data} />
+  return <PickListDetailClient data={data} teamMembers={teamMembers} />
 }

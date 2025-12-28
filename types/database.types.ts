@@ -885,40 +885,67 @@ export type Database = {
       }
       pick_lists: {
         Row: {
+          assigned_at: string | null
           assigned_to: string | null
           completed_at: string | null
           created_at: string | null
           created_by: string | null
           due_date: string | null
           id: string
+          item_outcome: string | null
           name: string | null
           notes: string | null
+          ship_to_address1: string | null
+          ship_to_address2: string | null
+          ship_to_city: string | null
+          ship_to_country: string | null
+          ship_to_name: string | null
+          ship_to_postal_code: string | null
+          ship_to_state: string | null
           status: string | null
           tenant_id: string
           updated_at: string | null
         }
         Insert: {
+          assigned_at?: string | null
           assigned_to?: string | null
           completed_at?: string | null
           created_at?: string | null
           created_by?: string | null
           due_date?: string | null
           id?: string
+          item_outcome?: string | null
           name?: string | null
           notes?: string | null
+          ship_to_address1?: string | null
+          ship_to_address2?: string | null
+          ship_to_city?: string | null
+          ship_to_country?: string | null
+          ship_to_name?: string | null
+          ship_to_postal_code?: string | null
+          ship_to_state?: string | null
           status?: string | null
           tenant_id: string
           updated_at?: string | null
         }
         Update: {
+          assigned_at?: string | null
           assigned_to?: string | null
           completed_at?: string | null
           created_at?: string | null
           created_by?: string | null
           due_date?: string | null
           id?: string
+          item_outcome?: string | null
           name?: string | null
           notes?: string | null
+          ship_to_address1?: string | null
+          ship_to_address2?: string | null
+          ship_to_city?: string | null
+          ship_to_country?: string | null
+          ship_to_name?: string | null
+          ship_to_postal_code?: string | null
+          ship_to_state?: string | null
           status?: string | null
           tenant_id?: string
           updated_at?: string | null
@@ -1681,8 +1708,21 @@ export type Alert = Tables<'alerts'>
 export type Notification = Tables<'notifications'>
 export type PickList = Tables<'pick_lists'>
 export type PickListItem = Tables<'pick_list_items'>
+
+// Extended type for Pick List with joined relations
+export type PickListWithRelations = PickList & {
+  assigned_to_profile: { id: string; full_name: string | null } | null
+  created_by_profile: { id: string; full_name: string | null } | null
+}
 export type PurchaseOrder = Tables<'purchase_orders'>
 export type PurchaseOrderItem = Tables<'purchase_order_items'>
+
+// Extended type for PO list with joined relations
+export type PurchaseOrderWithRelations = PurchaseOrder & {
+  vendors: { id: string; name: string } | null
+  created_by_profile: { id: string; full_name: string | null } | null
+  submitted_by_profile: { id: string; full_name: string | null } | null
+}
 export type Checkout = Tables<'checkouts'>
 export type Job = Tables<'jobs'>
 export type Location = Tables<'locations'>

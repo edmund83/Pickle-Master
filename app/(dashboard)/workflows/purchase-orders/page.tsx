@@ -1,9 +1,9 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import type { PurchaseOrder } from '@/types/database.types'
 import { PurchaseOrdersClient } from '@/components/workflows/PurchaseOrdersClient'
+import type { PurchaseOrderWithRelations } from '@/types/database.types'
 
-async function getPurchaseOrders(): Promise<PurchaseOrder[]> {
+async function getPurchaseOrders(): Promise<PurchaseOrderWithRelations[]> {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -21,11 +21,16 @@ async function getPurchaseOrders(): Promise<PurchaseOrder[]> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data } = await (supabase as any)
     .from('purchase_orders')
-    .select('*')
+    .select(`
+      *,
+      vendors(id, name),
+      created_by_profile:profiles!created_by(id, full_name),
+      submitted_by_profile:profiles!submitted_by(id, full_name)
+    `)
     .eq('tenant_id', profile.tenant_id)
-    .order('created_at', { ascending: false })
+    .order('updated_at', { ascending: false })
 
-  return (data || []) as PurchaseOrder[]
+  return (data || []) as PurchaseOrderWithRelations[]
 }
 
 export default async function PurchaseOrdersPage() {
