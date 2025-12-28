@@ -895,6 +895,7 @@ export type Database = {
           item_outcome: string | null
           name: string | null
           notes: string | null
+          pick_list_number: string | null
           ship_to_address1: string | null
           ship_to_address2: string | null
           ship_to_city: string | null
@@ -917,6 +918,7 @@ export type Database = {
           item_outcome?: string | null
           name?: string | null
           notes?: string | null
+          pick_list_number?: string | null
           ship_to_address1?: string | null
           ship_to_address2?: string | null
           ship_to_city?: string | null
@@ -939,6 +941,7 @@ export type Database = {
           item_outcome?: string | null
           name?: string | null
           notes?: string | null
+          pick_list_number?: string | null
           ship_to_address1?: string | null
           ship_to_address2?: string | null
           ship_to_city?: string | null

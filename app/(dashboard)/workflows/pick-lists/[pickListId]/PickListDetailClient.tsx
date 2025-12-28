@@ -21,7 +21,8 @@ import {
   Info,
   Minus,
   Plus,
-  Barcode
+  Barcode,
+  MoreVertical
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -51,6 +52,7 @@ interface PickListWithItems {
   pick_list: {
     id: string
     name: string
+    pick_list_number: string | null
     status: string
     due_date: string | null
     item_outcome: string
@@ -131,7 +133,7 @@ export function PickListDetailClient({ data, teamMembers }: PickListDetailClient
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
   // Form state for draft mode
-  const [name, setName] = useState(data.pick_list.name)
+  // pick_list_number is display-only (auto-generated)
   const [assignedTo, setAssignedTo] = useState(data.pick_list.assigned_to || '')
   const [dueDate, setDueDate] = useState(data.pick_list.due_date || '')
   const [itemOutcome, setItemOutcome] = useState(data.pick_list.item_outcome || 'decrement')
@@ -143,6 +145,9 @@ export function PickListDetailClient({ data, teamMembers }: PickListDetailClient
   const [shipToState, setShipToState] = useState(data.pick_list.ship_to_state || '')
   const [shipToPostalCode, setShipToPostalCode] = useState(data.pick_list.ship_to_postal_code || '')
   const [shipToCountry, setShipToCountry] = useState(data.pick_list.ship_to_country || '')
+
+  // Menu state
+  const [showMoreMenu, setShowMoreMenu] = useState(false)
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('')
@@ -201,9 +206,6 @@ export function PickListDetailClient({ data, teamMembers }: PickListDetailClient
       const updates: Record<string, string | null> = {}
 
       switch (field) {
-        case 'name':
-          updates.name = value
-          break
         case 'assigned_to':
           updates.assigned_to = value || null
           break
@@ -396,24 +398,57 @@ export function PickListDetailClient({ data, teamMembers }: PickListDetailClient
               <span className="text-neutral-300">/</span>
               <span className="text-sm text-neutral-500">Last Updated: <FormattedDateTime date={pickList.updated_at || pickList.created_at} /></span>
             </div>
-            <Button
-              variant="outline"
-              onClick={handleCancel}
-              disabled={actionLoading !== null}
-            >
-              Cancel
-            </Button>
+            <div className="flex items-center gap-2">
+              {/* More menu with Delete option */}
+              <div className="relative">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowMoreMenu(!showMoreMenu)}
+                  className="text-neutral-500 hover:text-neutral-700"
+                >
+                  <MoreVertical className="h-5 w-5" />
+                </Button>
+                {showMoreMenu && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-10"
+                      onClick={() => setShowMoreMenu(false)}
+                    />
+                    <div className="absolute top-full right-0 mt-1 z-20 w-48 rounded-lg border border-neutral-200 bg-white shadow-lg py-1">
+                      <button
+                        onClick={() => {
+                          setShowMoreMenu(false)
+                          handleDelete()
+                        }}
+                        disabled={actionLoading !== null}
+                        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
+                      >
+                        {actionLoading === 'delete' ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
+                        Delete Pick List
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+              <Button
+                variant="outline"
+                onClick={handleCancel}
+                disabled={actionLoading !== null}
+              >
+                Cancel
+              </Button>
+            </div>
           </div>
 
           <div className="mt-4 flex items-center gap-4">
-            <input
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              onBlur={() => saveField('name', name)}
-              className="text-2xl font-semibold text-neutral-900 bg-transparent border-b-2 border-dashed border-neutral-200 focus:border-pickle-500 outline-none px-2 py-1"
-              placeholder="Pick List Name"
-            />
+            <h1 className="text-2xl font-semibold text-neutral-900">
+              {pickList.pick_list_number || pickList.name || `PL-${pickList.id.slice(0, 8).toUpperCase()}`}
+            </h1>
             <span className={`rounded-full px-3 py-1 text-sm font-medium ${statusColors[pickList.status]}`}>
               {statusLabels[pickList.status]}
             </span>
@@ -639,6 +674,17 @@ export function PickListDetailClient({ data, teamMembers }: PickListDetailClient
               </div>
             )}
           </div>
+
+          {/* Summary row */}
+          {items.length > 0 && (
+            <div className="px-6 py-3 bg-neutral-50 border-t border-neutral-200">
+              <div className="flex items-center justify-end">
+                <span className="text-sm font-medium text-neutral-600">
+                  {items.length} item{items.length !== 1 ? 's' : ''} to pick
+                </span>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Ship To Section */}
@@ -655,74 +701,93 @@ export function PickListDetailClient({ data, teamMembers }: PickListDetailClient
           <CardContent>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="md:col-span-2">
+                <label className="block text-xs font-medium text-neutral-500 mb-1">Name</label>
                 <input
                   type="text"
                   value={shipToName}
                   onChange={(e) => setShipToName(e.target.value)}
                   onBlur={() => saveField('ship_to', shipToName)}
-                  placeholder="Name"
+                  placeholder="Enter name"
                   className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
                 />
               </div>
-              <input
-                type="text"
-                value={shipToAddress1}
-                onChange={(e) => setShipToAddress1(e.target.value)}
-                onBlur={() => saveField('ship_to', shipToAddress1)}
-                placeholder="Address 1"
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-              />
-              <input
-                type="text"
-                value={shipToAddress2}
-                onChange={(e) => setShipToAddress2(e.target.value)}
-                onBlur={() => saveField('ship_to', shipToAddress2)}
-                placeholder="Address 2"
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-              />
-              <input
-                type="text"
-                value={shipToCity}
-                onChange={(e) => setShipToCity(e.target.value)}
-                onBlur={() => saveField('ship_to', shipToCity)}
-                placeholder="City"
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-              />
-              <input
-                type="text"
-                value={shipToState}
-                onChange={(e) => setShipToState(e.target.value)}
-                onBlur={() => saveField('ship_to', shipToState)}
-                placeholder="State / Province / Region"
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-              />
-              <input
-                type="text"
-                value={shipToPostalCode}
-                onChange={(e) => setShipToPostalCode(e.target.value)}
-                onBlur={() => saveField('ship_to', shipToPostalCode)}
-                placeholder="Zip / Postal Code"
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-              />
-              <select
-                value={shipToCountry}
-                onChange={(e) => {
-                  setShipToCountry(e.target.value)
-                  saveField('ship_to', e.target.value)
-                }}
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-              >
-                <option value="">Country</option>
-                <option value="Malaysia">Malaysia</option>
-                <option value="Singapore">Singapore</option>
-                <option value="Indonesia">Indonesia</option>
-                <option value="Thailand">Thailand</option>
-                <option value="Philippines">Philippines</option>
-                <option value="Vietnam">Vietnam</option>
-                <option value="United States">United States</option>
-                <option value="United Kingdom">United Kingdom</option>
-                <option value="Australia">Australia</option>
-              </select>
+              <div>
+                <label className="block text-xs font-medium text-neutral-500 mb-1">Address Line 1</label>
+                <input
+                  type="text"
+                  value={shipToAddress1}
+                  onChange={(e) => setShipToAddress1(e.target.value)}
+                  onBlur={() => saveField('ship_to', shipToAddress1)}
+                  placeholder="Street address"
+                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-neutral-500 mb-1">Address Line 2</label>
+                <input
+                  type="text"
+                  value={shipToAddress2}
+                  onChange={(e) => setShipToAddress2(e.target.value)}
+                  onBlur={() => saveField('ship_to', shipToAddress2)}
+                  placeholder="Apt, suite, unit (optional)"
+                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-neutral-500 mb-1">City</label>
+                <input
+                  type="text"
+                  value={shipToCity}
+                  onChange={(e) => setShipToCity(e.target.value)}
+                  onBlur={() => saveField('ship_to', shipToCity)}
+                  placeholder="Enter city"
+                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-neutral-500 mb-1">State / Province</label>
+                <input
+                  type="text"
+                  value={shipToState}
+                  onChange={(e) => setShipToState(e.target.value)}
+                  onBlur={() => saveField('ship_to', shipToState)}
+                  placeholder="Enter state or province"
+                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-neutral-500 mb-1">Postal Code</label>
+                <input
+                  type="text"
+                  value={shipToPostalCode}
+                  onChange={(e) => setShipToPostalCode(e.target.value)}
+                  onBlur={() => saveField('ship_to', shipToPostalCode)}
+                  placeholder="Enter postal code"
+                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-neutral-500 mb-1">Country</label>
+                <select
+                  value={shipToCountry}
+                  onChange={(e) => {
+                    setShipToCountry(e.target.value)
+                    saveField('ship_to', e.target.value)
+                  }}
+                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                >
+                  <option value="">Select country</option>
+                  <option value="Malaysia">Malaysia</option>
+                  <option value="Singapore">Singapore</option>
+                  <option value="Indonesia">Indonesia</option>
+                  <option value="Thailand">Thailand</option>
+                  <option value="Philippines">Philippines</option>
+                  <option value="Vietnam">Vietnam</option>
+                  <option value="United States">United States</option>
+                  <option value="United Kingdom">United Kingdom</option>
+                  <option value="Australia">Australia</option>
+                </select>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -746,20 +811,10 @@ export function PickListDetailClient({ data, teamMembers }: PickListDetailClient
 
         {/* Footer Actions */}
         <div className="sticky bottom-0 border-t border-neutral-200 bg-white px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Button
-              variant="outline"
-              onClick={handleDelete}
-              disabled={actionLoading !== null}
-              className="text-red-600 hover:text-red-700"
-            >
-              {actionLoading === 'delete' ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Trash2 className="mr-2 h-4 w-4" />
-              )}
-              Delete
-            </Button>
+          <div className="flex items-center justify-end gap-4">
+            <div className="text-right">
+              <p className="text-xs text-neutral-500">{items.length} item{items.length !== 1 ? 's' : ''}</p>
+            </div>
             <Button
               onClick={handleStartPicking}
               disabled={actionLoading !== null || !isValid || items.length === 0}
@@ -805,7 +860,7 @@ export function PickListDetailClient({ data, teamMembers }: PickListDetailClient
           <div className="flex items-center gap-3">
             {statusIcons[pickList.status]}
             <div>
-              <h1 className="text-xl font-semibold text-neutral-900">{pickList.name}</h1>
+              <h1 className="text-xl font-semibold text-neutral-900">{pickList.pick_list_number || pickList.name || `PL-${pickList.id.slice(0, 8).toUpperCase()}`}</h1>
               <div className="flex items-center gap-2 text-sm text-neutral-500">
                 <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[pickList.status]}`}>
                   {statusLabels[pickList.status]}

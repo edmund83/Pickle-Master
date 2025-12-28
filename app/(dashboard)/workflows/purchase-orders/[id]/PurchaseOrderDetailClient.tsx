@@ -27,7 +27,8 @@ import {
   Barcode,
   Search,
   X,
-  Info
+  Info,
+  MoreVertical
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -101,6 +102,12 @@ export function PurchaseOrderDetailClient({
   const [billToState, setBillToState] = useState(purchaseOrder.bill_to_state || '')
   const [billToPostalCode, setBillToPostalCode] = useState(purchaseOrder.bill_to_postal_code || '')
   const [billToCountry, setBillToCountry] = useState(purchaseOrder.bill_to_country || '')
+
+  // Same as Ship To state
+  const [sameAsShipTo, setSameAsShipTo] = useState(false)
+
+  // Menu state
+  const [showMoreMenu, setShowMoreMenu] = useState(false)
 
   // Search state
   const [searchQuery, setSearchQuery] = useState('')
@@ -217,6 +224,31 @@ export function PurchaseOrderDetailClient({
       setVendorEmail(vendor.email || '')
       setVendorPhone(vendor.phone || '')
       await saveField('vendor', vendor.id)
+    }
+  }
+
+  async function handleSameAsShipTo(checked: boolean) {
+    setSameAsShipTo(checked)
+    if (checked) {
+      // Copy Ship To values to Bill To
+      setBillToName(shipToName)
+      setBillToAddress1(shipToAddress1)
+      setBillToAddress2(shipToAddress2)
+      setBillToCity(shipToCity)
+      setBillToState(shipToState)
+      setBillToPostalCode(shipToPostalCode)
+      setBillToCountry(shipToCountry)
+      // Save the copied values
+      await updatePurchaseOrder(purchaseOrder.id, {
+        bill_to_name: shipToName || null,
+        bill_to_address1: shipToAddress1 || null,
+        bill_to_address2: shipToAddress2 || null,
+        bill_to_city: shipToCity || null,
+        bill_to_state: shipToState || null,
+        bill_to_postal_code: shipToPostalCode || null,
+        bill_to_country: shipToCountry || null,
+      })
+      router.refresh()
     }
   }
 
@@ -356,13 +388,51 @@ export function PurchaseOrderDetailClient({
                 Last Updated: <FormattedDateTime date={purchaseOrder.updated_at || purchaseOrder.created_at || new Date().toISOString()} />
               </span>
             </div>
-            <Button
-              variant="outline"
-              onClick={handleCancel}
-              disabled={actionLoading !== null}
-            >
-              Cancel
-            </Button>
+            <div className="flex items-center gap-2">
+              {/* More menu with Delete option */}
+              <div className="relative">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setShowMoreMenu(!showMoreMenu)}
+                  className="text-neutral-500 hover:text-neutral-700"
+                >
+                  <MoreVertical className="h-5 w-5" />
+                </Button>
+                {showMoreMenu && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-10"
+                      onClick={() => setShowMoreMenu(false)}
+                    />
+                    <div className="absolute top-full right-0 mt-1 z-20 w-48 rounded-lg border border-neutral-200 bg-white shadow-lg py-1">
+                      <button
+                        onClick={() => {
+                          setShowMoreMenu(false)
+                          handleDelete()
+                        }}
+                        disabled={actionLoading !== null}
+                        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
+                      >
+                        {actionLoading === 'delete' ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="h-4 w-4" />
+                        )}
+                        Delete Order
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+              <Button
+                variant="outline"
+                onClick={handleCancel}
+                disabled={actionLoading !== null}
+              >
+                Cancel
+              </Button>
+            </div>
           </div>
 
           <div className="mt-4 flex items-center gap-4">
@@ -542,10 +612,22 @@ export function PurchaseOrderDetailClient({
 
             {purchaseOrder.items.length === 0 && (
               <div className="px-6 py-8 text-center text-neutral-500">
-                No items added yet. Search above to add items.
+                No items added yet. Search below to add items.
               </div>
             )}
           </div>
+
+          {/* Subtotal row */}
+          {purchaseOrder.items.length > 0 && (
+            <div className="grid grid-cols-6 gap-4 items-center px-6 py-3 bg-neutral-50 border-t border-neutral-200">
+              <div className="col-span-4 text-right text-sm font-medium text-neutral-600">
+                Subtotal ({purchaseOrder.items.length} item{purchaseOrder.items.length !== 1 ? 's' : ''}):
+              </div>
+              <div className="col-span-2 text-right text-lg font-semibold text-neutral-900">
+                ${subtotal.toFixed(2)}
+              </div>
+            </div>
+          )}
 
           {/* Search to add items */}
           <div className="px-6 py-4 bg-neutral-50 border-t border-neutral-100">
@@ -685,74 +767,93 @@ export function PurchaseOrderDetailClient({
           <CardContent>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="md:col-span-2">
+                <label className="block text-xs font-medium text-neutral-500 mb-1">Name</label>
                 <input
                   type="text"
                   value={shipToName}
                   onChange={(e) => setShipToName(e.target.value)}
                   onBlur={() => saveField('ship_to')}
-                  placeholder="Name"
+                  placeholder="Enter name"
                   className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
                 />
               </div>
-              <input
-                type="text"
-                value={shipToAddress1}
-                onChange={(e) => setShipToAddress1(e.target.value)}
-                onBlur={() => saveField('ship_to')}
-                placeholder="Address 1"
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-              />
-              <input
-                type="text"
-                value={shipToAddress2}
-                onChange={(e) => setShipToAddress2(e.target.value)}
-                onBlur={() => saveField('ship_to')}
-                placeholder="Address 2"
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-              />
-              <input
-                type="text"
-                value={shipToCity}
-                onChange={(e) => setShipToCity(e.target.value)}
-                onBlur={() => saveField('ship_to')}
-                placeholder="City"
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-              />
-              <input
-                type="text"
-                value={shipToState}
-                onChange={(e) => setShipToState(e.target.value)}
-                onBlur={() => saveField('ship_to')}
-                placeholder="State / Province / Region"
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-              />
-              <input
-                type="text"
-                value={shipToPostalCode}
-                onChange={(e) => setShipToPostalCode(e.target.value)}
-                onBlur={() => saveField('ship_to')}
-                placeholder="Zip / Postal Code"
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-              />
-              <select
-                value={shipToCountry}
-                onChange={(e) => {
-                  setShipToCountry(e.target.value)
-                  saveField('ship_to')
-                }}
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-              >
-                <option value="">Country</option>
-                <option value="Malaysia">Malaysia</option>
-                <option value="Singapore">Singapore</option>
-                <option value="Indonesia">Indonesia</option>
-                <option value="Thailand">Thailand</option>
-                <option value="Philippines">Philippines</option>
-                <option value="Vietnam">Vietnam</option>
-                <option value="United States">United States</option>
-                <option value="United Kingdom">United Kingdom</option>
-                <option value="Australia">Australia</option>
-              </select>
+              <div>
+                <label className="block text-xs font-medium text-neutral-500 mb-1">Address Line 1</label>
+                <input
+                  type="text"
+                  value={shipToAddress1}
+                  onChange={(e) => setShipToAddress1(e.target.value)}
+                  onBlur={() => saveField('ship_to')}
+                  placeholder="Street address"
+                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-neutral-500 mb-1">Address Line 2</label>
+                <input
+                  type="text"
+                  value={shipToAddress2}
+                  onChange={(e) => setShipToAddress2(e.target.value)}
+                  onBlur={() => saveField('ship_to')}
+                  placeholder="Apt, suite, unit (optional)"
+                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-neutral-500 mb-1">City</label>
+                <input
+                  type="text"
+                  value={shipToCity}
+                  onChange={(e) => setShipToCity(e.target.value)}
+                  onBlur={() => saveField('ship_to')}
+                  placeholder="Enter city"
+                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-neutral-500 mb-1">State / Province</label>
+                <input
+                  type="text"
+                  value={shipToState}
+                  onChange={(e) => setShipToState(e.target.value)}
+                  onBlur={() => saveField('ship_to')}
+                  placeholder="Enter state or province"
+                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-neutral-500 mb-1">Postal Code</label>
+                <input
+                  type="text"
+                  value={shipToPostalCode}
+                  onChange={(e) => setShipToPostalCode(e.target.value)}
+                  onBlur={() => saveField('ship_to')}
+                  placeholder="Enter postal code"
+                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-neutral-500 mb-1">Country</label>
+                <select
+                  value={shipToCountry}
+                  onChange={(e) => {
+                    setShipToCountry(e.target.value)
+                    saveField('ship_to')
+                  }}
+                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                >
+                  <option value="">Select country</option>
+                  <option value="Malaysia">Malaysia</option>
+                  <option value="Singapore">Singapore</option>
+                  <option value="Indonesia">Indonesia</option>
+                  <option value="Thailand">Thailand</option>
+                  <option value="Philippines">Philippines</option>
+                  <option value="Vietnam">Vietnam</option>
+                  <option value="United States">United States</option>
+                  <option value="United Kingdom">United Kingdom</option>
+                  <option value="Australia">Australia</option>
+                </select>
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -764,82 +865,127 @@ export function PurchaseOrderDetailClient({
               <FileText className="h-5 w-5" />
               Bill To
             </CardTitle>
-            <Button variant="outline" size="sm">
-              Select Address
-            </Button>
+            <div className="flex items-center gap-3">
+              <label className="flex items-center gap-2 text-sm text-neutral-600 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={sameAsShipTo}
+                  onChange={(e) => handleSameAsShipTo(e.target.checked)}
+                  className="rounded border-neutral-300 text-pickle-600 focus:ring-pickle-500"
+                />
+                Same as Ship To
+              </label>
+              <Button variant="outline" size="sm">
+                Select Address
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="md:col-span-2">
-                <input
-                  type="text"
-                  value={billToName}
-                  onChange={(e) => setBillToName(e.target.value)}
-                  onBlur={() => saveField('bill_to')}
-                  placeholder="Name"
-                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                />
+            {sameAsShipTo ? (
+              <div className="rounded-lg bg-neutral-50 border border-neutral-200 px-4 py-3 text-sm text-neutral-600">
+                <p className="font-medium text-neutral-700">{billToName || 'No name provided'}</p>
+                {billToAddress1 && <p>{billToAddress1}</p>}
+                {billToAddress2 && <p>{billToAddress2}</p>}
+                <p>
+                  {[billToCity, billToState, billToPostalCode].filter(Boolean).join(', ')}
+                </p>
+                {billToCountry && <p>{billToCountry}</p>}
+                {!billToName && !billToAddress1 && (
+                  <p className="text-neutral-400 italic">Fill in Ship To address first</p>
+                )}
               </div>
-              <input
-                type="text"
-                value={billToAddress1}
-                onChange={(e) => setBillToAddress1(e.target.value)}
-                onBlur={() => saveField('bill_to')}
-                placeholder="Address 1"
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-              />
-              <input
-                type="text"
-                value={billToAddress2}
-                onChange={(e) => setBillToAddress2(e.target.value)}
-                onBlur={() => saveField('bill_to')}
-                placeholder="Address 2"
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-              />
-              <input
-                type="text"
-                value={billToCity}
-                onChange={(e) => setBillToCity(e.target.value)}
-                onBlur={() => saveField('bill_to')}
-                placeholder="City"
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-              />
-              <input
-                type="text"
-                value={billToState}
-                onChange={(e) => setBillToState(e.target.value)}
-                onBlur={() => saveField('bill_to')}
-                placeholder="State / Province / Region"
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-              />
-              <input
-                type="text"
-                value={billToPostalCode}
-                onChange={(e) => setBillToPostalCode(e.target.value)}
-                onBlur={() => saveField('bill_to')}
-                placeholder="Zip / Postal Code"
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-              />
-              <select
-                value={billToCountry}
-                onChange={(e) => {
-                  setBillToCountry(e.target.value)
-                  saveField('bill_to')
-                }}
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-              >
-                <option value="">Country</option>
-                <option value="Malaysia">Malaysia</option>
-                <option value="Singapore">Singapore</option>
-                <option value="Indonesia">Indonesia</option>
-                <option value="Thailand">Thailand</option>
-                <option value="Philippines">Philippines</option>
-                <option value="Vietnam">Vietnam</option>
-                <option value="United States">United States</option>
-                <option value="United Kingdom">United Kingdom</option>
-                <option value="Australia">Australia</option>
-              </select>
-            </div>
+            ) : (
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+                <div className="md:col-span-2">
+                  <label className="block text-xs font-medium text-neutral-500 mb-1">Name</label>
+                  <input
+                    type="text"
+                    value={billToName}
+                    onChange={(e) => setBillToName(e.target.value)}
+                    onBlur={() => saveField('bill_to')}
+                    placeholder="Enter name"
+                    className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-neutral-500 mb-1">Address Line 1</label>
+                  <input
+                    type="text"
+                    value={billToAddress1}
+                    onChange={(e) => setBillToAddress1(e.target.value)}
+                    onBlur={() => saveField('bill_to')}
+                    placeholder="Street address"
+                    className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-neutral-500 mb-1">Address Line 2</label>
+                  <input
+                    type="text"
+                    value={billToAddress2}
+                    onChange={(e) => setBillToAddress2(e.target.value)}
+                    onBlur={() => saveField('bill_to')}
+                    placeholder="Apt, suite, unit (optional)"
+                    className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-neutral-500 mb-1">City</label>
+                  <input
+                    type="text"
+                    value={billToCity}
+                    onChange={(e) => setBillToCity(e.target.value)}
+                    onBlur={() => saveField('bill_to')}
+                    placeholder="Enter city"
+                    className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-neutral-500 mb-1">State / Province</label>
+                  <input
+                    type="text"
+                    value={billToState}
+                    onChange={(e) => setBillToState(e.target.value)}
+                    onBlur={() => saveField('bill_to')}
+                    placeholder="Enter state or province"
+                    className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-neutral-500 mb-1">Postal Code</label>
+                  <input
+                    type="text"
+                    value={billToPostalCode}
+                    onChange={(e) => setBillToPostalCode(e.target.value)}
+                    onBlur={() => saveField('bill_to')}
+                    placeholder="Enter postal code"
+                    className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-neutral-500 mb-1">Country</label>
+                  <select
+                    value={billToCountry}
+                    onChange={(e) => {
+                      setBillToCountry(e.target.value)
+                      saveField('bill_to')
+                    }}
+                    className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                  >
+                    <option value="">Select country</option>
+                    <option value="Malaysia">Malaysia</option>
+                    <option value="Singapore">Singapore</option>
+                    <option value="Indonesia">Indonesia</option>
+                    <option value="Thailand">Thailand</option>
+                    <option value="Philippines">Philippines</option>
+                    <option value="Vietnam">Vietnam</option>
+                    <option value="United States">United States</option>
+                    <option value="United Kingdom">United Kingdom</option>
+                    <option value="Australia">Australia</option>
+                  </select>
+                </div>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -862,20 +1008,11 @@ export function PurchaseOrderDetailClient({
 
         {/* Footer Actions */}
         <div className="sticky bottom-0 border-t border-neutral-200 bg-white px-6 py-4">
-          <div className="flex items-center justify-between">
-            <Button
-              variant="outline"
-              onClick={handleDelete}
-              disabled={actionLoading !== null}
-              className="text-red-600 hover:text-red-700"
-            >
-              {actionLoading === 'delete' ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Trash2 className="mr-2 h-4 w-4" />
-              )}
-              Delete
-            </Button>
+          <div className="flex items-center justify-end gap-4">
+            <div className="text-right">
+              <p className="text-xs text-neutral-500">{purchaseOrder.items.length} item{purchaseOrder.items.length !== 1 ? 's' : ''}</p>
+              <p className="text-lg font-semibold text-neutral-900">${subtotal.toFixed(2)}</p>
+            </div>
             <Button
               onClick={() => handleStatusChange('submitted')}
               disabled={actionLoading !== null || purchaseOrder.items.length === 0}
