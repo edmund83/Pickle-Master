@@ -61,8 +61,13 @@ export function ItemCheckoutStatusCard({ item }: ItemCheckoutSectionProps) {
 
       if (checkoutData) {
         // Calculate overdue status manually since we aren't using RPC
-        const isOverdue = checkoutData.due_date ? new Date(checkoutData.due_date) < new Date() : false
-        const daysUntilDue = checkoutData.due_date ? Math.ceil((new Date(checkoutData.due_date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : null
+        // Compare dates at day level - item is overdue only AFTER the due date has passed
+        const today = new Date()
+        today.setHours(0, 0, 0, 0)
+        const dueDate = checkoutData.due_date ? new Date(checkoutData.due_date) : null
+        if (dueDate) dueDate.setHours(0, 0, 0, 0)
+        const isOverdue = dueDate ? dueDate < today : false
+        const daysUntilDue = dueDate ? Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24)) : null
 
         setActiveCheckout({
           ...checkoutData,
