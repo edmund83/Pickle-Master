@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Package, Plus, Minus, Check, Loader2, ClipboardList, AlertCircle } from 'lucide-react'
+import Link from 'next/link'
+import { Package, Plus, Minus, Check, Loader2, ClipboardList, AlertCircle, ArrowLeft } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import type { PurchaseOrder, PurchaseOrderItem, InventoryItem } from '@/types/database.types'
@@ -160,10 +161,21 @@ export default function ReceivingPage() {
     <div className="flex-1 overflow-y-auto">
       {/* Header */}
       <div className="border-b border-neutral-200 bg-white px-8 py-6">
-        <h1 className="text-2xl font-semibold text-neutral-900">Receiving</h1>
-        <p className="mt-1 text-neutral-500">
-          Receive items from purchase orders and update inventory
-        </p>
+        <div className="flex items-center gap-4">
+          <Link href="/workflows/inbound">
+            <Button variant="ghost" size="sm">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back
+            </Button>
+          </Link>
+          <div className="h-6 w-px bg-neutral-200" />
+          <div>
+            <h1 className="text-2xl font-semibold text-neutral-900">Receiving</h1>
+            <p className="mt-1 text-neutral-500">
+              Receive items from purchase orders and update inventory
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Success Message */}

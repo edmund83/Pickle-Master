@@ -12,6 +12,7 @@ interface PickListWithItems {
   pick_list: {
     id: string
     name: string
+    display_id: string | null
     pick_list_number: string | null
     status: string
     due_date: string | null

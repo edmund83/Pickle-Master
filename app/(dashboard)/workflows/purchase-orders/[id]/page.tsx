@@ -25,6 +25,7 @@ export interface Vendor {
 export interface PurchaseOrderWithDetails {
   id: string
   tenant_id: string
+  display_id: string | null
   order_number: string | null
   vendor_id: string | null
   status: string | null

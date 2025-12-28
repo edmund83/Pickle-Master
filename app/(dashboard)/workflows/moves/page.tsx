@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { ArrowRight, Package, FolderOpen, Check, Loader2, Search } from 'lucide-react'
+import Link from 'next/link'
+import { ArrowRight, ArrowLeft, Package, FolderOpen, Check, Loader2, Search } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import type { InventoryItem, Folder } from '@/types/database.types'
@@ -115,10 +116,21 @@ export default function StockMovesPage() {
     <div className="flex-1 overflow-y-auto">
       {/* Header */}
       <div className="border-b border-neutral-200 bg-white px-8 py-6">
-        <h1 className="text-2xl font-semibold text-neutral-900">Stock Moves</h1>
-        <p className="mt-1 text-neutral-500">
-          Move items between folders or locations
-        </p>
+        <div className="flex items-center gap-4">
+          <Link href="/workflows/inventory-operations">
+            <Button variant="ghost" size="sm">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back
+            </Button>
+          </Link>
+          <div className="h-6 w-px bg-neutral-200" />
+          <div>
+            <h1 className="text-2xl font-semibold text-neutral-900">Stock Moves</h1>
+            <p className="mt-1 text-neutral-500">
+              Move items between folders or locations
+            </p>
+          </div>
+        </div>
       </div>
 
       {/* Success Message */}

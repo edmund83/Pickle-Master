@@ -1,47 +1,34 @@
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ClipboardList, ShoppingCart, ArrowRightLeft, PackageOpen, UserCheck } from 'lucide-react'
+import { ClipboardList, PackageOpen, ArrowRightLeft } from 'lucide-react'
 
-const workflows = [
+const categories = [
   {
-    href: '/workflows/checkouts',
-    title: 'Check-In / Check-Out',
-    description: 'Track items assigned to people, jobs, and locations',
-    icon: UserCheck,
-    color: 'text-amber-500',
-    bgColor: 'bg-amber-50',
+    href: '/workflows/inbound',
+    title: 'Inbound',
+    description: 'Purchase orders and receiving stock from suppliers',
+    icon: PackageOpen,
+    color: 'text-green-500',
+    bgColor: 'bg-green-50',
+    workflows: ['Purchase Orders', 'Receives'],
   },
   {
-    href: '/workflows/pick-lists',
-    title: 'Pick Lists',
-    description: 'Create and manage picking lists for orders',
+    href: '/workflows/fulfillment',
+    title: 'Fulfillment',
+    description: 'Pick lists for order processing and shipping',
     icon: ClipboardList,
     color: 'text-blue-500',
     bgColor: 'bg-blue-50',
+    workflows: ['Pick Lists'],
   },
   {
-    href: '/workflows/purchase-orders',
-    title: 'Purchase Orders',
-    description: 'Track incoming stock from suppliers',
-    icon: ShoppingCart,
-    color: 'text-green-500',
-    bgColor: 'bg-green-50',
-  },
-  {
-    href: '/workflows/transfers',
-    title: 'Stock Transfers',
-    description: 'Transfer items between locations with AI suggestions',
+    href: '/workflows/inventory-operations',
+    title: 'Inventory Operations',
+    description: 'Asset tracking, transfers, moves, and stock counts',
     icon: ArrowRightLeft,
     color: 'text-purple-500',
     bgColor: 'bg-purple-50',
-  },
-  {
-    href: '/workflows/receives',
-    title: 'Receives',
-    description: 'Record incoming stock receipts',
-    icon: PackageOpen,
-    color: 'text-orange-500',
-    bgColor: 'bg-orange-50',
+    workflows: ['Check-In/Out', 'Transfers', 'Moves', 'Stock Count'],
   },
 ]
 
@@ -54,21 +41,33 @@ export default function WorkflowsPage() {
       </div>
 
       <div className="p-6">
-        <div className="grid gap-4 sm:grid-cols-2">
-          {workflows.map((workflow) => {
-            const Icon = workflow.icon
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {categories.map((category) => {
+            const Icon = category.icon
             return (
-              <Link key={workflow.href} href={workflow.href}>
+              <Link key={category.href} href={category.href}>
                 <Card className="h-full transition-shadow hover:shadow-md">
                   <CardHeader>
                     <div
-                      className={`mb-2 flex h-12 w-12 items-center justify-center rounded-lg ${workflow.bgColor}`}
+                      className={`mb-2 flex h-12 w-12 items-center justify-center rounded-lg ${category.bgColor}`}
                     >
-                      <Icon className={`h-6 w-6 ${workflow.color}`} />
+                      <Icon className={`h-6 w-6 ${category.color}`} />
                     </div>
-                    <CardTitle>{workflow.title}</CardTitle>
-                    <CardDescription>{workflow.description}</CardDescription>
+                    <CardTitle>{category.title}</CardTitle>
+                    <CardDescription>{category.description}</CardDescription>
                   </CardHeader>
+                  <CardContent className="pt-0">
+                    <div className="flex flex-wrap gap-1.5">
+                      {category.workflows.map((workflow) => (
+                        <span
+                          key={workflow}
+                          className="inline-flex items-center rounded-full bg-neutral-100 px-2.5 py-0.5 text-xs font-medium text-neutral-600"
+                        >
+                          {workflow}
+                        </span>
+                      ))}
+                    </div>
+                  </CardContent>
                 </Card>
               </Link>
             )
