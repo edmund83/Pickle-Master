@@ -7,6 +7,7 @@ export type PurchaseOrderResult = {
     success: boolean
     error?: string
     purchase_order_id?: string
+    display_id?: string
     vendor_id?: string
 }
 
@@ -153,160 +154,115 @@ export async function createVendor(input: CreateVendorInput): Promise<PurchaseOr
 }
 
 // Create a draft purchase order with minimal data (for quick-create flow)
+// Uses RPC to generate display_id in format PO-{ORG_CODE}-{5-digit-number}
 export async function createDraftPurchaseOrder(): Promise<PurchaseOrderResult> {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) return { success: false, error: 'Unauthorized' }
 
-    // Get user's tenant
+    // Use the new RPC function for atomic creation with display_id
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: profile } = await (supabase as any)
-        .from('profiles')
-        .select('tenant_id')
-        .eq('id', user.id)
-        .single()
-
-    if (!profile?.tenant_id) return { success: false, error: 'No tenant found' }
-
-    // Generate order number
-    const orderNumber = await generateOrderNumber(supabase, profile.tenant_id)
-
-    // Create minimal purchase order
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: po, error } = await (supabase as any)
-        .from('purchase_orders')
-        .insert({
-            tenant_id: profile.tenant_id,
-            order_number: orderNumber,
-            status: 'draft',
-            subtotal: 0,
-            total: 0,
-            created_by: user.id
-        })
-        .select('id')
-        .single()
+    const { data, error } = await (supabase as any).rpc('create_purchase_order_v2', {
+        p_vendor_id: null,
+        p_expected_date: null,
+        p_notes: null,
+        p_currency: 'MYR',
+        p_ship_to_name: null,
+        p_ship_to_address1: null,
+        p_ship_to_address2: null,
+        p_ship_to_city: null,
+        p_ship_to_state: null,
+        p_ship_to_postal_code: null,
+        p_ship_to_country: null,
+        p_bill_to_name: null,
+        p_bill_to_address1: null,
+        p_bill_to_address2: null,
+        p_bill_to_city: null,
+        p_bill_to_state: null,
+        p_bill_to_postal_code: null,
+        p_bill_to_country: null,
+        p_items: []
+    })
 
     if (error) {
         console.error('Create draft PO error:', error)
         return { success: false, error: error.message }
     }
 
-    revalidatePath('/workflows/purchase-orders')
-    return { success: true, purchase_order_id: po.id }
-}
-
-// Generate next order number
-async function generateOrderNumber(supabase: ReturnType<typeof createClient> extends Promise<infer T> ? T : never, tenantId: string): Promise<string> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data } = await (supabase as any)
-        .from('purchase_orders')
-        .select('order_number')
-        .eq('tenant_id', tenantId)
-        .order('created_at', { ascending: false })
-        .limit(1)
-
-    if (data && data.length > 0 && data[0].order_number) {
-        const lastNumber = data[0].order_number
-        const match = lastNumber.match(/PO-(\d+)/)
-        if (match) {
-            const nextNum = parseInt(match[1]) + 1
-            return `PO-${String(nextNum).padStart(4, '0')}`
-        }
+    if (data && !data.success) {
+        return { success: false, error: data.error || 'Failed to create purchase order' }
     }
 
-    return 'PO-0001'
+    revalidatePath('/workflows/purchase-orders')
+    return { success: true, purchase_order_id: data?.purchase_order_id, display_id: data?.display_id }
+}
+
+// Generate display ID using RPC (concurrency-safe)
+// Format: PO-{ORG_CODE}-{5-digit-number} e.g., PO-ACM01-00001
+async function generateDisplayId(supabase: ReturnType<typeof createClient> extends Promise<infer T> ? T : never): Promise<string> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data, error } = await (supabase as any).rpc('generate_display_id_for_current_user', {
+        p_entity_type: 'purchase_order'
+    })
+
+    if (error) {
+        console.error('Generate display_id error:', error)
+        throw new Error('Failed to generate display ID')
+    }
+
+    return data
 }
 
 // Create a new purchase order with items
+// Uses RPC for atomic creation with display_id generation
 export async function createPurchaseOrder(input: CreatePurchaseOrderInput): Promise<PurchaseOrderResult> {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) return { success: false, error: 'Unauthorized' }
 
-    // Get user's tenant
+    // Use the new RPC function for atomic creation with display_id
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: profile } = await (supabase as any)
-        .from('profiles')
-        .select('tenant_id')
-        .eq('id', user.id)
-        .single()
+    const { data, error } = await (supabase as any).rpc('create_purchase_order_v2', {
+        p_vendor_id: input.vendor_id || null,
+        p_expected_date: input.expected_date || null,
+        p_notes: input.notes || null,
+        p_currency: 'MYR',
+        p_ship_to_name: input.ship_to_name || null,
+        p_ship_to_address1: input.ship_to_address1 || null,
+        p_ship_to_address2: input.ship_to_address2 || null,
+        p_ship_to_city: input.ship_to_city || null,
+        p_ship_to_state: input.ship_to_state || null,
+        p_ship_to_postal_code: input.ship_to_postal_code || null,
+        p_ship_to_country: input.ship_to_country || null,
+        p_bill_to_name: input.bill_to_name || null,
+        p_bill_to_address1: input.bill_to_address1 || null,
+        p_bill_to_address2: input.bill_to_address2 || null,
+        p_bill_to_city: input.bill_to_city || null,
+        p_bill_to_state: input.bill_to_state || null,
+        p_bill_to_postal_code: input.bill_to_postal_code || null,
+        p_bill_to_country: input.bill_to_country || null,
+        p_items: input.items.map(item => ({
+            item_id: item.item_id,
+            item_name: item.item_name,
+            sku: item.sku,
+            ordered_quantity: item.ordered_quantity,
+            unit_price: item.unit_price
+        }))
+    })
 
-    if (!profile?.tenant_id) return { success: false, error: 'No tenant found' }
-
-    // Generate order number if not provided
-    const orderNumber = input.order_number || await generateOrderNumber(supabase, profile.tenant_id)
-
-    // Calculate totals
-    const subtotal = input.items.reduce((sum, item) => sum + (item.ordered_quantity * item.unit_price), 0)
-
-    // Create purchase order
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: po, error: poError } = await (supabase as any)
-        .from('purchase_orders')
-        .insert({
-            tenant_id: profile.tenant_id,
-            vendor_id: input.vendor_id || null,
-            order_number: orderNumber,
-            expected_date: input.expected_date || null,
-            notes: input.notes || null,
-            status: 'draft',
-            subtotal: subtotal,
-            total: subtotal,
-            created_by: user.id,
-            // Ship To address
-            ship_to_name: input.ship_to_name || null,
-            ship_to_address1: input.ship_to_address1 || null,
-            ship_to_address2: input.ship_to_address2 || null,
-            ship_to_city: input.ship_to_city || null,
-            ship_to_state: input.ship_to_state || null,
-            ship_to_postal_code: input.ship_to_postal_code || null,
-            ship_to_country: input.ship_to_country || null,
-            // Bill To address
-            bill_to_name: input.bill_to_name || null,
-            bill_to_address1: input.bill_to_address1 || null,
-            bill_to_address2: input.bill_to_address2 || null,
-            bill_to_city: input.bill_to_city || null,
-            bill_to_state: input.bill_to_state || null,
-            bill_to_postal_code: input.bill_to_postal_code || null,
-            bill_to_country: input.bill_to_country || null
-        })
-        .select('id')
-        .single()
-
-    if (poError) {
-        console.error('Create PO error:', poError)
-        return { success: false, error: poError.message }
+    if (error) {
+        console.error('Create PO error:', error)
+        return { success: false, error: error.message }
     }
 
-    // Create purchase order items
-    const itemsToInsert = input.items.map(item => ({
-        purchase_order_id: po.id,
-        item_id: item.item_id || null,
-        item_name: item.item_name,
-        sku: item.sku || null,
-        part_number: item.part_number || null,
-        ordered_quantity: item.ordered_quantity,
-        unit_price: item.unit_price,
-        received_quantity: 0
-    }))
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error: itemsError } = await (supabase as any)
-        .from('purchase_order_items')
-        .insert(itemsToInsert)
-
-    if (itemsError) {
-        console.error('Create PO items error:', itemsError)
-        // Delete the PO if items failed
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supabase as any).from('purchase_orders').delete().eq('id', po.id)
-        return { success: false, error: itemsError.message }
+    if (data && !data.success) {
+        return { success: false, error: data.error || 'Failed to create purchase order' }
     }
 
     revalidatePath('/workflows/purchase-orders')
-    return { success: true, purchase_order_id: po.id }
+    return { success: true, purchase_order_id: data?.purchase_order_id, display_id: data?.display_id }
 }
 
 // Get a single purchase order with items and vendor
@@ -343,11 +299,15 @@ export async function updatePurchaseOrder(
 
     if (!user) return { success: false, error: 'Unauthorized' }
 
+    // Exclude display_id from updates - it is immutable once set
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { display_id, ...safeUpdates } = updates as Record<string, unknown>
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any)
         .from('purchase_orders')
         .update({
-            ...updates,
+            ...safeUpdates,
             updated_at: new Date().toISOString()
         })
         .eq('id', purchaseOrderId)

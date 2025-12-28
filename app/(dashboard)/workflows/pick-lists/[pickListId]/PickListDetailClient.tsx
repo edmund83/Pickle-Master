@@ -52,6 +52,7 @@ interface PickListWithItems {
   pick_list: {
     id: string
     name: string
+    display_id: string | null
     pick_list_number: string | null
     status: string
     due_date: string | null
@@ -447,7 +448,8 @@ export function PickListDetailClient({ data, teamMembers }: PickListDetailClient
 
           <div className="mt-4 flex items-center gap-4">
             <h1 className="text-2xl font-semibold text-neutral-900">
-              {pickList.pick_list_number || pickList.name || `PL-${pickList.id.slice(0, 8).toUpperCase()}`}
+              {/* Prefer display_id (new format: PL-ACM01-00001), fallback to pick_list_number */}
+              {pickList.display_id || pickList.pick_list_number || pickList.name || `PL-${pickList.id.slice(0, 8).toUpperCase()}`}
             </h1>
             <span className={`rounded-full px-3 py-1 text-sm font-medium ${statusColors[pickList.status]}`}>
               {statusLabels[pickList.status]}
@@ -860,7 +862,8 @@ export function PickListDetailClient({ data, teamMembers }: PickListDetailClient
           <div className="flex items-center gap-3">
             {statusIcons[pickList.status]}
             <div>
-              <h1 className="text-xl font-semibold text-neutral-900">{pickList.pick_list_number || pickList.name || `PL-${pickList.id.slice(0, 8).toUpperCase()}`}</h1>
+              {/* Prefer display_id (new format: PL-ACM01-00001), fallback to pick_list_number */}
+              <h1 className="text-xl font-semibold text-neutral-900">{pickList.display_id || pickList.pick_list_number || pickList.name || `PL-${pickList.id.slice(0, 8).toUpperCase()}`}</h1>
               <div className="flex items-center gap-2 text-sm text-neutral-500">
                 <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${statusColors[pickList.status]}`}>
                   {statusLabels[pickList.status]}
