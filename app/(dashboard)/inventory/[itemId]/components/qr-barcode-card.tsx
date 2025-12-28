@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { generateQRCode, formatLabelId } from '@/lib/labels/barcode'
 import { generateScannableBarcode, generateItemBarcode } from '@/lib/labels/barcode-generator'
 import { ItemDetailCard } from './item-detail-card'
+import { cn } from '@/lib/utils'
 
 interface QRBarcodeCardProps {
   itemId: string
@@ -16,14 +17,17 @@ interface QRBarcodeCardProps {
   isGenerating?: boolean
 }
 
+type CodeType = 'qr' | 'barcode'
+
 export default function QRBarcodeCard({
   itemId,
   itemName,
   existingBarcode,
   onPrintLabel,
   onGenerateBarcode,
-  isGenerating = false
+  isGenerating = false,
 }: QRBarcodeCardProps) {
+  const [codeType, setCodeType] = useState<CodeType>('qr')
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null)
   const [barcodeUrl, setBarcodeUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -43,8 +47,8 @@ export default function QRBarcodeCard({
         // Generate barcode
         const bcUrl = await generateScannableBarcode(barcodeData, 'code128', {
           width: 200,
-          height: 50,
-          includeText: false,
+          height: 60,
+          includeText: true,
           scale: 2,
         })
         setBarcodeUrl(bcUrl)
@@ -66,65 +70,91 @@ export default function QRBarcodeCard({
         </div>
       ) : (
         <div className="space-y-4">
-          {/* QR Code Section */}
-          <div className="flex items-start gap-4">
-            <div className="flex flex-col items-center">
-              {qrCodeUrl ? (
-                <div className="rounded-lg border border-neutral-200 bg-white p-2">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={qrCodeUrl} alt="QR Code" className="w-24 h-24" />
+          {/* Toggle */}
+          <div className="flex items-center justify-center">
+            <div className="inline-flex rounded-lg border border-neutral-200 p-1 bg-neutral-50">
+              <button
+                type="button"
+                onClick={() => setCodeType('qr')}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+                  codeType === 'qr'
+                    ? 'bg-white text-neutral-900 shadow-sm'
+                    : 'text-neutral-500 hover:text-neutral-700'
+                )}
+              >
+                <QrCode className="h-4 w-4" />
+                QR Code
+              </button>
+              <button
+                type="button"
+                onClick={() => setCodeType('barcode')}
+                className={cn(
+                  'flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors',
+                  codeType === 'barcode'
+                    ? 'bg-white text-neutral-900 shadow-sm'
+                    : 'text-neutral-500 hover:text-neutral-700'
+                )}
+              >
+                <Barcode className="h-4 w-4" />
+                Barcode
+              </button>
+            </div>
+          </div>
+
+          {/* Code Display */}
+          <div className="flex flex-col items-center">
+            <div className="rounded-lg border border-neutral-200 bg-white p-4 w-full">
+              <p className="text-sm text-neutral-700 font-medium text-center mb-3 truncate">
+                {itemName}
+              </p>
+
+              {codeType === 'qr' ? (
+                <div className="flex flex-col items-center">
+                  {qrCodeUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={qrCodeUrl} alt="QR Code" className="w-28 h-28" />
+                  ) : (
+                    <div className="w-28 h-28 bg-neutral-100 rounded flex items-center justify-center">
+                      <QrCode className="h-10 w-10 text-neutral-300" />
+                    </div>
+                  )}
                 </div>
               ) : (
-                <div className="w-24 h-24 rounded-lg border border-neutral-200 bg-neutral-50 flex items-center justify-center">
-                  <QrCode className="h-8 w-8 text-neutral-300" />
-                </div>
-              )}
-              <span className="text-[10px] font-mono text-neutral-500 mt-1">QR Code</span>
-            </div>
-
-            {/* Barcode Section */}
-            <div className="flex-1 flex flex-col items-center">
-              <div className="rounded-lg border border-neutral-200 bg-white p-3 w-full">
-                <p className="text-xs text-neutral-600 font-medium text-center mb-2 truncate">
-                  {itemName}
-                </p>
-                {barcodeUrl ? (
-                  <div className="flex flex-col items-center">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                <div className="flex flex-col items-center">
+                  {barcodeUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
                     <img
                       src={barcodeUrl}
                       alt="Barcode"
-                      className="w-full max-w-[180px] h-12 object-contain"
+                      className="w-full max-w-[200px] h-auto object-contain"
                     />
-                    <div className="w-full max-w-[180px] h-px bg-red-400 mt-1" />
-                  </div>
-                ) : (
-                  <div className="w-full h-12 bg-neutral-50 rounded flex items-center justify-center">
-                    <Barcode className="h-6 w-6 text-neutral-300" />
-                  </div>
-                )}
-                <p className="text-[10px] font-mono text-neutral-500 text-center mt-1">
-                  {labelId}
-                </p>
-              </div>
+                  ) : (
+                    <div className="w-full h-16 bg-neutral-100 rounded flex items-center justify-center">
+                      <Barcode className="h-8 w-8 text-neutral-300" />
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <p className="text-[11px] font-mono text-neutral-500 text-center mt-2">
+                {labelId}
+              </p>
             </div>
           </div>
 
           {/* Scan Info */}
           <div className="pt-2 border-t border-neutral-100">
             <p className="text-xs text-neutral-400 text-center">
-              Scan with any barcode scanner or camera app
+              {codeType === 'qr'
+                ? 'Scan with any camera app'
+                : 'Scan with any barcode scanner'}
             </p>
           </div>
 
           {/* Action Buttons */}
           <div className="flex gap-2 pt-2">
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex-1"
-              onClick={onPrintLabel}
-            >
+            <Button variant="outline" size="sm" className="flex-1" onClick={onPrintLabel}>
               <Printer className="mr-2 h-4 w-4" />
               Print Label
             </Button>
