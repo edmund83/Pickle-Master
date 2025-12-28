@@ -627,12 +627,39 @@ export type Database = {
           tenant_id?: string
         }
       }
+      entity_sequence_counters: {
+        Row: {
+          id: string
+          tenant_id: string
+          entity_type: string
+          current_value: number
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          entity_type: string
+          current_value?: number
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          entity_type?: string
+          current_value?: number
+          created_at?: string | null
+          updated_at?: string | null
+        }
+      }
       folders: {
         Row: {
           color: string | null
           created_at: string | null
           created_by: string | null
           depth: number | null
+          display_id: string | null
           icon: string | null
           id: string
           name: string
@@ -647,6 +674,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           depth?: number | null
+          display_id?: string | null
           icon?: string | null
           id?: string
           name: string
@@ -661,6 +689,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           depth?: number | null
+          display_id?: string | null
           icon?: string | null
           id?: string
           name?: string
@@ -681,6 +710,7 @@ export type Database = {
           custom_fields: Json | null
           deleted_at: string | null
           description: string | null
+          display_id: string | null
           embedding: string | null
           embedding_updated_at: string | null
           folder_id: string | null
@@ -720,6 +750,7 @@ export type Database = {
           custom_fields?: Json | null
           deleted_at?: string | null
           description?: string | null
+          display_id?: string | null
           embedding?: string | null
           embedding_updated_at?: string | null
           folder_id?: string | null
@@ -759,6 +790,7 @@ export type Database = {
           custom_fields?: Json | null
           deleted_at?: string | null
           description?: string | null
+          display_id?: string | null
           embedding?: string | null
           embedding_updated_at?: string | null
           folder_id?: string | null
@@ -890,6 +922,7 @@ export type Database = {
           completed_at: string | null
           created_at: string | null
           created_by: string | null
+          display_id: string | null
           due_date: string | null
           id: string
           item_outcome: string | null
@@ -913,6 +946,7 @@ export type Database = {
           completed_at?: string | null
           created_at?: string | null
           created_by?: string | null
+          display_id?: string | null
           due_date?: string | null
           id?: string
           item_outcome?: string | null
@@ -936,6 +970,7 @@ export type Database = {
           completed_at?: string | null
           created_at?: string | null
           created_by?: string | null
+          display_id?: string | null
           due_date?: string | null
           id?: string
           item_outcome?: string | null
@@ -1041,6 +1076,7 @@ export type Database = {
           created_at: string | null
           created_by: string | null
           currency: string | null
+          display_id: string | null
           expected_date: string | null
           id: string
           notes: string | null
@@ -1080,6 +1116,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           currency?: string | null
+          display_id?: string | null
           expected_date?: string | null
           id?: string
           notes?: string | null
@@ -1119,6 +1156,7 @@ export type Database = {
           created_at?: string | null
           created_by?: string | null
           currency?: string | null
+          display_id?: string | null
           expected_date?: string | null
           id?: string
           notes?: string | null
@@ -1186,6 +1224,7 @@ export type Database = {
           max_items: number | null
           max_users: number | null
           name: string
+          org_code: string
           primary_color: string | null
           settings: Json | null
           slug: string
@@ -1200,6 +1239,7 @@ export type Database = {
           max_items?: number | null
           max_users?: number | null
           name: string
+          org_code?: string
           primary_color?: string | null
           settings?: Json | null
           slug: string
@@ -1214,6 +1254,7 @@ export type Database = {
           max_items?: number | null
           max_users?: number | null
           name?: string
+          org_code?: string
           primary_color?: string | null
           settings?: Json | null
           slug?: string
@@ -1711,6 +1752,7 @@ export type Alert = Tables<'alerts'>
 export type Notification = Tables<'notifications'>
 export type PickList = Tables<'pick_lists'>
 export type PickListItem = Tables<'pick_list_items'>
+export type EntitySequenceCounter = Tables<'entity_sequence_counters'>
 
 // Extended type for Pick List with joined relations
 export type PickListWithRelations = PickList & {

@@ -1059,7 +1059,8 @@ export function PurchaseOrderDetailClient({
             <div>
               <div className="flex items-center gap-3">
                 <h1 className="text-xl font-semibold text-neutral-900">
-                  {purchaseOrder.order_number || `PO-${purchaseOrder.id.slice(0, 8)}`}
+                  {/* Prefer display_id (new format: PO-ACM01-00001), fallback to order_number */}
+                  {purchaseOrder.display_id || purchaseOrder.order_number || `PO-${purchaseOrder.id.slice(0, 8)}`}
                 </h1>
                 <span className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${statusConfig[status]?.bgColor} ${statusConfig[status]?.color}`}>
                   <StatusIcon className="h-3.5 w-3.5" />
@@ -1298,7 +1299,8 @@ export function PurchaseOrderDetailClient({
                   <div className="flex justify-between">
                     <dt className="text-neutral-500">Order Number</dt>
                     <dd className="font-medium text-neutral-900">
-                      {purchaseOrder.order_number || `PO-${purchaseOrder.id.slice(0, 8)}`}
+                      {/* Prefer display_id (new format: PO-ACM01-00001), fallback to order_number */}
+                      {purchaseOrder.display_id || purchaseOrder.order_number || `PO-${purchaseOrder.id.slice(0, 8)}`}
                     </dd>
                   </div>
                   <div className="flex justify-between">

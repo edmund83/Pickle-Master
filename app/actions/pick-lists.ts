@@ -7,6 +7,7 @@ export type PickListResult = {
     success: boolean
     error?: string
     pick_list_id?: string
+    display_id?: string
 }
 
 export interface CreatePickListInput {
@@ -25,27 +26,20 @@ export interface CreatePickListInput {
     items: Array<{ item_id: string; requested_quantity: number }>
 }
 
-// Generate next pick list number
-async function generatePickListNumber(supabase: ReturnType<typeof createClient> extends Promise<infer T> ? T : never, tenantId: string): Promise<string> {
+// Generate display ID using RPC (concurrency-safe)
+// Format: PL-{ORG_CODE}-{5-digit-number} e.g., PL-ACM01-00001
+async function generateDisplayId(supabase: ReturnType<typeof createClient> extends Promise<infer T> ? T : never): Promise<string> {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data } = await (supabase as any)
-        .from('pick_lists')
-        .select('pick_list_number')
-        .eq('tenant_id', tenantId)
-        .not('pick_list_number', 'is', null)
-        .order('created_at', { ascending: false })
-        .limit(1)
+    const { data, error } = await (supabase as any).rpc('generate_display_id_for_current_user', {
+        p_entity_type: 'pick_list'
+    })
 
-    if (data && data.length > 0 && data[0].pick_list_number) {
-        const lastNumber = data[0].pick_list_number
-        const match = lastNumber.match(/PL-(\d+)/)
-        if (match) {
-            const nextNum = parseInt(match[1]) + 1
-            return `PL-${String(nextNum).padStart(4, '0')}`
-        }
+    if (error) {
+        console.error('Generate display_id error:', error)
+        throw new Error('Failed to generate display ID')
     }
 
-    return 'PL-0001'
+    return data
 }
 
 export async function createPickList(input: CreatePickListInput): Promise<PickListResult> {
@@ -81,51 +75,46 @@ export async function createPickList(input: CreatePickListInput): Promise<PickLi
     }
 
     revalidatePath('/workflows/pick-lists')
-    return { success: true, pick_list_id: data?.pick_list_id }
+    return { success: true, pick_list_id: data?.pick_list_id, display_id: data?.display_id }
 }
 
 // Create a draft pick list with minimal data (for quick-create flow)
+// Uses RPC to generate display_id in format PL-{ORG_CODE}-{5-digit-number}
 export async function createDraftPickList(): Promise<PickListResult> {
     const supabase = await createClient()
     const { data: { user } } = await supabase.auth.getUser()
 
     if (!user) return { success: false, error: 'Unauthorized' }
 
-    // Get user's tenant
+    // Use the new RPC function for atomic creation with display_id
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: profile } = await (supabase as any)
-        .from('profiles')
-        .select('tenant_id')
-        .eq('id', user.id)
-        .single()
-
-    if (!profile?.tenant_id) return { success: false, error: 'No tenant found' }
-
-    // Generate pick list number (PL-0001, PL-0002, etc.)
-    const pickListNumber = await generatePickListNumber(supabase, profile.tenant_id)
-
-    // Create minimal pick list directly (not using RPC since we don't have items yet)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: pickList, error } = await (supabase as any)
-        .from('pick_lists')
-        .insert({
-            tenant_id: profile.tenant_id,
-            name: pickListNumber, // Use number as name for backwards compatibility
-            pick_list_number: pickListNumber,
-            status: 'draft',
-            item_outcome: 'decrement',
-            created_by: user.id
-        })
-        .select('id')
-        .single()
+    const { data, error } = await (supabase as any).rpc('create_pick_list_v2', {
+        p_name: null, // Will default to display_id
+        p_assigned_to: null,
+        p_due_date: null,
+        p_notes: null,
+        p_item_outcome: 'decrement',
+        p_ship_to_name: null,
+        p_ship_to_address1: null,
+        p_ship_to_address2: null,
+        p_ship_to_city: null,
+        p_ship_to_state: null,
+        p_ship_to_postal_code: null,
+        p_ship_to_country: null,
+        p_items: []
+    })
 
     if (error) {
         console.error('Create draft pick list error:', error)
         return { success: false, error: error.message }
     }
 
+    if (data && !data.success) {
+        return { success: false, error: data.error || 'Failed to create pick list' }
+    }
+
     revalidatePath('/workflows/pick-lists')
-    return { success: true, pick_list_id: pickList.id }
+    return { success: true, pick_list_id: data?.pick_list_id, display_id: data?.display_id }
 }
 
 export async function updatePickList(
@@ -137,11 +126,15 @@ export async function updatePickList(
 
     if (!user) return { success: false, error: 'Unauthorized' }
 
+    // Exclude display_id from updates - it is immutable once set
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const { display_id, ...safeUpdates } = updates as Record<string, unknown>
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any)
         .from('pick_lists')
         .update({
-            ...updates,
+            ...safeUpdates,
             updated_at: new Date().toISOString()
         })
         .eq('id', pickListId)
