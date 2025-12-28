@@ -99,7 +99,7 @@ export default async function CheckoutsPage() {
       {/* Header */}
       <div className="flex items-center justify-between border-b border-neutral-200 bg-white px-6 py-4">
         <div className="flex items-center gap-4">
-          <Link href="/workflows">
+          <Link href="/workflows/inventory-operations">
             <Button variant="ghost" size="sm">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back

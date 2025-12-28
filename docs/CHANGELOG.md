@@ -11,6 +11,27 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Added
 
+#### Workflow Reorganization & Stock Count Feature
+- **Workflow Hub Restructured** into 3 category-based sub-hubs:
+  - **Inbound** (`/workflows/inbound`) - Purchase Orders, Receives
+  - **Fulfillment** (`/workflows/fulfillment`) - Pick Lists
+  - **Inventory Operations** (`/workflows/inventory-operations`) - Check-In/Out, Transfers, Moves, Stock Count
+- **Stock Count Feature** - New inventory audit workflow:
+  - **List Page** (`/workflows/stock-count`) with sortable table, status badges, and progress indicators
+  - **Detail Page** (`/workflows/stock-count/[id]`) with:
+    - Stats cards (Total, Counted, Remaining, Variances)
+    - Progress bar visualization
+    - Item search and filtering
+    - Inline count recording with variance calculation
+    - Status workflow (Draft → In Progress → Review → Completed)
+    - Option to apply inventory adjustments on completion
+  - **Server Actions**: `getStockCounts()`, `getStockCount()`, `createStockCount()`, `startStockCount()`, `recordCount()`, `submitForReview()`, `completeStockCount()`, `cancelStockCount()`
+  - **Database Schema** (Migration: `00044_stock_counts.sql`):
+    - `stock_counts` table with display_id, status workflow, scope settings, assignment, progress tracking
+    - `stock_count_items` table with expected/counted quantities and variance tracking
+    - RLS policies for tenant isolation
+    - PostgreSQL functions for atomic operations and display_id generation
+
 #### Purchase Orders Workflow (Complete Implementation)
 - **New Order Modal** - Full-featured modal for creating purchase orders with:
   - Vendor dropdown with quick "Add New Vendor" option

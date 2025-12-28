@@ -153,7 +153,7 @@ export function PurchaseOrdersClient({ purchaseOrders }: PurchaseOrdersClientPro
       <div className="flex-1 overflow-y-auto">
         <div className="flex items-center justify-between border-b border-neutral-200 bg-white px-6 py-4">
           <div className="flex items-center gap-4">
-            <Link href="/workflows">
+            <Link href="/workflows/inbound">
               <Button variant="ghost" size="sm">
                 <ArrowLeft className="mr-2 h-4 w-4" />
                 Back

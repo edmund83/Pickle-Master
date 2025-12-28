@@ -16,10 +16,13 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
+  PackageOpen,
+  ArrowRightLeft,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { NotificationBell } from '@/components/notifications/NotificationBell'
+import { NavSubmenu, type SubmenuItem } from './nav-submenu'
 
 const navigation = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
@@ -27,8 +30,13 @@ const navigation = [
   { name: 'Search', href: '/search', icon: Search },
   { name: 'Reminders', href: '/reminders', icon: Bell },
   { name: 'Tags', href: '/tags', icon: Tags },
-  { name: 'Workflows', href: '/workflows', icon: ClipboardList },
   { name: 'Reports', href: '/reports', icon: FileText },
+]
+
+const workflowSubmenuItems: SubmenuItem[] = [
+  { name: 'Inbound', href: '/workflows/inbound', icon: PackageOpen },
+  { name: 'Fulfillment', href: '/workflows/fulfillment', icon: ClipboardList },
+  { name: 'Inventory Ops', href: '/workflows/inventory-operations', icon: ArrowRightLeft },
 ]
 
 const bottomNavigation = [
@@ -85,7 +93,40 @@ export function PrimarySidebar({ isExpanded = false, onToggle }: PrimarySidebarP
 
       {/* Main Navigation */}
       <nav className={cn('flex flex-1 flex-col gap-1 py-4', isExpanded ? 'px-3' : 'items-center px-2')}>
-        {navigation.map((item) => {
+        {navigation.slice(0, 5).map((item) => {
+          const isActive = pathname.startsWith(item.href)
+          return (
+            <Link
+              key={item.name}
+              href={item.href}
+              className={cn(
+                'flex items-center rounded-xl transition-colors',
+                isExpanded ? 'h-10 gap-3 px-3' : 'h-10 w-10 justify-center',
+                isActive
+                  ? 'bg-white text-pickle-500'
+                  : 'text-white/70 hover:bg-white/10 hover:text-white'
+              )}
+              title={!isExpanded ? item.name : undefined}
+            >
+              <item.icon className="h-5 w-5 shrink-0" />
+              {isExpanded && (
+                <span className="text-sm font-medium">{item.name}</span>
+              )}
+            </Link>
+          )
+        })}
+
+        {/* Workflows with submenu */}
+        <NavSubmenu
+          icon={ClipboardList}
+          label="Workflows"
+          items={workflowSubmenuItems}
+          sidebarExpanded={isExpanded}
+          storageKey="workflows-submenu-expanded"
+        />
+
+        {/* Reports */}
+        {navigation.slice(5).map((item) => {
           const isActive = pathname.startsWith(item.href)
           return (
             <Link
