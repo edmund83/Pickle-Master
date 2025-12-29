@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import {
   ArrowLeft,
   Clock,
@@ -14,7 +13,8 @@ import {
   Package,
   ChevronUp,
   ChevronDown,
-  Filter
+  Filter,
+  Plus
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -103,7 +103,6 @@ const filterLabels: Record<StatusFilter, string> = {
 }
 
 export function CheckoutsClient({ checkouts, stats }: CheckoutsClientProps) {
-  const router = useRouter()
   const [sortColumn, setSortColumn] = useState<SortColumn>('checked_out_at')
   const [sortDirection, setSortDirection] = useState<SortDirection>('desc')
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all')
@@ -215,25 +214,33 @@ export function CheckoutsClient({ checkouts, stats }: CheckoutsClientProps) {
             <p className="text-neutral-500">Track items assigned to people, jobs, and locations</p>
           </div>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm">
-              <Filter className="mr-2 h-4 w-4" />
-              {filterLabels[statusFilter]}
+        <div className="flex items-center gap-2">
+          <Link href="/tasks/checkouts/new">
+            <Button size="sm">
+              <Plus className="mr-2 h-4 w-4" />
+              Check Out
             </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {(Object.keys(filterLabels) as StatusFilter[]).map((filter) => (
-              <DropdownMenuItem
-                key={filter}
-                onClick={() => setStatusFilter(filter)}
-                className={statusFilter === filter ? 'bg-neutral-100' : ''}
-              >
-                {filterLabels[filter]}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
+          </Link>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Filter className="mr-2 h-4 w-4" />
+                {filterLabels[statusFilter]}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {(Object.keys(filterLabels) as StatusFilter[]).map((filter) => (
+                <DropdownMenuItem
+                  key={filter}
+                  onClick={() => setStatusFilter(filter)}
+                  className={statusFilter === filter ? 'bg-neutral-100' : ''}
+                >
+                  {filterLabels[filter]}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       <div className="p-6">
@@ -436,6 +443,7 @@ export function CheckoutsClient({ checkouts, stats }: CheckoutsClientProps) {
           </Card>
         )}
       </div>
+
     </div>
   )
 }
