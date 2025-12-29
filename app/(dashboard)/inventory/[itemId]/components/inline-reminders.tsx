@@ -249,7 +249,7 @@ export function InlineReminders({
     return `${names[0]} and ${names.length - 1} others`
   }
 
-  const getComparisonLabel = (op: ComparisonOperator | undefined) => {
+  const getComparisonLabel = (op: ComparisonOperator | null | undefined) => {
     switch (op) {
       case 'lte': return '≤'
       case 'lt': return '<'

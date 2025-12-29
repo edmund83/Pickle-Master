@@ -465,7 +465,7 @@ export default function SearchPage() {
               </ul>
             ) : (
               <p className="text-sm text-neutral-500">
-                No saved searches yet. Create a search and click "Save Search" to save it.
+                No saved searches yet. Create a search and click &quot;Save Search&quot; to save it.
               </p>
             )}
           </div>

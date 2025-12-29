@@ -45,6 +45,7 @@ export function InventorySidebar({
     try {
       const stored = localStorage.getItem(EXPANDED_FOLDERS_KEY)
       if (stored) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: hydration from localStorage
         setExpandedFolderIds(new Set(JSON.parse(stored)))
       }
     } catch {
@@ -60,6 +61,7 @@ export function InventorySidebar({
     // Find the highlighted folder and expand all its ancestors
     const highlightedFolder = folders.find(f => f.id === highlightedFolderId)
     if (highlightedFolder?.path && highlightedFolder.path.length > 0) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- Intentional: expand ancestors for navigation highlight
       setExpandedFolderIds(prev => {
         const next = new Set(prev)
         highlightedFolder.path!.forEach(ancestorId => next.add(ancestorId))

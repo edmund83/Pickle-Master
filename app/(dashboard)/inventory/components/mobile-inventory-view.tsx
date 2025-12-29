@@ -324,7 +324,7 @@ function MobileEmptyState({ hasItems, searchQuery }: MobileEmptyStateProps) {
         </div>
         <h3 className="mt-4 text-xl font-semibold text-neutral-900">No matches</h3>
         <p className="mt-2 text-neutral-500 text-center">
-          No items match "{searchQuery}"
+          No items match &quot;{searchQuery}&quot;
         </p>
       </div>
     )

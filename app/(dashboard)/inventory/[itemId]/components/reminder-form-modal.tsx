@@ -83,10 +83,10 @@ export function ReminderFormModal({
             ? new Date(editReminder.scheduled_at).toISOString().slice(0, 16)
             : ''
         )
-        setRecurrence(editReminder.recurrence)
+        setRecurrence(editReminder.recurrence || 'once')
         setRecurrenceEndDate(editReminder.recurrence_end_date || '')
-        setNotifyInApp(editReminder.notify_in_app)
-        setNotifyEmail(editReminder.notify_email)
+        setNotifyInApp(editReminder.notify_in_app ?? true)
+        setNotifyEmail(editReminder.notify_email ?? false)
       } else {
         // Reset to defaults for new reminder
         setReminderType('low_stock')
