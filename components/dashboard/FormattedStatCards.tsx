@@ -82,7 +82,7 @@ function StatCard({
   }
 
   return (
-    <div className={`rounded-2xl lg:rounded-xl border-2 lg:border ${borderColors[color]} border-neutral-200 bg-white p-4 lg:p-6 transition-all active:scale-[0.98]`}>
+    <div className={`rounded-2xl lg:rounded-xl border bg-white p-4 lg:p-6 transition-all active:scale-[0.98] ${borderColors[color]}`}>
       <div className="flex flex-col lg:flex-row lg:items-center gap-3 lg:gap-4">
         <div className={`flex h-14 w-14 lg:h-12 lg:w-12 items-center justify-center rounded-2xl lg:rounded-xl ${colorClasses[color]}`}>
           <Icon className="h-7 w-7 lg:h-6 lg:w-6" />

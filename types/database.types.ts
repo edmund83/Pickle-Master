@@ -3899,3 +3899,111 @@ export const Constants = {
   },
 } as const
 
+// ===========================================
+// Convenience Type Aliases
+// ===========================================
+
+// Table Row Types
+export type Profile = Database['public']['Tables']['profiles']['Row']
+export type InventoryItem = Database['public']['Tables']['inventory_items']['Row']
+export type Folder = Database['public']['Tables']['folders']['Row']
+export type Tag = Database['public']['Tables']['tags']['Row']
+export type ActivityLog = Database['public']['Tables']['activity_logs']['Row']
+export type Notification = Database['public']['Tables']['notifications']['Row']
+export type ItemReminder = Database['public']['Tables']['item_reminders']['Row']
+export type Checkout = Database['public']['Tables']['checkouts']['Row']
+export type Job = Database['public']['Tables']['jobs']['Row']
+export type Serial = Database['public']['Tables']['serial_numbers']['Row']
+export type CheckoutSerial = Database['public']['Tables']['checkout_serials']['Row']
+export type Lot = Database['public']['Tables']['lots']['Row']
+export type Tenant = Database['public']['Tables']['tenants']['Row']
+export type PickList = Database['public']['Tables']['pick_lists']['Row']
+export type PickListItem = Database['public']['Tables']['pick_list_items']['Row']
+export type PurchaseOrder = Database['public']['Tables']['purchase_orders']['Row']
+export type PurchaseOrderItem = Database['public']['Tables']['purchase_order_items']['Row']
+export type Vendor = Database['public']['Tables']['vendors']['Row']
+export type Address = Database['public']['Tables']['addresses']['Row']
+export type CustomFieldDefinition = Database['public']['Tables']['custom_field_definitions']['Row']
+export type FolderReminder = Database['public']['Tables']['folder_reminders']['Row']
+export type StockCount = Database['public']['Tables']['stock_counts']['Row']
+export type StockCountItem = Database['public']['Tables']['stock_count_items']['Row']
+export type StockTransfer = Database['public']['Tables']['stock_transfers']['Row']
+export type Location = Database['public']['Tables']['locations']['Row']
+export type LocationStock = Database['public']['Tables']['location_stock']['Row']
+export type Receive = Database['public']['Tables']['receives']['Row']
+export type ReceiveItem = Database['public']['Tables']['receive_items']['Row']
+export type Alert = Database['public']['Tables']['alerts']['Row']
+
+// Enum Types
+export type ItemTrackingMode = 'none' | 'serialized' | 'lot_expiry'
+export type ItemCondition = Database['public']['Enums']['item_condition']
+export type CheckoutAssigneeType = Database['public']['Enums']['checkout_assignee_type']
+export type CheckoutStatus = Database['public']['Enums']['checkout_status']
+export type ItemStatus = Database['public']['Enums']['item_status_enum']
+export type UserRole = Database['public']['Enums']['user_role_enum']
+export type NotificationType = Database['public']['Enums']['notification_type_enum']
+export type ReminderType = Database['public']['Enums']['reminder_type_enum']
+export type ReminderStatus = Database['public']['Enums']['reminder_status_enum']
+export type ReminderRecurrence = Database['public']['Enums']['reminder_recurrence_enum']
+export type ComparisonOperator = Database['public']['Enums']['comparison_operator_enum']
+export type PickListStatus = Database['public']['Enums']['pick_list_status_enum']
+export type PickListItemOutcome = Database['public']['Enums']['pick_list_item_outcome']
+export type POStatus = Database['public']['Enums']['po_status_enum']
+export type SerialStatus = Database['public']['Enums']['serial_status']
+export type LotStatus = Database['public']['Enums']['lot_status']
+export type TransferStatus = Database['public']['Enums']['transfer_status']
+export type StockCountStatus = Database['public']['Enums']['stock_count_status']
+export type LocationType = Database['public']['Enums']['location_type']
+export type FieldType = Database['public']['Enums']['field_type_enum']
+
+// Extended Types (with relations)
+export interface ItemReminderWithDetails extends ItemReminder {
+  inventory_item?: {
+    id: string
+    name: string
+    quantity: number
+    min_quantity: number | null
+    expiry_date: string | null
+  } | null
+  notify_users?: Profile[]
+  source_type?: 'item' | 'folder' | null
+  folder_name?: string | null
+  trigger_description?: string | null
+}
+
+export interface CreateReminderInput {
+  itemId: string
+  reminderType: ReminderType
+  threshold?: number
+  comparisonOperator?: ComparisonOperator
+  daysBeforeExpiry?: number
+  scheduledAt?: string
+  recurrence?: ReminderRecurrence
+  recurrenceEndDate?: string
+  title?: string
+  message?: string
+  notifyUserIds?: string[]
+  notifyInApp?: boolean
+  notifyEmail?: boolean
+}
+
+// Extended types with relations
+export interface PickListWithRelations extends PickList {
+  assigned_user?: Profile | null
+  assigned_to_profile?: Profile | null
+  created_by_profile?: Profile | null
+  items?: (PickListItem & {
+    inventory_item?: InventoryItem | null
+  })[]
+}
+
+export interface PurchaseOrderWithRelations extends PurchaseOrder {
+  vendor?: Vendor | null
+  vendors?: Vendor | null
+  created_by_profile?: Profile | null
+  submitted_by_profile?: Profile | null
+  items?: (PurchaseOrderItem & {
+    inventory_item?: InventoryItem | null
+  })[]
+}
+
