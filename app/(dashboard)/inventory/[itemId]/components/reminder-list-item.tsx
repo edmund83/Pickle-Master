@@ -51,7 +51,7 @@ export function ReminderListItem({
 
   const Icon = REMINDER_ICONS[reminder.reminder_type]
   const colorClass = REMINDER_COLORS[reminder.reminder_type]
-  const statusClass = STATUS_BADGES[reminder.status]
+  const statusClass = STATUS_BADGES[reminder.status || 'active']
 
   const handleToggle = async () => {
     setIsLoading(true)
@@ -133,7 +133,7 @@ export function ReminderListItem({
               Last: {formatShortDate(reminder.last_triggered_at)}
             </span>
           )}
-          {reminder.trigger_count > 0 && (
+          {(reminder.trigger_count ?? 0) > 0 && (
             <span>Triggered {reminder.trigger_count}x</span>
           )}
         </div>

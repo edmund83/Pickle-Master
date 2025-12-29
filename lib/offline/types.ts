@@ -22,8 +22,8 @@ export interface OfflineItem {
 // Pending change to sync when back online
 export interface PendingChange {
   id: string
-  type: 'quantity_adjust' | 'checkout' | 'checkin' | 'create' | 'update'
-  entity_type: 'inventory_item' | 'checkout'
+  type: 'quantity_adjust' | 'checkout' | 'checkin' | 'create' | 'update' | 'stock_count_record'
+  entity_type: 'inventory_item' | 'checkout' | 'stock_count_item'
   entity_id: string
   payload: Record<string, unknown>
   created_at: Date
@@ -88,4 +88,44 @@ export interface CheckinPayload {
   condition: 'good' | 'damaged' | 'needs_repair' | 'lost'
   notes?: string
   [key: string]: unknown // Allow indexing for Record<string, unknown> compatibility
+}
+
+// Type for stock count record payload
+export interface StockCountRecordPayload {
+  stock_count_id: string
+  stock_count_item_id: string
+  item_id: string
+  item_name: string
+  counted_quantity: number
+  expected_quantity: number
+  variance: number
+  counted_at: string
+  [key: string]: unknown // Allow indexing for Record<string, unknown> compatibility
+}
+
+// Offline stock count item for local state
+export interface OfflineStockCountItem {
+  id: string
+  stock_count_id: string
+  item_id: string
+  item_name: string
+  item_sku: string | null
+  item_image: string | null
+  expected_quantity: number
+  counted_quantity: number | null
+  variance: number | null
+  status: 'pending' | 'counted' | 'verified' | 'adjusted'
+  synced: boolean
+  updated_at: Date
+}
+
+// Offline stock count session
+export interface OfflineStockCountSession {
+  id: string
+  stock_count_id: string
+  display_id: string | null
+  name: string | null
+  items: OfflineStockCountItem[]
+  created_at: Date
+  updated_at: Date
 }

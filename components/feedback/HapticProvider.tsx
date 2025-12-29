@@ -108,6 +108,7 @@ export function useHapticCallback<T extends (...args: unknown[]) => unknown>(
 ): T {
   const { vibrate } = useHaptic()
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- Type casting required for generic type preservation
   return useCallback(
     ((...args: unknown[]) => {
       vibrate(intensity)

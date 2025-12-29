@@ -242,3 +242,58 @@ export async function cancelStockCount(id: string): Promise<{ success: boolean; 
   revalidatePath('/tasks/stock-count')
   return data as { success: boolean; error?: string }
 }
+
+/**
+ * Batch record multiple counts at once (for offline sync)
+ */
+export async function batchRecordCounts(
+  counts: Array<{
+    stockCountItemId: string
+    countedQuantity: number
+    notes?: string
+  }>
+): Promise<{
+  success: boolean
+  results?: Array<{ itemId: string; success: boolean; error?: string }>
+  error?: string
+}> {
+  const supabase = await createClient()
+  const results: Array<{ itemId: string; success: boolean; error?: string }> = []
+
+  // Process each count sequentially to avoid race conditions
+  for (const count of counts) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data, error } = await (supabase as any).rpc('record_stock_count', {
+        p_stock_count_item_id: count.stockCountItemId,
+        p_counted_quantity: count.countedQuantity,
+        p_notes: count.notes || null,
+      })
+
+      if (error) {
+        results.push({ itemId: count.stockCountItemId, success: false, error: error.message })
+      } else if (data && !data.success) {
+        results.push({ itemId: count.stockCountItemId, success: false, error: data.error })
+      } else {
+        results.push({ itemId: count.stockCountItemId, success: true })
+      }
+    } catch (err) {
+      results.push({
+        itemId: count.stockCountItemId,
+        success: false,
+        error: err instanceof Error ? err.message : 'Unknown error'
+      })
+    }
+  }
+
+  const allSuccessful = results.every((r) => r.success)
+
+  // Revalidate paths
+  revalidatePath('/tasks/stock-count')
+
+  return {
+    success: allSuccessful,
+    results,
+    error: allSuccessful ? undefined : 'Some counts failed to sync'
+  }
+}
