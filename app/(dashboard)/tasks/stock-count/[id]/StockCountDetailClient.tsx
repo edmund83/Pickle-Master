@@ -480,17 +480,26 @@ export function StockCountDetailClient({ data, teamMembers, folders }: StockCoun
           </CardHeader>
           <CardContent className="p-0">
             {filteredItems.length > 0 ? (
-              <div className="divide-y divide-neutral-200">
-                {filteredItems.map((item) => (
-                  <div
-                    key={item.id}
-                    className={`flex items-center justify-between p-4 hover:bg-neutral-50 ${
-                      item.status !== 'pending' ? 'bg-neutral-50' : ''
-                    }`}
-                  >
-                    <div className="flex items-center gap-4">
+              <>
+                {/* Table Header */}
+                <div className="hidden sm:grid sm:grid-cols-[auto_1fr_100px_100px_100px_100px] gap-4 px-4 py-3 bg-neutral-50 border-b border-neutral-200 text-xs font-medium text-neutral-500 uppercase tracking-wide">
+                  <div className="w-12"></div>
+                  <div>Item</div>
+                  <div className="text-center">Expected</div>
+                  <div className="text-center">Counted</div>
+                  <div className="text-center">Status</div>
+                  <div className="text-center">Action</div>
+                </div>
+                <div className="divide-y divide-neutral-200">
+                  {filteredItems.map((item) => (
+                    <div
+                      key={item.id}
+                      className={`grid grid-cols-1 sm:grid-cols-[auto_1fr_100px_100px_100px_100px] gap-4 p-4 items-center hover:bg-neutral-50 ${
+                        item.status !== 'pending' ? 'bg-neutral-50/50' : ''
+                      }`}
+                    >
                       {/* Item Image */}
-                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-neutral-100">
+                      <div className="hidden sm:flex h-12 w-12 items-center justify-center rounded-lg bg-neutral-100 flex-shrink-0">
                         {item.item_image ? (
                           <Image
                             src={item.item_image}
@@ -505,111 +514,121 @@ export function StockCountDetailClient({ data, teamMembers, folders }: StockCoun
                       </div>
 
                       {/* Item Info */}
-                      <div>
+                      <div className="min-w-0">
                         <Link
                           href={`/inventory/${item.item_id}`}
-                          className="font-medium text-neutral-900 hover:text-pickle-600"
+                          className="font-medium text-neutral-900 hover:text-pickle-600 truncate block"
                         >
                           {item.item_name}
                         </Link>
-                        <div className="flex items-center gap-3 text-sm text-neutral-500">
-                          {item.item_sku && <span>SKU: {item.item_sku}</span>}
-                          <span>Expected: {item.expected_quantity}</span>
-                        </div>
+                        {item.item_sku && (
+                          <span className="text-sm text-neutral-500">SKU: {item.item_sku}</span>
+                        )}
                       </div>
-                    </div>
 
-                    <div className="flex items-center gap-4">
-                      {/* Count Input / Display */}
-                      {isInProgress && countingItemId === item.id ? (
-                        <div className="flex items-center gap-2">
-                          <Input
-                            type="number"
-                            min="0"
-                            value={countValue}
-                            onChange={(e) => setCountValue(e.target.value)}
-                            className="w-24 text-center"
-                            autoFocus
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                handleRecordCount(item.id)
-                              } else if (e.key === 'Escape') {
-                                setCountingItemId(null)
-                                setCountValue('')
-                              }
-                            }}
-                          />
-                          <Button
-                            size="sm"
-                            onClick={() => handleRecordCount(item.id)}
-                            disabled={actionLoading === `count-${item.id}`}
-                          >
-                            {actionLoading === `count-${item.id}` ? (
-                              <Loader2 className="h-4 w-4 animate-spin" />
-                            ) : (
-                              <Check className="h-4 w-4" />
-                            )}
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={() => {
-                              setCountingItemId(null)
-                              setCountValue('')
-                            }}
-                          >
-                            Cancel
-                          </Button>
-                        </div>
-                      ) : (
-                        <>
-                          {/* Counted Value & Variance */}
-                          <div className="text-right min-w-[120px]">
-                            {item.counted_quantity !== null ? (
-                              <div>
-                                <span className="font-medium text-neutral-900">
-                                  Counted: {item.counted_quantity}
-                                </span>
-                                <span className={`ml-2 text-sm ${getVarianceClass(item.variance)}`}>
-                                  ({getVarianceText(item.variance)})
-                                </span>
-                              </div>
-                            ) : (
-                              <span className="text-neutral-400">Not counted</span>
+                      {/* Expected */}
+                      <div className="text-center">
+                        <span className="sm:hidden text-xs text-neutral-500 mr-1">Expected:</span>
+                        <span className="font-medium text-neutral-700">{item.expected_quantity}</span>
+                      </div>
+
+                      {/* Counted */}
+                      <div className="text-center">
+                        {isInProgress && countingItemId === item.id ? (
+                          <div className="flex items-center gap-1 justify-center">
+                            <Input
+                              type="number"
+                              min="0"
+                              value={countValue}
+                              onChange={(e) => setCountValue(e.target.value)}
+                              className="w-20 h-8 text-center text-sm"
+                              autoFocus
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                  handleRecordCount(item.id)
+                                } else if (e.key === 'Escape') {
+                                  setCountingItemId(null)
+                                  setCountValue('')
+                                }
+                              }}
+                            />
+                          </div>
+                        ) : item.counted_quantity !== null ? (
+                          <div>
+                            <span className="font-semibold text-neutral-900">{item.counted_quantity}</span>
+                            {item.variance !== null && item.variance !== 0 && (
+                              <span className={`ml-1 text-sm ${getVarianceClass(item.variance)}`}>
+                                ({getVarianceText(item.variance)})
+                              </span>
                             )}
                           </div>
+                        ) : (
+                          <span className="text-neutral-400">—</span>
+                        )}
+                      </div>
 
-                          {/* Status Badge */}
-                          <span
-                            className={`rounded-full px-2 py-0.5 text-xs font-medium ${
-                              item.status === 'pending'
-                                ? 'bg-neutral-100 text-neutral-600'
-                                : item.status === 'counted'
-                                ? 'bg-blue-100 text-blue-700'
-                                : item.status === 'verified'
-                                ? 'bg-green-100 text-green-700'
-                                : 'bg-purple-100 text-purple-700'
-                            }`}
-                          >
-                            {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
-                          </span>
+                      {/* Status Badge */}
+                      <div className="text-center">
+                        <span
+                          className={`inline-flex rounded-full px-2 py-0.5 text-xs font-medium ${
+                            item.status === 'pending'
+                              ? 'bg-neutral-100 text-neutral-600'
+                              : item.status === 'counted'
+                              ? 'bg-blue-100 text-blue-700'
+                              : item.status === 'verified'
+                              ? 'bg-green-100 text-green-700'
+                              : 'bg-purple-100 text-purple-700'
+                          }`}
+                        >
+                          {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
+                        </span>
+                      </div>
 
-                          {/* Count Button */}
-                          {isInProgress && (
+                      {/* Action */}
+                      <div className="text-center">
+                        {isInProgress && countingItemId === item.id ? (
+                          <div className="flex items-center gap-1 justify-center">
                             <Button
                               size="sm"
-                              variant="outline"
-                              onClick={() => startCounting(item)}
+                              className="h-8 px-3"
+                              onClick={() => handleRecordCount(item.id)}
+                              disabled={actionLoading === `count-${item.id}`}
                             >
-                              {item.counted_quantity !== null ? 'Recount' : 'Count'}
+                              {actionLoading === `count-${item.id}` ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Check className="h-4 w-4" />
+                              )}
                             </Button>
-                          )}
-                        </>
-                      )}
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-8 px-2"
+                              onClick={() => {
+                                setCountingItemId(null)
+                                setCountValue('')
+                              }}
+                            >
+                              ✕
+                            </Button>
+                          </div>
+                        ) : isInProgress ? (
+                          <Button
+                            size="sm"
+                            variant={item.counted_quantity !== null ? 'ghost' : 'default'}
+                            className="h-8"
+                            onClick={() => startCounting(item)}
+                          >
+                            {item.counted_quantity !== null ? 'Recount' : 'Count'}
+                          </Button>
+                        ) : (
+                          <span className="text-neutral-400">—</span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              </>
             ) : (
               <div className="py-12 text-center text-neutral-500">
                 {searchQuery ? 'No items match your search' : 'No items in this stock count'}
