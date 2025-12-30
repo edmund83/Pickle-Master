@@ -2,5 +2,12 @@
   "enabledPlugins": {
     "ralph-wiggum@claude-plugins-official": true,
     "context7@claude-plugins-official": true
+  },
+  "permissions": {
+    "allow": [
+      "Bash(/Users/tongkwankiat/.claude/plugins/cache/claude-plugins-official/ralph-wiggum/**/*.sh:*)",
+      "Bash(if \\[\\[ -f .claude/ralph-loop.local.md \\]\\]:*)",
+      "Bash(if \\[ -f .claude/ralph-loop.local.md \\]:*)"
+    ]
   }
 }
