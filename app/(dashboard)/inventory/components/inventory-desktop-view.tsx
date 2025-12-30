@@ -478,7 +478,7 @@ export function InventoryDesktopView({ items, folders, view }: InventoryDesktopV
                 <CheckSquare className="mr-2 h-4 w-4" />
                 Select
               </Button>
-              <Link href="/import">
+              <Link href="/settings/bulk-import">
                 <Button variant="outline" size="sm">
                   <Upload className="mr-2 h-4 w-4" />
                   Import
