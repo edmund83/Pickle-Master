@@ -3906,6 +3906,16 @@ export const Constants = {
 // Table Row Types
 export type Profile = Database['public']['Tables']['profiles']['Row']
 export type InventoryItem = Database['public']['Tables']['inventory_items']['Row']
+
+// View Row Types - items with expanded tag info
+export type InventoryItemWithTags = Database['public']['Views']['items_with_tags']['Row']
+
+// Tag object structure from tag_list JSON
+export type TagListItem = {
+  id: string
+  name: string
+  color: string | null
+}
 export type Folder = Database['public']['Tables']['folders']['Row']
 export type Tag = Database['public']['Tables']['tags']['Row']
 export type ActivityLog = Database['public']['Tables']['activity_logs']['Row']

@@ -6,12 +6,13 @@ interface UndoAction {
   id: string
   label: string
   undo: () => Promise<void>
+  onComplete?: () => void
   createdAt: number
 }
 
 interface UndoContextType {
   // Add an undoable action (will show toast)
-  addUndoAction: (label: string, undoFn: () => Promise<void>) => void
+  addUndoAction: (label: string, undoFn: () => Promise<void>, onComplete?: () => void) => void
   // Current undo action (if any)
   currentAction: UndoAction | null
   // Perform the undo
@@ -35,7 +36,7 @@ export function UndoProvider({ children }: { children: ReactNode }) {
     }
   }, [timeoutId])
 
-  const addUndoAction = useCallback((label: string, undoFn: () => Promise<void>) => {
+  const addUndoAction = useCallback((label: string, undoFn: () => Promise<void>, onComplete?: () => void) => {
     // Clear any existing timeout
     if (timeoutId) clearTimeout(timeoutId)
 
@@ -43,6 +44,7 @@ export function UndoProvider({ children }: { children: ReactNode }) {
       id: crypto.randomUUID(),
       label,
       undo: undoFn,
+      onComplete,
       createdAt: Date.now(),
     }
 
@@ -61,6 +63,8 @@ export function UndoProvider({ children }: { children: ReactNode }) {
 
     try {
       await currentAction.undo()
+      // Call onComplete callback if provided (e.g., to refresh the UI)
+      currentAction.onComplete?.()
     } finally {
       if (timeoutId) clearTimeout(timeoutId)
       setCurrentAction(null)

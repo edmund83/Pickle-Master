@@ -88,10 +88,11 @@ export async function bulkImportItems(
     }
 
     // Call the bulk import database function
+    // Supabase client automatically serializes JSONB - don't stringify manually
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase as any).rpc('bulk_import_items', {
-      p_items: JSON.stringify(items),
-      p_options: JSON.stringify(importOptions),
+      p_items: items,
+      p_options: importOptions,
     })
 
     if (error) {

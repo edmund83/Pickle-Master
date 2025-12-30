@@ -1,11 +1,11 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import type { InventoryItem, Folder } from '@/types/database.types'
+import type { InventoryItemWithTags, Folder } from '@/types/database.types'
 import { MobileInventoryView } from './components/mobile-inventory-view'
 import { InventoryDesktopView } from './components/inventory-desktop-view'
 
 async function getInventoryData(query?: string): Promise<{
-  items: InventoryItem[],
+  items: InventoryItemWithTags[],
   folders: Folder[],
 }> {
   const supabase = await createClient()
@@ -26,9 +26,10 @@ async function getInventoryData(query?: string): Promise<{
     return { items: [], folders: [] }
   }
 
+  // Use items_with_tags view to get tag details
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let queryBuilder = (supabase as any)
-    .from('inventory_items')
+    .from('items_with_tags')
     .select('*')
     .eq('tenant_id', profile.tenant_id)
     .is('deleted_at', null)
@@ -48,7 +49,7 @@ async function getInventoryData(query?: string): Promise<{
     .order('sort_order', { ascending: true })
 
   return {
-    items: (items || []) as InventoryItem[],
+    items: (items || []) as InventoryItemWithTags[],
     folders: (folders || []) as Folder[],
   }
 }

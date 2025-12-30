@@ -5,12 +5,12 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Search, Package, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { InventoryItem, Folder } from '@/types/database.types'
+import type { InventoryItemWithTags, Folder, TagListItem } from '@/types/database.types'
 import { FloatingActionButton } from '@/components/layout/mobile/FloatingActionButton'
 import { WarehouseSelector } from './warehouse-selector'
 
 interface MobileInventoryViewProps {
-  items: InventoryItem[]
+  items: InventoryItemWithTags[]
   folders: Folder[]
 }
 
@@ -78,7 +78,7 @@ export function MobileInventoryView({ items, folders }: MobileInventoryViewProps
     // Search filter
     const matchesSearch =
       !searchQuery ||
-      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       item.sku?.toLowerCase().includes(searchQuery.toLowerCase())
 
     // Status filter
@@ -230,7 +230,7 @@ function FilterPill({ label, count, active, onClick, variant = 'default' }: Filt
 }
 
 interface MobileItemCardProps {
-  item: InventoryItem
+  item: InventoryItemWithTags
 }
 
 function MobileItemCard({ item }: MobileItemCardProps) {
@@ -265,7 +265,7 @@ function MobileItemCard({ item }: MobileItemCardProps) {
         {item.image_urls?.[0] ? (
           <img
             src={item.image_urls[0]}
-            alt={item.name}
+            alt={item.name || 'Item'}
             className="w-full h-full object-cover"
           />
         ) : (
@@ -280,6 +280,28 @@ function MobileItemCard({ item }: MobileItemCardProps) {
         </h3>
         {item.sku && (
           <p className="text-sm text-neutral-500 truncate">SKU: {item.sku}</p>
+        )}
+        {/* Tags */}
+        {item.tag_list && item.tag_list.length > 0 && (
+          <div className="mt-1 flex flex-wrap gap-1">
+            {(item.tag_list as TagListItem[]).slice(0, 2).map((tag) => (
+              <span
+                key={tag.id}
+                className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+                style={{
+                  backgroundColor: tag.color ? `${tag.color}20` : '#6b728020',
+                  color: tag.color || '#6b7280',
+                }}
+              >
+                {tag.name}
+              </span>
+            ))}
+            {item.tag_list.length > 2 && (
+              <span className="text-xs text-neutral-400">
+                +{item.tag_list.length - 2}
+              </span>
+            )}
+          </div>
         )}
         <div className="flex items-center gap-3 mt-2">
           <span className="text-2xl font-bold tabular-nums text-neutral-900">

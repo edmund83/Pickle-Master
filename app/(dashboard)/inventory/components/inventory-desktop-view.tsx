@@ -14,7 +14,7 @@ import {
     DropdownMenuSeparator,
     DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu'
-import type { InventoryItem, Folder, Tag } from '@/types/database.types'
+import type { InventoryItemWithTags, Folder, Tag, TagListItem } from '@/types/database.types'
 import { SearchInput } from '@/components/ui/search-input'
 import { InventoryTable } from './inventory-table'
 import { ViewToggle } from './view-toggle'
@@ -42,7 +42,7 @@ interface FilterState {
 }
 
 interface InventoryDesktopViewProps {
-  items: InventoryItem[]
+  items: InventoryItemWithTags[]
   folders: Folder[]
   view: string
 }
@@ -224,7 +224,7 @@ export function InventoryDesktopView({ items, folders, view }: InventoryDesktopV
     if (searchQuery) {
       const query = searchQuery.toLowerCase()
       result = result.filter(item =>
-        item.name.toLowerCase().includes(query) ||
+        item.name?.toLowerCase().includes(query) ||
         item.sku?.toLowerCase().includes(query) ||
         item.barcode?.toLowerCase().includes(query) ||
         item.description?.toLowerCase().includes(query)
@@ -252,7 +252,7 @@ export function InventoryDesktopView({ items, folders, view }: InventoryDesktopV
     if (selectedItemIds.size === filteredItems.length) {
       setSelectedItemIds(new Set())
     } else {
-      setSelectedItemIds(new Set(filteredItems.map(item => item.id)))
+      setSelectedItemIds(new Set(filteredItems.map(item => item.id).filter((id): id is string => id !== null)))
     }
   }, [selectedItemIds.size, filteredItems])
 
@@ -521,7 +521,7 @@ export function InventoryDesktopView({ items, folders, view }: InventoryDesktopV
                     key={item.id}
                     item={item}
                     isSelectionMode={isSelectionMode}
-                    isSelected={selectedItemIds.has(item.id)}
+                    isSelected={item.id ? selectedItemIds.has(item.id) : false}
                     onToggleSelect={toggleItemSelection}
                   />
                 ))}
@@ -548,7 +548,7 @@ export function InventoryDesktopView({ items, folders, view }: InventoryDesktopV
 }
 
 interface ItemCardProps {
-  item: InventoryItem
+  item: InventoryItemWithTags
   isSelectionMode?: boolean
   isSelected?: boolean
   onToggleSelect?: (itemId: string, e?: React.MouseEvent) => void
@@ -569,7 +569,7 @@ function ItemCard({ item, isSelectionMode, isSelected, onToggleSelect }: ItemCar
   }
 
   const handleClick = (e: React.MouseEvent) => {
-    if (isSelectionMode && onToggleSelect) {
+    if (isSelectionMode && onToggleSelect && item.id) {
       e.preventDefault()
       onToggleSelect(item.id, e)
     }
@@ -608,7 +608,7 @@ function ItemCard({ item, isSelectionMode, isSelected, onToggleSelect }: ItemCar
         {item.image_urls?.[0] ? (
           <img
             src={item.image_urls[0]}
-            alt={item.name}
+            alt={item.name || 'Item'}
             className="h-full w-full rounded-lg object-cover"
           />
         ) : (
@@ -625,6 +625,29 @@ function ItemCard({ item, isSelectionMode, isSelected, onToggleSelect }: ItemCar
       </h3>
       {item.sku && (
         <p className="mt-0.5 text-xs text-neutral-500">SKU: {item.sku}</p>
+      )}
+
+      {/* Tags */}
+      {item.tag_list && item.tag_list.length > 0 && (
+        <div className="mt-2 flex flex-wrap gap-1">
+          {(item.tag_list as TagListItem[]).slice(0, 3).map((tag) => (
+            <span
+              key={tag.id}
+              className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+              style={{
+                backgroundColor: tag.color ? `${tag.color}20` : '#6b728020',
+                color: tag.color || '#6b7280',
+              }}
+            >
+              {tag.name}
+            </span>
+          ))}
+          {item.tag_list.length > 3 && (
+            <span className="text-xs text-neutral-400">
+              +{item.tag_list.length - 3}
+            </span>
+          )}
+        </div>
       )}
 
       <div className="mt-3 flex items-center justify-between">
@@ -656,7 +679,7 @@ function ItemCard({ item, isSelectionMode, isSelected, onToggleSelect }: ItemCar
   }
 
   return (
-    <Link href={`/inventory/${item.id}`} className={cardClassName}>
+    <Link href={`/inventory/${item.id || ''}`} className={cardClassName}>
       {cardContent}
     </Link>
   )
