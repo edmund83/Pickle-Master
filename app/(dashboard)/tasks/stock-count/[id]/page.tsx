@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { StockCountDetailClient } from './StockCountDetailClient'
+import { StockCountMobileClient } from './StockCountMobileClient'
 
 interface TeamMember {
   id: string
@@ -99,5 +100,17 @@ export default async function StockCountDetailPage({
     notFound()
   }
 
-  return <StockCountDetailClient data={data} teamMembers={teamMembers} folders={folders} />
+  return (
+    <>
+      {/* Desktop view */}
+      <div className="hidden lg:block h-full">
+        <StockCountDetailClient data={data} teamMembers={teamMembers} folders={folders} />
+      </div>
+
+      {/* Mobile view */}
+      <div className="lg:hidden h-full">
+        <StockCountMobileClient data={data} teamMembers={teamMembers} folders={folders} />
+      </div>
+    </>
+  )
 }
