@@ -26,6 +26,7 @@ export async function checkoutItem(
         .from('inventory_items')
         .select('*')
         .eq('id', itemId)
+        .is('deleted_at', null)
         .single()
 
     if (fetchError || !item) return { success: false, error: 'Item not found' }

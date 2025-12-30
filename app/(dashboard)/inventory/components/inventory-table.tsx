@@ -11,12 +11,12 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
-import type { InventoryItem, Folder } from '@/types/database.types'
+import type { InventoryItemWithTags, Folder } from '@/types/database.types'
 import { EditableCell } from './editable-cell'
 import { deleteItem } from '@/app/actions/inventory'
 
 interface InventoryTableProps {
-    items: InventoryItem[]
+    items: InventoryItemWithTags[]
     folders: Folder[]
 }
 
@@ -82,7 +82,7 @@ export function InventoryTable({ items, folders }: InventoryTableProps) {
                                             {item.image_urls?.[0] ? (
                                                 <img
                                                     src={item.image_urls[0]}
-                                                    alt={item.name}
+                                                    alt={item.name || 'Item'}
                                                     className="h-full w-full rounded-lg object-cover"
                                                 />
                                             ) : (
@@ -101,7 +101,7 @@ export function InventoryTable({ items, folders }: InventoryTableProps) {
                                 </td>
                                 <td className="px-4 py-3 font-mono text-neutral-500">
                                     <EditableCell
-                                        itemId={item.id}
+                                        itemId={item.id || ''}
                                         field="sku"
                                         value={item.sku || ''}
                                     />
@@ -129,7 +129,7 @@ export function InventoryTable({ items, folders }: InventoryTableProps) {
                                 </td>
                                 <td className="px-4 py-3 text-neutral-600">
                                     <EditableCell
-                                        itemId={item.id}
+                                        itemId={item.id || ''}
                                         field="location"
                                         value={item.location || ''}
                                     />
@@ -137,9 +137,9 @@ export function InventoryTable({ items, folders }: InventoryTableProps) {
                                 <td className="px-4 py-3 text-right font-medium text-neutral-900">
                                     <div className="flex items-center justify-end gap-2">
                                         <EditableCell
-                                            itemId={item.id}
+                                            itemId={item.id || ''}
                                             field="quantity"
-                                            value={item.quantity}
+                                            value={item.quantity || 0}
                                             type="number"
                                             align="right"
                                             className="w-20"
@@ -159,7 +159,7 @@ export function InventoryTable({ items, folders }: InventoryTableProps) {
                                     <div className="flex items-center justify-end gap-1">
                                         <span className="text-xs text-neutral-400">RM</span>
                                         <EditableCell
-                                            itemId={item.id}
+                                            itemId={item.id || ''}
                                             field="price"
                                             value={item.price || 0}
                                             type="number"
@@ -172,7 +172,7 @@ export function InventoryTable({ items, folders }: InventoryTableProps) {
                                     <div className="flex items-center justify-end gap-1">
                                         <span className="text-xs text-neutral-400">RM</span>
                                         <EditableCell
-                                            itemId={item.id}
+                                            itemId={item.id || ''}
                                             field="cost_price"
                                             value={item.cost_price || 0}
                                             type="number"
@@ -219,7 +219,7 @@ export function InventoryTable({ items, folders }: InventoryTableProps) {
                                                             size="sm"
                                                             variant="destructive"
                                                             className="h-7 text-xs"
-                                                            onClick={() => handleDelete(item.id)}
+                                                            onClick={() => item.id && handleDelete(item.id)}
                                                             disabled={deletingId === item.id}
                                                         >
                                                             {deletingId === item.id ? (

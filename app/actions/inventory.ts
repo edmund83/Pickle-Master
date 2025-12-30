@@ -28,6 +28,7 @@ export async function updateItemQuantity(
         .from('inventory_items')
         .select('*')
         .eq('id', itemId)
+        .is('deleted_at', null)
         .single()
 
     if (fetchError || !item) {
@@ -132,6 +133,7 @@ export async function updateItemField(
         .from('inventory_items')
         .select('*')
         .eq('id', itemId)
+        .is('deleted_at', null)
         .single()
 
     if (fetchError || !item) {
@@ -223,6 +225,7 @@ export async function deleteItem(itemId: string): Promise<ActionResult<void>> {
         .from('inventory_items')
         .select('*')
         .eq('id', itemId)
+        .is('deleted_at', null)
         .single()
 
     if (fetchError || !item) {
@@ -279,6 +282,7 @@ export async function updateItemTags(
         .from('inventory_items')
         .select('tenant_id, name')
         .eq('id', itemId)
+        .is('deleted_at', null)
         .single()
 
     if (fetchError || !item) {
@@ -345,6 +349,7 @@ export async function moveItemToFolder(
         .from('inventory_items')
         .select('*, folder:folders(id, name)')
         .eq('id', itemId)
+        .is('deleted_at', null)
         .single()
 
     if (fetchError || !item) {
@@ -422,6 +427,7 @@ export async function duplicateItem(
         .from('inventory_items')
         .select('*')
         .eq('id', itemId)
+        .is('deleted_at', null)
         .single()
 
     if (fetchError || !item) {

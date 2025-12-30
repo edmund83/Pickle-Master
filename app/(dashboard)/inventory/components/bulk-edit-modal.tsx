@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { X, Loader2, FolderOpen, Tag, Trash2 } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { X, Loader2, FolderOpen, Tag, Trash2, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { createClient } from '@/lib/supabase/client'
 import { useUndo } from '@/lib/hooks/useUndo'
@@ -24,12 +25,19 @@ export function BulkEditModal({
   onClose,
   onSuccess,
 }: BulkEditModalProps) {
+  const router = useRouter()
   const [action, setAction] = useState<BulkAction | null>(null)
   const [targetFolderId, setTargetFolderId] = useState<string>('')
   const [targetTagId, setTargetTagId] = useState<string>('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const { addUndoAction } = useUndo()
+
+  // Callback to refresh the page after undo
+  const refreshAfterUndo = () => {
+    router.refresh()
+  }
 
   const handleApply = async () => {
     if (!action) return
@@ -47,6 +55,7 @@ export function BulkEditModal({
           .from('inventory_items')
           .select('id, folder_id')
           .in('id', selectedItemIds)
+          .is('deleted_at', null)
 
         const originalFolderIds = new Map(
           (originalItems || []).map((item: { id: string; folder_id: string | null }) => [item.id, item.folder_id])
@@ -68,14 +77,16 @@ export function BulkEditModal({
           `Moved ${itemCount} item${itemCount !== 1 ? 's' : ''}`,
           async () => {
             // Restore original folder IDs
+            const supabaseClient = createClient()
             for (const [itemId, folderId] of originalFolderIds) {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              await (supabase as any)
+              await (supabaseClient as any)
                 .from('inventory_items')
                 .update({ folder_id: folderId })
                 .eq('id', itemId)
             }
-          }
+          },
+          refreshAfterUndo
         )
       } else if (action === 'tag') {
         // Add tag to items
@@ -98,17 +109,21 @@ export function BulkEditModal({
           `Added "${tagName}" to ${itemCount} item${itemCount !== 1 ? 's' : ''}`,
           async () => {
             // Remove the tag from items
+            const supabaseClient = createClient()
             for (const itemId of selectedItemIds) {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              await (supabase as any)
+              await (supabaseClient as any)
                 .from('item_tags')
                 .delete()
                 .match({ item_id: itemId, tag_id: targetTagId })
             }
-          }
+          },
+          refreshAfterUndo
         )
       } else if (action === 'delete') {
         // Soft delete items
+        // Note: We cannot use .select() here because once deleted_at is set,
+        // the RLS SELECT policy (which requires deleted_at IS NULL) blocks returning the row
         const deletedAt = new Date().toISOString()
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { error: deleteError } = await (supabase as any)
@@ -124,18 +139,24 @@ export function BulkEditModal({
           `Deleted ${itemCount} item${itemCount !== 1 ? 's' : ''}`,
           async () => {
             // Restore deleted items
+            const supabaseClient = createClient()
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            await (supabase as any)
+            await (supabaseClient as any)
               .from('inventory_items')
               .update({ deleted_at: null })
               .in('id', selectedItemIds)
-          }
+          },
+          refreshAfterUndo
         )
       }
 
       onSuccess()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      // Supabase errors have code, message, details, hint properties
+      const supabaseError = err as { code?: string; message?: string; details?: string; hint?: string }
+      const errorMessage = supabaseError.message || supabaseError.details || supabaseError.hint ||
+        (err instanceof Error ? err.message : 'An error occurred')
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
@@ -145,6 +166,60 @@ export function BulkEditModal({
     (action === 'move' && targetFolderId) ||
     (action === 'tag' && targetTagId) ||
     action === 'delete'
+
+  const handleDeleteClick = () => {
+    if (action === 'delete') {
+      setShowDeleteConfirm(true)
+    } else {
+      handleApply()
+    }
+  }
+
+  const handleConfirmDelete = () => {
+    setShowDeleteConfirm(false)
+    handleApply()
+  }
+
+  // Delete confirmation modal
+  if (showDeleteConfirm) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+        <div className="w-full max-w-sm rounded-xl bg-white shadow-xl">
+          <div className="p-6 text-center">
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
+              <AlertTriangle className="h-6 w-6 text-red-600" />
+            </div>
+            <h3 className="mb-2 text-lg font-semibold text-neutral-900">
+              Confirm Deletion
+            </h3>
+            <p className="mb-6 text-sm text-neutral-600">
+              Are you sure you want to delete{' '}
+              <span className="font-semibold">{selectedItemIds.length} item{selectedItemIds.length !== 1 ? 's' : ''}</span>?
+              This action can be undone within 10 seconds.
+            </p>
+            <div className="flex gap-3">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setShowDeleteConfirm(false)}
+              >
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                className="flex-1"
+                onClick={handleConfirmDelete}
+                disabled={loading}
+              >
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Yes, Delete
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
@@ -277,7 +352,7 @@ export function BulkEditModal({
             Cancel
           </Button>
           <Button
-            onClick={handleApply}
+            onClick={handleDeleteClick}
             disabled={loading || !canApply}
             variant={action === 'delete' ? 'destructive' : 'default'}
           >
