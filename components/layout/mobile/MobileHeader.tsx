@@ -14,7 +14,7 @@ const pageTitles: Record<string, string> = {
   '/search': 'Search',
   '/tags': 'Tags',
   '/reports': 'Reports',
-  '/import': 'Import',
+  '/settings/bulk-import': 'Bulk Import',
 }
 
 function getPageTitle(pathname: string): string {
