@@ -226,7 +226,7 @@ export function StockCountDetailClient({ data, teamMembers, folders }: StockCoun
   }
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 w-full overflow-y-auto">
       {/* Header */}
       <div className="border-b border-neutral-200 bg-white px-6 py-4">
         <div className="flex items-center justify-between">
@@ -410,59 +410,54 @@ export function StockCountDetailClient({ data, teamMembers, folders }: StockCoun
           </Card>
         )}
 
-        {/* Info Cards */}
-        <div className="grid gap-4 sm:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 text-sm">
-              <div className="flex justify-between">
-                <span className="text-neutral-500">Scope</span>
-                <span className="text-neutral-900">
+        {/* Info Cards - horizontal layout with details inline */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Details</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4 text-sm">
+              <div>
+                <span className="text-neutral-500 block mb-1">Scope</span>
+                <span className="text-neutral-900 font-medium">
                   {stockCount.scope_type === 'folder' && stockCount.scope_folder
                     ? stockCount.scope_folder.name
                     : scopeLabels[stockCount.scope_type]}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-neutral-500">Assigned To</span>
-                <span className="text-neutral-900">
+              <div>
+                <span className="text-neutral-500 block mb-1">Assigned To</span>
+                <span className="text-neutral-900 font-medium">
                   {stockCount.assigned_to_profile?.full_name || '-'}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-neutral-500">Due Date</span>
-                <span className="text-neutral-900">
+              <div>
+                <span className="text-neutral-500 block mb-1">Due Date</span>
+                <span className="text-neutral-900 font-medium">
                   {stockCount.due_date ? <FormattedShortDate date={stockCount.due_date} /> : '-'}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-neutral-500">Created By</span>
-                <span className="text-neutral-900">
+              <div>
+                <span className="text-neutral-500 block mb-1">Created By</span>
+                <span className="text-neutral-900 font-medium">
                   {stockCount.created_by_profile?.full_name || '-'}
                 </span>
               </div>
-              <div className="flex justify-between">
-                <span className="text-neutral-500">Created At</span>
-                <span className="text-neutral-900">
+              <div>
+                <span className="text-neutral-500 block mb-1">Created At</span>
+                <span className="text-neutral-900 font-medium">
                   {stockCount.created_at ? <FormattedShortDate date={stockCount.created_at} /> : '-'}
                 </span>
               </div>
-            </CardContent>
-          </Card>
-
-          {stockCount.notes && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-base">Notes</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-neutral-600 whitespace-pre-wrap">{stockCount.notes}</p>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+            </div>
+            {stockCount.notes && (
+              <div className="mt-4 pt-4 border-t border-neutral-200">
+                <span className="text-neutral-500 text-sm block mb-1">Notes</span>
+                <p className="text-sm text-neutral-900">{stockCount.notes}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
         {/* Items List */}
         <Card>

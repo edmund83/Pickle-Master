@@ -103,12 +103,12 @@ export default async function StockCountDetailPage({
   return (
     <>
       {/* Desktop view */}
-      <div className="hidden lg:block h-full">
+      <div className="hidden lg:flex lg:flex-1 h-full w-full">
         <StockCountDetailClient data={data} teamMembers={teamMembers} folders={folders} />
       </div>
 
       {/* Mobile view */}
-      <div className="lg:hidden h-full">
+      <div className="lg:hidden h-full w-full">
         <StockCountMobileClient data={data} teamMembers={teamMembers} folders={folders} />
       </div>
     </>
