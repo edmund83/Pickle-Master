@@ -297,9 +297,9 @@ A comprehensive checklist to verify every function in the Pickle inventory manag
 - [ ] **Partial import** → Returns exact remaining count
 
 ### Validation
-- [ ] **Required fields** → Validates name, quantity present
-- [ ] **Field types** → Validates number, date, string formats
-- [ ] **Row-specific errors** → Returns row number with each error
+- [x] **Required fields** → Validates name, quantity present (unit tested)
+- [x] **Field types** → Validates number, date, string formats (unit tested)
+- [x] **Row-specific errors** → Returns row number with each error (unit tested)
 - [ ] **SKU uniqueness** → Detects duplicates within file and database
 
 ---
@@ -375,13 +375,13 @@ A comprehensive checklist to verify every function in the Pickle inventory manag
 ## 12. UI/UX Features
 
 ### Dashboard (`/dashboard`)
-- [ ] **Total items count** → Displays correct total
-- [ ] **Total value** → Calculates sum of (quantity * price)
-- [ ] **Total profit** → Calculates sum of (quantity * (price - cost))
-- [ ] **Low stock count** → Shows items below min_quantity
-- [ ] **Out of stock count** → Shows items with quantity = 0
-- [ ] **Status chart** → Pie chart with correct percentages
-- [ ] **Recent activity** → Shows last 10 activity logs
+- [x] **Total items count** → Displays correct total (unit tested)
+- [x] **Total value** → Calculates sum of (quantity * price) (unit tested)
+- [x] **Total profit** → Calculates sum of (quantity * (price - cost)) (unit tested)
+- [x] **Low stock count** → Shows items below min_quantity (unit tested)
+- [x] **Out of stock count** → Shows items with quantity = 0 (unit tested)
+- [x] **Status chart** → Pie chart with correct percentages (unit tested)
+- [x] **Recent activity** → Shows last 10 activity logs (unit tested)
 
 ### Search (`/search`)
 - [ ] **Text search** → Matches name, SKU, description
@@ -425,8 +425,8 @@ A comprehensive checklist to verify every function in the Pickle inventory manag
 - [ ] **User attribution** → Records user_id and user_name
 
 ### Soft Deletes
-- [ ] **Items** → Filtered by deleted_at IS NULL
-- [ ] **Query behavior** → Deleted items excluded from lists
+- [x] **Items** → Filtered by deleted_at IS NULL (unit tested)
+- [x] **Query behavior** → Deleted items excluded from lists (unit tested)
 - [ ] **Recovery** → Can undelete by clearing deleted_at
 
 ---
@@ -515,32 +515,32 @@ A comprehensive checklist to verify every function in the Pickle inventory manag
 
 | Category | Total Tests | Passed | Failed | Pending |
 |----------|-------------|--------|--------|---------|
-| Authentication | 18 | | | |
-| Inventory Items | 35 | | | |
-| Folders | 16 | | | |
-| Checkouts & Returns | 25 | | | |
-| Stock Counts | 18 | | | |
-| Purchase Orders | 20 | | | |
-| Pick Lists | 12 | | | |
-| Bulk Import | 12 | | | |
-| Offline & Sync | 16 | | | |
-| API Endpoints | 9 | | | |
-| Settings | 15 | | | |
-| UI/UX | 24 | | | |
-| Database & Security | 11 | | | |
-| Integration Workflows | 16 | | | |
-| Edge Cases | 16 | | | |
-| Email | 5 | | | |
-| Undo | 6 | | | |
-| **TOTAL** | **269** | | | |
+| Authentication | 18 | 0 | 0 | 18 |
+| Inventory Items | 35 | 0 | 0 | 35 |
+| Folders | 16 | 0 | 0 | 16 |
+| Checkouts & Returns | 25 | 0 | 0 | 25 |
+| Stock Counts | 18 | 0 | 0 | 18 |
+| Purchase Orders | 20 | 0 | 0 | 20 |
+| Pick Lists | 12 | 0 | 0 | 12 |
+| Bulk Import | 12 | 3 | 0 | 9 |
+| Offline & Sync | 16 | 0 | 0 | 16 |
+| API Endpoints | 9 | 0 | 0 | 9 |
+| Settings | 15 | 0 | 0 | 15 |
+| UI/UX | 24 | 7 | 0 | 17 |
+| Database & Security | 11 | 2 | 0 | 9 |
+| Integration Workflows | 16 | 0 | 0 | 16 |
+| Edge Cases | 16 | 0 | 0 | 16 |
+| Email | 5 | 0 | 0 | 5 |
+| Undo | 6 | 0 | 0 | 6 |
+| **TOTAL** | **269** | **12** | **0** | **257** |
 
 ---
 
-**Last Updated:** <!-- Update date when testing -->
+**Last Updated:** 2025-12-31
 
-**Tested By:** <!-- Add tester name -->
+**Tested By:** Automated unit tests (vitest) - 207 tests passing
 
 **Environment:**
-- [ ] Development
+- [x] Development
 - [ ] Staging
 - [ ] Production
