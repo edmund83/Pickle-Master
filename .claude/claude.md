@@ -167,3 +167,11 @@ When working with database:
 
 - Before coding, identify the relevant PRD section and align the implementation to it.
 - When uncertain (tradeoffs, missing requirements), ask concise questions rather than guessing.
+
+# Claude Code Permissions
+
+allow:
+  - bash
+  - shell
+  - sh
+  - zsh
