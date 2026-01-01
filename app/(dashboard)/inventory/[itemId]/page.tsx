@@ -31,6 +31,7 @@ import { FormattedPricingCard } from './components/FormattedPricingCard'
 import { TrackingCard } from './components/TrackingCard'
 import { FormattedDateTime, FormattedShortDate } from '@/components/formatting/FormattedDate'
 import { ItemMoreOptions } from './components/item-more-options'
+import { ChatterPanel } from '@/components/chatter'
 
 interface FeaturesEnabled {
   multi_location?: boolean
@@ -78,6 +79,7 @@ interface ItemWithRelations {
   features: FeaturesEnabled
   tenantLogo: string | null
   userEmail: string | null
+  userId: string
   serialStats: SerialStats | null
   lotStats: LotStats | null
 }
@@ -238,6 +240,7 @@ async function getItemDetails(itemId: string): Promise<ItemWithRelations | null>
     features,
     tenantLogo,
     userEmail: user.email || null,
+    userId: user.id,
     serialStats,
     lotStats,
   }
@@ -251,7 +254,7 @@ export default async function ItemDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  const { item, folder, itemTags, activityLogs, features, tenantLogo, userEmail, serialStats, lotStats } = data
+  const { item, folder, itemTags, activityLogs, features, tenantLogo, userEmail, userId, serialStats, lotStats } = data
 
   const statusColors: Record<string, string> = {
     in_stock: 'bg-green-100 text-green-700 border-green-200',
@@ -699,6 +702,14 @@ export default async function ItemDetailPage({ params }: PageProps) {
             )}
           </ItemDetailCard>
 
+          {/* Chatter - Team Communication */}
+          <ChatterPanel
+            entityType="item"
+            entityId={item.id}
+            entityName={item.name}
+            currentUserId={userId}
+            className="mt-6"
+          />
 
           {/* Metadata Footer */}
           <div className="mt-6 flex flex-wrap items-center justify-between gap-4 text-xs text-neutral-400">

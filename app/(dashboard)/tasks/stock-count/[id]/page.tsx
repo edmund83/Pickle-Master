@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { StockCountDetailClient } from './StockCountDetailClient'
 import { StockCountMobileClient } from './StockCountMobileClient'
+import { ChatterPanel } from '@/components/chatter'
 
 interface TeamMember {
   id: string
@@ -84,24 +85,34 @@ async function getFolders(): Promise<Folder[]> {
   return data || []
 }
 
+async function getCurrentUserId(): Promise<string | null> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  return user?.id || null
+}
+
 export default async function StockCountDetailPage({
   params
 }: {
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [data, teamMembers, folders] = await Promise.all([
+  const [data, teamMembers, folders, userId] = await Promise.all([
     getStockCountWithItems(id),
     getTeamMembers(),
-    getFolders()
+    getFolders(),
+    getCurrentUserId()
   ])
 
   if (!data || !data.stock_count) {
     notFound()
   }
 
+  const stockCount = data.stock_count
+  const entityName = stockCount.display_id || stockCount.name || `Stock Count ${id.slice(0, 8)}`
+
   return (
-    <>
+    <div className="flex flex-col h-full">
       {/* Desktop view */}
       <div className="hidden lg:flex lg:flex-1 h-full w-full">
         <StockCountDetailClient data={data} teamMembers={teamMembers} folders={folders} />
@@ -111,6 +122,18 @@ export default async function StockCountDetailPage({
       <div className="lg:hidden h-full w-full">
         <StockCountMobileClient data={data} teamMembers={teamMembers} folders={folders} />
       </div>
-    </>
+
+      {/* Chatter Panel */}
+      {userId && (
+        <div className="px-4 pb-6 lg:px-6">
+          <ChatterPanel
+            entityType="stock_count"
+            entityId={stockCount.id}
+            entityName={entityName}
+            currentUserId={userId}
+          />
+        </div>
+      )}
+    </div>
   )
 }
