@@ -1,7 +1,8 @@
 import type { InventoryItem, Folder, ActivityLog } from '@/types/database.types'
 
-// Test tenant ID
+// Test tenant IDs
 export const TEST_TENANT_ID = '00000000-0000-0000-0000-000000000001'
+export const OTHER_TENANT_ID = '00000000-0000-0000-0000-000000000099'
 export const TEST_USER_ID = '00000000-0000-0000-0000-000000000002'
 
 // Test Folders
@@ -163,6 +164,33 @@ export const testItems: InventoryItem[] = [
     deleted_at: '2024-01-10T00:00:00Z', // Deleted
     created_at: '2024-01-05T00:00:00Z',
     updated_at: '2024-01-10T00:00:00Z',
+    created_by: TEST_USER_ID,
+    last_modified_by: TEST_USER_ID,
+  },
+  // Item from other tenant for isolation testing
+  {
+    id: 'other-item',
+    tenant_id: OTHER_TENANT_ID,
+    folder_id: null,
+    name: 'Other Tenant Item',
+    sku: 'OTH-001',
+    barcode: null,
+    quantity: 100,
+    min_quantity: 10,
+    price: 200,
+    cost_price: 150,
+    currency: 'MYR',
+    unit: 'unit',
+    status: 'in_stock',
+    location: null,
+    notes: null,
+    image_urls: [],
+    tags: [],
+    custom_fields: null,
+    serial_number: null,
+    deleted_at: null,
+    created_at: '2024-01-01T00:00:00Z',
+    updated_at: '2024-01-01T00:00:00Z',
     created_by: TEST_USER_ID,
     last_modified_by: TEST_USER_ID,
   },
