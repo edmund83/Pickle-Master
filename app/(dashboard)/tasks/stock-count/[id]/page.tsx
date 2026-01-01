@@ -2,7 +2,6 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { StockCountDetailClient } from './StockCountDetailClient'
 import { StockCountMobileClient } from './StockCountMobileClient'
-import { ChatterPanel } from '@/components/chatter'
 
 interface TeamMember {
   id: string
@@ -108,32 +107,17 @@ export default async function StockCountDetailPage({
     notFound()
   }
 
-  const stockCount = data.stock_count
-  const entityName = stockCount.display_id || stockCount.name || `Stock Count ${id.slice(0, 8)}`
-
   return (
-    <div className="flex flex-col h-full">
+    <>
       {/* Desktop view */}
       <div className="hidden lg:flex lg:flex-1 h-full w-full">
-        <StockCountDetailClient data={data} teamMembers={teamMembers} folders={folders} />
+        <StockCountDetailClient data={data} teamMembers={teamMembers} folders={folders} currentUserId={userId} />
       </div>
 
       {/* Mobile view */}
       <div className="lg:hidden h-full w-full">
-        <StockCountMobileClient data={data} teamMembers={teamMembers} folders={folders} />
+        <StockCountMobileClient data={data} teamMembers={teamMembers} folders={folders} currentUserId={userId} />
       </div>
-
-      {/* Chatter Panel */}
-      {userId && (
-        <div className="px-4 pb-6 lg:px-6">
-          <ChatterPanel
-            entityType="stock_count"
-            entityId={stockCount.id}
-            entityName={entityName}
-            currentUserId={userId}
-          />
-        </div>
-      )}
-    </div>
+    </>
   )
 }

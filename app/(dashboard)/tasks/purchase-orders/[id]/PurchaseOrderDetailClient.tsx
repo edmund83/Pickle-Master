@@ -46,12 +46,14 @@ import { createReceive } from '@/app/actions/receives'
 import type { PurchaseOrderWithDetails, TeamMember, Vendor } from './page'
 import { BarcodeScanner } from '@/components/scanner/BarcodeScanner'
 import type { ScanResult } from '@/lib/scanner/useBarcodeScanner'
+import { ChatterPanel } from '@/components/chatter'
 
 interface PurchaseOrderDetailClientProps {
   purchaseOrder: PurchaseOrderWithDetails
   teamMembers: TeamMember[]
   vendors: Vendor[]
   createdByName: string | null
+  currentUserId: string | null
 }
 
 const statusConfig: Record<string, { icon: React.ElementType; color: string; bgColor: string; label: string }> = {
@@ -67,7 +69,8 @@ export function PurchaseOrderDetailClient({
   purchaseOrder,
   teamMembers,
   vendors,
-  createdByName
+  createdByName,
+  currentUserId
 }: PurchaseOrderDetailClientProps) {
   const router = useRouter()
   const [actionLoading, setActionLoading] = useState<string | null>(null)
@@ -1005,7 +1008,7 @@ export function PurchaseOrderDetailClient({
         </Card>
 
         {/* Notes Section */}
-        <Card className="mx-6 mt-6 mb-6">
+        <Card className="mx-6 mt-6">
           <CardHeader>
             <CardTitle>Notes</CardTitle>
           </CardHeader>
@@ -1426,6 +1429,17 @@ export function PurchaseOrderDetailClient({
             )}
           </div>
         </div>
+
+        {/* Chatter Panel */}
+        {currentUserId && (
+          <ChatterPanel
+            entityType="purchase_order"
+            entityId={purchaseOrder.id}
+            entityName={purchaseOrder.display_id || purchaseOrder.order_number || `PO ${purchaseOrder.id.slice(0, 8)}`}
+            currentUserId={currentUserId}
+            className="mt-6"
+          />
+        )}
       </div>
     </div>
   )

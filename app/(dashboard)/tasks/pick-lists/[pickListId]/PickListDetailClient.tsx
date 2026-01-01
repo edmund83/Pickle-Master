@@ -41,6 +41,7 @@ import {
 } from '@/app/actions/pick-lists'
 import { BarcodeScanner } from '@/components/scanner/BarcodeScanner'
 import type { ScanResult } from '@/lib/scanner/useBarcodeScanner'
+import { ChatterPanel } from '@/components/chatter'
 
 interface TeamMember {
   id: string
@@ -90,6 +91,7 @@ interface PickListWithItems {
 interface PickListDetailClientProps {
   data: PickListWithItems
   teamMembers: TeamMember[]
+  currentUserId: string | null
 }
 
 interface SearchResult {
@@ -128,7 +130,7 @@ const itemOutcomeOptions = [
   { value: 'transfer', label: 'Transfer' },
 ]
 
-export function PickListDetailClient({ data, teamMembers }: PickListDetailClientProps) {
+export function PickListDetailClient({ data, teamMembers, currentUserId }: PickListDetailClientProps) {
   const router = useRouter()
   const [pickingItemId, setPickingItemId] = useState<string | null>(null)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
@@ -1106,6 +1108,17 @@ export function PickListDetailClient({ data, teamMembers }: PickListDetailClient
             </span>
           )}
         </div>
+
+        {/* Chatter Panel */}
+        {currentUserId && (
+          <ChatterPanel
+            entityType="pick_list"
+            entityId={pickList.id}
+            entityName={pickList.display_id || pickList.name || `Pick List ${pickList.id.slice(0, 8)}`}
+            currentUserId={currentUserId}
+            className="mt-6"
+          />
+        )}
       </div>
     </div>
   )

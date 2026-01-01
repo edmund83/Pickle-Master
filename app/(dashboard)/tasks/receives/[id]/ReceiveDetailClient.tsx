@@ -42,10 +42,12 @@ import {
   type ReceiveItemSerial
 } from '@/app/actions/receives'
 import type { Location } from './page'
+import { ChatterPanel } from '@/components/chatter'
 
 interface ReceiveDetailClientProps {
   receive: ReceiveWithDetails
   locations: Location[]
+  currentUserId: string
 }
 
 const statusConfig: Record<string, { icon: React.ElementType; color: string; bgColor: string; label: string }> = {
@@ -56,7 +58,8 @@ const statusConfig: Record<string, { icon: React.ElementType; color: string; bgC
 
 export function ReceiveDetailClient({
   receive,
-  locations
+  locations,
+  currentUserId
 }: ReceiveDetailClientProps) {
   const router = useRouter()
   const [actionLoading, setActionLoading] = useState<string | null>(null)
@@ -881,6 +884,17 @@ export function ReceiveDetailClient({
             </Card>
           </div>
         </div>
+
+        {/* Chatter Panel - only show for non-draft (completed) receives */}
+        {!isDraft && (
+          <ChatterPanel
+            entityType="receive"
+            entityId={receive.id}
+            entityName={receive.display_id || `Receive ${receive.id.slice(0, 8)}`}
+            currentUserId={currentUserId}
+            className="mt-6"
+          />
+        )}
       </div>
 
       {/* Edit Item Modal */}

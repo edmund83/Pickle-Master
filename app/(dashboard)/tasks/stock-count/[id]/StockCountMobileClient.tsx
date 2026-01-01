@@ -34,6 +34,7 @@ import {
 } from '@/app/actions/stock-counts'
 import type { StockCountWithRelations, StockCountItemWithDetails } from '@/app/actions/stock-counts'
 import { cn } from '@/lib/utils'
+import { ChatterPanel } from '@/components/chatter'
 
 interface TeamMember {
   id: string
@@ -56,6 +57,7 @@ interface StockCountMobileClientProps {
   data: StockCountData
   teamMembers: TeamMember[]
   folders: Folder[]
+  currentUserId: string | null
 }
 
 const statusLabels: Record<string, string> = {
@@ -80,7 +82,7 @@ const scopeLabels: Record<string, string> = {
   custom: 'Custom Selection',
 }
 
-export function StockCountMobileClient({ data, teamMembers, folders }: StockCountMobileClientProps) {
+export function StockCountMobileClient({ data, teamMembers, folders, currentUserId }: StockCountMobileClientProps) {
   const router = useRouter()
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [activeItemId, setActiveItemId] = useState<string | null>(null)
@@ -643,6 +645,18 @@ export function StockCountMobileClient({ data, teamMembers, folders }: StockCoun
             </div>
           </div>
         </>
+      )}
+
+      {/* Chatter Panel - only show for non-draft (started) counts */}
+      {!isDraft && currentUserId && (
+        <div className="px-4 py-6">
+          <ChatterPanel
+            entityType="stock_count"
+            entityId={stockCount.id}
+            entityName={stockCount.display_id || stockCount.name || `Stock Count ${stockCount.id.slice(0, 8)}`}
+            currentUserId={currentUserId}
+          />
+        </div>
       )}
 
       {/* Completion Modal */}
