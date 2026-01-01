@@ -2,7 +2,6 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { ReceiveDetailClient } from './ReceiveDetailClient'
 import { getReceive, getLocations } from '@/app/actions/receives'
-import { ChatterPanel } from '@/components/chatter'
 
 export interface Location {
   id: string
@@ -30,22 +29,11 @@ export default async function ReceiveDetailPage({
     notFound()
   }
 
-  const entityName = receive.display_id || `Receive ${id.slice(0, 8)}`
-
   return (
-    <div className="flex flex-col h-full">
-      <ReceiveDetailClient
-        receive={receive}
-        locations={locations as Location[]}
-      />
-      <div className="px-4 pb-6 lg:px-6">
-        <ChatterPanel
-          entityType="receive"
-          entityId={receive.id}
-          entityName={entityName}
-          currentUserId={user.id}
-        />
-      </div>
-    </div>
+    <ReceiveDetailClient
+      receive={receive}
+      locations={locations as Location[]}
+      currentUserId={user.id}
+    />
   )
 }

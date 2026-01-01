@@ -31,6 +31,7 @@ import {
   cancelStockCount
 } from '@/app/actions/stock-counts'
 import type { StockCountWithRelations, StockCountItemWithDetails } from '@/app/actions/stock-counts'
+import { ChatterPanel } from '@/components/chatter'
 
 interface TeamMember {
   id: string
@@ -53,6 +54,7 @@ interface StockCountDetailClientProps {
   data: StockCountData
   teamMembers: TeamMember[]
   folders: Folder[]
+  currentUserId: string | null
 }
 
 const statusIcons: Record<string, React.ReactNode> = {
@@ -85,7 +87,7 @@ const scopeLabels: Record<string, string> = {
   custom: 'Custom Selection',
 }
 
-export function StockCountDetailClient({ data, teamMembers, folders }: StockCountDetailClientProps) {
+export function StockCountDetailClient({ data, teamMembers, folders, currentUserId }: StockCountDetailClientProps) {
   const router = useRouter()
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [countingItemId, setCountingItemId] = useState<string | null>(null)
@@ -636,6 +638,17 @@ export function StockCountDetailClient({ data, teamMembers, folders }: StockCoun
             )}
           </CardContent>
         </Card>
+
+        {/* Chatter Panel - only show for non-draft (started) counts */}
+        {!isDraft && currentUserId && (
+          <ChatterPanel
+            entityType="stock_count"
+            entityId={stockCount.id}
+            entityName={stockCount.display_id || stockCount.name || `Stock Count ${stockCount.id.slice(0, 8)}`}
+            currentUserId={currentUserId}
+            className="mt-6"
+          />
+        )}
       </div>
     </div>
   )

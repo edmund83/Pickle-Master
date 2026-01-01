@@ -1,7 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { PickListDetailClient } from './PickListDetailClient'
-import { ChatterPanel } from '@/components/chatter'
 
 interface TeamMember {
   id: string
@@ -126,22 +125,7 @@ export default async function PickListDetailPage({
     notFound()
   }
 
-  const pickList = data.pick_list
-  const entityName = pickList.display_id || pickList.name || `Pick List ${pickListId.slice(0, 8)}`
-
   return (
-    <div className="flex flex-col h-full">
-      <PickListDetailClient data={data} teamMembers={teamMembers} />
-      {userId && (
-        <div className="px-4 pb-6 lg:px-6">
-          <ChatterPanel
-            entityType="pick_list"
-            entityId={pickList.id}
-            entityName={entityName}
-            currentUserId={userId}
-          />
-        </div>
-      )}
-    </div>
+    <PickListDetailClient data={data} teamMembers={teamMembers} currentUserId={userId} />
   )
 }
