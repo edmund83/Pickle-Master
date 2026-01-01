@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { PickListDetailClient } from './PickListDetailClient'
+import { ChatterPanel } from '@/components/chatter'
 
 interface TeamMember {
   id: string
@@ -103,20 +104,44 @@ async function getTeamMembers(): Promise<TeamMember[]> {
   return data || []
 }
 
+async function getCurrentUserId(): Promise<string | null> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  return user?.id || null
+}
+
 export default async function PickListDetailPage({
   params
 }: {
   params: Promise<{ pickListId: string }>
 }) {
   const { pickListId } = await params
-  const [data, teamMembers] = await Promise.all([
+  const [data, teamMembers, userId] = await Promise.all([
     getPickListWithItems(pickListId),
-    getTeamMembers()
+    getTeamMembers(),
+    getCurrentUserId()
   ])
 
   if (!data || !data.pick_list) {
     notFound()
   }
 
-  return <PickListDetailClient data={data} teamMembers={teamMembers} />
+  const pickList = data.pick_list
+  const entityName = pickList.display_id || pickList.name || `Pick List ${pickListId.slice(0, 8)}`
+
+  return (
+    <div className="flex flex-col h-full">
+      <PickListDetailClient data={data} teamMembers={teamMembers} />
+      {userId && (
+        <div className="px-4 pb-6 lg:px-6">
+          <ChatterPanel
+            entityType="pick_list"
+            entityId={pickList.id}
+            entityName={entityName}
+            currentUserId={userId}
+          />
+        </div>
+      )}
+    </div>
+  )
 }

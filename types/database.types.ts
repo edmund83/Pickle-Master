@@ -251,6 +251,203 @@ export type Database = {
           },
         ]
       }
+      admin_audit_logs: {
+        Row: {
+          action_category: string
+          action_type: string
+          admin_email: string
+          admin_user_id: string
+          created_at: string
+          id: string
+          ip_address: unknown
+          reason: string | null
+          request_id: string | null
+          state_after: Json | null
+          state_before: Json | null
+          target_id: string | null
+          target_tenant_id: string | null
+          target_type: string | null
+          user_agent: string | null
+        }
+        Insert: {
+          action_category: string
+          action_type: string
+          admin_email: string
+          admin_user_id: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown
+          reason?: string | null
+          request_id?: string | null
+          state_after?: Json | null
+          state_before?: Json | null
+          target_id?: string | null
+          target_tenant_id?: string | null
+          target_type?: string | null
+          user_agent?: string | null
+        }
+        Update: {
+          action_category?: string
+          action_type?: string
+          admin_email?: string
+          admin_user_id?: string
+          created_at?: string
+          id?: string
+          ip_address?: unknown
+          reason?: string | null
+          request_id?: string | null
+          state_after?: Json | null
+          state_before?: Json | null
+          target_id?: string | null
+          target_tenant_id?: string | null
+          target_type?: string | null
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_audit_logs_target_tenant_id_fkey"
+            columns: ["target_tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "admin_audit_logs_target_tenant_id_fkey"
+            columns: ["target_tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_feature_flags: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          flag_name: string
+          id: string
+          is_enabled: boolean | null
+          scope: string | null
+          surfaces: string[] | null
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          flag_name: string
+          id?: string
+          is_enabled?: boolean | null
+          scope?: string | null
+          surfaces?: string[] | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          flag_name?: string
+          id?: string
+          is_enabled?: boolean | null
+          scope?: string | null
+          surfaces?: string[] | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      admin_sessions: {
+        Row: {
+          admin_user_id: string
+          created_at: string | null
+          expires_at: string
+          id: string
+          ip_address: unknown
+          is_revoked: boolean | null
+          revoked_at: string | null
+          revoked_reason: string | null
+          token_hash: string
+          user_agent: string | null
+        }
+        Insert: {
+          admin_user_id: string
+          created_at?: string | null
+          expires_at: string
+          id?: string
+          ip_address?: unknown
+          is_revoked?: boolean | null
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          token_hash: string
+          user_agent?: string | null
+        }
+        Update: {
+          admin_user_id?: string
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          ip_address?: unknown
+          is_revoked?: boolean | null
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          token_hash?: string
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "admin_sessions_admin_user_id_fkey"
+            columns: ["admin_user_id"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      admin_users: {
+        Row: {
+          allowed_ips: unknown[] | null
+          created_at: string | null
+          created_by: string | null
+          email: string
+          id: string
+          is_active: boolean | null
+          last_login_at: string | null
+          require_2fa: boolean | null
+          role: string
+          session_timeout_minutes: number | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          allowed_ips?: unknown[] | null
+          created_at?: string | null
+          created_by?: string | null
+          email: string
+          id?: string
+          is_active?: boolean | null
+          last_login_at?: string | null
+          require_2fa?: boolean | null
+          role?: string
+          session_timeout_minutes?: number | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          allowed_ips?: unknown[] | null
+          created_at?: string | null
+          created_by?: string | null
+          email?: string
+          id?: string
+          is_active?: boolean | null
+          last_login_at?: string | null
+          require_2fa?: boolean | null
+          role?: string
+          session_timeout_minutes?: number | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       alerts: {
         Row: {
           alert_type: string
@@ -314,6 +511,119 @@ export type Database = {
           },
           {
             foreignKeyName: "alerts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chatter_mentions: {
+        Row: {
+          created_at: string | null
+          id: string
+          mentioned_user_id: string
+          message_id: string
+          read_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          mentioned_user_id: string
+          message_id: string
+          read_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          mentioned_user_id?: string
+          message_id?: string
+          read_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chatter_mentions_mentioned_user_id_fkey"
+            columns: ["mentioned_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chatter_mentions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "chatter_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      chatter_messages: {
+        Row: {
+          author_id: string
+          content: string
+          created_at: string | null
+          deleted_at: string | null
+          edited_at: string | null
+          entity_id: string
+          entity_type: Database["public"]["Enums"]["chatter_entity_type"]
+          id: string
+          is_system_message: boolean | null
+          parent_id: string | null
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          author_id: string
+          content: string
+          created_at?: string | null
+          deleted_at?: string | null
+          edited_at?: string | null
+          entity_id: string
+          entity_type: Database["public"]["Enums"]["chatter_entity_type"]
+          id?: string
+          is_system_message?: boolean | null
+          parent_id?: string | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          author_id?: string
+          content?: string
+          created_at?: string | null
+          deleted_at?: string | null
+          edited_at?: string | null
+          entity_id?: string
+          entity_type?: Database["public"]["Enums"]["chatter_entity_type"]
+          id?: string
+          is_system_message?: boolean | null
+          parent_id?: string | null
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "chatter_messages_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chatter_messages_parent_id_fkey"
+            columns: ["parent_id"]
+            isOneToOne: false
+            referencedRelation: "chatter_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "chatter_messages_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "chatter_messages_tenant_id_fkey"
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
@@ -571,6 +881,64 @@ export type Database = {
             columns: ["tenant_id"]
             isOneToOne: false
             referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      entity_followers: {
+        Row: {
+          entity_id: string
+          entity_type: Database["public"]["Enums"]["chatter_entity_type"]
+          followed_at: string | null
+          id: string
+          notify_email: boolean | null
+          notify_in_app: boolean | null
+          notify_push: boolean | null
+          tenant_id: string
+          user_id: string
+        }
+        Insert: {
+          entity_id: string
+          entity_type: Database["public"]["Enums"]["chatter_entity_type"]
+          followed_at?: string | null
+          id?: string
+          notify_email?: boolean | null
+          notify_in_app?: boolean | null
+          notify_push?: boolean | null
+          tenant_id: string
+          user_id: string
+        }
+        Update: {
+          entity_id?: string
+          entity_type?: Database["public"]["Enums"]["chatter_entity_type"]
+          followed_at?: string | null
+          id?: string
+          notify_email?: boolean | null
+          notify_in_app?: boolean | null
+          notify_push?: boolean | null
+          tenant_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "entity_followers_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "entity_followers_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "entity_followers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1431,6 +1799,7 @@ export type Database = {
           id: string
           is_read: boolean | null
           message: string | null
+          notification_subtype: string | null
           notification_type: string
           read_at: string | null
           tenant_id: string
@@ -1444,6 +1813,7 @@ export type Database = {
           id?: string
           is_read?: boolean | null
           message?: string | null
+          notification_subtype?: string | null
           notification_type: string
           read_at?: string | null
           tenant_id: string
@@ -1457,6 +1827,7 @@ export type Database = {
           id?: string
           is_read?: boolean | null
           message?: string | null
+          notification_subtype?: string | null
           notification_type?: string
           read_at?: string | null
           tenant_id?: string
@@ -2569,6 +2940,67 @@ export type Database = {
           },
         ]
       }
+      tenant_plan_history: {
+        Row: {
+          changed_by_admin: string | null
+          created_at: string | null
+          effective_at: string | null
+          id: string
+          new_tier: string
+          old_tier: string | null
+          price_lock_until: string | null
+          proration_applied: boolean | null
+          reason: string | null
+          tenant_id: string
+        }
+        Insert: {
+          changed_by_admin?: string | null
+          created_at?: string | null
+          effective_at?: string | null
+          id?: string
+          new_tier: string
+          old_tier?: string | null
+          price_lock_until?: string | null
+          proration_applied?: boolean | null
+          reason?: string | null
+          tenant_id: string
+        }
+        Update: {
+          changed_by_admin?: string | null
+          created_at?: string | null
+          effective_at?: string | null
+          id?: string
+          new_tier?: string
+          old_tier?: string | null
+          price_lock_until?: string | null
+          proration_applied?: boolean | null
+          reason?: string | null
+          tenant_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tenant_plan_history_changed_by_admin_fkey"
+            columns: ["changed_by_admin"]
+            isOneToOne: false
+            referencedRelation: "admin_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tenant_plan_history_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "tenant_plan_history_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tenants: {
         Row: {
           created_at: string | null
@@ -2840,6 +3272,10 @@ export type Database = {
       batch_create_items: { Args: { p_items: Json }; Returns: Json }
       bulk_adjust_quantities: { Args: { adjustments: Json }; Returns: Json }
       bulk_delete_items: { Args: { item_ids: string[] }; Returns: Json }
+      bulk_import_items: {
+        Args: { p_items: Json; p_options?: Json }
+        Returns: Json
+      }
       bulk_move_items: {
         Args: { item_ids: string[]; target_folder_id: string }
         Returns: Json
@@ -3149,6 +3585,7 @@ export type Database = {
         }
         Returns: number
       }
+      get_admin_role: { Args: { p_user_id: string }; Returns: string }
       get_all_reminders: {
         Args: {
           p_limit?: number
@@ -3205,6 +3642,44 @@ export type Database = {
       get_entity_by_display_id: {
         Args: { p_display_id: string }
         Returns: Json
+      }
+      get_entity_followers: {
+        Args: {
+          p_entity_id: string
+          p_entity_type: Database["public"]["Enums"]["chatter_entity_type"]
+        }
+        Returns: {
+          followed_at: string
+          notify_email: boolean
+          notify_in_app: boolean
+          notify_push: boolean
+          user_avatar: string
+          user_email: string
+          user_id: string
+          user_name: string
+        }[]
+      }
+      get_entity_messages: {
+        Args: {
+          p_entity_id: string
+          p_entity_type: Database["public"]["Enums"]["chatter_entity_type"]
+          p_limit?: number
+          p_offset?: number
+        }
+        Returns: {
+          author_avatar: string
+          author_email: string
+          author_id: string
+          author_name: string
+          content: string
+          created_at: string
+          edited_at: string
+          id: string
+          is_system_message: boolean
+          mentions: Json
+          parent_id: string
+          reply_count: number
+        }[]
       }
       get_folder_stats: {
         Args: never
@@ -3268,6 +3743,22 @@ export type Database = {
       }
       get_jobs: { Args: { p_limit?: number; p_status?: string }; Returns: Json }
       get_letter_prefix: { Args: { p_sequence: number }; Returns: string }
+      get_message_replies: {
+        Args: { p_limit?: number; p_message_id: string }
+        Returns: {
+          author_avatar: string
+          author_email: string
+          author_id: string
+          author_name: string
+          content: string
+          created_at: string
+          edited_at: string
+          id: string
+          is_system_message: boolean
+          mentions: Json
+          parent_id: string
+        }[]
+      }
       get_my_checkouts: { Args: never; Returns: Json }
       get_my_tenant_stats: {
         Args: { force_refresh?: boolean }
@@ -3343,9 +3834,31 @@ export type Database = {
           tag_name: string
         }[]
       }
+      get_team_members_for_mention: {
+        Args: { p_limit?: number; p_search_query?: string }
+        Returns: {
+          user_avatar: string
+          user_email: string
+          user_id: string
+          user_name: string
+        }[]
+      }
       get_tenant_org_code: { Args: never; Returns: Json }
+      get_unread_mentions_count: { Args: never; Returns: number }
       get_user_tenant_id: { Args: never; Returns: string }
+      is_admin_feature_enabled: {
+        Args: { p_flag_name: string }
+        Returns: boolean
+      }
       is_admin_or_owner: { Args: never; Returns: boolean }
+      is_admin_user: { Args: { p_user_id: string }; Returns: boolean }
+      is_following_entity: {
+        Args: {
+          p_entity_id: string
+          p_entity_type: Database["public"]["Enums"]["chatter_entity_type"]
+        }
+        Returns: boolean
+      }
       log_activity: {
         Args: {
           p_action_type: string
@@ -3361,6 +3874,24 @@ export type Database = {
         }
         Returns: string
       }
+      log_admin_action: {
+        Args: {
+          p_action_category: string
+          p_action_type: string
+          p_admin_email: string
+          p_admin_user_id: string
+          p_ip_address?: unknown
+          p_reason?: string
+          p_state_after?: Json
+          p_state_before?: Json
+          p_target_id?: string
+          p_target_tenant_id?: string
+          p_target_type?: string
+          p_user_agent?: string
+        }
+        Returns: string
+      }
+      mark_mentions_read: { Args: { p_message_ids: string[] }; Returns: number }
       perform_checkin: {
         Args: {
           p_checkout_id: string
@@ -3384,6 +3915,16 @@ export type Database = {
       pick_pick_list_item: {
         Args: { p_pick_list_item_id: string; p_picked_quantity: number }
         Returns: Json
+      }
+      post_chatter_message: {
+        Args: {
+          p_content: string
+          p_entity_id: string
+          p_entity_type: Database["public"]["Enums"]["chatter_entity_type"]
+          p_mentioned_user_ids?: string[]
+          p_parent_id?: string
+        }
+        Returns: string
       }
       process_reminder_trigger: {
         Args: { p_mark_triggered?: boolean; p_reminder_id: string }
@@ -3576,6 +4117,13 @@ export type Database = {
         | "expiring_soon"
         | "reorder_point"
         | "custom"
+      chatter_entity_type:
+        | "item"
+        | "checkout"
+        | "stock_count"
+        | "purchase_order"
+        | "pick_list"
+        | "receive"
       checkout_assignee_type: "person" | "job" | "location"
       checkout_status: "checked_out" | "returned" | "overdue"
       comparison_operator_enum: "lte" | "lt" | "gt" | "gte" | "eq"
@@ -3807,6 +4355,14 @@ export const Constants = {
         "reorder_point",
         "custom",
       ],
+      chatter_entity_type: [
+        "item",
+        "checkout",
+        "stock_count",
+        "purchase_order",
+        "pick_list",
+        "receive",
+      ],
       checkout_assignee_type: ["person", "job", "location"],
       checkout_status: ["checked_out", "returned", "overdue"],
       comparison_operator_enum: ["lte", "lt", "gt", "gte", "eq"],
@@ -3898,122 +4454,4 @@ export const Constants = {
     },
   },
 } as const
-
-// ===========================================
-// Convenience Type Aliases
-// ===========================================
-
-// Table Row Types
-export type Profile = Database['public']['Tables']['profiles']['Row']
-export type InventoryItem = Database['public']['Tables']['inventory_items']['Row']
-
-// View Row Types - items with expanded tag info
-export type InventoryItemWithTags = Database['public']['Views']['items_with_tags']['Row']
-
-// Tag object structure from tag_list JSON
-export type TagListItem = {
-  id: string
-  name: string
-  color: string | null
-}
-export type Folder = Database['public']['Tables']['folders']['Row']
-export type Tag = Database['public']['Tables']['tags']['Row']
-export type ActivityLog = Database['public']['Tables']['activity_logs']['Row']
-export type Notification = Database['public']['Tables']['notifications']['Row']
-export type ItemReminder = Database['public']['Tables']['item_reminders']['Row']
-export type Checkout = Database['public']['Tables']['checkouts']['Row']
-export type Job = Database['public']['Tables']['jobs']['Row']
-export type Serial = Database['public']['Tables']['serial_numbers']['Row']
-export type CheckoutSerial = Database['public']['Tables']['checkout_serials']['Row']
-export type Lot = Database['public']['Tables']['lots']['Row']
-export type Tenant = Database['public']['Tables']['tenants']['Row']
-export type PickList = Database['public']['Tables']['pick_lists']['Row']
-export type PickListItem = Database['public']['Tables']['pick_list_items']['Row']
-export type PurchaseOrder = Database['public']['Tables']['purchase_orders']['Row']
-export type PurchaseOrderItem = Database['public']['Tables']['purchase_order_items']['Row']
-export type Vendor = Database['public']['Tables']['vendors']['Row']
-export type Address = Database['public']['Tables']['addresses']['Row']
-export type CustomFieldDefinition = Database['public']['Tables']['custom_field_definitions']['Row']
-export type FolderReminder = Database['public']['Tables']['folder_reminders']['Row']
-export type StockCount = Database['public']['Tables']['stock_counts']['Row']
-export type StockCountItem = Database['public']['Tables']['stock_count_items']['Row']
-export type StockTransfer = Database['public']['Tables']['stock_transfers']['Row']
-export type Location = Database['public']['Tables']['locations']['Row']
-export type LocationStock = Database['public']['Tables']['location_stock']['Row']
-export type Receive = Database['public']['Tables']['receives']['Row']
-export type ReceiveItem = Database['public']['Tables']['receive_items']['Row']
-export type Alert = Database['public']['Tables']['alerts']['Row']
-
-// Enum Types
-export type ItemTrackingMode = 'none' | 'serialized' | 'lot_expiry'
-export type ItemCondition = Database['public']['Enums']['item_condition']
-export type CheckoutAssigneeType = Database['public']['Enums']['checkout_assignee_type']
-export type CheckoutStatus = Database['public']['Enums']['checkout_status']
-export type ItemStatus = Database['public']['Enums']['item_status_enum']
-export type UserRole = Database['public']['Enums']['user_role_enum']
-export type NotificationType = Database['public']['Enums']['notification_type_enum']
-export type ReminderType = Database['public']['Enums']['reminder_type_enum']
-export type ReminderStatus = Database['public']['Enums']['reminder_status_enum']
-export type ReminderRecurrence = Database['public']['Enums']['reminder_recurrence_enum']
-export type ComparisonOperator = Database['public']['Enums']['comparison_operator_enum']
-export type PickListStatus = Database['public']['Enums']['pick_list_status_enum']
-export type PickListItemOutcome = Database['public']['Enums']['pick_list_item_outcome']
-export type POStatus = Database['public']['Enums']['po_status_enum']
-export type SerialStatus = Database['public']['Enums']['serial_status']
-export type LotStatus = Database['public']['Enums']['lot_status']
-export type TransferStatus = Database['public']['Enums']['transfer_status']
-export type StockCountStatus = Database['public']['Enums']['stock_count_status']
-export type LocationType = Database['public']['Enums']['location_type']
-export type FieldType = Database['public']['Enums']['field_type_enum']
-
-// Extended Types (with relations)
-export interface ItemReminderWithDetails extends ItemReminder {
-  inventory_item?: {
-    id: string
-    name: string
-    quantity: number
-    min_quantity: number | null
-    expiry_date: string | null
-  } | null
-  notify_users?: Profile[]
-  source_type?: 'item' | 'folder' | null
-  folder_name?: string | null
-  trigger_description?: string | null
-}
-
-export interface CreateReminderInput {
-  itemId: string
-  reminderType: ReminderType
-  threshold?: number
-  comparisonOperator?: ComparisonOperator
-  daysBeforeExpiry?: number
-  scheduledAt?: string
-  recurrence?: ReminderRecurrence
-  recurrenceEndDate?: string
-  title?: string
-  message?: string
-  notifyUserIds?: string[]
-  notifyInApp?: boolean
-  notifyEmail?: boolean
-}
-
-// Extended types with relations
-export interface PickListWithRelations extends PickList {
-  assigned_user?: Profile | null
-  assigned_to_profile?: Profile | null
-  created_by_profile?: Profile | null
-  items?: (PickListItem & {
-    inventory_item?: InventoryItem | null
-  })[]
-}
-
-export interface PurchaseOrderWithRelations extends PurchaseOrder {
-  vendor?: Vendor | null
-  vendors?: Vendor | null
-  created_by_profile?: Profile | null
-  submitted_by_profile?: Profile | null
-  items?: (PurchaseOrderItem & {
-    inventory_item?: InventoryItem | null
-  })[]
-}
 

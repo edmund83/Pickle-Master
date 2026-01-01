@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { PurchaseOrderDetailClient } from './PurchaseOrderDetailClient'
+import { ChatterPanel } from '@/components/chatter'
 
 export interface TeamMember {
   id: string
@@ -192,16 +193,23 @@ async function getCreatorName(userId: string | null): Promise<string | null> {
   return data?.full_name || null
 }
 
+async function getCurrentUserId(): Promise<string | null> {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  return user?.id || null
+}
+
 export default async function PurchaseOrderDetailPage({
   params
 }: {
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [purchaseOrder, teamMembers, vendors] = await Promise.all([
+  const [purchaseOrder, teamMembers, vendors, userId] = await Promise.all([
     getPurchaseOrderWithDetails(id),
     getTeamMembers(),
-    getVendorsList()
+    getVendorsList(),
+    getCurrentUserId()
   ])
 
   if (!purchaseOrder) {
@@ -209,13 +217,26 @@ export default async function PurchaseOrderDetailPage({
   }
 
   const createdByName = await getCreatorName(purchaseOrder.created_by)
+  const entityName = purchaseOrder.display_id || purchaseOrder.order_number || `PO ${id.slice(0, 8)}`
 
   return (
-    <PurchaseOrderDetailClient
-      purchaseOrder={purchaseOrder}
-      teamMembers={teamMembers}
-      vendors={vendors}
-      createdByName={createdByName}
-    />
+    <div className="flex flex-col h-full">
+      <PurchaseOrderDetailClient
+        purchaseOrder={purchaseOrder}
+        teamMembers={teamMembers}
+        vendors={vendors}
+        createdByName={createdByName}
+      />
+      {userId && (
+        <div className="px-4 pb-6 lg:px-6">
+          <ChatterPanel
+            entityType="purchase_order"
+            entityId={purchaseOrder.id}
+            entityName={entityName}
+            currentUserId={userId}
+          />
+        </div>
+      )}
+    </div>
   )
 }
