@@ -8,9 +8,13 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "public/sw.js",
+    "public/workbox-*.js",
+    "public/swe-worker-*.js",
     "supabase/functions/**",
   ]),
   {
+    files: ["**/*.{js,jsx,mjs,ts,tsx,mts,cts}"],
     rules: {
       // Downgrade to warning: setState in useEffect is common for hydration patterns
       "react-hooks/set-state-in-effect": "warn",

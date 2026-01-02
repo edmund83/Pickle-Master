@@ -8,6 +8,8 @@ const withPWA = withPWAInit({
   reloadOnOnline: true,
   disable: process.env.NODE_ENV === 'development',
   workboxOptions: {
+    // Avoid @rollup/plugin-terser worker threads during SW bundling.
+    mode: process.env.WORKBOX_MODE ?? 'development',
     disableDevLogs: true,
     runtimeCaching: [
       {
@@ -40,6 +42,20 @@ const withPWA = withPWAInit({
 const nextConfig: NextConfig = {
   // Add empty turbopack config to satisfy Next.js 16
   turbopack: {},
+  async redirects() {
+    return [
+      {
+        source: '/marketing',
+        destination: '/',
+        permanent: true,
+      },
+      {
+        source: '/marketing/:path*',
+        destination: '/:path*',
+        permanent: true,
+      },
+    ]
+  },
   images: {
     remotePatterns: [
       {

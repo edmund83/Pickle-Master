@@ -38,6 +38,18 @@ export function MentionInput({
         }
     }, [])
 
+    // Update tracked mentions based on current text
+    const updateTrackedMentions = useCallback((text: string) => {
+        const newTracked = new Map<string, string>()
+        trackedMentions.forEach((userId, name) => {
+            if (text.includes(`@${name}`)) {
+                newTracked.set(name, userId)
+            }
+        })
+        setTrackedMentions(newTracked)
+        onMentionsChange(Array.from(newTracked.values()))
+    }, [trackedMentions, onMentionsChange])
+
     // Handle input changes
     const handleChange = useCallback((e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const newValue = e.target.value
@@ -67,19 +79,7 @@ export function MentionInput({
 
         // Update tracked mentions (remove ones that were deleted)
         updateTrackedMentions(newValue)
-    }, [onChange, loadSuggestions])
-
-    // Update tracked mentions based on current text
-    const updateTrackedMentions = useCallback((text: string) => {
-        const newTracked = new Map<string, string>()
-        trackedMentions.forEach((userId, name) => {
-            if (text.includes(`@${name}`)) {
-                newTracked.set(name, userId)
-            }
-        })
-        setTrackedMentions(newTracked)
-        onMentionsChange(Array.from(newTracked.values()))
-    }, [trackedMentions, onMentionsChange])
+    }, [onChange, loadSuggestions, updateTrackedMentions])
 
     // Handle selecting a mention
     const selectMention = useCallback((member: TeamMember) => {

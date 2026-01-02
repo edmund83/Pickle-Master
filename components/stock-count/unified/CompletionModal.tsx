@@ -92,7 +92,7 @@ export function CompletionModal({
           <p className="text-neutral-500 text-center mb-4">
             {!allCounted ? (
               <>
-                You've counted{' '}
+                You&apos;ve counted{' '}
                 <span className="font-semibold text-neutral-700">
                   {countedItems} of {totalItems}
                 </span>{' '}

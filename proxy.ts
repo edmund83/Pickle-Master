@@ -50,6 +50,30 @@ export async function proxy(request: NextRequest) {
   const publicRoutes = ['/login', '/signup', '/forgot-password', '/auth/callback']
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route))
 
+  // Marketing routes - accessible regardless of auth status (no redirects)
+  const marketingRoutes = [
+    '/',
+    '/features',
+    '/solutions',
+    '/pricing',
+    '/compare',
+    '/migration',
+    '/demo',
+    '/learn',
+    '/integrations',
+    '/privacy',
+    '/terms',
+    '/security',
+  ]
+  const isMarketingRoute = marketingRoutes.some(
+    (route) => pathname === route || pathname.startsWith(route + '/')
+  )
+
+  // Marketing routes are always accessible (logged in or not)
+  if (isMarketingRoute) {
+    return response
+  }
+
   // If not authenticated and trying to access protected route
   if (!user && !isPublicRoute) {
     const redirectUrl = new URL('/login', request.url)

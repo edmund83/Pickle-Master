@@ -1,0 +1,85 @@
+import Link from 'next/link'
+
+const FEATURES = [
+  {
+    icon: 'icon-[tabler--scan]',
+    title: 'Barcode scanning',
+    description: 'Scan to find and update items fast — receiving, picking, and audits.',
+    href: '/features/barcode-scanning',
+  },
+  {
+    icon: 'icon-[tabler--wifi-off]',
+    title: 'Offline-first mobile',
+    description: 'Keep scanning on jobsites and warehouses. Sync when you’re back online.',
+    href: '/features/offline-mobile-scanning',
+  },
+  {
+    icon: 'icon-[tabler--arrow-left-right]',
+    title: 'Check-in / check-out',
+    description: 'Issue tools/assets to staff with accountability — no folder hacks.',
+    href: '/features/check-in-check-out',
+  },
+  {
+    icon: 'icon-[tabler--table]',
+    title: 'Bulk edits with guardrails',
+    description: 'Excel-grade edits with preview + undo to prevent expensive mistakes.',
+    href: '/features/bulk-editing',
+  },
+  {
+    icon: 'icon-[tabler--bell-ringing]',
+    title: 'Low-stock alerts',
+    description: 'Set reorder points and get notified before you run out.',
+    href: '/features/low-stock-alerts',
+  },
+  {
+    icon: 'icon-[tabler--switch-3]',
+    title: '1-click migration',
+    description: 'Bring your data over fast — especially from Sortly.',
+    href: '/migration/sortly',
+  },
+]
+
+export function FeatureGrid() {
+  return (
+    <div className="bg-base-100 py-8 sm:py-16 lg:py-24">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div className="mb-12 space-y-4 sm:mb-16 lg:mb-24">
+          <h2 className="text-base-content text-2xl font-semibold md:text-3xl lg:text-4xl">
+            All essentials in one place — without ERP complexity
+          </h2>
+          <p className="text-base-content/80 max-w-4xl text-xl">
+            Built around how small teams actually manage inventory: scanning, counting, issuing, and staying accurate
+            over time.
+          </p>
+          <div className="flex items-center gap-1.5">
+            <Link href="/features" className="link link-primary link-animated text-lg font-medium">
+              See all features
+            </Link>
+            <span className="icon-[tabler--arrow-right] text-primary size-5"></span>
+          </div>
+        </div>
+
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {FEATURES.map((feature) => (
+            <Link
+              key={feature.title}
+              href={feature.href}
+              className="card card-border hover:border-primary border-primary/30 shadow-none transition-colors duration-300"
+            >
+              <div className="card-body">
+                <div className="avatar avatar-placeholder mb-2">
+                  <div className="text-primary bg-primary/10 rounded-field size-11.5">
+                    <span className={`${feature.icon} size-7.5`}></span>
+                  </div>
+                </div>
+                <h3 className="card-title text-lg">{feature.title}</h3>
+                <p className="text-base-content/80">{feature.description}</p>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
