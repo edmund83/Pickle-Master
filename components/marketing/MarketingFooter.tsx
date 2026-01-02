@@ -1,0 +1,121 @@
+import Link from 'next/link'
+
+export function MarketingFooter() {
+  return (
+    <footer>
+      <div className="bg-base-200">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-16 lg:px-8 lg:py-24">
+          <div className="grid grid-cols-2 gap-6 lg:grid-cols-6">
+            {/* Newsletter section */}
+            <div className="col-span-2 mb-8 flex flex-col justify-between gap-6 sm:mb-16 lg:mb-0 lg:gap-12">
+              <div>
+                <Link title="Pickle" className="text-base-content flex items-center gap-3 text-xl font-bold" href="/">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-pickle-500">
+                    <span className="text-base font-bold text-white">P</span>
+                  </div>
+                  <span>Pickle</span>
+                </Link>
+                <p className="text-base-content/80 mt-4 text-balance lg:max-w-md">
+                  Simple, mobile-first inventory management for small teams — barcode scanning, offline reliability, and
+                  trust-first pricing that doesn&apos;t punish growth.
+                </p>
+              </div>
+              <div>
+                <h4 className="text-base-content text-lg font-medium">Subscribe to Newsletter</h4>
+                <div className="join mt-4 w-full lg:max-w-sm">
+                  <label className="join-item input w-full">
+                    <span className="icon-[tabler--mail] text-base-content/80 size-5"></span>
+                    <span className="sr-only">Email address</span>
+                    <input type="text" placeholder="Email" />
+                  </label>
+                  <button className="btn btn-primary join-item">Subscribe</button>
+                </div>
+                <span className="text-base-content/80 mt-2 text-sm">No spam. Unsubscribe anytime.</span>
+              </div>
+            </div>
+
+            {/* Product */}
+            <div className="space-y-5">
+              <h4 className="text-base-content text-lg font-medium">Product</h4>
+              <ul className="space-y-3">
+                <li><Link href="/features" className="link link-animated text-base-content/80">Features</Link></li>
+                <li><Link href="/solutions" className="link link-animated text-base-content/80">Solutions</Link></li>
+                <li><Link href="/pricing" className="link link-animated text-base-content/80">Pricing</Link></li>
+                <li><Link href="/migration/sortly" className="link link-animated text-base-content/80">Sortly migration</Link></li>
+              </ul>
+            </div>
+
+            {/* Compare */}
+            <div className="space-y-5">
+              <h4 className="text-base-content text-lg font-medium">Compare</h4>
+              <ul className="space-y-3">
+                <li>
+                  <Link href="/compare/sortly-alternative" className="link link-animated text-base-content/80">
+                    Sortly alternative
+                  </Link>
+                </li>
+              </ul>
+            </div>
+
+            {/* Resources */}
+            <div className="space-y-5">
+              <h4 className="text-base-content text-lg font-medium">Resources</h4>
+              <ul className="space-y-3">
+                <li><Link href="/learn" className="link link-animated text-base-content/80">Learning Center</Link></li>
+                <li><Link href="/security" className="link link-animated text-base-content/80">Security</Link></li>
+              </ul>
+            </div>
+
+            {/* Legal */}
+            <div className="space-y-5">
+              <h4 className="text-base-content text-lg font-medium">Legal</h4>
+              <ul className="space-y-3">
+                <li><Link href="/privacy" className="link link-animated text-base-content/80">Privacy</Link></li>
+                <li><Link href="/terms" className="link link-animated text-base-content/80">Terms</Link></li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <div className="via-primary/30 mx-auto h-px w-3/4 bg-gradient-to-r from-transparent to-transparent"></div>
+
+        {/* Product section */}
+        <div className="mx-auto flex max-w-7xl justify-between gap-5 px-4 py-6 max-lg:flex-col sm:px-6 lg:items-center lg:px-8">
+          <div className="text-base-content text-lg font-medium">Built for real inventory work:</div>
+          <div className="flex w-fit gap-y-3 max-sm:flex-col">
+            <span className="badge badge-outline badge-secondary badge-lg rounded-full">
+              <span className="icon-[tabler--scan] text-primary size-5"></span>
+              Barcode scanning
+            </span>
+            <div className="divider divider-horizontal mx-5 max-sm:hidden"></div>
+            <span className="badge badge-outline badge-secondary badge-lg rounded-full">
+              <span className="icon-[tabler--wifi-off] text-primary size-5"></span>
+              Offline-first
+            </span>
+            <div className="divider divider-horizontal mx-5 max-sm:hidden"></div>
+            <span className="badge badge-outline badge-secondary badge-lg rounded-full">
+              <span className="icon-[tabler--shield-check-filled] text-primary size-5"></span>
+              Audit trail
+            </span>
+          </div>
+        </div>
+
+        <div className="divider"></div>
+
+        {/* Payment / Copyright section */}
+        <div className="mx-auto flex max-w-7xl justify-between gap-3 px-4 py-6 max-lg:flex-col sm:px-6 lg:items-center lg:px-8">
+          <div className="text-base-content text-base text-wrap">
+            &copy;{new Date().getFullYear()} <Link href="/" className="text-primary">Pickle</Link>. All rights reserved.
+          </div>
+          <div className="flex flex-wrap items-center gap-4">
+            <span className="badge badge-outline badge-secondary badge-lg rounded-full">
+              <span className="icon-[tabler--shield-check-filled] text-success size-5"></span>
+              Secure by design
+            </span>
+          </div>
+        </div>
+      </div>
+    </footer>
+  )
+}
+

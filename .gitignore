@@ -59,3 +59,8 @@ supabase/.temp
 .playwright/
 test-results/
 playwright-report/
+
+# PWA build outputs
+public/sw.js
+public/workbox-*.js
+public/swe-worker-*.js

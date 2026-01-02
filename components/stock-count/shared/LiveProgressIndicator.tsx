@@ -56,7 +56,7 @@ export function LiveProgressIndicator({
   // Get active counters (last activity within 5 minutes)
   const activeCounters = teamProgress.filter((tp) => {
     if (!tp.lastActivity) return false
-    const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000)
+    const fiveMinutesAgo = new Date(lastRefresh.getTime() - 5 * 60 * 1000)
     return new Date(tp.lastActivity) > fiveMinutesAgo
   })
 
