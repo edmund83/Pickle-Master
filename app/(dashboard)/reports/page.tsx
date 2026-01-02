@@ -41,8 +41,8 @@ const reports = [
     title: 'Profit Margin',
     description: 'Analyze margins and potential profit',
     icon: Percent,
-    color: 'text-pickle-500',
-    bgColor: 'bg-pickle-50',
+    color: 'text-primary',
+    bgColor: 'bg-primary/10',
   },
   {
     href: '/reports/activity',

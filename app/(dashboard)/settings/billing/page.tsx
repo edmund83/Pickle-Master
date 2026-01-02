@@ -207,15 +207,15 @@ export default function BillingPage() {
       <div className="p-8 max-w-5xl">
         {/* Trial Banner */}
         {isTrialing && trialDaysLeft > 0 && (
-          <div className="mb-6 flex items-center gap-4 rounded-xl bg-pickle-50 border border-pickle-200 p-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-pickle-500 text-white">
+          <div className="mb-6 flex items-center gap-4 rounded-xl bg-primary/10 border border-primary/30 p-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white">
               <Calendar className="h-5 w-5" />
             </div>
             <div className="flex-1">
-              <p className="font-medium text-pickle-900">
+              <p className="font-medium text-primary">
                 Trial Period: {trialDaysLeft} days remaining
               </p>
-              <p className="text-sm text-pickle-700">
+              <p className="text-sm text-primary">
                 Your trial will end on {new Date(subscription?.trial_ends_at || '').toLocaleDateString()}
               </p>
             </div>
@@ -230,14 +230,14 @@ export default function BillingPage() {
           </div>
           <div className="p-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-pickle-100 text-pickle-600">
+              <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-primary/20 text-primary">
                 <currentPlan.icon className="h-7 w-7" />
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <h3 className="text-xl font-bold text-neutral-900">{currentPlan.name}</h3>
                   {currentPlan.popular && (
-                    <span className="rounded-full bg-pickle-100 px-2 py-0.5 text-xs font-medium text-pickle-700">
+                    <span className="rounded-full bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">
                       Popular
                     </span>
                   )}
@@ -279,7 +279,7 @@ export default function BillingPage() {
                       ? 'bg-red-500'
                       : getUsagePercent(usage.items, subscription?.max_items || 100) > 75
                       ? 'bg-yellow-500'
-                      : 'bg-pickle-500'
+                      : 'bg-primary'
                   }`}
                   style={{ width: `${getUsagePercent(usage.items, subscription?.max_items || 100)}%` }}
                 />
@@ -301,7 +301,7 @@ export default function BillingPage() {
                       ? 'bg-red-500'
                       : getUsagePercent(usage.users, subscription?.max_users || 1) > 75
                       ? 'bg-yellow-500'
-                      : 'bg-pickle-500'
+                      : 'bg-primary'
                   }`}
                   style={{ width: `${getUsagePercent(usage.users, subscription?.max_users || 1)}%` }}
                 />
@@ -323,7 +323,7 @@ export default function BillingPage() {
                       ? 'bg-red-500'
                       : getUsagePercent(usage.folders, subscription?.max_folders || 5) > 75
                       ? 'bg-yellow-500'
-                      : 'bg-pickle-500'
+                      : 'bg-primary'
                   }`}
                   style={{ width: `${getUsagePercent(usage.folders, subscription?.max_folders || 5)}%` }}
                 />
@@ -348,26 +348,26 @@ export default function BillingPage() {
                     key={plan.id}
                     className={`relative rounded-xl border p-5 transition-all ${
                       isCurrent
-                        ? 'border-pickle-500 bg-pickle-50 ring-1 ring-pickle-500'
+                        ? 'border-primary bg-primary/10 ring-1 ring-primary'
                         : plan.popular
-                        ? 'border-pickle-200 hover:border-pickle-400'
+                        ? 'border-primary/30 hover:border-primary/60'
                         : 'border-neutral-200 hover:border-neutral-300'
                     }`}
                   >
                     {plan.popular && !isCurrent && (
-                      <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-pickle-500 px-3 py-0.5 text-xs font-medium text-white">
+                      <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-0.5 text-xs font-medium text-white">
                         Popular
                       </span>
                     )}
                     {isCurrent && (
-                      <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-pickle-600 px-3 py-0.5 text-xs font-medium text-white">
+                      <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-0.5 text-xs font-medium text-white">
                         Current
                       </span>
                     )}
 
                     <div className="mb-4 flex items-center gap-3">
                       <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-                        isCurrent ? 'bg-pickle-500 text-white' : 'bg-neutral-100 text-neutral-600'
+                        isCurrent ? 'bg-primary text-white' : 'bg-neutral-100 text-neutral-600'
                       }`}>
                         <PlanIcon className="h-5 w-5" />
                       </div>
@@ -382,7 +382,7 @@ export default function BillingPage() {
                     <ul className="mb-4 space-y-2">
                       {plan.features.slice(0, 4).map((feature, idx) => (
                         <li key={idx} className="flex items-start gap-2 text-sm text-neutral-600">
-                          <Check className="h-4 w-4 shrink-0 text-pickle-500 mt-0.5" />
+                          <Check className="h-4 w-4 shrink-0 text-primary mt-0.5" />
                           <span>{feature}</span>
                         </li>
                       ))}

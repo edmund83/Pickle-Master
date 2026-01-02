@@ -1,8 +1,8 @@
-# Pickle - Database Schema Documentation
+# Nook - Database Schema Documentation
 
 ## Overview
 
-Pickle uses PostgreSQL via Supabase with a multi-tenant architecture. All data is isolated by `tenant_id` and protected by Row Level Security (RLS) policies.
+Nook uses PostgreSQL via Supabase with a multi-tenant architecture. All data is isolated by `tenant_id` and protected by Row Level Security (RLS) policies.
 
 ---
 

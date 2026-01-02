@@ -213,7 +213,7 @@ export function SerialTrackingSection({
             'w-full rounded-lg border px-3 py-2 text-sm font-mono focus:outline-none focus:ring-1',
             duplicates.size > 0
               ? 'border-red-300 focus:border-red-500 focus:ring-red-500'
-              : 'border-neutral-300 focus:border-pickle-500 focus:ring-pickle-500'
+              : 'border-neutral-300 focus:border-primary focus:ring-primary'
           )}
         />
 
@@ -269,7 +269,7 @@ export function SerialTrackingSection({
           {!showAutoGenerate ? (
             <button
               onClick={() => setShowAutoGenerate(true)}
-              className="flex w-full items-center justify-center gap-2 px-4 py-3 text-sm text-pickle-600 hover:bg-pickle-50 transition-colors"
+              className="flex w-full items-center justify-center gap-2 px-4 py-3 text-sm text-primary hover:bg-primary/10 transition-colors"
             >
               <Sparkles className="h-4 w-4" />
               Auto-generate {missingCount} serial{missingCount > 1 ? 's' : ''}

@@ -13,7 +13,7 @@ interface FloatingActionButtonProps {
 }
 
 const variantStyles = {
-  primary: 'bg-pickle-500 hover:bg-pickle-600 text-white shadow-pickle-500/30',
+  primary: 'bg-primary hover:bg-primary text-white shadow-primary/30',
   scan: 'bg-blue-500 hover:bg-blue-600 text-white shadow-blue-500/30',
   success: 'bg-green-500 hover:bg-green-600 text-white shadow-green-500/30',
 }
@@ -64,7 +64,7 @@ export function FloatingActionButton({
         className={cn(
           'absolute inset-0 rounded-2xl',
           'animate-ping opacity-20',
-          variant === 'primary' && 'bg-pickle-500',
+          variant === 'primary' && 'bg-primary',
           variant === 'scan' && 'bg-blue-500',
           variant === 'success' && 'bg-green-500'
         )}

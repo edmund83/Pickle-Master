@@ -193,7 +193,7 @@ export default async function TrendsPage() {
                     <div key={day.date} className="flex flex-1 flex-col items-center gap-2">
                       <div className="relative w-full flex justify-center">
                         <div
-                          className="w-8 rounded-t-lg bg-pickle-500"
+                          className="w-8 rounded-t-lg bg-primary"
                           style={{ height: `${Math.max(height, 4)}px` }}
                         />
                       </div>
@@ -230,7 +230,7 @@ export default async function TrendsPage() {
                           </div>
                           <div className="mt-1 h-2 overflow-hidden rounded-full bg-neutral-100">
                             <div
-                              className="h-full bg-pickle-500"
+                              className="h-full bg-primary"
                               style={{ width: `${percentage}%` }}
                             />
                           </div>
@@ -256,7 +256,7 @@ export default async function TrendsPage() {
                 {mostActiveItems.map(([id, data], index) => (
                   <li key={id} className="flex items-center justify-between px-6 py-4">
                     <div className="flex items-center gap-3">
-                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-pickle-50 text-sm font-medium text-pickle-600">
+                      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary">
                         {index + 1}
                       </span>
                       <span className="font-medium text-neutral-900">{data.name}</span>

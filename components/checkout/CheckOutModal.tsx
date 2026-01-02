@@ -344,7 +344,7 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
                 setAssigneeName('')
               }}
               className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${assigneeType === 'person'
-                ? 'border-pickle-500 bg-pickle-50 text-pickle-700'
+                ? 'border-primary bg-primary/10 text-primary'
                 : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50'
                 }`}
             >
@@ -358,7 +358,7 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
                 setAssigneeName('')
               }}
               className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${assigneeType === 'job'
-                ? 'border-pickle-500 bg-pickle-50 text-pickle-700'
+                ? 'border-primary bg-primary/10 text-primary'
                 : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50'
                 }`}
             >
@@ -372,7 +372,7 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
                 setAssigneeName('')
               }}
               className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors ${assigneeType === 'location'
-                ? 'border-pickle-500 bg-pickle-50 text-pickle-700'
+                ? 'border-primary bg-primary/10 text-primary'
                 : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50'
                 }`}
             >
@@ -398,7 +398,7 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
               <select
                 value={assigneeId}
                 onChange={(e) => handleAssigneeChange(e.target.value)}
-                className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               >
                 <option value="">
                   {assigneeType === 'person' && 'Choose a team member...'}
@@ -437,7 +437,7 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
                   ) : (
                     <button
                       onClick={() => setShowNewJob(true)}
-                      className="flex items-center gap-1 text-sm text-pickle-600 hover:text-pickle-700"
+                      className="flex items-center gap-1 text-sm text-primary hover:text-primary"
                     >
                       <Plus className="h-4 w-4" />
                       Create new job
@@ -477,7 +477,7 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
               <button
                 type="button"
                 onClick={selectAllSerials}
-                className="text-xs text-pickle-600 hover:text-pickle-700"
+                className="text-xs text-primary hover:text-primary"
               >
                 Select all
               </button>
@@ -511,14 +511,14 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
                     onClick={() => toggleSerial(serial.id)}
                     className={`flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left transition-colors ${
                       selectedSerialIds.has(serial.id)
-                        ? 'bg-pickle-50 text-pickle-700'
+                        ? 'bg-primary/10 text-primary'
                         : 'hover:bg-neutral-50'
                     }`}
                   >
                     <div
                       className={`flex h-5 w-5 items-center justify-center rounded border ${
                         selectedSerialIds.has(serial.id)
-                          ? 'border-pickle-500 bg-pickle-500'
+                          ? 'border-primary bg-primary'
                           : 'border-neutral-300 bg-white'
                       }`}
                     >
@@ -592,7 +592,7 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
             onChange={(e) => setNotes(e.target.value)}
             placeholder="Add any notes about this checkout..."
             rows={2}
-            className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+            className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           />
         </div>
 

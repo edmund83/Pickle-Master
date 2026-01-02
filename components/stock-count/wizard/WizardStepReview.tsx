@@ -21,7 +21,7 @@ const scopeConfig = {
     label: 'Full Inventory',
     description: 'All items in your inventory',
     icon: Package,
-    color: 'pickle',
+    color: 'nook',
   },
   folder: {
     label: 'Specific Folder',
@@ -50,8 +50,8 @@ export function WizardStepReview({ data, folders }: WizardStepReviewProps) {
     <div className="p-6 space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
       {/* Header */}
       <div className="text-center space-y-2">
-        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-pickle-100 mx-auto">
-          <ClipboardCheck className="h-8 w-8 text-pickle-600" />
+        <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/20 mx-auto">
+          <ClipboardCheck className="h-8 w-8 text-primary" />
         </div>
         <h3 className="text-xl font-bold text-neutral-900">Ready to Start</h3>
         <p className="text-sm text-neutral-500">
@@ -81,8 +81,8 @@ export function WizardStepReview({ data, folders }: WizardStepReviewProps) {
           <div
             className={cn(
               'flex h-10 w-10 items-center justify-center rounded-xl',
-              scope.color === 'pickle'
-                ? 'bg-pickle-100 text-pickle-600'
+              scope.color === 'nook'
+                ? 'bg-primary/20 text-primary'
                 : scope.color === 'blue'
                 ? 'bg-blue-100 text-blue-600'
                 : 'bg-purple-100 text-purple-600'
@@ -162,25 +162,25 @@ export function WizardStepReview({ data, folders }: WizardStepReviewProps) {
       </div>
 
       {/* Tips */}
-      <div className="p-4 bg-pickle-50 border border-pickle-200 rounded-xl">
-        <p className="text-sm font-semibold text-pickle-700 mb-2">
+      <div className="p-4 bg-primary/10 border border-primary/30 rounded-xl">
+        <p className="text-sm font-semibold text-primary mb-2">
           What happens next?
         </p>
-        <ul className="text-sm text-pickle-600 space-y-1">
+        <ul className="text-sm text-primary space-y-1">
           <li className="flex items-start gap-2">
-            <span className="text-pickle-400">1.</span>
+            <span className="text-primary/60">1.</span>
             <span>A draft stock count will be created</span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-pickle-400">2.</span>
+            <span className="text-primary/60">2.</span>
             <span>Click &quot;Start Counting&quot; to begin the count</span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-pickle-400">3.</span>
+            <span className="text-primary/60">3.</span>
             <span>Count each item and record the actual quantity</span>
           </li>
           <li className="flex items-start gap-2">
-            <span className="text-pickle-400">4.</span>
+            <span className="text-primary/60">4.</span>
             <span>Review variances and apply adjustments when done</span>
           </li>
         </ul>

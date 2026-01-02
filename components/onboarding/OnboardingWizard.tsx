@@ -243,9 +243,9 @@ export default function OnboardingWizard({ onComplete, isModal = true }: Onboard
                 <button
                   key={option.id}
                   onClick={() => handleOrganizationSelect(option.id)}
-                  className="flex items-center gap-4 p-5 border-2 border-neutral-100 rounded-xl text-left hover:border-pickle-400 hover:bg-pickle-50/50 transition-all group"
+                  className="flex items-center gap-4 p-5 border-2 border-neutral-100 rounded-xl text-left hover:border-primary/60 hover:bg-primary/10/50 transition-all group"
                 >
-                  <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-400 group-hover:text-pickle-500 group-hover:border-pickle-300 transition-colors">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl border border-neutral-200 bg-white text-neutral-400 group-hover:text-primary group-hover:border-primary/30 transition-colors">
                     <Icon className="h-5 w-5" />
                   </div>
                   <div>
@@ -304,7 +304,7 @@ export default function OnboardingWizard({ onComplete, isModal = true }: Onboard
                 Folder Preview
               </p>
               <div className="space-y-3">
-                <div className="flex items-center gap-3 text-pickle-600 font-semibold text-sm">
+                <div className="flex items-center gap-3 text-primary font-semibold text-sm">
                   <FolderOpen className="h-4 w-4" />
                   <span>All Items</span>
                 </div>
@@ -376,15 +376,15 @@ export default function OnboardingWizard({ onComplete, isModal = true }: Onboard
       {/* Step 3: Complete */}
       {step === 3 && (
         <div className="flex flex-col items-center text-center space-y-8 animate-in zoom-in-95 duration-300">
-          <div className="w-20 h-20 bg-pickle-100 rounded-2xl flex items-center justify-center">
-            <Sparkles className="h-10 w-10 text-pickle-600" />
+          <div className="w-20 h-20 bg-primary/20 rounded-2xl flex items-center justify-center">
+            <Sparkles className="h-10 w-10 text-primary" />
           </div>
 
           <div className="space-y-3 max-w-md">
             <h2 className="text-3xl font-bold text-neutral-900">Great Start!</h2>
             <p className="text-neutral-500">
               With your folders set up, you&apos;re ready to build your searchable inventory system.
-              The more you add, the more powerful Pickle Master becomes.
+              The more you add, the more powerful Nook Master becomes.
             </p>
           </div>
 
@@ -399,7 +399,7 @@ export default function OnboardingWizard({ onComplete, isModal = true }: Onboard
                 'Try the Search feature to find items instantly',
               ].map((move, i) => (
                 <div key={i} className="flex items-center gap-3 text-sm text-neutral-600">
-                  <Check className="h-4 w-4 text-pickle-500" />
+                  <Check className="h-4 w-4 text-primary" />
                   <span>{move}</span>
                 </div>
               ))}

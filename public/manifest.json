@@ -1,11 +1,11 @@
 {
-  "name": "Pickle - Inventory Management",
-  "short_name": "Pickle",
+  "name": "Nook - Inventory Management",
+  "short_name": "Nook",
   "description": "Simple, mobile-first inventory management for small businesses",
   "start_url": "/dashboard",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#de4a4a",
+  "theme_color": "#1c4f82",
   "orientation": "portrait-primary",
   "icons": [
     {

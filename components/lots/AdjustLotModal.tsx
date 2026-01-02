@@ -234,7 +234,7 @@ export function AdjustLotModal({
             <select
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              className="w-full h-10 px-3 rounded-lg border border-neutral-300 bg-white text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+              className="w-full h-10 px-3 rounded-lg border border-neutral-300 bg-white text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             >
               {ADJUSTMENT_REASONS.map((r) => (
                 <option key={r.value} value={r.value}>
@@ -254,7 +254,7 @@ export function AdjustLotModal({
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Additional details about this adjustment..."
               rows={2}
-              className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+              className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
 

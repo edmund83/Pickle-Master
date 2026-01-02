@@ -110,7 +110,7 @@ export function SimpleItemCard({
           'transition-all duration-200',
           'active:scale-[0.98]',
           'shadow-sm hover:shadow-md',
-          'focus:outline-none focus:ring-2 focus:ring-pickle-500 focus:ring-offset-2',
+          'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
           disabled && 'opacity-50 pointer-events-none',
           // State-specific borders
           cardState === 'pending' && 'border-neutral-200',
@@ -181,7 +181,7 @@ export function SimpleItemCard({
           {/* Status indicator */}
           <div className="flex-shrink-0">
             {cardState === 'pending' && (
-              <div className="px-3 py-1.5 rounded-full bg-pickle-100 text-pickle-700 text-xs font-semibold">
+              <div className="px-3 py-1.5 rounded-full bg-primary/20 text-primary text-xs font-semibold">
                 TAP TO COUNT
               </div>
             )}
@@ -209,8 +209,8 @@ export function SimpleItemCard({
     <div
       ref={expandedRef}
       className={cn(
-        'p-4 rounded-2xl bg-white border-2 border-pickle-500',
-        'shadow-lg shadow-pickle-500/10',
+        'p-4 rounded-2xl bg-white border-2 border-primary',
+        'shadow-lg shadow-primary/10',
         'transition-all duration-200'
       )}
       onKeyDown={handleKeyDown}

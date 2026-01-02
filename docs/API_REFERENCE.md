@@ -1,8 +1,8 @@
-# Pickle - API Reference
+# Nook - API Reference
 
 ## Overview
 
-Pickle uses Next.js API routes for backend logic and Supabase for direct database access with RLS.
+Nook uses Next.js API routes for backend logic and Supabase for direct database access with RLS.
 
 ---
 

@@ -18,7 +18,7 @@ const sizeClasses = {
 // Generate consistent color from name
 function getAvatarColor(name: string): string {
   const colors = [
-    'bg-pickle-500',
+    'bg-primary',
     'bg-blue-500',
     'bg-purple-500',
     'bg-amber-500',

@@ -35,7 +35,7 @@ function getPageTitle(pathname: string): string {
     }
   }
 
-  return 'Pickle'
+  return 'Nook'
 }
 
 export function MobileHeader() {
@@ -59,7 +59,7 @@ export function MobileHeader() {
     >
       {/* Logo / Brand */}
       <div className="flex items-center gap-3">
-        <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-pickle-500">
+        <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary">
           <span className="text-white font-bold text-lg">P</span>
         </div>
         <h1 className="text-lg font-semibold text-neutral-900">

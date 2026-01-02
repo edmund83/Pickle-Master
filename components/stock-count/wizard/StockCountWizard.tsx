@@ -202,7 +202,7 @@ export function StockCountWizard({
         {/* Progress Bar */}
         <div className="h-1 bg-neutral-100">
           <div
-            className="h-full bg-pickle-500 transition-all duration-300"
+            className="h-full bg-primary transition-all duration-300"
             style={{ width: `${(step / 3) * 100}%` }}
           />
         </div>

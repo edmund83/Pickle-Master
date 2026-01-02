@@ -1,5 +1,5 @@
 /**
- * Offline storage types for Pickle inventory management
+ * Offline storage types for Nook inventory management
  */
 
 // Cached inventory item for offline barcode/SKU lookup

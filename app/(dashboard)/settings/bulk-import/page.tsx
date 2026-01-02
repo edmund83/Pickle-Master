@@ -205,9 +205,9 @@ export default function BulkImportPage() {
                 <div
                   className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium ${
                     isActive
-                      ? 'bg-pickle-500 text-white'
+                      ? 'bg-primary text-white'
                       : isComplete
-                        ? 'bg-pickle-100 text-pickle-600'
+                        ? 'bg-primary/20 text-primary'
                         : 'bg-neutral-100 text-neutral-400'
                   }`}
                 >
@@ -265,7 +265,7 @@ export default function BulkImportPage() {
                   }}
                   className={`flex flex-col items-center justify-center rounded-lg border-2 border-dashed p-12 text-center transition-colors ${
                     dragOver
-                      ? 'border-pickle-500 bg-pickle-50'
+                      ? 'border-primary bg-primary/10'
                       : 'border-neutral-300 hover:border-neutral-400'
                   }`}
                 >
@@ -287,7 +287,7 @@ export default function BulkImportPage() {
                     />
                     <label
                       htmlFor="file-upload"
-                      className="inline-flex cursor-pointer items-center justify-center whitespace-nowrap font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pickle-500 focus-visible:ring-offset-2 active:scale-[0.97] border border-neutral-300 bg-white hover:bg-neutral-50 h-10 px-4 py-2 text-sm rounded-lg"
+                      className="inline-flex cursor-pointer items-center justify-center whitespace-nowrap font-medium transition-all duration-200 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 active:scale-[0.97] border border-neutral-300 bg-white hover:bg-neutral-50 h-10 px-4 py-2 text-sm rounded-lg"
                     >
                       Browse Files
                     </label>
@@ -351,7 +351,7 @@ export default function BulkImportPage() {
                             [header]: e.target.value || null,
                           })
                         }
-                        className="h-10 flex-1 rounded-lg border border-neutral-300 px-3 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                        className="h-10 flex-1 rounded-lg border border-neutral-300 px-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                       >
                         <option value="">-- Skip this column --</option>
                         {IMPORT_FIELDS.map((field) => (
@@ -498,7 +498,7 @@ export default function BulkImportPage() {
           {step === 'importing' && (
             <Card>
               <CardContent className="flex flex-col items-center justify-center py-16">
-                <Loader2 className="h-12 w-12 animate-spin text-pickle-500" />
+                <Loader2 className="h-12 w-12 animate-spin text-primary" />
                 <p className="mt-4 text-lg font-medium text-neutral-900">Importing items...</p>
                 <p className="mt-1 text-neutral-500">
                   This may take a moment for large imports

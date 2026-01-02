@@ -246,7 +246,7 @@ export function CreateLotModal({
                 <select
                   value={locationId}
                   onChange={(e) => setLocationId(e.target.value)}
-                  className="w-full h-10 pl-10 pr-3 rounded-lg border border-neutral-300 bg-white text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                  className="w-full h-10 pl-10 pr-3 rounded-lg border border-neutral-300 bg-white text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 >
                   <option value="">Select location (optional)</option>
                   {locations.map((loc) => (
@@ -269,7 +269,7 @@ export function CreateLotModal({
               onChange={(e) => setNotes(e.target.value)}
               placeholder="Optional notes about this lot..."
               rows={2}
-              className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+              className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             />
           </div>
         </form>

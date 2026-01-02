@@ -120,7 +120,7 @@ export function DropdownMenuCheckboxItem({
         >
             <span className={cn(
                 "flex h-4 w-4 items-center justify-center rounded border",
-                checked ? "border-pickle-500 bg-pickle-500" : "border-neutral-300"
+                checked ? "border-primary bg-primary" : "border-neutral-300"
             )}>
                 {checked && (
                     <svg className="h-3 w-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">

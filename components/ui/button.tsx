@@ -19,17 +19,17 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
           // Base styles
           'inline-flex items-center justify-center whitespace-nowrap font-medium',
           'transition-all duration-200 ease-out',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pickle-500 focus-visible:ring-offset-2',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2',
           'disabled:pointer-events-none disabled:opacity-50',
           // Touch feedback
           'active:scale-[0.97]',
           // Variant styles
           {
-            'bg-pickle-500 text-white hover:bg-pickle-600 shadow-sm': variant === 'default',
+            'bg-primary text-white hover:bg-primary shadow-sm': variant === 'default',
             'bg-neutral-100 text-neutral-900 hover:bg-neutral-200': variant === 'secondary',
             'border border-neutral-300 bg-white hover:bg-neutral-50': variant === 'outline',
             'hover:bg-neutral-100': variant === 'ghost',
-            'text-pickle-500 underline-offset-4 hover:underline': variant === 'link',
+            'text-primary underline-offset-4 hover:underline': variant === 'link',
             'bg-red-500 text-white hover:bg-red-600 shadow-sm': variant === 'destructive',
           },
           // Size styles

@@ -9,7 +9,7 @@ const TESTIMONIALS = [
     name: 'Small Business Owner',
     title: 'Finally predictable pricing',
     quote:
-      'We outgrew spreadsheets fast, but other tools punished us for having more items. Pickle stayed simple and the pricing didn’t spike.',
+      'We outgrew spreadsheets fast, but other tools punished us for having more items. Nook stayed simple and the pricing didn’t spike.',
   },
   {
     name: 'Construction Ops',

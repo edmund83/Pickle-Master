@@ -223,7 +223,7 @@ export function StockTransferModal({
                       className={cn(
                         'flex items-center gap-3 rounded-lg border-2 p-3 text-left transition-all',
                         isSelected
-                          ? 'border-pickle-500 bg-pickle-50'
+                          ? 'border-primary bg-primary/10'
                           : 'border-neutral-200 hover:border-neutral-300'
                       )}
                     >
@@ -271,7 +271,7 @@ export function StockTransferModal({
                       className={cn(
                         'flex items-center gap-3 rounded-lg border-2 p-3 text-left transition-all',
                         isSelected
-                          ? 'border-pickle-500 bg-pickle-50'
+                          ? 'border-primary bg-primary/10'
                           : 'border-neutral-200 hover:border-neutral-300'
                       )}
                     >

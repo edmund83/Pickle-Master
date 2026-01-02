@@ -247,7 +247,7 @@ export default function StockMovesPage() {
           className={cn(
             'flex w-full cursor-pointer items-center gap-2 rounded-lg border px-4 py-3 text-left transition-colors',
             isSelected
-              ? 'border-pickle-500 bg-pickle-50'
+              ? 'border-primary bg-primary/10'
               : 'border-neutral-200 hover:bg-neutral-50'
           )}
           style={{ marginLeft: `${depth * 20}px`, width: `calc(100% - ${depth * 20}px)` }}
@@ -350,7 +350,7 @@ export default function StockMovesPage() {
                       <Filter className="h-4 w-4" />
                       Filter
                       {activeFilterCount > 0 && (
-                        <span className="rounded-full bg-pickle-500 px-1.5 text-xs text-white">
+                        <span className="rounded-full bg-primary px-1.5 text-xs text-white">
                           {activeFilterCount}
                         </span>
                       )}
@@ -443,7 +443,7 @@ export default function StockMovesPage() {
                       <li
                         key={item.id}
                         className={`flex cursor-pointer items-center gap-4 px-6 py-3 hover:bg-neutral-50 ${
-                          selectedItems.has(item.id) ? 'bg-pickle-50' : ''
+                          selectedItems.has(item.id) ? 'bg-primary/10' : ''
                         }`}
                         onClick={() => toggleItem(item.id)}
                       >
@@ -451,7 +451,7 @@ export default function StockMovesPage() {
                           type="checkbox"
                           checked={selectedItems.has(item.id)}
                           onChange={() => {}}
-                          className="h-4 w-4 rounded border-neutral-300 text-pickle-600"
+                          className="h-4 w-4 rounded border-neutral-300 text-primary"
                         />
                         <Package className="h-5 w-5 text-neutral-400" />
                         <div className="flex-1 min-w-0">
@@ -497,7 +497,7 @@ export default function StockMovesPage() {
                   className={cn(
                     'flex w-full items-center gap-3 rounded-lg border px-4 py-3 text-left transition-colors',
                     targetFolderId === 'root'
-                      ? 'border-pickle-500 bg-pickle-50'
+                      ? 'border-primary bg-primary/10'
                       : 'border-neutral-200 hover:bg-neutral-50'
                   )}
                 >

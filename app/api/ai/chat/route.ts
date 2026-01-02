@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
       const totalItems = inventoryContext.length
 
       return NextResponse.json({
-        response: `Hello! I'm Pickle, your AI Warehouse Assistant. Currently running in demo mode (no API key configured).
+        response: `Hello! I'm Nook, your AI Warehouse Assistant. Currently running in demo mode (no API key configured).
 
 Here's what I can see in your inventory:
 - **${totalItems}** items tracked

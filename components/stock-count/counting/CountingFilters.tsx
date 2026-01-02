@@ -52,7 +52,7 @@ export function CountingFilters({
                   ? 'bg-red-500 text-white'
                   : filter.variant === 'success'
                   ? 'bg-green-500 text-white'
-                  : 'bg-pickle-500 text-white'
+                  : 'bg-primary text-white'
                 : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
             )}
           >

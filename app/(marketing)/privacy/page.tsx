@@ -7,7 +7,7 @@ import { breadcrumbJsonLd } from '@/lib/marketing/jsonld'
 export const metadata: Metadata = marketingMetadata({
   title: 'Privacy policy',
   description:
-    'Privacy policy for Pickle Inventory. Learn what data we collect, how we use it, and your choices as a customer.',
+    'Privacy policy for Nook Inventory. Learn what data we collect, how we use it, and your choices as a customer.',
   pathname: '/privacy',
 })
 
@@ -24,7 +24,7 @@ export default function PrivacyPage() {
       <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
         <h1 className="text-base-content text-3xl font-semibold md:text-4xl">Privacy Policy</h1>
         <p className="text-base-content/80 mt-3">
-          This is a plain-language privacy policy for Pickle. Replace this with your final legal copy before launch.
+          This is a plain-language privacy policy for Nook. Replace this with your final legal copy before launch.
         </p>
 
         <div className="mt-10 space-y-10">
@@ -32,7 +32,7 @@ export default function PrivacyPage() {
             <h2 className="text-base-content text-2xl font-semibold">What we collect</h2>
             <ul className="text-base-content/80 mt-4 list-disc space-y-2 pl-6">
               <li>Account information (name, email).</li>
-              <li>Workspace data you store in Pickle (inventory items, locations, activity logs).</li>
+              <li>Workspace data you store in Nook (inventory items, locations, activity logs).</li>
               <li>Usage data to improve reliability and performance.</li>
             </ul>
           </section>

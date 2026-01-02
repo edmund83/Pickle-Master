@@ -411,7 +411,7 @@ export default function ScanPage() {
               'transition-all duration-200',
               'active:scale-95 lg:active:scale-100',
               mode === 'single'
-                ? 'border-pickle-500 text-pickle-600 bg-pickle-50 lg:bg-transparent'
+                ? 'border-primary text-primary bg-primary/10 lg:bg-transparent'
                 : 'border-transparent text-neutral-500 hover:text-neutral-700'
             )}
           >
@@ -428,7 +428,7 @@ export default function ScanPage() {
               'transition-all duration-200',
               'active:scale-95 lg:active:scale-100',
               mode === 'quick-adjust'
-                ? 'border-pickle-500 text-pickle-600 bg-pickle-50 lg:bg-transparent'
+                ? 'border-primary text-primary bg-primary/10 lg:bg-transparent'
                 : 'border-transparent text-neutral-500 hover:text-neutral-700'
             )}
           >
@@ -445,14 +445,14 @@ export default function ScanPage() {
               'transition-all duration-200',
               'active:scale-95 lg:active:scale-100',
               mode === 'batch'
-                ? 'border-pickle-500 text-pickle-600 bg-pickle-50 lg:bg-transparent'
+                ? 'border-primary text-primary bg-primary/10 lg:bg-transparent'
                 : 'border-transparent text-neutral-500 hover:text-neutral-700'
             )}
           >
             <ListChecks className="h-6 w-6 lg:h-4 lg:w-4" />
             <span>Batch</span>
             {batchItems.length > 0 && (
-              <span className="bg-pickle-500 text-white text-sm lg:text-xs px-2 lg:px-1.5 py-0.5 rounded-full font-semibold">
+              <span className="bg-primary text-white text-sm lg:text-xs px-2 lg:px-1.5 py-0.5 rounded-full font-semibold">
                 {batchItems.length}
               </span>
             )}

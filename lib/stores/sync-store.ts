@@ -75,7 +75,7 @@ export const useSyncStore = create<SyncState>()(
       reset: () => set(initialState),
     }),
     {
-      name: 'pickle-sync-state',
+      name: 'nook-sync-state',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         // Only persist these fields

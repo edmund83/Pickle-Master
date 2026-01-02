@@ -65,7 +65,7 @@ export function CustomFieldInput({ field, value, onChange, disabled }: CustomFie
             checked={(value as boolean) || false}
             onChange={(e) => onChange(e.target.checked)}
             disabled={disabled}
-            className="h-4 w-4 rounded border-neutral-300 text-pickle-600 focus:ring-pickle-500"
+            className="h-4 w-4 rounded border-neutral-300 text-primary focus:ring-primary"
           />
           <span className="text-sm text-neutral-700">Yes</span>
         </label>
@@ -77,7 +77,7 @@ export function CustomFieldInput({ field, value, onChange, disabled }: CustomFie
           value={(value as string) || ''}
           onChange={(e) => onChange(e.target.value)}
           disabled={disabled}
-          className="h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500 disabled:bg-neutral-100"
+          className="h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary disabled:bg-neutral-100"
         >
           <option value="">Select {field.name.toLowerCase()}...</option>
           {options.map((option) => (
@@ -105,7 +105,7 @@ export function CustomFieldInput({ field, value, onChange, disabled }: CustomFie
                   }
                 }}
                 disabled={disabled}
-                className="h-4 w-4 rounded border-neutral-300 text-pickle-600 focus:ring-pickle-500"
+                className="h-4 w-4 rounded border-neutral-300 text-primary focus:ring-primary"
               />
               <span className="text-sm text-neutral-700">{option}</span>
             </label>

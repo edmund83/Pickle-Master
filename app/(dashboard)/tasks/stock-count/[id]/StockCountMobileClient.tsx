@@ -272,7 +272,7 @@ export function StockCountMobileClient({ data, teamMembers, folders, currentUser
             <div className={cn(
               'px-3 py-1 rounded-full text-sm font-semibold',
               isCompleted ? 'bg-green-100 text-green-700' :
-              isInProgress ? 'bg-pickle-100 text-pickle-700' :
+              isInProgress ? 'bg-primary/20 text-primary' :
               'bg-neutral-100 text-neutral-700'
             )}>
               {countedItemsCount}/{totalItems}
@@ -289,7 +289,7 @@ export function StockCountMobileClient({ data, teamMembers, folders, currentUser
         {/* Progress bar */}
         <div className="h-1 bg-neutral-100">
           <div
-            className="h-full bg-pickle-500 transition-all duration-300"
+            className="h-full bg-primary transition-all duration-300"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -300,8 +300,8 @@ export function StockCountMobileClient({ data, teamMembers, folders, currentUser
         {/* Draft State */}
         {isDraft && (
           <div className="p-6 rounded-2xl bg-white border border-neutral-200 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-pickle-100 flex items-center justify-center">
-              <Play className="h-8 w-8 text-pickle-600" />
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
+              <Play className="h-8 w-8 text-primary" />
             </div>
             <h3 className="text-lg font-semibold text-neutral-900">Ready to start</h3>
             <p className="mt-2 text-neutral-600 text-sm">
@@ -325,9 +325,9 @@ export function StockCountMobileClient({ data, teamMembers, folders, currentUser
 
         {/* Empty state when starting to count */}
         {isInProgress && pendingItems.length > 0 && countedItemsCount === 0 && (
-          <div className="p-6 rounded-2xl bg-pickle-50 border-2 border-pickle-200 text-center">
-            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-pickle-100 flex items-center justify-center">
-              <Package className="h-8 w-8 text-pickle-600" />
+          <div className="p-6 rounded-2xl bg-primary/10 border-2 border-primary/30 text-center">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-primary/20 flex items-center justify-center">
+              <Package className="h-8 w-8 text-primary" />
             </div>
             <h3 className="text-lg font-semibold text-neutral-900">Ready to count</h3>
             <p className="mt-2 text-neutral-600">
@@ -689,7 +689,7 @@ function PendingItemCard({
       className={cn(
         "relative w-full p-4 rounded-2xl bg-white border-2 text-left",
         isNext
-          ? "border-pickle-300 shadow-lg shadow-pickle-500/10"
+          ? "border-primary/30 shadow-lg shadow-primary/10"
           : "border-neutral-200 shadow-sm",
         "transition-all active:scale-[0.98]"
       )}
@@ -697,7 +697,7 @@ function PendingItemCard({
       {/* Next indicator */}
       {isNext && (
         <div className="absolute -left-[2px] top-1/2 -translate-y-1/2">
-          <div className="w-1.5 h-10 rounded-r-full bg-pickle-500" />
+          <div className="w-1.5 h-10 rounded-r-full bg-primary" />
         </div>
       )}
 
@@ -733,7 +733,7 @@ function PendingItemCard({
           <div className={cn(
             "px-3 py-1.5 rounded-full font-semibold text-xs uppercase tracking-wide",
             isNext
-              ? "bg-pickle-500 text-white"
+              ? "bg-primary text-white"
               : "bg-neutral-100 text-neutral-600"
           )}>
             {isNext ? 'Count' : 'Tap'}

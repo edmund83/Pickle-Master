@@ -147,12 +147,12 @@ export default function PreferencesPage() {
                     onClick={() => setPreferences({ ...preferences, theme: value as UserPreferences['theme'] })}
                     className={`flex flex-1 flex-col items-center gap-2 rounded-lg border p-4 transition-colors ${
                       preferences.theme === value
-                        ? 'border-pickle-500 bg-pickle-50'
+                        ? 'border-primary bg-primary/10'
                         : 'border-neutral-200 hover:bg-neutral-50'
                     }`}
                   >
-                    <Icon className={`h-5 w-5 ${preferences.theme === value ? 'text-pickle-600' : 'text-neutral-500'}`} />
-                    <span className={`text-sm font-medium ${preferences.theme === value ? 'text-pickle-700' : 'text-neutral-700'}`}>
+                    <Icon className={`h-5 w-5 ${preferences.theme === value ? 'text-primary' : 'text-neutral-500'}`} />
+                    <span className={`text-sm font-medium ${preferences.theme === value ? 'text-primary' : 'text-neutral-700'}`}>
                       {label}
                     </span>
                   </button>
@@ -173,12 +173,12 @@ export default function PreferencesPage() {
                     onClick={() => setPreferences({ ...preferences, defaultView: value as UserPreferences['defaultView'] })}
                     className={`flex flex-1 items-center justify-center gap-2 rounded-lg border p-3 transition-colors ${
                       preferences.defaultView === value
-                        ? 'border-pickle-500 bg-pickle-50'
+                        ? 'border-primary bg-primary/10'
                         : 'border-neutral-200 hover:bg-neutral-50'
                     }`}
                   >
-                    <Icon className={`h-5 w-5 ${preferences.defaultView === value ? 'text-pickle-600' : 'text-neutral-500'}`} />
-                    <span className={`text-sm font-medium ${preferences.defaultView === value ? 'text-pickle-700' : 'text-neutral-700'}`}>
+                    <Icon className={`h-5 w-5 ${preferences.defaultView === value ? 'text-primary' : 'text-neutral-500'}`} />
+                    <span className={`text-sm font-medium ${preferences.defaultView === value ? 'text-primary' : 'text-neutral-700'}`}>
                       {label}
                     </span>
                   </button>
@@ -199,7 +199,7 @@ export default function PreferencesPage() {
                   onChange={(e) => setPreferences({ ...preferences, compactMode: e.target.checked })}
                   className="peer sr-only"
                 />
-                <div className="peer h-6 w-11 rounded-full bg-neutral-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-pickle-500 peer-checked:after:translate-x-full"></div>
+                <div className="peer h-6 w-11 rounded-full bg-neutral-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-primary peer-checked:after:translate-x-full"></div>
               </label>
             </div>
           </div>

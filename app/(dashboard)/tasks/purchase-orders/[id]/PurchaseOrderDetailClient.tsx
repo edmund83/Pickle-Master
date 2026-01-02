@@ -459,7 +459,7 @@ export function PurchaseOrderDetailClient({
               value={orderNumber}
               onChange={(e) => setOrderNumber(e.target.value)}
               onBlur={() => saveField('order_number')}
-              className="text-2xl font-semibold text-neutral-900 bg-transparent border-b-2 border-dashed border-neutral-200 focus:border-pickle-500 outline-none px-2 py-1"
+              className="text-2xl font-semibold text-neutral-900 bg-transparent border-b-2 border-dashed border-neutral-200 focus:border-primary outline-none px-2 py-1"
               placeholder="PO Number"
             />
             <span className={`rounded-full px-3 py-1 text-sm font-medium ${statusConfig[status]?.bgColor} ${statusConfig[status]?.color}`}>
@@ -499,7 +499,7 @@ export function PurchaseOrderDetailClient({
               <select
                 value={submittedBy}
                 onChange={(e) => setSubmittedBy(e.target.value)}
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm focus:border-pickle-500 focus:ring-1 focus:ring-pickle-500"
+                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
               >
                 <option value="">Select...</option>
                 {teamMembers.map((member) => (
@@ -522,7 +522,7 @@ export function PurchaseOrderDetailClient({
                   setExpectedDate(e.target.value)
                   saveField('expected_date', e.target.value)
                 }}
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm focus:border-pickle-500 focus:ring-1 focus:ring-pickle-500"
+                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
               />
             </div>
 
@@ -535,7 +535,7 @@ export function PurchaseOrderDetailClient({
               <select
                 value={approvedBy}
                 onChange={(e) => setApprovedBy(e.target.value)}
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm focus:border-pickle-500 focus:ring-1 focus:ring-pickle-500"
+                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
               >
                 <option value="">Select...</option>
                 {teamMembers.map((member) => (
@@ -657,7 +657,7 @@ export function PurchaseOrderDetailClient({
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search to add items to the purchase order"
-                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-neutral-200 text-sm focus:border-pickle-500 focus:ring-1 focus:ring-pickle-500"
+                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-neutral-200 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
                 />
                 {isSearching && (
                   <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-neutral-400" />
@@ -700,7 +700,7 @@ export function PurchaseOrderDetailClient({
                       {item.sku && <p className="text-xs text-neutral-500">SKU: {item.sku}</p>}
                     </div>
                     <span className="text-xs text-neutral-500">{item.quantity} {item.unit || 'units'}</span>
-                    <Plus className="h-4 w-4 text-pickle-600" />
+                    <Plus className="h-4 w-4 text-primary" />
                   </button>
                 ))}
               </div>
@@ -712,7 +712,7 @@ export function PurchaseOrderDetailClient({
                 type="checkbox"
                 checked={showLowStock}
                 onChange={(e) => setShowLowStock(e.target.checked)}
-                className="rounded border-neutral-300 text-pickle-600 focus:ring-pickle-500"
+                className="rounded border-neutral-300 text-primary focus:ring-primary"
               />
               Only show low-stock items
             </label>
@@ -729,7 +729,7 @@ export function PurchaseOrderDetailClient({
             <select
               value={vendorId}
               onChange={(e) => handleVendorSelect(e.target.value)}
-              className="rounded-lg border border-neutral-200 px-3 py-1.5 text-sm focus:border-pickle-500 focus:ring-1 focus:ring-pickle-500"
+              className="rounded-lg border border-neutral-200 px-3 py-1.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
             >
               <option value="">Select Vendor</option>
               {vendors.map((vendor) => (
@@ -889,7 +889,7 @@ export function PurchaseOrderDetailClient({
                   type="checkbox"
                   checked={sameAsShipTo}
                   onChange={(e) => handleSameAsShipTo(e.target.checked)}
-                  className="rounded border-neutral-300 text-pickle-600 focus:ring-pickle-500"
+                  className="rounded border-neutral-300 text-primary focus:ring-primary"
                 />
                 Same as Ship To
               </label>
@@ -1289,7 +1289,7 @@ export function PurchaseOrderDetailClient({
                     {purchaseOrder.vendor.email && (
                       <div className="flex items-center gap-2 text-sm text-neutral-600">
                         <Mail className="h-4 w-4 text-neutral-400" />
-                        <a href={`mailto:${purchaseOrder.vendor.email}`} className="hover:text-pickle-600">
+                        <a href={`mailto:${purchaseOrder.vendor.email}`} className="hover:text-primary">
                           {purchaseOrder.vendor.email}
                         </a>
                       </div>
@@ -1297,7 +1297,7 @@ export function PurchaseOrderDetailClient({
                     {purchaseOrder.vendor.phone && (
                       <div className="flex items-center gap-2 text-sm text-neutral-600">
                         <Phone className="h-4 w-4 text-neutral-400" />
-                        <a href={`tel:${purchaseOrder.vendor.phone}`} className="hover:text-pickle-600">
+                        <a href={`tel:${purchaseOrder.vendor.phone}`} className="hover:text-primary">
                           {purchaseOrder.vendor.phone}
                         </a>
                       </div>

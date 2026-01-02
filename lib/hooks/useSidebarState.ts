@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useCallback } from 'react'
 
-const STORAGE_KEY = 'pickle-sidebar-expanded'
-const STORAGE_VERSION_KEY = 'pickle-sidebar-version'
+const STORAGE_KEY = 'nook-sidebar-expanded'
+const STORAGE_VERSION_KEY = 'nook-sidebar-version'
 const CURRENT_VERSION = '2' // Bump this to reset user preferences
 
 export function useSidebarState() {

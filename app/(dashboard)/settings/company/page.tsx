@@ -592,7 +592,7 @@ export default function CompanySettingsPage() {
                   <select
                     value={formData.country}
                     onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                    className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                    className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   >
                     {COUNTRIES.map((country) => (
                       <option key={country.value} value={country.value}>
@@ -609,7 +609,7 @@ export default function CompanySettingsPage() {
                   <select
                     value={formData.timezone}
                     onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
-                    className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                    className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   >
                     {TIMEZONES.map((tz) => (
                       <option key={tz.value} value={tz.value}>
@@ -629,7 +629,7 @@ export default function CompanySettingsPage() {
                   <select
                     value={formData.date_format}
                     onChange={(e) => setFormData({ ...formData, date_format: e.target.value })}
-                    className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                    className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   >
                     {DATE_FORMATS.map((format) => (
                       <option key={format.value} value={format.value}>
@@ -646,7 +646,7 @@ export default function CompanySettingsPage() {
                   <select
                     value={formData.time_format}
                     onChange={(e) => setFormData({ ...formData, time_format: e.target.value })}
-                    className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                    className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   >
                     {TIME_FORMATS.map((format) => (
                       <option key={format.value} value={format.value}>
@@ -666,7 +666,7 @@ export default function CompanySettingsPage() {
                   <select
                     value={formData.currency}
                     onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-                    className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                    className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   >
                     {CURRENCIES.map((currency) => (
                       <option key={currency.value} value={currency.value}>
@@ -683,7 +683,7 @@ export default function CompanySettingsPage() {
                   <select
                     value={formData.decimal_precision}
                     onChange={(e) => setFormData({ ...formData, decimal_precision: e.target.value })}
-                    className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                    className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   >
                     {DECIMAL_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>

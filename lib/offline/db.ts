@@ -7,12 +7,12 @@ import type {
 } from './types'
 
 /**
- * Pickle Offline Database
+ * Nook Offline Database
  *
  * Uses Dexie.js (IndexedDB wrapper) for persistent offline storage.
  * Stores cached inventory items, pending changes queue, and scan sessions.
  */
-class PickleOfflineDB extends Dexie {
+class NookOfflineDB extends Dexie {
   // Tables
   items!: Table<OfflineItem, string>
   pendingChanges!: Table<PendingChange, string>
@@ -20,7 +20,7 @@ class PickleOfflineDB extends Dexie {
   syncMetadata!: Table<SyncMetadata, string>
 
   constructor() {
-    super('PickleOfflineDB')
+    super('NookOfflineDB')
 
     // Schema version 1
     this.version(1).stores({
@@ -37,14 +37,14 @@ class PickleOfflineDB extends Dexie {
 }
 
 // Singleton database instance
-let db: PickleOfflineDB | null = null
+let db: NookOfflineDB | null = null
 
 /**
  * Get the database instance (lazy initialization)
  */
-export function getDB(): PickleOfflineDB {
+export function getDB(): NookOfflineDB {
   if (!db) {
-    db = new PickleOfflineDB()
+    db = new NookOfflineDB()
   }
   return db
 }
@@ -446,5 +446,5 @@ export async function getStorageEstimate(): Promise<{
 }
 
 // Export the database class for advanced usage
-export { PickleOfflineDB }
+export { NookOfflineDB }
 export default getDB

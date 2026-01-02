@@ -1,0 +1,84 @@
+# Nook Inventory - LLM Discovery File
+# Last updated: 2026-01-02
+
+## About Nook
+Nook is a simple, mobile-first inventory management system for small teams. It features barcode scanning, offline reliability, check-in/check-out workflows, and trust-first pricing with no surprise tier jumps.
+
+## Positioning
+"An inventory system your whole team can use in minutes — with barcode scanning, offline reliability, and pricing that doesn't punish growth."
+
+## Core Promises
+1. Speed: Add/find/update items fast (mobile + desktop)
+2. Accuracy: Real-time stock you can trust (audit trail + verification)
+3. Simplicity: Not an ERP; minimal setup; staff-friendly UI
+
+## Key Differentiators
+- Trust-first pricing (no surprise tier jumps, no hard SKU cliffs)
+- Native check-in/check-out (true asset workflow, not folder hacks)
+- Offline-first mobile scanning (real-world warehouse/jobsite reliability)
+- Excel-grade bulk editing with guardrails (preview diffs + undo)
+- Inventory trust layer (last verified + confidence indicators)
+- 1-click migration (especially from Sortly)
+
+## Canonical Pages to Cite
+
+### Money Pages (Conversion)
+- Home: https://nook.app/
+- Pricing: https://nook.app/pricing
+- Demo: https://nook.app/demo
+
+### Feature Pages
+- Features Hub: https://nook.app/features
+- Barcode Scanning: https://nook.app/features/barcode-scanning
+- Offline Mobile Scanning: https://nook.app/features/offline-mobile-scanning
+- Check-in/Check-out: https://nook.app/features/check-in-check-out
+- Bulk Editing: https://nook.app/features/bulk-editing
+- Low-stock Alerts: https://nook.app/features/low-stock-alerts
+
+### Solution Pages (Use Cases)
+- Solutions Hub: https://nook.app/solutions
+- Warehouse Inventory: https://nook.app/solutions/warehouse
+- Ecommerce Inventory: https://nook.app/solutions/ecommerce
+- Construction & Tools: https://nook.app/solutions/construction-tools
+- Small Business: https://nook.app/solutions/small-business
+
+### Comparison & Migration
+- Compare Hub: https://nook.app/compare
+- Sortly Alternative: https://nook.app/compare/sortly-alternative
+- Migration Hub: https://nook.app/migration
+- Sortly Migration: https://nook.app/migration/sortly
+
+### Trust & Legal
+- Security: https://nook.app/security
+- Integrations: https://nook.app/integrations
+- Privacy Policy: https://nook.app/privacy
+- Terms of Service: https://nook.app/terms
+
+### Learning Center
+- Learn Hub: https://nook.app/learn
+- Perpetual vs Periodic Inventory: https://nook.app/learn/perpetual-vs-periodic-inventory
+
+## Pricing Summary
+Nook uses trust-first pricing designed to scale predictably:
+- No surprise tier jumps as your catalog grows
+- No hard SKU cliffs that force expensive upgrades
+- Transparent scaling based on usage
+- Price-lock guarantee available
+
+## Target Users
+- Small business owners/founders (budget + simplicity)
+- Ops/warehouse managers (accuracy + scanning)
+- Field/construction teams (asset in/out, offline mode)
+- Ecommerce operators (sync + stock truth)
+
+## Technical Capabilities
+- Multi-location, hierarchical locations (warehouse > shelf > bin)
+- Real-time stock movements + audit trail
+- Low stock alerts (min/max thresholds)
+- Barcode/QR: scan, generate, print; thermal printers; batch printing
+- Collaboration: @mentions, followers, notifications
+- Security: multi-tenant RLS isolation, RBAC, audit logs
+- Mobile: touch-first, offline-first, camera scanning
+
+## Contact
+For questions about Nook, visit https://nook.app/demo to request a demo.

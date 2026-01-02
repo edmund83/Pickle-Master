@@ -236,23 +236,23 @@ function FeatureToggle({ icon: Icon, title, description, enabled, onToggle }: Fe
     <div
       className={`flex items-start gap-4 rounded-lg border p-4 transition-colors cursor-pointer ${
         enabled
-          ? 'border-pickle-200 bg-pickle-50/50'
+          ? 'border-primary/30 bg-primary/10/50'
           : 'border-neutral-200 bg-white hover:bg-neutral-50'
       }`}
       onClick={onToggle}
     >
       <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
-        enabled ? 'bg-pickle-100 text-pickle-600' : 'bg-neutral-100 text-neutral-500'
+        enabled ? 'bg-primary/20 text-primary' : 'bg-neutral-100 text-neutral-500'
       }`}>
         <Icon className="h-5 w-5" />
       </div>
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2">
-          <h3 className={`font-medium ${enabled ? 'text-pickle-900' : 'text-neutral-900'}`}>
+          <h3 className={`font-medium ${enabled ? 'text-primary' : 'text-neutral-900'}`}>
             {title}
           </h3>
           {enabled && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-pickle-100 px-2 py-0.5 text-xs font-medium text-pickle-700">
+            <span className="inline-flex items-center gap-1 rounded-full bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">
               <Check className="h-3 w-3" />
               Enabled
             </span>
@@ -272,7 +272,7 @@ function FeatureToggle({ icon: Icon, title, description, enabled, onToggle }: Fe
         />
         <div
           onClick={onToggle}
-          className="peer h-6 w-11 rounded-full bg-neutral-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-neutral-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-pickle-500 peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-pickle-500 peer-focus:ring-offset-2"
+          className="peer h-6 w-11 rounded-full bg-neutral-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-neutral-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary peer-focus:ring-offset-2"
         ></div>
       </div>
     </div>

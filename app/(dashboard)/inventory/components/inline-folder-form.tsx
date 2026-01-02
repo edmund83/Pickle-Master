@@ -68,7 +68,7 @@ export function InlineFolderForm({
   return (
     <div
       className={cn(
-        'mx-2 rounded-lg border border-pickle-200 bg-white p-3 shadow-sm',
+        'mx-2 rounded-lg border border-primary/30 bg-white p-3 shadow-sm',
         className
       )}
     >
@@ -102,7 +102,7 @@ export function InlineFolderForm({
             disabled={isPending || !name.trim()}
             className={cn(
               'flex h-6 w-6 items-center justify-center rounded',
-              'text-pickle-600 hover:bg-pickle-50',
+              'text-primary hover:bg-primary/10',
               'disabled:opacity-50 disabled:cursor-not-allowed',
               'transition-colors'
             )}

@@ -145,7 +145,7 @@ export function CompletionModal({
                 type="checkbox"
                 checked={applyAdjustments}
                 onChange={(e) => setApplyAdjustments(e.target.checked)}
-                className="mt-0.5 h-5 w-5 rounded border-neutral-300 text-pickle-600 focus:ring-pickle-500"
+                className="mt-0.5 h-5 w-5 rounded border-neutral-300 text-primary focus:ring-primary"
               />
               <div>
                 <p className="font-medium text-neutral-900 text-sm">

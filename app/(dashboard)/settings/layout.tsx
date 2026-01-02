@@ -60,7 +60,7 @@ export default function SettingsLayout({
                 className={cn(
                   'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
                   isActive
-                    ? 'bg-pickle-50 font-medium text-pickle-600'
+                    ? 'bg-primary/10 font-medium text-primary'
                     : 'text-neutral-600 hover:bg-neutral-50'
                 )}
               >

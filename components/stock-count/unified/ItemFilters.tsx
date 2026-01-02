@@ -52,7 +52,7 @@ export function ItemFilters({
               'flex items-center gap-1.5 px-3 py-1.5 rounded-full',
               'text-sm font-medium whitespace-nowrap',
               'transition-all duration-150',
-              'focus:outline-none focus:ring-2 focus:ring-pickle-500 focus:ring-offset-2',
+              'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
               isActive
                 ? filter.activeClass
                 : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'

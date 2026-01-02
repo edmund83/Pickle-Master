@@ -97,7 +97,7 @@ function FolderTreeItem({
         disabled={isCurrent}
         className={cn(
           'flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors',
-          isSelected && !isCurrent && 'bg-pickle-50 text-pickle-700',
+          isSelected && !isCurrent && 'bg-primary/10 text-primary',
           isCurrent && 'cursor-not-allowed bg-neutral-100 text-neutral-400',
           !isSelected && !isCurrent && 'hover:bg-neutral-50'
         )}
@@ -304,7 +304,7 @@ export function MoveToFolderModal({
                 disabled={currentFolderId === null}
                 className={cn(
                   'flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm transition-colors',
-                  selectedFolderId === null && currentFolderId !== null && 'bg-pickle-50 text-pickle-700',
+                  selectedFolderId === null && currentFolderId !== null && 'bg-primary/10 text-primary',
                   currentFolderId === null && 'cursor-not-allowed bg-neutral-100 text-neutral-400',
                   selectedFolderId !== null && currentFolderId !== null && 'hover:bg-neutral-50'
                 )}

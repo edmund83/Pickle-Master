@@ -73,7 +73,7 @@ export default async function TeamSettingsPage() {
             {members.map((member) => (
               <div key={member.id} className="flex items-center justify-between py-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-pickle-100 text-sm font-medium text-pickle-600">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/20 text-sm font-medium text-primary">
                     {(member.full_name || member.email)?.charAt(0).toUpperCase()}
                   </div>
                   <div>

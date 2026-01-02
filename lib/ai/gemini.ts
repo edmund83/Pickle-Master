@@ -35,7 +35,7 @@ export async function analyzeInventory(items: InventoryItem[]): Promise<Inventor
   const genAI = getGeminiClient()
   const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
 
-  const prompt = `You are an expert Warehouse Consultant analyzing inventory data for Pickle Master, an inventory management system.
+  const prompt = `You are an expert Warehouse Consultant analyzing inventory data for Nook Master, an inventory management system.
 
 Analyze this inventory data and provide the top 3 most important, actionable insights. Focus on:
 1. Low stock alerts - items below minimum quantity thresholds
@@ -94,7 +94,7 @@ export async function inventoryChat(
   const genAI = getGeminiClient()
   const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
 
-  const systemPrompt = `You are Pickle, a helpful AI Warehouse Assistant for Pickle Master inventory management system.
+  const systemPrompt = `You are Nook, a helpful AI Warehouse Assistant for Nook Master inventory management system.
 
 Current Inventory Context (sample of items):
 ${JSON.stringify(context.slice(0, 50), null, 2)}

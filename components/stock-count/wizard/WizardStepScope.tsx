@@ -26,7 +26,7 @@ const SCOPE_OPTIONS = [
     title: 'Full Inventory',
     description: 'Count all items in your inventory',
     icon: Package,
-    color: 'pickle',
+    color: 'nook',
   },
   {
     id: 'folder' as const,
@@ -121,8 +121,8 @@ export function WizardStepScope({
                   'transition-all duration-200',
                   'active:scale-[0.98]',
                   isSelected
-                    ? option.color === 'pickle'
-                      ? 'border-pickle-500 bg-pickle-50'
+                    ? option.color === 'nook'
+                      ? 'border-primary bg-primary/10'
                       : option.color === 'blue'
                       ? 'border-blue-500 bg-blue-50'
                       : 'border-purple-500 bg-purple-50'
@@ -133,8 +133,8 @@ export function WizardStepScope({
                   className={cn(
                     'flex h-12 w-12 items-center justify-center rounded-xl',
                     isSelected
-                      ? option.color === 'pickle'
-                        ? 'bg-pickle-500 text-white'
+                      ? option.color === 'nook'
+                        ? 'bg-primary text-white'
                         : option.color === 'blue'
                         ? 'bg-blue-500 text-white'
                         : 'bg-purple-500 text-white'
@@ -153,8 +153,8 @@ export function WizardStepScope({
                   <div
                     className={cn(
                       'flex h-6 w-6 items-center justify-center rounded-full',
-                      option.color === 'pickle'
-                        ? 'bg-pickle-500'
+                      option.color === 'nook'
+                        ? 'bg-primary'
                         : option.color === 'blue'
                         ? 'bg-blue-500'
                         : 'bg-purple-500'
@@ -246,10 +246,10 @@ export function WizardStepScope({
 
       {/* Item Count Preview */}
       {data.scopeType === 'full' && (
-        <div className="p-4 bg-pickle-50 border border-pickle-200 rounded-xl">
+        <div className="p-4 bg-primary/10 border border-primary/30 rounded-xl">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-pickle-700">Items to count</span>
-            <span className="text-lg font-bold text-pickle-700 tabular-nums">
+            <span className="text-sm text-primary">Items to count</span>
+            <span className="text-lg font-bold text-primary tabular-nums">
               {totalItemCount}
             </span>
           </div>

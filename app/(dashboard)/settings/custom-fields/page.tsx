@@ -455,7 +455,7 @@ export default function CustomFieldsPage() {
                     key={suggested.name}
                     onClick={() => handleAddSuggested(suggested)}
                     disabled={saving || remainingSlots <= 0}
-                    className="flex items-center gap-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-left transition-all hover:border-pickle-500 hover:bg-pickle-50 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex items-center gap-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-left transition-all hover:border-primary hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-50"
                   >
                     <Icon className="h-4 w-4 flex-shrink-0 text-neutral-400" />
                     <span className="text-sm font-medium text-neutral-700">{suggested.name}</span>
@@ -624,7 +624,7 @@ function FieldForm({
               field_type: e.target.value as FieldType,
               options: [],
             }))}
-            className="h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+            className="h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           >
             {FIELD_TYPES.map((type) => (
               <option key={type.value} value={type.value}>
@@ -686,7 +686,7 @@ function FieldForm({
           id="required"
           checked={formData.required}
           onChange={(e) => setFormData(prev => ({ ...prev, required: e.target.checked }))}
-          className="h-4 w-4 rounded border-neutral-300 text-pickle-600 focus:ring-pickle-500"
+          className="h-4 w-4 rounded border-neutral-300 text-primary focus:ring-primary"
         />
         <label htmlFor="required" className="text-sm text-neutral-700">
           This field is required when adding/editing items
@@ -724,7 +724,7 @@ function FieldForm({
                       }))
                     }
                   }}
-                  className="h-4 w-4 rounded border-neutral-300 text-pickle-600 focus:ring-pickle-500"
+                  className="h-4 w-4 rounded border-neutral-300 text-primary focus:ring-primary"
                 />
                 <FolderIcon className="h-4 w-4 text-neutral-400" />
                 <span className="text-sm text-neutral-700">{folder.name}</span>
@@ -732,7 +732,7 @@ function FieldForm({
             ))}
           </div>
           {formData.folderIds.length > 0 && (
-            <p className="mt-1 text-xs text-pickle-600">
+            <p className="mt-1 text-xs text-primary">
               {formData.folderIds.length} folder{formData.folderIds.length > 1 ? 's' : ''} selected
             </p>
           )}

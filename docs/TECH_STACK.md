@@ -1,8 +1,8 @@
-# Pickle - Technical Stack Documentation
+# Nook - Technical Stack Documentation
 
 ## Overview
 
-Pickle is a modern, mobile-first inventory management SaaS built with a serverless architecture optimized for multi-tenant scalability.
+Nook is a modern, mobile-first inventory management SaaS built with a serverless architecture optimized for multi-tenant scalability.
 
 ---
 
@@ -102,7 +102,7 @@ Pickle is a modern, mobile-first inventory management SaaS built with a serverle
 ## Project Structure
 
 ```
-pickle-master/
+nook-master/
 ├── app/                    # Next.js App Router pages
 │   ├── (auth)/            # Auth routes (login, signup, etc.)
 │   ├── (dashboard)/       # Protected dashboard routes
@@ -146,7 +146,7 @@ const nextConfig: NextConfig = {
 
 ### `tailwind.config.ts`
 - FlyonUI plugin integration
-- Custom `pickle-red` theme
+- Custom `nook-red` theme
 - Corporate theme as default
 
 ### `postcss.config.mjs`
@@ -166,7 +166,7 @@ const config = {
 
 @theme {
   --font-family-sans: 'Inter', system-ui, sans-serif;
-  --color-pickle-500: #de4a4a;
+  --color-primary: #de4a4a;
   /* ... */
 }
 ```

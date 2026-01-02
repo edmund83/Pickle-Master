@@ -55,9 +55,9 @@ export function KidFriendlyCard({
         ],
         // Selected state
         selected && [
-          'border-pickle-500',
-          'ring-2 ring-pickle-200',
-          'bg-pickle-50',
+          'border-primary',
+          'ring-2 ring-primary/30',
+          'bg-primary/10',
         ],
         // Disabled state
         disabled && [
@@ -194,12 +194,12 @@ interface ActionCardProps {
   label: string
   description?: string
   onClick: () => void
-  color?: 'pickle' | 'blue' | 'green' | 'amber' | 'red'
+  color?: 'nook' | 'blue' | 'green' | 'amber' | 'red'
   className?: string
 }
 
 const colorStyles = {
-  pickle: 'bg-pickle-50 text-pickle-600 hover:bg-pickle-100',
+  nook: 'bg-primary/10 text-primary hover:bg-primary/20',
   blue: 'bg-blue-50 text-blue-600 hover:bg-blue-100',
   green: 'bg-green-50 text-green-600 hover:bg-green-100',
   amber: 'bg-amber-50 text-amber-600 hover:bg-amber-100',
@@ -211,7 +211,7 @@ export function KidFriendlyActionCard({
   label,
   description,
   onClick,
-  color = 'pickle',
+  color = 'nook',
   className,
 }: ActionCardProps) {
   return (

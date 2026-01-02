@@ -9,7 +9,7 @@ import type { Folder } from '@/types/database.types'
 import { FolderTreeView, type FolderStats } from './folder-tree-view'
 import { InlineFolderForm } from './inline-folder-form'
 
-const EXPANDED_FOLDERS_KEY = 'pickle-expanded-folders'
+const EXPANDED_FOLDERS_KEY = 'nook-expanded-folders'
 
 interface InventorySidebarProps {
   folders: Folder[]
@@ -146,7 +146,7 @@ export function InventorySidebar({
               'group flex w-full items-center rounded-md py-1.5 pl-3 pr-2 text-[13px] transition-all duration-150',
               'hover:bg-neutral-100/80',
               isAllItemsSelected
-                ? 'bg-pickle-50/80 font-medium text-pickle-700'
+                ? 'bg-primary/10/80 font-medium text-primary'
                 : 'text-neutral-700'
             )}
           >
@@ -154,7 +154,7 @@ export function InventorySidebar({
             <span className="flex-1 text-left">All Items</span>
             <span className={cn(
               'min-w-5 text-right text-xs tabular-nums',
-              isAllItemsSelected ? 'text-pickle-400' : 'text-neutral-400'
+              isAllItemsSelected ? 'text-primary/60' : 'text-neutral-400'
             )}>
               {totalItemCount}
             </span>

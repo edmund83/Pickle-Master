@@ -69,7 +69,7 @@ export default function IntegrationsPage() {
       <div className="mb-6">
         <h1 className="text-2xl font-semibold text-neutral-900">Integrations</h1>
         <p className="text-neutral-500">
-          Connect Pickle with your favorite tools and platforms
+          Connect Nook with your favorite tools and platforms
         </p>
       </div>
 

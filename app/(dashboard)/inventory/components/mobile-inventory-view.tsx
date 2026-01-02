@@ -130,7 +130,7 @@ export function MobileInventoryView({ items, folders }: MobileInventoryViewProps
               'bg-neutral-100',
               'text-lg',
               'placeholder:text-neutral-400',
-              'focus:outline-none focus:ring-2 focus:ring-pickle-500/20 focus:bg-white focus:border-pickle-500',
+              'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-white focus:border-primary',
               'border-2 border-transparent',
               'transition-all duration-200'
             )}
@@ -212,7 +212,7 @@ function FilterPill({ label, count, active, onClick, variant = 'default' }: Filt
             ? 'bg-amber-500 text-white'
             : variant === 'danger'
             ? 'bg-red-500 text-white'
-            : 'bg-pickle-500 text-white'
+            : 'bg-primary text-white'
           : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
       )}
     >
@@ -354,8 +354,8 @@ function MobileEmptyState({ hasItems, searchQuery }: MobileEmptyStateProps) {
 
   return (
     <div className="flex flex-col items-center justify-center py-16 px-4">
-      <div className="flex h-24 w-24 items-center justify-center rounded-full bg-pickle-50">
-        <Package className="h-12 w-12 text-pickle-400" />
+      <div className="flex h-24 w-24 items-center justify-center rounded-full bg-primary/10">
+        <Package className="h-12 w-12 text-primary/60" />
       </div>
       <h3 className="mt-4 text-xl font-semibold text-neutral-900">No items yet</h3>
       <p className="mt-2 text-neutral-500 text-center">

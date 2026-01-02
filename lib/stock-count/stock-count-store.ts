@@ -134,7 +134,7 @@ export const useStockCountStore = create<StockCountState>()(
       reset: () => set(initialState),
     }),
     {
-      name: 'pickle-stock-count-state',
+      name: 'nook-stock-count-state',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         // Persist the active session and pending counts

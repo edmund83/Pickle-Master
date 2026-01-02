@@ -7,7 +7,7 @@ import { breadcrumbJsonLd, softwareApplicationJsonLd } from '@/lib/marketing/jso
 export const metadata: Metadata = marketingMetadata({
   title: 'Compare',
   description:
-    'Compare Pickle to other inventory tools. See how trust-first pricing, offline scanning, and check-in/check-out workflows stack up for small teams.',
+    'Compare Nook to other inventory tools. See how trust-first pricing, offline scanning, and check-in/check-out workflows stack up for small teams.',
   pathname: '/compare',
 })
 
@@ -22,7 +22,7 @@ export default function CompareHubPage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Pickle Inventory',
+          name: 'Nook Inventory',
           description: 'Inventory management with barcode scanning and offline-first mobile workflows.',
           pathname: '/compare',
         })}
@@ -30,7 +30,7 @@ export default function CompareHubPage() {
 
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
         <h1 className="text-base-content text-3xl font-semibold md:text-4xl">
-          Compare Pickle
+          Compare Nook
         </h1>
         <p className="text-base-content/80 mt-3 max-w-3xl text-lg">
           If you&apos;re switching tools, you probably care about predictable pricing, reliable scanning, and workflows
@@ -54,21 +54,54 @@ export default function CompareHubPage() {
             </div>
           </Link>
 
-          <div className="card card-border shadow-none border-base-content/10">
+          <Link
+            href="/compare/boxhero-alternative"
+            className="card card-border shadow-none hover:border-primary transition-colors"
+          >
             <div className="card-body">
               <div className="flex items-center justify-between gap-3">
-                <h2 className="text-base-content text-xl font-semibold">More comparisons</h2>
-                <span className="badge badge-outline badge-secondary rounded-full">Coming soon</span>
+                <h2 className="text-base-content text-xl font-semibold">BoxHero alternative</h2>
               </div>
               <p className="text-base-content/80">
-                We&apos;re adding more alternatives (inFlow, Fishbowl, BoxHero) with factual workflow-by-workflow comparisons.
+                Compare offline reliability, check-in/check-out workflows, and predictable pricing.
               </p>
+              <span className="link link-primary link-animated mt-2 w-fit">View comparison</span>
             </div>
-          </div>
+          </Link>
+
+          <Link
+            href="/compare/inflow-alternative"
+            className="card card-border shadow-none hover:border-primary transition-colors"
+          >
+            <div className="card-body">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-base-content text-xl font-semibold">inFlow alternative</h2>
+              </div>
+              <p className="text-base-content/80">
+                Looking for simplicity over ERP complexity? See how Nook compares.
+              </p>
+              <span className="link link-primary link-animated mt-2 w-fit">View comparison</span>
+            </div>
+          </Link>
+
+          <Link
+            href="/compare/fishbowl-alternative"
+            className="card card-border shadow-none hover:border-primary transition-colors"
+          >
+            <div className="card-body">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="text-base-content text-xl font-semibold">Fishbowl alternative</h2>
+              </div>
+              <p className="text-base-content/80">
+                Warehouse inventory for small teams without enterprise pricing or complexity.
+              </p>
+              <span className="link link-primary link-animated mt-2 w-fit">View comparison</span>
+            </div>
+          </Link>
         </div>
 
         <div className="mt-12 rounded-box bg-base-200 p-10">
-          <h2 className="text-base-content text-2xl font-semibold md:text-3xl">Want to see Pickle in action?</h2>
+          <h2 className="text-base-content text-2xl font-semibold md:text-3xl">Want to see Nook in action?</h2>
           <p className="text-base-content/80 mt-3 max-w-3xl text-lg">
             Watch the 90-second demo or start a free trial and scan your first items today.
           </p>

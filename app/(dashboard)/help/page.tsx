@@ -39,7 +39,7 @@ const FAQ_ITEMS = [
 const QUICK_LINKS = [
   {
     title: 'Getting Started Guide',
-    description: 'Learn the basics of Pickle inventory management',
+    description: 'Learn the basics of Nook inventory management',
     icon: BookOpen,
     href: '#getting-started',
   },
@@ -77,16 +77,16 @@ export default function HelpPage() {
               href={link.href}
               className="group flex items-center gap-4 rounded-xl border border-neutral-200 bg-white p-6 transition-shadow hover:shadow-md"
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-pickle-50 text-pickle-600">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
                 <link.icon className="h-6 w-6" />
               </div>
               <div className="flex-1">
-                <h3 className="font-medium text-neutral-900 group-hover:text-pickle-600">
+                <h3 className="font-medium text-neutral-900 group-hover:text-primary">
                   {link.title}
                 </h3>
                 <p className="mt-0.5 text-sm text-neutral-500">{link.description}</p>
               </div>
-              <ChevronRight className="h-5 w-5 text-neutral-400 group-hover:text-pickle-600" />
+              <ChevronRight className="h-5 w-5 text-neutral-400 group-hover:text-primary" />
             </Link>
           ))}
         </div>
@@ -124,8 +124,8 @@ export default function HelpPage() {
               </p>
               <div className="mt-4 flex flex-wrap gap-3">
                 <a
-                  href="mailto:support@pickle.app"
-                  className="inline-flex items-center gap-2 rounded-lg bg-pickle-500 px-4 py-2 text-sm font-medium text-white hover:bg-pickle-600"
+                  href="mailto:support@nook.app"
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary"
                 >
                   <Mail className="h-4 w-4" />
                   Email Support

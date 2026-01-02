@@ -42,7 +42,7 @@ export function WarehouseSelector({
             'transition-all duration-200',
             'hover:border-neutral-300 hover:shadow-sm',
             'active:scale-[0.99]',
-            'focus:outline-none focus:ring-2 focus:ring-pickle-500/20 focus:border-pickle-500',
+            'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
             'cursor-pointer'
           )}
         >
@@ -51,7 +51,7 @@ export function WarehouseSelector({
               className={cn(
                 'flex items-center justify-center',
                 'w-8 h-8 rounded-lg',
-                displayColor ? '' : 'bg-pickle-100'
+                displayColor ? '' : 'bg-primary/20'
               )}
               style={displayColor ? { backgroundColor: `${displayColor}20` } : undefined}
             >
@@ -81,14 +81,14 @@ export function WarehouseSelector({
           onClick={() => onWarehouseChange(null)}
           className={cn(
             'flex items-center justify-between gap-3 px-4 py-3',
-            selectedWarehouseId === null && 'bg-pickle-50'
+            selectedWarehouseId === null && 'bg-primary/10'
           )}
         >
           <div className="flex items-center gap-3">
             <div className="w-3 h-3 rounded-full bg-neutral-300" />
             <span className={cn(
               'font-medium',
-              selectedWarehouseId === null ? 'text-pickle-700' : 'text-neutral-700'
+              selectedWarehouseId === null ? 'text-primary' : 'text-neutral-700'
             )}>
               All Locations
             </span>
@@ -98,7 +98,7 @@ export function WarehouseSelector({
               {itemCounts.get(null) ?? 0}
             </span>
             {selectedWarehouseId === null && (
-              <Check className="h-4 w-4 text-pickle-600" />
+              <Check className="h-4 w-4 text-primary" />
             )}
           </div>
         </DropdownMenuItem>
@@ -115,7 +115,7 @@ export function WarehouseSelector({
             onClick={() => onWarehouseChange(warehouse.id)}
             className={cn(
               'flex items-center justify-between gap-3 px-4 py-3',
-              selectedWarehouseId === warehouse.id && 'bg-pickle-50'
+              selectedWarehouseId === warehouse.id && 'bg-primary/10'
             )}
           >
             <div className="flex items-center gap-3">
@@ -125,7 +125,7 @@ export function WarehouseSelector({
               />
               <span className={cn(
                 'font-medium',
-                selectedWarehouseId === warehouse.id ? 'text-pickle-700' : 'text-neutral-700'
+                selectedWarehouseId === warehouse.id ? 'text-primary' : 'text-neutral-700'
               )}>
                 {warehouse.name}
               </span>
@@ -135,7 +135,7 @@ export function WarehouseSelector({
                 {itemCounts.get(warehouse.id) ?? 0}
               </span>
               {selectedWarehouseId === warehouse.id && (
-                <Check className="h-4 w-4 text-pickle-600" />
+                <Check className="h-4 w-4 text-primary" />
               )}
             </div>
           </DropdownMenuItem>

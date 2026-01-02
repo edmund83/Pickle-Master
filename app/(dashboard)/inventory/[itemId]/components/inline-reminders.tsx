@@ -271,7 +271,7 @@ export function InlineReminders({
   if (isLoading) {
     return (
       <div className={cn('flex items-center gap-2', className)}>
-        <div className="h-4 w-4 animate-spin rounded-full border border-neutral-200 border-t-pickle-500" />
+        <div className="h-4 w-4 animate-spin rounded-full border border-neutral-200 border-t-primary" />
         <span className="text-xs text-neutral-400">Loading...</span>
       </div>
     )
@@ -331,7 +331,7 @@ export function InlineReminders({
                 <select
                   value={comparisonOperator}
                   onChange={(e) => setComparisonOperator(e.target.value as ComparisonOperator)}
-                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm mb-3 focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm mb-3 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 >
                   {COMPARISON_OPTIONS.map((opt) => (
                     <option key={opt.value} value={opt.value}>
@@ -347,7 +347,7 @@ export function InlineReminders({
                     min={0}
                     value={lowStockThreshold}
                     onChange={(e) => setLowStockThreshold(parseInt(e.target.value) || 0)}
-                    className="w-24 rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                    className="w-24 rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                   <span className="text-sm text-neutral-500">units</span>
                 </div>
@@ -380,7 +380,7 @@ export function InlineReminders({
                       </label>
                       {loadingMembers ? (
                         <div className="flex items-center gap-2 py-2">
-                          <div className="h-3 w-3 animate-spin rounded-full border border-neutral-300 border-t-pickle-500" />
+                          <div className="h-3 w-3 animate-spin rounded-full border border-neutral-300 border-t-primary" />
                           <span className="text-xs text-neutral-400">Loading...</span>
                         </div>
                       ) : teamMembers.length > 0 ? (
@@ -388,7 +388,7 @@ export function InlineReminders({
                           <button
                             type="button"
                             onClick={() => setLowStockUsersDropdownOpen(!lowStockUsersDropdownOpen)}
-                            className="w-full flex items-center justify-between rounded-lg border border-neutral-300 px-3 py-2 text-xs text-left hover:border-neutral-400 focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                            className="w-full flex items-center justify-between rounded-lg border border-neutral-300 px-3 py-2 text-xs text-left hover:border-neutral-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                           >
                             <span className={cn(
                               'truncate',
@@ -412,7 +412,7 @@ export function InlineReminders({
                                     type="checkbox"
                                     checked={lowStockSelectedMembers.includes(member.id)}
                                     onChange={() => toggleMember(member.id, true)}
-                                    className="h-3.5 w-3.5 rounded border-neutral-300 text-pickle-600 focus:ring-pickle-500"
+                                    className="h-3.5 w-3.5 rounded border-neutral-300 text-primary focus:ring-primary"
                                   />
                                   <span className="text-xs text-neutral-700 truncate flex-1">
                                     {member.full_name || member.email}
@@ -440,7 +440,7 @@ export function InlineReminders({
                         value={lowStockEmails}
                         onChange={(e) => setLowStockEmails(e.target.value)}
                         placeholder="email1@example.com, email2@..."
-                        className="w-full rounded-lg border border-neutral-300 px-3 py-1.5 text-xs focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                        className="w-full rounded-lg border border-neutral-300 px-3 py-1.5 text-xs focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                       />
                       <p className="text-[10px] text-neutral-400 mt-1">Comma separated</p>
                     </div>
@@ -460,7 +460,7 @@ export function InlineReminders({
                 <button
                   type="button"
                   onClick={handleEnableLowStock}
-                  className="rounded-lg bg-pickle-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-pickle-600"
+                  className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-primary"
                 >
                   Enable
                 </button>
@@ -522,7 +522,7 @@ export function InlineReminders({
                     min={1}
                     value={expiryDays}
                     onChange={(e) => setExpiryDays(parseInt(e.target.value) || 1)}
-                    className="w-24 rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                    className="w-24 rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                   <span className="text-sm text-neutral-500">days</span>
                 </div>
@@ -555,7 +555,7 @@ export function InlineReminders({
                       </label>
                       {loadingMembers ? (
                         <div className="flex items-center gap-2 py-2">
-                          <div className="h-3 w-3 animate-spin rounded-full border border-neutral-300 border-t-pickle-500" />
+                          <div className="h-3 w-3 animate-spin rounded-full border border-neutral-300 border-t-primary" />
                           <span className="text-xs text-neutral-400">Loading...</span>
                         </div>
                       ) : teamMembers.length > 0 ? (
@@ -563,7 +563,7 @@ export function InlineReminders({
                           <button
                             type="button"
                             onClick={() => setExpiryUsersDropdownOpen(!expiryUsersDropdownOpen)}
-                            className="w-full flex items-center justify-between rounded-lg border border-neutral-300 px-3 py-2 text-xs text-left hover:border-neutral-400 focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                            className="w-full flex items-center justify-between rounded-lg border border-neutral-300 px-3 py-2 text-xs text-left hover:border-neutral-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                           >
                             <span className={cn(
                               'truncate',
@@ -587,7 +587,7 @@ export function InlineReminders({
                                     type="checkbox"
                                     checked={expirySelectedMembers.includes(member.id)}
                                     onChange={() => toggleMember(member.id, false)}
-                                    className="h-3.5 w-3.5 rounded border-neutral-300 text-pickle-600 focus:ring-pickle-500"
+                                    className="h-3.5 w-3.5 rounded border-neutral-300 text-primary focus:ring-primary"
                                   />
                                   <span className="text-xs text-neutral-700 truncate flex-1">
                                     {member.full_name || member.email}
@@ -615,7 +615,7 @@ export function InlineReminders({
                         value={expiryEmails}
                         onChange={(e) => setExpiryEmails(e.target.value)}
                         placeholder="email1@example.com, email2@..."
-                        className="w-full rounded-lg border border-neutral-300 px-3 py-1.5 text-xs focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                        className="w-full rounded-lg border border-neutral-300 px-3 py-1.5 text-xs focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                       />
                       <p className="text-[10px] text-neutral-400 mt-1">Comma separated</p>
                     </div>
@@ -635,7 +635,7 @@ export function InlineReminders({
                 <button
                   type="button"
                   onClick={handleEnableExpiry}
-                  className="rounded-lg bg-pickle-500 px-3 py-1.5 text-xs font-medium text-white hover:bg-pickle-600"
+                  className="rounded-lg bg-primary px-3 py-1.5 text-xs font-medium text-white hover:bg-primary"
                 >
                   Enable
                 </button>

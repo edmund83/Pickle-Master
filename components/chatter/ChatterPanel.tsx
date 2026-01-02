@@ -132,7 +132,7 @@ export function ChatterPanel({
                     variant={following ? 'secondary' : 'ghost'}
                     size="sm"
                     onClick={handleFollowToggle}
-                    className={following ? 'text-pickle-600' : ''}
+                    className={following ? 'text-primary' : ''}
                 >
                     {following ? (
                         <>
@@ -155,7 +155,7 @@ export function ChatterPanel({
                     className={cn(
                         'flex-1 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors',
                         activeTab === 'messages'
-                            ? 'border-pickle-500 text-pickle-600'
+                            ? 'border-primary text-primary'
                             : 'border-transparent text-neutral-500 hover:text-neutral-700'
                     )}
                 >
@@ -172,7 +172,7 @@ export function ChatterPanel({
                     className={cn(
                         'flex-1 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors',
                         activeTab === 'followers'
-                            ? 'border-pickle-500 text-pickle-600'
+                            ? 'border-primary text-primary'
                             : 'border-transparent text-neutral-500 hover:text-neutral-700'
                     )}
                 >

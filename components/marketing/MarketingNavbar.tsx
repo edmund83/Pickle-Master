@@ -6,10 +6,10 @@ export function MarketingNavbar() {
       <div className="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 md:flex md:items-center md:gap-2 lg:px-8">
         <div className="navbar-start w-max items-center justify-between max-md:w-full">
           <Link className="text-base-content flex items-center gap-3 text-xl font-bold" href="/">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-pickle-500">
-              <span className="text-base font-bold text-white">P</span>
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary">
+              <span className="text-base font-bold text-white">N</span>
             </div>
-            Pickle
+            Nook
           </Link>
           <div className="md:hidden">
             <button

@@ -52,7 +52,7 @@ export default function ForgotPasswordPage() {
             Click the link in the email to reset your password.
           </p>
           <div className="mt-6 text-center">
-            <Link href="/login" className="text-sm text-pickle-500 hover:text-pickle-600">
+            <Link href="/login" className="text-sm text-primary hover:text-primary">
               Back to sign in
             </Link>
           </div>

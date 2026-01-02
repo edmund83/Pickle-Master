@@ -105,7 +105,7 @@ export function LiveProgressIndicator({
           <div
             className={cn(
               'h-full rounded-full transition-all duration-500',
-              percent === 100 ? 'bg-green-500' : 'bg-pickle-500'
+              percent === 100 ? 'bg-green-500' : 'bg-primary'
             )}
             style={{ width: `${percent}%` }}
           />
@@ -154,7 +154,7 @@ export function LiveProgressIndicator({
                   </div>
                   <div className="h-1 bg-neutral-100 rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-pickle-400 rounded-full transition-all duration-300"
+                      className="h-full bg-primary/60 rounded-full transition-all duration-300"
                       style={{ width: `${memberPercent}%` }}
                     />
                   </div>

@@ -195,7 +195,7 @@ export function EditReminderModal({
                   <select
                     value={comparisonOperator}
                     onChange={(e) => setComparisonOperator(e.target.value as ComparisonOperator)}
-                    className="rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                    className="rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   >
                     {COMPARISON_OPTIONS.map((opt) => (
                       <option key={opt.value} value={opt.value}>
@@ -208,7 +208,7 @@ export function EditReminderModal({
                     min={0}
                     value={threshold}
                     onChange={(e) => setThreshold(parseInt(e.target.value) || 0)}
-                    className="w-24 rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                    className="w-24 rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                   <span className="text-sm text-neutral-500">units</span>
                 </div>
@@ -226,7 +226,7 @@ export function EditReminderModal({
                     min={1}
                     value={daysBeforeExpiry}
                     onChange={(e) => setDaysBeforeExpiry(parseInt(e.target.value) || 1)}
-                    className="w-24 rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                    className="w-24 rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                   <span className="text-sm text-neutral-500">days</span>
                 </div>
@@ -243,7 +243,7 @@ export function EditReminderModal({
                     type="datetime-local"
                     value={scheduledAt}
                     onChange={(e) => setScheduledAt(e.target.value)}
-                    className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                    className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                     required
                   />
                 </div>
@@ -255,7 +255,7 @@ export function EditReminderModal({
                   <select
                     value={recurrence}
                     onChange={(e) => setRecurrence(e.target.value as ReminderRecurrence)}
-                    className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                    className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   >
                     {RECURRENCE_OPTIONS.map((opt) => (
                       <option key={opt.value} value={opt.value}>
@@ -274,7 +274,7 @@ export function EditReminderModal({
                       type="date"
                       value={recurrenceEndDate}
                       onChange={(e) => setRecurrenceEndDate(e.target.value)}
-                      className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                      className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                     />
                     <p className="mt-1 text-xs text-neutral-500">
                       Leave empty for indefinite recurrence
@@ -293,7 +293,7 @@ export function EditReminderModal({
                 type="text"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 placeholder="e.g., Weekly Inventory Check"
               />
             </div>
@@ -307,7 +307,7 @@ export function EditReminderModal({
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 rows={2}
-                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500 resize-none"
+                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary resize-none"
                 placeholder="Additional details for the notification..."
               />
             </div>
@@ -323,7 +323,7 @@ export function EditReminderModal({
                     type="checkbox"
                     checked={notifyInApp}
                     onChange={(e) => setNotifyInApp(e.target.checked)}
-                    className="h-4 w-4 rounded border-neutral-300 text-pickle-600 focus:ring-pickle-500"
+                    className="h-4 w-4 rounded border-neutral-300 text-primary focus:ring-primary"
                   />
                   <span className="text-sm text-neutral-700">In-app notification</span>
                 </label>
@@ -332,7 +332,7 @@ export function EditReminderModal({
                     type="checkbox"
                     checked={notifyEmail}
                     onChange={(e) => setNotifyEmail(e.target.checked)}
-                    className="h-4 w-4 rounded border-neutral-300 text-pickle-600 focus:ring-pickle-500"
+                    className="h-4 w-4 rounded border-neutral-300 text-primary focus:ring-primary"
                   />
                   <span className="text-sm text-neutral-700">Email notification</span>
                 </label>
@@ -363,7 +363,7 @@ export function EditReminderModal({
             onClick={handleSubmit}
             disabled={isSubmitting}
             className={cn(
-              'inline-flex items-center gap-2 rounded-lg bg-pickle-500 px-4 py-2 text-sm font-medium text-white hover:bg-pickle-600',
+              'inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary',
               isSubmitting && 'opacity-50 cursor-not-allowed'
             )}
           >

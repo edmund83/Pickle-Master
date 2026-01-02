@@ -343,11 +343,11 @@ describe('Chatter - Tabs UI', () => {
 
         const getTabClass = (tab: string) => {
             return tab === activeTab
-                ? 'border-pickle-500 text-pickle-600'
+                ? 'border-primary text-primary'
                 : 'border-transparent text-neutral-500'
         }
 
-        expect(getTabClass('messages')).toContain('pickle-500')
+        expect(getTabClass('messages')).toContain('primary')
         expect(getTabClass('followers')).toContain('transparent')
     })
 

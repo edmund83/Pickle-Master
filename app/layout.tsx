@@ -2,22 +2,22 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Pickle - Simple Inventory Management',
+  title: 'Nook - Simple Inventory Management',
   description: 'A simple, mobile-first inventory management SaaS for small businesses',
   keywords: ['inventory', 'management', 'small business', 'stock tracking'],
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Pickle',
+    title: 'Nook',
   },
   formatDetection: {
     telephone: false,
   },
   openGraph: {
     type: 'website',
-    siteName: 'Pickle',
-    title: 'Pickle - Simple Inventory Management',
+    siteName: 'Nook',
+    title: 'Nook - Simple Inventory Management',
     description: 'A simple, mobile-first inventory management SaaS for small businesses',
   },
 }
@@ -27,7 +27,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
-  themeColor: '#de4a4a',
+  themeColor: '#1c4f82',
 }
 
 export default function RootLayout({

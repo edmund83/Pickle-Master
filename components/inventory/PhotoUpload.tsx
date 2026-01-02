@@ -153,18 +153,18 @@ export function PhotoUpload({
         onDragLeave={handleDragLeave}
         className={`relative rounded-lg border-2 border-dashed p-6 text-center transition-colors ${
           dragOver
-            ? 'border-pickle-500 bg-pickle-50'
+            ? 'border-primary bg-primary/10'
             : 'border-neutral-300 hover:border-neutral-400'
         } ${disabled || uploading || compressing ? 'opacity-50 pointer-events-none' : ''}`}
       >
         {compressing ? (
           <div className="flex flex-col items-center gap-2">
-            <Loader2 className="h-8 w-8 animate-spin text-pickle-500" />
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <p className="text-sm text-neutral-600">Compressing images...</p>
           </div>
         ) : uploading ? (
           <div className="flex flex-col items-center gap-2">
-            <Loader2 className="h-8 w-8 animate-spin text-pickle-500" />
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
             <p className="text-sm text-neutral-600">Uploading...</p>
           </div>
         ) : (
@@ -239,7 +239,7 @@ export function PhotoUpload({
               />
               {/* Primary Badge */}
               {index === 0 && (
-                <span className="absolute left-2 top-2 rounded bg-pickle-500 px-1.5 py-0.5 text-[10px] font-medium text-white">
+                <span className="absolute left-2 top-2 rounded bg-primary px-1.5 py-0.5 text-[10px] font-medium text-white">
                   Primary
                 </span>
               )}

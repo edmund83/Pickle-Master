@@ -39,7 +39,7 @@ export function SecondarySidebar({ title, items, footer }: SecondarySidebarProps
                   className={cn(
                     'flex items-center gap-3 rounded-lg px-3 py-2 text-sm transition-colors',
                     isActive
-                      ? 'bg-pickle-50 text-pickle-600 font-medium'
+                      ? 'bg-primary/10 text-primary font-medium'
                       : 'text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900'
                   )}
                 >

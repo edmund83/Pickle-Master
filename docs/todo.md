@@ -1,6 +1,6 @@
-# Pickle Functional Testing Checklist
+# Nook Functional Testing Checklist
 
-A comprehensive checklist to verify every function in the Pickle inventory management system is error-free.
+A comprehensive checklist to verify every function in the Nook inventory management system is error-free.
 
 **Legend:**
 - [ ] Not tested

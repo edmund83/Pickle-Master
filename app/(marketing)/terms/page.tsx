@@ -7,7 +7,7 @@ import { breadcrumbJsonLd } from '@/lib/marketing/jsonld'
 export const metadata: Metadata = marketingMetadata({
   title: 'Terms of service',
   description:
-    'Terms of service for Pickle Inventory. Service rules, acceptable use, and customer responsibilities.',
+    'Terms of service for Nook Inventory. Service rules, acceptable use, and customer responsibilities.',
   pathname: '/terms',
 })
 
@@ -31,7 +31,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-base-content text-2xl font-semibold">Using the service</h2>
             <p className="text-base-content/80 mt-3">
-              You agree to use Pickle lawfully and not to attempt to access other tenants’ data.
+              You agree to use Nook lawfully and not to attempt to access other tenants’ data.
             </p>
           </section>
 
