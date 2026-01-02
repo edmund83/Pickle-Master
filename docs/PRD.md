@@ -2,9 +2,9 @@
 
 # Nook - Product Requirements Document (PRD)
 
-**Version:** 1.0
-**Last Updated:** December 2024
-**Status:** Draft
+**Version:** 1.1
+**Last Updated:** January 2026
+**Status:** Active
 **Owner:** Product Team
 
 ---
@@ -175,6 +175,8 @@ Based on analysis of r/smallbusiness, r/InventoryManagement, r/startups, and r/E
 ## 5. Core Features (P0 - Must Have)
 
 These features are **blocking for launch**. Without them, users will not adopt the product.
+
+> **Implementation Status:** ✅ All P0 features shipped and in production.
 
 ### 5.1 Simple, Clean UI (Non-ERP Design)
 
@@ -389,6 +391,10 @@ Google-like instant search with powerful filtering options.
 ## 6. Differentiating Features (P1 - High Priority)
 
 These features are **strong differentiators** that will win users from competitors.
+
+> **Implementation Status:**
+> - ✅ **Shipped:** Barcode/QR Scanning, Mobile App (PWA), Check-In/Check-Out, Offline-First, Bulk Import/Export
+> - 🔲 **Planned:** E-Commerce Integration (Shopify, WooCommerce), Accounting Integration (QuickBooks, Xero)
 
 ### 6.1 Barcode/QR Scanning (Mobile)
 
@@ -621,14 +627,23 @@ Connect-once integration for inventory value, COGS, and product sync.
 
 ### P2 - Medium Priority
 
-| Feature | Description | Importance |
-|---------|-------------|------------|
-| **Custom Fields** | User-defined fields per item (lot #, expiry, serial) | 62% |
-| **Basic Reporting** | Stock value, aging, usage reports with export | 58% |
-| **Role-Based Permissions** | Admin, Editor, Viewer roles | 55% |
-| **Multi-Location Support** | Separate warehouses, vans, job sites | 52% |
-| **Purchase Orders & Receiving** | Full PO lifecycle with formal goods receiving | 48% |
-| **Historical Snapshots** | Month-end inventory value for accounting | 40% |
+> **Implementation Status:**
+> - ✅ **Shipped:** Custom Fields (folder-scoped), Role-Based Permissions, Multi-Location Support, Purchase Orders & Receiving, Stock Counts, Pick Lists, Lot/Batch Tracking, Serial Number Tracking, Item Reminders
+> - 🔲 **Planned:** Historical Snapshots, Advanced Reporting
+
+| Feature | Description | Importance | Status |
+|---------|-------------|------------|--------|
+| **Custom Fields** | User-defined fields per item (lot #, expiry, serial) | 62% | ✅ Shipped |
+| **Basic Reporting** | Stock value, aging, usage reports with export | 58% | ✅ Shipped (Dashboard) |
+| **Role-Based Permissions** | Admin, Editor, Viewer roles | 55% | ✅ Shipped |
+| **Multi-Location Support** | Separate warehouses, vans, job sites | 52% | ✅ Shipped |
+| **Purchase Orders & Receiving** | Full PO lifecycle with formal goods receiving | 48% | ✅ Shipped |
+| **Stock Counts** | Cycle counting with variance tracking | 45% | ✅ Shipped |
+| **Pick Lists** | Order fulfillment with ship-to addresses | 42% | ✅ Shipped |
+| **Lot/Batch Tracking** | Track batches with expiry dates, FEFO logic | 40% | ✅ Shipped |
+| **Serial Number Tracking** | Track individual units by serial number | 38% | ✅ Shipped |
+| **Item Reminders** | Low stock, expiry, and restock reminders | 35% | ✅ Shipped |
+| **Historical Snapshots** | Month-end inventory value for accounting | 40% | 🔲 Planned |
 
 ---
 
@@ -1100,6 +1115,7 @@ Based on market research, users value:
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 1.0 | Dec 2024 | Product Team | Initial draft |
+| 1.1 | Jan 2026 | Product Team | Added implementation status markers for shipped features (P0 complete, P1 partial, P2 mostly shipped) |
 
 ---
 

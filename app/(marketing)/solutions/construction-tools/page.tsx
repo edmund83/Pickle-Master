@@ -19,7 +19,7 @@ import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/lib/marketing/jsonld'
 
 export const metadata: Metadata = marketingMetadata({
-  title: 'Tool Tracking Software for Construction | Nook Inventory',
+  title: 'Tool Tracking Software for Construction',
   description:
     'Track tools across jobsites with check-in/check-out, offline barcode scanning, and full accountability. Know who has what tool and where.',
   pathname: '/solutions/construction-tools',
@@ -327,7 +327,7 @@ export default function ConstructionToolsSolutionPage() {
         </div>
       </section>
 
-      {/* ===== HOW PICKLE SOLVES IT SECTION ===== */}
+      {/* ===== HOW NOOK SOLVES IT SECTION ===== */}
       <section className="bg-base-200/50 py-12 md:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
@@ -598,7 +598,7 @@ export default function ConstructionToolsSolutionPage() {
             </Link>
 
             <Link
-              href="/solutions/warehouse"
+              href="/solutions/warehouse-inventory"
               className="card bg-base-100 shadow-sm transition-all duration-300 hover:shadow-md hover:border-primary"
             >
               <div className="card-body">

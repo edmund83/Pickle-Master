@@ -23,10 +23,11 @@ A comprehensive inventory management system built with Next.js, TypeScript, Tail
 
 ### Item Management
 - **Hierarchical Organization**: Items organized in folder/location tree structure (warehouse → shelf → bin)
-- **Rich Item Attributes**: Name, SKU, quantity, min/max stock levels, price, custom fields, photos, tags, notes
+- **Rich Item Attributes**: Name, SKU, quantity, min/max stock levels, price, cost price, custom fields, photos, tags, notes
 - **Photo Management**: Multiple photos per item with Supabase Storage integration
-- **Custom Fields**: Extensible item properties for industry-specific needs
-- **Tags & Categories**: Flexible categorization system
+- **Custom Fields**: Extensible item properties for industry-specific needs (folder-scoped with per-tenant limits)
+- **Tags & Categories**: Flexible categorization system with normalized junction table
+- **Shipping Dimensions**: Length, width, height, weight for logistics
 
 ### Stock Control
 - **Real-Time Quantity Tracking**: Live stock levels with optimistic updates
@@ -35,11 +36,37 @@ A comprehensive inventory management system built with Next.js, TypeScript, Tail
 - **Min/Max Stock Levels**: Define reorder points and maximum capacity
 - **Audit Trail**: Complete history of all stock changes with who/when/why
 
+### Lot/Batch & Expiry Tracking
+- **Multiple Lots Per Item**: Track different batches with unique lot numbers and batch codes
+- **Expiry Date Management**: Track expiration dates per lot
+- **FEFO Logic**: First Expired First Out consumption for perishables
+- **Lot Status Management**: Active, expired, depleted, blocked states
+- **Automatic Quantity Sync**: Lot quantities roll up to item totals
+- **Manufactured Date Tracking**: Record production dates and shelf life
+
+### Serial Number Tracking
+- **Serial-Aware Inventory**: Track individual units by serial number
+- **Serial Entry During Receiving**: Scan-focused modal with duplicate detection
+- **Bulk Serial Entry**: Paste multiple serials (newline/comma separated)
+- **Per-Serial Condition Tracking**: Track condition of each serialized unit
+- **Checkout Serial Linking**: Associate checkouts with specific serial numbers
+
+### Item Reminders System
+- **Low Stock Reminders**: Trigger when quantity falls below threshold
+- **Expiry Reminders**: Alert N days before expiry date
+- **Restock Reminders**: Scheduled reminders for reordering
+- **Recurrence Options**: Once, Daily, Weekly, Monthly
+- **Notification Channels**: In-app notifications and email
+- **Reminder Management Page**: Tabbed view with status badges (Active, Paused, Triggered, Expired)
+- **Item Detail Integration**: Inline reminder cards with quick add/edit
+
 ### Location Management
-- **Multi-Location Support**: Manage multiple warehouses, stores, or storage areas
-- **Location Hierarchy**: Nested locations (warehouse → zone → shelf → bin)
+- **Multi-Location Support**: Manage multiple warehouses, stores, vans, or job sites
+- **Location Types**: warehouse, van, store, job_site
+- **Per-Location Stock Tracking**: Track quantities at each location separately
 - **Location-Based Views**: Filter and view inventory by location
-- **Transfer Between Locations**: Move items with full tracking
+- **Stock Transfers**: Move items between locations with status workflow (pending, in_transit, received, cancelled)
+- **AI-Suggested Transfers**: Intelligent transfer recommendations with reasoning
 
 ---
 
@@ -90,46 +117,116 @@ A comprehensive inventory management system built with Next.js, TypeScript, Tail
 
 ## 4. Task Management
 
-### Purchase Orders
-- **PO Creation & Management**: Create, edit, and track purchase orders
-- **Vendor Management**: Associate POs with suppliers
-- **Line Item Tracking**: Multiple items per order with quantities
-- **Status Workflow**: Draft → Submitted → Received → Closed
-- **Receiving Integration**: Link POs to receiving tasks
+### Tasks Hub
+- **Unified Interface**: Centralized task management at `/tasks`
+- **Category-Based Navigation**: Three sub-menu categories for organized workflows
+  - **Inbound**: Purchase Orders, Receives
+  - **Fulfillment**: Pick Lists
+  - **Inventory Operations**: Checkouts, Transfers, Moves, Stock Count
+- **Mobile Bottom Navigation**: Tasks tab in mobile navigation
+- **Sidebar Sub-Menus**: Expandable sub-menus for workflow categories
 
-### Stock Counts
-- **Cycle Counting**: Schedule and perform regular stock counts
-- **Variance Tracking**: Identify discrepancies between expected and actual
-- **Adjustment History**: Record all count adjustments with reasons
-- **Multi-User Counting**: Multiple team members can count simultaneously
+### Display ID System
+- **Human-Readable IDs**: Format `{PREFIX}-{ORG_CODE}-{SEQUENCE}`
+  - Purchase Orders: `PO-ACM01-00001`
+  - Pick Lists: `PL-ACM01-00001`
+  - Receives: `RCV-ACM01-00001`
+  - Stock Counts: `SC-ACM01-00001`
+- **Organization Codes**: Auto-generated 5-character code per tenant (e.g., "ACM01" for "Acme Corp")
+- **Immutable After Creation**: Display IDs cannot be modified once created
+- **Searchable**: Find entities by display ID
+
+### Purchase Orders
+- **Full PO Workflow**: Create, edit, submit, confirm, receive, close
+- **Vendor Management**: Quick-add vendor modal with contact details
+- **Auto-Generated Order Numbers**: PO-0001 format with auto-increment
+- **Low Stock Filter**: Checkbox to show only items below minimum stock level
+- **Part Numbers**: Vendor/manufacturer part number per line item
+- **Ship To / Bill To Addresses**: Collapsible address sections with "Same as Ship To" option
+- **Status Workflow**: Draft → Submitted → Confirmed → Received → Completed
+- **Inline Editing**: Edit quantities directly for draft orders
+- **Submission/Approval Tracking**: Track who submitted and approved with timestamps
+
+### Goods Receiving (GRN)
+- **Formal Receive Documents**: Multiple receives per PO (supports partial shipments)
+- **Pre-Populated Items**: Auto-populates remaining quantities from PO
+- **Receive Details**: Received date, delivery note #, carrier, tracking number
+- **Lot/Batch Tracking**: Capture lot number, batch code, expiry date during receive
+- **Per-Item Location**: Assign location for each received item
+- **Item Condition**: Track as good, damaged, or rejected
+- **Serial Number Entry**: Scan-focused modal for serialized items with progress indicator
+- **Status Workflow**: Draft → Completed / Cancelled
+- **Auto-Update PO**: Automatically updates PO received quantities and status
+
+### Stock Counts / Cycle Counts
+- **Scope Settings**: Count entire inventory or specific location/folder
+- **Team Assignment**: Assign counts to specific team members
+- **Unified Counting Interface**: Search, filter, and record counts inline
+- **Variance Tracking**: Automatic calculation of expected vs. counted
+- **Progress Visualization**: Progress bar with "X of Y items counted"
+- **Status Workflow**: Draft → In Progress → Review → Completed
+- **Automatic Adjustments**: Optional inventory adjustment on completion
+- **Mobile-Friendly**: Dedicated mobile counting interface
 
 ### Pick Lists
-- **Order Fulfillment**: Generate pick lists from orders
-- **Location-Optimized Picking**: Routes optimized by location
-- **Pick Confirmation**: Mark items as picked with quantities
-- **Partial Picks**: Handle out-of-stock scenarios
+- **Order Fulfillment**: Create pick lists for customer orders
+- **Item Outcome Options**: Decrement (default), Checkout, or Transfer
+- **Ship To Address**: Full shipping address fields
+- **Assignee Management**: Assign pick lists to team members
+- **Assigned At Tracking**: Track when picks were assigned
+- **Status Workflow**: Draft → Assigned → In Progress → Completed
+- **Pick Status Display**: Track pick progress per item
 
-### Receives
-- **Receiving Workflow**: Process incoming inventory
-- **PO Matching**: Match received items to purchase orders
-- **Quantity Verification**: Confirm received vs. ordered quantities
-- **Put-Away Guidance**: Assign locations for received items
+### Check-In / Check-Out
+- **Asset Tracking**: Issue tools and equipment with accountability
+- **Checkout Assignments**: Assign to person, job, or location
+- **Due Date Management**: Set return due dates with overdue tracking
+- **Return Condition**: Track condition on return (good, damaged, needs repair, lost)
+- **Serial-Aware Checkouts**: Link checkouts to specific serial numbers
+- **Batch Operations**: Checkout multiple items at once
+- **Checkout History**: Full activity log per item
 
 ---
 
 ## 5. Label & Printing System
 
-### QR/Barcode Labels
-- **QR Code Generation**: Unique QR codes for every item
-- **Barcode Support**: Standard barcode formats
-- **Scannable Labels**: Quick item lookup via scanning
-- **Custom Label Designs**: Configurable label layouts
+### QR Label Sizes (Sortly-Compatible)
+- **Extra Large (5.5" x 8.5")**: Half sheet, 2/sheet - Avery 8126 - Photo, logo, 3 details, note
+- **Large (3.33" x 4")**: 6/sheet - Avery 5164/8164 - Photo, logo, 3 details, note
+- **Medium (2" x 4")**: 10/sheet - Avery 5163/8163 - Photo, 1-2 details
+- **Small (1.33" x 4")**: 14/sheet - Avery 5162/8162 - Name and code only
+- **Extra Small (1" x 2.625")**: 30/sheet - Avery 5160/8160 - Name and code only
+
+### Universal Label Printer Support
+- **19 Industry-Standard Sizes**: From 1"x3" to 4"x6"
+- **Small Labels**: 1"x3", 1.125"x1.25", 1.1875"x1", 1.2"x0.85", 1.25"x1"
+- **Medium Labels**: 2"x1", 2.2"x0.5", 2.25"x0.5", 2.25"x1.25", 2.25"x2", 2.25"x2.5"
+- **Large Labels**: 3"x2", 3"x3", 4"x1.5", 4"x2", 4"x2.5", 4"x3", 4"x5", 4"x6"
+- **Works With Any Label Printer**: Universal compatibility
+
+### Multiple Barcode Symbologies
+- **Auto-Detect**: UPC/EAN/ITF/GS1 auto-detection
+- **Code 128**: Alphanumeric, high-density
+- **Code 39**: Alphanumeric, legacy systems
+- **UPC-A**: 12-digit retail products
+- **EAN-13 / EAN-8**: International retail
+- **ITF-14**: Shipping containers
+- **GS1-128**: Supply chain applications
+- **Smart Auto-Generate**: Disables for numeric-only formats
+
+### Label Wizard
+- **Multi-Step Process**: Guided label creation workflow
+- **Live Preview**: Real-time preview for all label sizes
+- **Dynamic Content**: Features adjust based on label size
+- **Image Selection**: Choose from item photos or upload custom
+- **Logo Support**: Add company logo to larger labels
+- **Detail Configuration**: Select which item details to display
 
 ### Print Options
-- **PDF Generation**: Print-ready PDF sheets
-- **Thermal Printer Support**: Compatible with label printers
+- **PDF Generation**: Print-ready PDF sheets with proper margins
+- **Direct Label Printing**: Print to any label printer
+- **Email Delivery**: Send labels via email (Resend integration)
 - **Batch Printing**: Print multiple labels at once
-- **Size Options**: Various label sizes and formats
 
 ---
 
@@ -166,7 +263,12 @@ A comprehensive inventory management system built with Next.js, TypeScript, Tail
 ### Mobile Experience
 - **Touch-Optimized**: Large tap targets, swipe gestures
 - **Offline-First Architecture**: Queue changes when offline, sync when connected
+- **Dexie/IndexedDB Storage**: Local database for offline item cache
+- **Sync Queue**: Pending operations stored and synced when online
+- **Online Status Detection**: Real-time connection monitoring
 - **Camera Integration**: Scan barcodes/QR codes with device camera
+- **Batch Scanning Mode**: Scan multiple items in a session
+- **Mobile Stock Counting**: Dedicated mobile counting interface
 - **Responsive Layouts**: Adapts to any screen size
 
 ### Accessibility
@@ -191,18 +293,35 @@ A comprehensive inventory management system built with Next.js, TypeScript, Tail
 - **Email/Password Login**: Traditional credentials
 - **Magic Links**: Passwordless login option
 - **Session Management**: Secure session handling
+- **Profile Creation Trigger**: Auto-create profile on signup
 
 ### Authorization
-- **Role-Based Access Control**: Admin, Manager, Staff roles
-- **Granular Permissions**: Fine-grained access control
+- **Role-Based Access Control**: Owner, Admin, Editor, Viewer, Member roles
+- **Granular Permissions**: Fine-grained access control per role
 - **Location-Scoped Access**: Restrict users to specific warehouses
 - **Action-Level Permissions**: Control who can edit, delete, etc.
+- **Team Member Management**: View and manage team with role badges
+
+### Multi-Tenant Security (Critical Hardening)
+- **Tenant Hopping Prevention**: Fixed RLS UPDATE policies to block tenant_id changes
+- **Cross-Tenant Access Blocks**: Views and functions scoped to current tenant
+- **Tenant ID Immutability**: Database triggers prevent tenant_id modification
+- **Child-Table FK Validation**: RLS validates foreign keys belong to same tenant
+- **Edge Function Authentication**: CRON_SECRET validation for scheduled functions
+- **Activity Log Archive Protection**: RLS on archive tables
+
+### Quota Enforcement
+- **Database-Level Triggers**: Enforce max_items and max_users limits
+- **Application-Level Validation**: Check before creation operations
+- **Usage Warnings**: Banner at 80% usage on dashboard
+- **Grandfather Strategy**: Existing over-limit tenants protected
 
 ### Data Protection
-- **Row-Level Security**: Database-enforced access control
+- **Row-Level Security**: Database-enforced access control on 19+ tables
 - **XSS Prevention**: Content escaping and sanitization
 - **SQL Injection Prevention**: Parameterized queries
 - **CSRF Protection**: Secure form submissions
+- **Service Role Isolation**: Admin operations separated from client code
 
 ---
 
@@ -231,36 +350,55 @@ A comprehensive inventory management system built with Next.js, TypeScript, Tail
 ## 10. Technical Architecture
 
 ### Frontend Stack
-- **Next.js 14+**: App Router with Server Components
-- **React 18+**: Modern React with hooks
+- **Next.js 16**: App Router with Server Components
+- **React 19**: Modern React with hooks and concurrent features
 - **TypeScript**: Full type safety
 - **Tailwind CSS v4**: Utility-first styling
+- **FlyonUI Components**: Consistent, accessible UI library
 
 ### Backend Stack
 - **Supabase**: Backend-as-a-Service
-- **PostgreSQL**: Robust relational database
-- **Edge Functions**: Serverless compute
+- **PostgreSQL**: Robust relational database with pgvector
+- **Edge Functions**: Serverless compute (Deno runtime)
 - **Realtime**: Live data subscriptions
+- **Storage**: File uploads with Supabase Storage
+
+### AI Features
+- **Semantic Search**: Vector embeddings with pgvector for intelligent item search
+- **AI-Suggested Transfers**: Intelligent stock transfer recommendations with reasoning
+- **Google Generative AI**: Gemini integration for AI capabilities
+- **AI Chat API**: Chat endpoint at `/api/ai/chat`
+- **AI Insights API**: Insights endpoint at `/api/ai/insights`
+
+### Offline-First Architecture
+- **Dexie (IndexedDB)**: Local database for offline item cache
+- **Sync Store (Zustand)**: State management for sync operations
+- **Sync Queue**: Pending operations stored and synced when online
+- **Online Status Hook**: Real-time connection monitoring
+- **Incremental Updates**: Efficient cache updates
 
 ### Performance
 - **Server Components**: Reduced client bundle size
 - **Optimistic Updates**: Instant UI feedback
-- **Connection Pooling**: Efficient database connections
-- **Indexed Queries**: Fast database lookups
+- **Connection Pooling**: Supavisor/PgBouncer ready
+- **Indexed Queries**: Fast database lookups with tenant_id indexes
 - **Keyset Pagination**: Efficient large dataset handling
+- **Full-Text Search**: tsvector indexing for fast text search
 
 ### Code Quality
 - **ESLint**: Code linting
 - **Prettier**: Code formatting
 - **Vitest**: Unit and integration testing
+- **Playwright**: End-to-end testing
 - **React Testing Library**: Component testing
 - **293+ Automated Tests**: Comprehensive test coverage
 
 ### DevOps
 - **Environment Management**: .env.local configuration
-- **Migration System**: Version-controlled schema changes
-- **Type Generation**: Auto-generated TypeScript types
-- **CI/CD Ready**: Automated deployment pipelines
+- **Migration System**: 47+ version-controlled schema changes
+- **Type Generation**: Auto-generated TypeScript types from schema
+- **GitHub Actions**: CI/CD pipelines including daily reminder processing
+- **Health Check Endpoint**: `/api/health` for monitoring
 
 ---
 
@@ -268,16 +406,18 @@ A comprehensive inventory management system built with Next.js, TypeScript, Tail
 
 | Category | Key Benefits |
 |----------|-------------|
-| **Efficiency** | Streamlined workflows, quick actions, bulk operations |
-| **Accuracy** | Audit trails, real-time tracking, validation |
-| **Security** | Multi-tenant isolation, RLS, role-based access |
-| **Collaboration** | Chatter system, @mentions, notifications |
-| **Scalability** | Pool model architecture, indexed queries, partitioning |
-| **Usability** | Mobile-first, accessible, intuitive UI |
-| **Reliability** | 293+ tests, TypeScript, database constraints |
-| **Flexibility** | Custom fields, multi-location, extensible |
+| **Efficiency** | Streamlined workflows, quick actions, bulk operations, Tasks Hub |
+| **Accuracy** | Audit trails, real-time tracking, validation, variance tracking |
+| **Traceability** | Lot/batch tracking, serial numbers, FEFO, display IDs |
+| **Security** | Multi-tenant isolation, RLS hardening, role-based access, quota enforcement |
+| **Collaboration** | Chatter system, @mentions, notifications, team assignments |
+| **Scalability** | Pool model architecture, indexed queries, 47+ migrations |
+| **Usability** | Mobile-first, offline-first, accessible, intuitive UI |
+| **Intelligence** | AI semantic search, suggested transfers, smart label generation |
+| **Reliability** | 293+ tests, TypeScript, database constraints, Playwright E2E |
+| **Flexibility** | Custom fields, multi-location, 19 label sizes, multiple barcode formats |
 
 ---
 
-*Document generated: 2026-01-01*
-*Based on comprehensive codebase analysis of Nook-Master*
+*Document updated: 2026-01-03*
+*Based on comprehensive codebase analysis of Nook (Pickle-Master)*

@@ -250,7 +250,7 @@ export default function DemoPage() {
 
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <Link
-              href="/solutions/warehouse"
+              href="/solutions/warehouse-inventory"
               className="card card-border shadow-none transition-colors hover:border-primary"
             >
               <div className="card-body text-center">
@@ -262,7 +262,7 @@ export default function DemoPage() {
               </div>
             </Link>
             <Link
-              href="/solutions/ecommerce"
+              href="/solutions/ecommerce-inventory"
               className="card card-border shadow-none transition-colors hover:border-primary"
             >
               <div className="card-body text-center">

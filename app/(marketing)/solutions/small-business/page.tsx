@@ -324,7 +324,7 @@ export default function SmallBusinessSolutionPage() {
         <div className="mt-16">
           <h2 className="text-base-content text-xl font-semibold">Related solutions</h2>
           <div className="mt-6 grid gap-6 md:grid-cols-3">
-            <Link href="/solutions/ecommerce" className="card card-border shadow-none hover:border-primary/30 transition-colors">
+            <Link href="/solutions/ecommerce-inventory" className="card card-border shadow-none hover:border-primary/30 transition-colors">
               <div className="card-body">
                 <span className="icon-[tabler--shopping-cart] text-primary size-8"></span>
                 <h3 className="text-base-content mt-4 text-lg font-semibold">Ecommerce</h3>
