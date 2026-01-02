@@ -288,7 +288,7 @@ export function CompletionSummary({
               type="checkbox"
               checked={applyAdjustments}
               onChange={(e) => setApplyAdjustments(e.target.checked)}
-              className="mt-0.5 h-5 w-5 rounded border-neutral-300 text-pickle-500 focus:ring-pickle-500"
+              className="mt-0.5 h-5 w-5 rounded border-neutral-300 text-primary focus:ring-primary"
             />
             <div className="flex-1">
               <span className="font-medium text-neutral-900">

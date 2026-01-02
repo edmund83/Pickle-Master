@@ -93,7 +93,7 @@ export function InventoryTable({ items, folders }: InventoryTableProps) {
                                         </div>
                                         <Link
                                             href={`/inventory/${item.id}`}
-                                            className="font-medium text-neutral-900 hover:text-pickle-600 hover:underline"
+                                            className="font-medium text-neutral-900 hover:text-primary hover:underline"
                                         >
                                             {item.name}
                                         </Link>

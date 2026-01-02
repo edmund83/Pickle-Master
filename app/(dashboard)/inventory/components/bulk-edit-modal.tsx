@@ -255,7 +255,7 @@ export function BulkEditModal({
             <div
               className={`cursor-pointer rounded-lg border p-4 transition-colors ${
                 action === 'move'
-                  ? 'border-pickle-500 bg-pickle-50'
+                  ? 'border-primary bg-primary/10'
                   : 'border-neutral-200 hover:bg-neutral-50'
               }`}
               onClick={() => setAction('move')}
@@ -274,7 +274,7 @@ export function BulkEditModal({
                   <select
                     value={targetFolderId}
                     onChange={(e) => setTargetFolderId(e.target.value)}
-                    className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                    className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   >
                     <option value="">Select folder...</option>
                     <option value="root">Root (No Folder)</option>
@@ -292,7 +292,7 @@ export function BulkEditModal({
             <div
               className={`cursor-pointer rounded-lg border p-4 transition-colors ${
                 action === 'tag'
-                  ? 'border-pickle-500 bg-pickle-50'
+                  ? 'border-primary bg-primary/10'
                   : 'border-neutral-200 hover:bg-neutral-50'
               }`}
               onClick={() => setAction('tag')}
@@ -311,7 +311,7 @@ export function BulkEditModal({
                   <select
                     value={targetTagId}
                     onChange={(e) => setTargetTagId(e.target.value)}
-                    className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                    className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   >
                     <option value="">Select tag...</option>
                     {tags.map((tag) => (

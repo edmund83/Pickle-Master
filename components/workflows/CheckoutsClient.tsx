@@ -340,7 +340,7 @@ export function CheckoutsClient({ checkouts, stats }: CheckoutsClientProps) {
                             <div>
                               <Link
                                 href={`/inventory/${checkout.item_id}`}
-                                className="font-medium text-neutral-900 hover:text-pickle-600"
+                                className="font-medium text-neutral-900 hover:text-primary"
                                 onClick={(e) => e.stopPropagation()}
                               >
                                 {checkout.item_name}

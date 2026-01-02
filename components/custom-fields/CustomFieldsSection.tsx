@@ -127,7 +127,7 @@ export function CustomFieldsSection({ values, onChange, disabled, folderId }: Cu
         <Link
           href="/settings/custom-fields"
           onClick={(e) => e.stopPropagation()}
-          className="flex items-center gap-1 text-sm text-pickle-600 hover:text-pickle-700"
+          className="flex items-center gap-1 text-sm text-primary hover:text-primary"
         >
           <Settings className="h-4 w-4" />
           Manage

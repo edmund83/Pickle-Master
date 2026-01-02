@@ -325,7 +325,7 @@ export default function SearchPage() {
                 const [field, dir] = e.target.value.split('-') as [SortOption, SortDirection]
                 setSort({ field, direction: dir })
               }}
-              className="h-10 rounded-lg border border-neutral-300 bg-white px-3 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+              className="h-10 rounded-lg border border-neutral-300 bg-white px-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
             >
               {SORT_OPTIONS.map((option) => (
                 <optgroup key={option.value} label={option.label}>
@@ -346,7 +346,7 @@ export default function SearchPage() {
             <Filter className="mr-2 h-4 w-4" />
             Filters
             {hasActiveFilters && (
-              <span className="ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-pickle-100 text-xs text-pickle-700">
+              <span className="ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-xs text-primary">
                 {[filters.status, filters.folderId, filters.tagId].filter(Boolean).length}
               </span>
             )}
@@ -358,7 +358,7 @@ export default function SearchPage() {
             <Bookmark className="mr-2 h-4 w-4" />
             Saved
             {savedSearches.length > 0 && (
-              <span className="ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-pickle-100 text-xs text-pickle-700">
+              <span className="ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-xs text-primary">
                 {savedSearches.length}
               </span>
             )}
@@ -445,7 +445,7 @@ export default function SearchPage() {
                   >
                     <button
                       onClick={() => applySavedSearch(search)}
-                      className="flex-1 text-left hover:text-pickle-600"
+                      className="flex-1 text-left hover:text-primary"
                     >
                       <span className="font-medium text-neutral-900">{search.name}</span>
                       <span className="ml-2 text-xs text-neutral-500">
@@ -473,8 +473,8 @@ export default function SearchPage() {
 
         {/* Save Search Dialog */}
         {showSaveDialog && (
-          <div className="mt-4 rounded-lg border border-pickle-200 bg-pickle-50 p-4">
-            <h3 className="mb-3 text-sm font-medium text-pickle-700">Save Current Search</h3>
+          <div className="mt-4 rounded-lg border border-primary/30 bg-primary/10 p-4">
+            <h3 className="mb-3 text-sm font-medium text-primary">Save Current Search</h3>
             <div className="flex items-center gap-3">
               <Input
                 type="text"
@@ -569,7 +569,7 @@ function SearchResultCard({ item }: { item: InventoryItem }) {
         )}
       </div>
 
-      <h3 className="font-medium text-neutral-900 group-hover:text-pickle-600 line-clamp-1">
+      <h3 className="font-medium text-neutral-900 group-hover:text-primary line-clamp-1">
         {item.name}
       </h3>
       {item.sku && (

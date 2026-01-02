@@ -41,7 +41,7 @@ export function ScanResultModal({
   if (isLoading) {
     return (
       <div className={cn('p-6 flex flex-col items-center justify-center', className)}>
-        <Loader2 className="h-8 w-8 animate-spin text-pickle-500 mb-3" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary mb-3" />
         <p className="text-sm text-neutral-500">Looking up item...</p>
       </div>
     )

@@ -359,7 +359,7 @@ async function sendEmailNotifications(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Pickle Inventory <notifications@pickle.app>',
+        from: 'Nook Inventory <notifications@nook.app>',
         to: emails,
         subject: emailData.subject,
         html: generateEmailHtml(emailData),
@@ -385,7 +385,7 @@ function generateEmailHtml(emailData: {
   expiryDate?: string | null
   daysUntilExpiry?: number
 }): string {
-  const appUrl = Deno.env.get('APP_URL') || 'https://pickle.app'
+  const appUrl = Deno.env.get('APP_URL') || 'https://nook.app'
   const itemUrl = `${appUrl}/inventory/${emailData.itemId}`
 
   return `
@@ -397,7 +397,7 @@ function generateEmailHtml(emailData: {
     </head>
     <body style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
       <div style="background: linear-gradient(135deg, #4CAF50 0%, #2E7D32 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
-        <h1 style="color: white; margin: 0; font-size: 24px;">Pickle Inventory</h1>
+        <h1 style="color: white; margin: 0; font-size: 24px;">Nook Inventory</h1>
       </div>
 
       <div style="background: #fff; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
@@ -423,7 +423,7 @@ function generateEmailHtml(emailData: {
         <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
 
         <p style="color: #9ca3af; font-size: 12px; text-align: center; margin: 0;">
-          You're receiving this email because you set up a reminder in Pickle Inventory.
+          You're receiving this email because you set up a reminder in Nook Inventory.
         </p>
       </div>
     </body>

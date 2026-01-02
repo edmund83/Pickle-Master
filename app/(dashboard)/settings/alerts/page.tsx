@@ -231,7 +231,7 @@ export default function AlertsSettingsPage() {
                   onChange={(e) => setPreferences({ ...preferences, emailNotifications: e.target.checked })}
                   className="peer sr-only"
                 />
-                <div className="peer h-6 w-11 rounded-full bg-neutral-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-pickle-500 peer-checked:after:translate-x-full"></div>
+                <div className="peer h-6 w-11 rounded-full bg-neutral-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-primary peer-checked:after:translate-x-full"></div>
               </label>
             </div>
 
@@ -252,7 +252,7 @@ export default function AlertsSettingsPage() {
                   onChange={(e) => setPreferences({ ...preferences, outOfStockAlerts: e.target.checked })}
                   className="peer sr-only"
                 />
-                <div className="peer h-6 w-11 rounded-full bg-neutral-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-pickle-500 peer-checked:after:translate-x-full"></div>
+                <div className="peer h-6 w-11 rounded-full bg-neutral-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-primary peer-checked:after:translate-x-full"></div>
               </label>
             </div>
 
@@ -338,7 +338,7 @@ export default function AlertsSettingsPage() {
                 <li key={alert.id} className="flex items-center justify-between px-6 py-4">
                   <div className="flex items-center gap-4">
                     <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-                      alert.is_active ? 'bg-pickle-50 text-pickle-600' : 'bg-neutral-100 text-neutral-400'
+                      alert.is_active ? 'bg-primary/10 text-primary' : 'bg-neutral-100 text-neutral-400'
                     }`}>
                       <Bell className="h-5 w-5" />
                     </div>
@@ -360,7 +360,7 @@ export default function AlertsSettingsPage() {
                         onChange={() => toggleAlert(alert.id, alert.is_active ?? false)}
                         className="peer sr-only"
                       />
-                      <div className="peer h-6 w-11 rounded-full bg-neutral-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-pickle-500 peer-checked:after:translate-x-full"></div>
+                      <div className="peer h-6 w-11 rounded-full bg-neutral-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-primary peer-checked:after:translate-x-full"></div>
                     </label>
                     <Button variant="ghost" size="sm" onClick={() => deleteAlert(alert.id)}>
                       <Trash2 className="h-4 w-4 text-red-500" />

@@ -5,8 +5,8 @@ import { MarketingNavbar } from '@/components/marketing/MarketingNavbar'
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | Pickle',
-    default: 'Pickle | Simple inventory management',
+    template: '%s | Nook',
+    default: 'Nook | Simple inventory management',
   },
 }
 

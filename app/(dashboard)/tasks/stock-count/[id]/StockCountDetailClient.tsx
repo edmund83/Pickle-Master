@@ -404,7 +404,7 @@ export function StockCountDetailClient({ data, teamMembers, folders, currentUser
               </div>
               <div className="h-3 bg-neutral-200 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-pickle-500 rounded-full transition-all"
+                  className="h-full bg-primary rounded-full transition-all"
                   style={{ width: `${(countedItems / totalItems) * 100}%` }}
                 />
               </div>
@@ -519,7 +519,7 @@ export function StockCountDetailClient({ data, teamMembers, folders, currentUser
                       <div className="min-w-0">
                         <Link
                           href={`/inventory/${item.item_id}`}
-                          className="font-medium text-neutral-900 hover:text-pickle-600 truncate block"
+                          className="font-medium text-neutral-900 hover:text-primary truncate block"
                         >
                           {item.item_name}
                         </Link>

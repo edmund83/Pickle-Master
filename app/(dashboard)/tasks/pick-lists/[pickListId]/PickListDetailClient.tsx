@@ -486,7 +486,7 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
                   setAssignedTo(e.target.value)
                   saveField('assigned_to', e.target.value)
                 }}
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm focus:border-pickle-500 focus:ring-1 focus:ring-pickle-500"
+                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
               >
                 <option value="">Assign To*</option>
                 {teamMembers.map((member) => (
@@ -509,7 +509,7 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
                   setDueDate(e.target.value)
                   saveField('due_date', e.target.value)
                 }}
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm focus:border-pickle-500 focus:ring-1 focus:ring-pickle-500"
+                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
               />
             </div>
 
@@ -525,7 +525,7 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
                   setItemOutcome(e.target.value)
                   saveField('item_outcome', e.target.value)
                 }}
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm focus:border-pickle-500 focus:ring-1 focus:ring-pickle-500"
+                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
               >
                 {itemOutcomeOptions.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -556,7 +556,7 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder="Search to add items to the pick list"
-                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-neutral-200 text-sm focus:border-pickle-500 focus:ring-1 focus:ring-pickle-500"
+                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-neutral-200 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
                 />
                 {isSearching && (
                   <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-neutral-400" />
@@ -610,7 +610,7 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
                 type="checkbox"
                 checked={showLowStock}
                 onChange={(e) => setShowLowStock(e.target.checked)}
-                className="rounded border-neutral-300 text-pickle-600 focus:ring-pickle-500"
+                className="rounded border-neutral-300 text-primary focus:ring-primary"
               />
               Only show low-stock items
             </label>
@@ -985,7 +985,7 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
                               <div>
                                 <Link
                                   href={`/inventory/${item.item_id}`}
-                                  className="font-medium text-neutral-900 hover:text-pickle-600"
+                                  className="font-medium text-neutral-900 hover:text-primary"
                                 >
                                   {item.item_name}
                                 </Link>

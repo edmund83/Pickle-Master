@@ -60,7 +60,7 @@ export function RecentActivity({ activities }: RecentActivityProps) {
         <h2 className="text-lg font-semibold text-neutral-900">Recent Activity</h2>
         <Link
           href="/reports/activity"
-          className="text-sm font-medium text-pickle-600 hover:text-pickle-700 uppercase tracking-wide"
+          className="text-sm font-medium text-primary hover:text-primary uppercase tracking-wide"
         >
           View Full Log
         </Link>
@@ -79,7 +79,7 @@ export function RecentActivity({ activities }: RecentActivityProps) {
               className="group flex items-center gap-4 rounded-lg p-3 transition-colors hover:bg-neutral-50"
             >
               {/* Icon */}
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-pickle-50 text-pickle-500 group-hover:bg-pickle-100 group-hover:text-pickle-600 transition-colors">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/10 text-primary group-hover:bg-primary/20 group-hover:text-primary transition-colors">
                 <RefreshCw className="h-4 w-4" />
               </div>
 
@@ -92,7 +92,7 @@ export function RecentActivity({ activities }: RecentActivityProps) {
                   {' '}
                   <span className="font-medium">{activity.entity_name || 'item'}</span>
                 </p>
-                <p className="text-xs text-pickle-500 mt-0.5">
+                <p className="text-xs text-primary mt-0.5">
                   {formatTime(activity.created_at)}
                 </p>
               </div>
@@ -104,7 +104,7 @@ export function RecentActivity({ activities }: RecentActivityProps) {
         </div>
       ) : (
         <div className="py-12 text-center">
-          <RefreshCw className="h-8 w-8 text-pickle-200 mx-auto mb-3" />
+          <RefreshCw className="h-8 w-8 text-primary/30 mx-auto mb-3" />
           <p className="text-neutral-500">No recent activity</p>
           <p className="mt-1 text-sm text-neutral-400">
             Activity will appear here when you start managing inventory

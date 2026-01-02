@@ -662,7 +662,7 @@ export default function LabelWizard({ item, tenantLogo, userEmail, onClose, onSa
               className={cn(
                 'px-3 py-1.5 rounded-full text-sm font-medium transition-colors',
                 mobileView === 'settings'
-                  ? 'bg-pickle-500 text-white shadow-sm'
+                  ? 'bg-primary text-white shadow-sm'
                   : 'text-neutral-600 hover:text-neutral-900'
               )}
             >
@@ -675,7 +675,7 @@ export default function LabelWizard({ item, tenantLogo, userEmail, onClose, onSa
               className={cn(
                 'px-3 py-1.5 rounded-full text-sm font-medium transition-colors',
                 mobileView === 'preview'
-                  ? 'bg-pickle-500 text-white shadow-sm'
+                  ? 'bg-primary text-white shadow-sm'
                   : 'text-neutral-600 hover:text-neutral-900'
               )}
             >
@@ -842,7 +842,7 @@ export default function LabelWizard({ item, tenantLogo, userEmail, onClose, onSa
                     onChange={(e) =>
                       setConfig({ ...config, barcodeFormat: e.target.value as BarcodeSymbology })
                     }
-                    className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                    className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   >
                     <option value="auto">Auto (recommended)</option>
                     <option value="upca">{getFormatDisplayName('upca')}</option>
@@ -893,7 +893,7 @@ export default function LabelWizard({ item, tenantLogo, userEmail, onClose, onSa
                   const sizeKey = e.target.value as LabelSize
                   setConfig({ ...config, labelSize: sizeKey })
                 }}
-                className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
               >
                 {Object.entries(labelSizes).map(([key, size]) => {
                   const sizeKey = key as LabelSize
@@ -1175,8 +1175,8 @@ function ChoiceCard({
       disabled={disabled}
       className={cn(
         'w-full rounded-xl border-2 p-3 text-left transition-all',
-        'focus:outline-none focus:ring-2 focus:ring-pickle-500 focus:ring-offset-2',
-        selected ? 'border-pickle-500 bg-pickle-50 shadow-sm' : 'border-neutral-200 bg-white',
+        'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2',
+        selected ? 'border-primary bg-primary/10 shadow-sm' : 'border-neutral-200 bg-white',
         disabled ? 'opacity-50 cursor-not-allowed' : 'hover:border-neutral-300'
       )}
     >
@@ -1186,7 +1186,7 @@ function ChoiceCard({
             className={cn(
               'mt-0.5 flex h-8 w-8 items-center justify-center rounded-xl border',
               selected
-                ? 'border-pickle-200 bg-pickle-100 text-pickle-700'
+                ? 'border-primary/30 bg-primary/20 text-primary'
                 : 'border-neutral-200 bg-neutral-50 text-neutral-500'
             )}
           >
@@ -1198,7 +1198,7 @@ function ChoiceCard({
           <div className="flex items-start justify-between gap-2">
             <span className="text-sm font-semibold text-neutral-900">{title}</span>
             {selected && (
-              <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-pickle-500 text-white">
+              <span className="mt-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-white">
                 <Check className="h-3 w-3" />
               </span>
             )}
@@ -1263,17 +1263,17 @@ function ImageSelector({
             onClick={() => onSelect(url)}
             className={cn(
               'relative w-14 h-14 rounded-lg border-2 overflow-hidden transition-all',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pickle-500',
+              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary',
               selectedUrl === url
-                ? 'border-pickle-500 ring-2 ring-pickle-500/20'
+                ? 'border-primary ring-2 ring-primary/20'
                 : 'border-neutral-200 hover:border-neutral-300'
             )}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={url} alt={`${label} ${index + 1}`} className="w-full h-full object-cover" />
             {selectedUrl === url && (
-              <div className="absolute inset-0 bg-pickle-500/10 flex items-center justify-center">
-                <Check className="h-5 w-5 text-pickle-600" />
+              <div className="absolute inset-0 bg-primary/10 flex items-center justify-center">
+                <Check className="h-5 w-5 text-primary" />
               </div>
             )}
           </button>
@@ -1285,8 +1285,8 @@ function ImageSelector({
           className={cn(
             'w-14 h-14 rounded-lg border-2 border-dashed border-neutral-300',
             'flex items-center justify-center cursor-pointer',
-            'hover:border-pickle-400 hover:bg-pickle-50 transition-colors',
-            'focus-within:ring-2 focus-within:ring-pickle-500 focus-within:ring-offset-2'
+            'hover:border-primary/60 hover:bg-primary/10 transition-colors',
+            'focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2'
           )}
         >
           <Plus className="h-5 w-5 text-neutral-400" />

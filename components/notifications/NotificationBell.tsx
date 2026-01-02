@@ -182,7 +182,7 @@ export function NotificationBell({ className, variant = 'default', isExpanded = 
       >
         <Bell className="h-5 w-5" />
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-pickle-500 text-[10px] font-medium text-white">
+          <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-white">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -206,7 +206,7 @@ export function NotificationBell({ className, variant = 'default', isExpanded = 
       >
         <Bell className="h-5 w-5" />
         {unreadCount > 0 && (
-          <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-pickle-500 text-[10px] font-medium text-white">
+          <span className="absolute top-1 right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-white">
             {unreadCount > 9 ? '9+' : unreadCount}
           </span>
         )}
@@ -222,7 +222,7 @@ export function NotificationBell({ className, variant = 'default', isExpanded = 
               {unreadCount > 0 && (
                 <button
                   onClick={markAllAsRead}
-                  className="text-xs text-pickle-600 hover:text-pickle-700"
+                  className="text-xs text-primary hover:text-primary"
                 >
                   Mark all read
                 </button>
@@ -240,7 +240,7 @@ export function NotificationBell({ className, variant = 'default', isExpanded = 
           <div className="max-h-80 overflow-y-auto">
             {loading ? (
               <div className="flex items-center justify-center py-8">
-                <div className="h-6 w-6 animate-spin rounded-full border-2 border-neutral-200 border-t-pickle-500" />
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-neutral-200 border-t-primary" />
               </div>
             ) : notifications.length > 0 ? (
               <ul className="divide-y divide-neutral-100">
@@ -273,7 +273,7 @@ export function NotificationBell({ className, variant = 'default', isExpanded = 
                         </div>
                         <button
                           onClick={(e) => markAsRead(notification.id, e)}
-                          className="opacity-0 group-hover:opacity-100 flex-shrink-0 p-1 text-neutral-400 hover:text-pickle-600"
+                          className="opacity-0 group-hover:opacity-100 flex-shrink-0 p-1 text-neutral-400 hover:text-primary"
                           title="Mark as read"
                         >
                           <Check className="h-4 w-4" />
@@ -295,7 +295,7 @@ export function NotificationBell({ className, variant = 'default', isExpanded = 
           <div className="border-t border-neutral-100 px-4 py-2">
             <Link
               href="/notifications"
-              className="block text-center text-sm text-pickle-600 hover:text-pickle-700"
+              className="block text-center text-sm text-primary hover:text-primary"
               onClick={() => setIsOpen(false)}
             >
               View all notifications

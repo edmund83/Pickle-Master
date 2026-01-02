@@ -66,7 +66,7 @@ export default function SignupPage() {
             Click the link in the email to verify your account and get started.
           </p>
           <div className="mt-6 text-center">
-            <Link href="/login" className="text-sm text-pickle-500 hover:text-pickle-600">
+            <Link href="/login" className="text-sm text-primary hover:text-primary">
               Back to sign in
             </Link>
           </div>
@@ -147,11 +147,11 @@ export default function SignupPage() {
 
           <p className="text-center text-xs text-neutral-500">
             By signing up, you agree to our{' '}
-            <Link href="#" className="text-pickle-500 hover:underline">
+            <Link href="#" className="text-primary hover:underline">
               Terms of Service
             </Link>{' '}
             and{' '}
-            <Link href="#" className="text-pickle-500 hover:underline">
+            <Link href="#" className="text-primary hover:underline">
               Privacy Policy
             </Link>
           </p>
@@ -159,7 +159,7 @@ export default function SignupPage() {
 
         <div className="mt-6 text-center text-sm text-neutral-500">
           Already have an account?{' '}
-          <Link href="/login" className="text-pickle-500 hover:text-pickle-600">
+          <Link href="/login" className="text-primary hover:text-primary">
             Sign in
           </Link>
         </div>

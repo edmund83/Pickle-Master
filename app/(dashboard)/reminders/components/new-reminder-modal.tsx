@@ -231,7 +231,7 @@ export function NewReminderModal({
         <div className="max-h-[calc(90vh-140px)] overflow-y-auto p-6">
           {isLoadingData ? (
             <div className="flex items-center justify-center py-12">
-              <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-200 border-t-pickle-500" />
+              <div className="h-8 w-8 animate-spin rounded-full border-2 border-neutral-200 border-t-primary" />
             </div>
           ) : (
             <div className="space-y-6">
@@ -250,7 +250,7 @@ export function NewReminderModal({
                     className={cn(
                       'flex items-center gap-2 rounded-lg border-2 p-3 text-sm font-medium transition-colors',
                       targetType === 'items'
-                        ? 'border-pickle-500 bg-pickle-50 text-pickle-700'
+                        ? 'border-primary bg-primary/10 text-primary'
                         : 'border-neutral-200 text-neutral-600 hover:border-neutral-300'
                     )}
                   >
@@ -266,7 +266,7 @@ export function NewReminderModal({
                     className={cn(
                       'flex items-center gap-2 rounded-lg border-2 p-3 text-sm font-medium transition-colors',
                       targetType === 'folder'
-                        ? 'border-pickle-500 bg-pickle-50 text-pickle-700'
+                        ? 'border-primary bg-primary/10 text-primary'
                         : 'border-neutral-200 text-neutral-600 hover:border-neutral-300'
                     )}
                   >
@@ -290,7 +290,7 @@ export function NewReminderModal({
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder={`Search ${targetType === 'items' ? 'items' : 'folders'}...`}
-                    className="w-full rounded-lg border border-neutral-300 py-2 pl-10 pr-4 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                    className="w-full rounded-lg border border-neutral-300 py-2 pl-10 pr-4 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   />
                 </div>
 
@@ -311,7 +311,7 @@ export function NewReminderModal({
                             type="checkbox"
                             checked={selectedItemIds.includes(item.id)}
                             onChange={() => toggleItem(item.id)}
-                            className="h-4 w-4 rounded border-neutral-300 text-pickle-600 focus:ring-pickle-500"
+                            className="h-4 w-4 rounded border-neutral-300 text-primary focus:ring-primary"
                           />
                           <Package className="h-4 w-4 text-neutral-400" />
                           <span className="text-sm text-neutral-700 truncate">
@@ -335,7 +335,7 @@ export function NewReminderModal({
                           name="folder"
                           checked={selectedFolderId === folder.id}
                           onChange={() => setSelectedFolderId(folder.id)}
-                          className="h-4 w-4 border-neutral-300 text-pickle-600 focus:ring-pickle-500"
+                          className="h-4 w-4 border-neutral-300 text-primary focus:ring-primary"
                         />
                         <FolderOpen className="h-4 w-4 text-neutral-400" />
                         <span className="text-sm text-neutral-700 truncate flex-1">
@@ -364,7 +364,7 @@ export function NewReminderModal({
                 <select
                   value={reminderType}
                   onChange={(e) => setReminderType(e.target.value as ReminderType)}
-                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 >
                   <option value="low_stock">Low Stock Alert</option>
                   <option value="expiry">Expiry Alert</option>
@@ -383,7 +383,7 @@ export function NewReminderModal({
                       onChange={(e) =>
                         setComparisonOperator(e.target.value as ComparisonOperator)
                       }
-                      className="rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                      className="rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                     >
                       {COMPARISON_OPTIONS.map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -396,7 +396,7 @@ export function NewReminderModal({
                       min={0}
                       value={threshold}
                       onChange={(e) => setThreshold(parseInt(e.target.value) || 0)}
-                      className="w-24 rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                      className="w-24 rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                     />
                     <span className="text-sm text-neutral-500">units</span>
                   </div>
@@ -416,7 +416,7 @@ export function NewReminderModal({
                       onChange={(e) =>
                         setDaysBeforeExpiry(parseInt(e.target.value) || 1)
                       }
-                      className="w-24 rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                      className="w-24 rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                     />
                     <span className="text-sm text-neutral-500">days</span>
                   </div>
@@ -448,7 +448,7 @@ export function NewReminderModal({
                       <button
                         type="button"
                         onClick={() => setMembersDropdownOpen(!membersDropdownOpen)}
-                        className="w-full flex items-center justify-between rounded-lg border border-neutral-300 px-3 py-2 text-sm text-left hover:border-neutral-400 focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                        className="w-full flex items-center justify-between rounded-lg border border-neutral-300 px-3 py-2 text-sm text-left hover:border-neutral-400 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                       >
                         <span
                           className={cn(
@@ -478,7 +478,7 @@ export function NewReminderModal({
                                 type="checkbox"
                                 checked={selectedMembers.includes(member.id)}
                                 onChange={() => toggleMember(member.id)}
-                                className="h-4 w-4 rounded border-neutral-300 text-pickle-600 focus:ring-pickle-500"
+                                className="h-4 w-4 rounded border-neutral-300 text-primary focus:ring-primary"
                               />
                               <span className="text-sm text-neutral-700 truncate flex-1">
                                 {member.full_name || member.email}
@@ -520,7 +520,7 @@ export function NewReminderModal({
             onClick={handleSubmit}
             disabled={isSubmitting || isLoadingData}
             className={cn(
-              'inline-flex items-center gap-2 rounded-lg bg-pickle-500 px-4 py-2 text-sm font-medium text-white hover:bg-pickle-600',
+              'inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary',
               (isSubmitting || isLoadingData) && 'opacity-50 cursor-not-allowed'
             )}
           >

@@ -86,7 +86,7 @@ export function NavSubmenu({
           className={cn(
             'flex h-10 w-10 items-center justify-center rounded-xl transition-colors',
             isActive
-              ? 'bg-white text-pickle-500'
+              ? 'bg-white text-primary'
               : 'text-white/70 hover:bg-white/10 hover:text-white'
           )}
           title={label}
@@ -101,7 +101,7 @@ export function NavSubmenu({
             className="absolute left-full top-0 z-50 ml-2"
             onMouseLeave={() => setShowFlyout(false)}
           >
-            <div className="w-48 rounded-xl bg-pickle-600 py-2 shadow-lg">
+            <div className="w-48 rounded-xl bg-primary py-2 shadow-lg">
               <div className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-white/50">
                 {label}
               </div>
@@ -141,7 +141,7 @@ export function NavSubmenu({
         className={cn(
           'flex h-10 w-full items-center justify-between rounded-xl px-3 transition-colors',
           isActive
-            ? 'bg-white text-pickle-500'
+            ? 'bg-white text-primary'
             : 'text-white/70 hover:bg-white/10 hover:text-white'
         )}
       >

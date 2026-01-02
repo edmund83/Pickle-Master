@@ -137,7 +137,7 @@ export default function NotificationsPage() {
           >
             Unread
             {unreadCount > 0 && (
-              <span className="ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-pickle-100 text-xs text-pickle-700">
+              <span className="ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-xs text-primary">
                 {unreadCount}
               </span>
             )}
@@ -161,7 +161,7 @@ export default function NotificationsPage() {
                 return (
                   <li
                     key={notification.id}
-                    className={`flex items-start gap-4 px-6 py-4 ${!notification.is_read ? 'bg-pickle-50/50' : ''}`}
+                    className={`flex items-start gap-4 px-6 py-4 ${!notification.is_read ? 'bg-primary/10/50' : ''}`}
                   >
                     <div className={`flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full ${colorClass}`}>
                       <Icon className="h-5 w-5" />

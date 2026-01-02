@@ -145,7 +145,7 @@ export function BottomNavBar() {
           'transition-all duration-200 ease-out',
           'active:scale-95',
           isActive
-            ? 'text-pickle-600'
+            ? 'text-primary'
             : 'text-neutral-400 hover:text-neutral-600'
         )}
       >
@@ -154,7 +154,7 @@ export function BottomNavBar() {
             'relative flex items-center justify-center',
             'w-10 h-10 rounded-xl',
             'transition-all duration-200',
-            isActive && 'bg-pickle-50'
+            isActive && 'bg-primary/10'
           )}
         >
           <Icon
@@ -263,12 +263,12 @@ export function BottomNavBar() {
             isExpanded
               ? 'bg-neutral-800'
               : isOnScanPage
-                ? 'bg-pickle-600'
-                : 'bg-pickle-500',
+                ? 'bg-primary'
+                : 'bg-primary',
             'text-white',
             // Shadow for floating effect
             'shadow-xl',
-            isExpanded ? 'shadow-neutral-800/40' : 'shadow-pickle-500/40',
+            isExpanded ? 'shadow-neutral-800/40' : 'shadow-primary/40',
             // Border to separate from background
             'border-4 border-white',
             // Animation
@@ -296,7 +296,7 @@ export function BottomNavBar() {
           {/* Pulse animation when not expanded and not on scan page */}
           {!isExpanded && !isOnScanPage && (
             <span
-              className="absolute inset-0 rounded-full bg-pickle-500 animate-ping opacity-20 pointer-events-none"
+              className="absolute inset-0 rounded-full bg-primary animate-ping opacity-20 pointer-events-none"
               style={{ animationDuration: '2s' }}
             />
           )}
@@ -304,7 +304,7 @@ export function BottomNavBar() {
           {/* Active ring indicator when on scan page */}
           {!isExpanded && isOnScanPage && (
             <span
-              className="absolute inset-0 rounded-full border-4 border-pickle-300 animate-ping opacity-75"
+              className="absolute inset-0 rounded-full border-4 border-primary/30 animate-ping opacity-75"
               style={{ animationDuration: '1.5s' }}
             />
           )}

@@ -64,7 +64,7 @@ export function PrimarySidebar({ isExpanded = false, onToggle }: PrimarySidebarP
     <div className="relative">
       <div
         className={cn(
-          'flex h-full flex-col bg-pickle-500 transition-all duration-200 ease-out',
+          'flex h-full flex-col bg-primary transition-all duration-200 ease-out',
           isExpanded ? 'w-52' : 'w-16'
         )}
       >
@@ -81,12 +81,12 @@ export function PrimarySidebar({ isExpanded = false, onToggle }: PrimarySidebarP
           {isExpanded ? (
             <>
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/20">
-                <span className="text-xl font-bold text-white">P</span>
+                <span className="text-xl font-bold text-white">N</span>
               </div>
-              <span className="text-lg font-bold text-white">Pickle</span>
+              <span className="text-lg font-bold text-white">Nook</span>
             </>
           ) : (
-            <span className="text-xl font-bold text-white">P</span>
+            <span className="text-xl font-bold text-white">N</span>
           )}
         </Link>
       </div>
@@ -103,7 +103,7 @@ export function PrimarySidebar({ isExpanded = false, onToggle }: PrimarySidebarP
                 'flex items-center rounded-xl transition-colors',
                 isExpanded ? 'h-10 gap-3 px-3' : 'h-10 w-10 justify-center',
                 isActive
-                  ? 'bg-white text-pickle-500'
+                  ? 'bg-white text-primary'
                   : 'text-white/70 hover:bg-white/10 hover:text-white'
               )}
               title={!isExpanded ? item.name : undefined}
@@ -136,7 +136,7 @@ export function PrimarySidebar({ isExpanded = false, onToggle }: PrimarySidebarP
                 'flex items-center rounded-xl transition-colors',
                 isExpanded ? 'h-10 gap-3 px-3' : 'h-10 w-10 justify-center',
                 isActive
-                  ? 'bg-white text-pickle-500'
+                  ? 'bg-white text-primary'
                   : 'text-white/70 hover:bg-white/10 hover:text-white'
               )}
               title={!isExpanded ? item.name : undefined}
@@ -162,7 +162,7 @@ export function PrimarySidebar({ isExpanded = false, onToggle }: PrimarySidebarP
                 'flex items-center rounded-xl transition-colors',
                 isExpanded ? 'h-10 gap-3 px-3' : 'h-10 w-10 justify-center',
                 isActive
-                  ? 'bg-white text-pickle-500'
+                  ? 'bg-white text-primary'
                   : 'text-white/70 hover:bg-white/10 hover:text-white'
               )}
               title={!isExpanded ? item.name : undefined}
@@ -223,8 +223,8 @@ export function PrimarySidebar({ isExpanded = false, onToggle }: PrimarySidebarP
           className={cn(
             'absolute top-4 right-0 translate-x-1/2 z-10',
             'flex h-6 w-6 items-center justify-center',
-            'rounded-full bg-pickle-600 text-white shadow-md',
-            'hover:bg-pickle-700 transition-colors',
+            'rounded-full bg-primary text-white shadow-md',
+            'hover:bg-primary/90 transition-colors',
             'border-2 border-white'
           )}
           title={isExpanded ? 'Collapse sidebar' : 'Expand sidebar'}

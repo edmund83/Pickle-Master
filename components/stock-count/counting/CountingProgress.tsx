@@ -31,7 +31,7 @@ export function CountingProgress({
         </div>
         <div className="h-2 bg-neutral-100 rounded-full overflow-hidden">
           <div
-            className="h-full bg-pickle-500 rounded-full transition-all duration-500"
+            className="h-full bg-primary rounded-full transition-all duration-500"
             style={{ width: `${percent}%` }}
           />
         </div>
@@ -53,7 +53,7 @@ export function CountingProgress({
           <div
             className={cn(
               'h-full rounded-full transition-all duration-500',
-              percent === 100 ? 'bg-green-500' : 'bg-pickle-500'
+              percent === 100 ? 'bg-green-500' : 'bg-primary'
             )}
             style={{ width: `${percent}%` }}
           />

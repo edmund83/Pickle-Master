@@ -48,9 +48,9 @@ export default function StartPositionSelector({
               className={`
                 w-8 h-6 rounded text-xs font-medium transition-all
                 ${state === 'selected'
-                  ? 'bg-pickle-500 text-white shadow-sm ring-2 ring-pickle-300'
+                  ? 'bg-primary text-white shadow-sm ring-2 ring-primary/40'
                   : state === 'filled'
-                  ? 'bg-pickle-200 text-pickle-700'
+                  ? 'bg-primary/30 text-primary'
                   : 'bg-white text-neutral-400 hover:bg-neutral-100 border border-neutral-200'
                 }
               `}
@@ -64,12 +64,12 @@ export default function StartPositionSelector({
 
       <div className="flex items-center gap-4 text-xs text-neutral-500">
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-pickle-500" />
+          <div className="w-3 h-3 rounded bg-primary" />
           <span>Start</span>
         </div>
         {labelsNeeded > 1 && (
           <div className="flex items-center gap-1.5">
-            <div className="w-3 h-3 rounded bg-pickle-200" />
+            <div className="w-3 h-3 rounded bg-primary/30" />
             <span>Will be printed</span>
           </div>
         )}

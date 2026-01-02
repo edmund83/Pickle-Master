@@ -114,13 +114,13 @@ export function BarcodeScanner({
               {/* Scan target frame */}
               <div className="relative w-64 h-64">
                 {/* Corner brackets */}
-                <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-pickle-500 rounded-tl-lg" />
-                <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-pickle-500 rounded-tr-lg" />
-                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-pickle-500 rounded-bl-lg" />
-                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-pickle-500 rounded-br-lg" />
+                <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-primary rounded-tl-lg" />
+                <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-primary rounded-tr-lg" />
+                <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-primary rounded-bl-lg" />
+                <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-primary rounded-br-lg" />
 
                 {/* Scanning line animation */}
-                <div className="absolute inset-x-2 top-1/2 h-0.5 bg-pickle-500/50 animate-pulse" />
+                <div className="absolute inset-x-2 top-1/2 h-0.5 bg-primary/50 animate-pulse" />
               </div>
             </div>
 
@@ -134,7 +134,7 @@ export function BarcodeScanner({
         {/* Loading state */}
         {isInitializing && (
           <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/80 text-white">
-            <Loader2 className="h-12 w-12 animate-spin text-pickle-500 mb-4" />
+            <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
             <p className="text-sm">Starting camera...</p>
           </div>
         )}
@@ -170,7 +170,7 @@ export function BarcodeScanner({
         {/* Success flash */}
         {lastScan && (
           <div className="absolute inset-0 pointer-events-none animate-pulse">
-            <div className="absolute inset-0 bg-pickle-500/20" />
+            <div className="absolute inset-0 bg-primary/20" />
           </div>
         )}
       </div>

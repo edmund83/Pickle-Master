@@ -1,4 +1,4 @@
-# Pickle - Features & Benefits
+# Nook - Features & Benefits
 
 A comprehensive inventory management system built with Next.js, TypeScript, Tailwind CSS, and Supabase.
 
@@ -160,7 +160,7 @@ A comprehensive inventory management system built with Next.js, TypeScript, Tail
 ### Design System
 - **FlyonUI Components**: Consistent, accessible UI blocks
 - **Tailwind CSS v4**: Modern utility-first styling
-- **Theme Tokens**: Semantic colors (pickle-*, neutral-*, red-*)
+- **Theme Tokens**: Semantic colors (nook-*, neutral-*, red-*)
 - **Responsive Design**: Mobile-first approach
 
 ### Mobile Experience
@@ -280,4 +280,4 @@ A comprehensive inventory management system built with Next.js, TypeScript, Tail
 ---
 
 *Document generated: 2026-01-01*
-*Based on comprehensive codebase analysis of Pickle-Master*
+*Based on comprehensive codebase analysis of Nook-Master*

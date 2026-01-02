@@ -373,7 +373,7 @@ export function CheckInModal({ checkout, isOpen, onClose, onSuccess }: CheckInMo
                 : 'Please describe the condition or issue...'
             }
             rows={3}
-            className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+            className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           />
           {((!isSerialized && condition === 'lost') ||
             (isSerialized && Object.values(serialConditions).some((c) => c === 'lost'))) && (

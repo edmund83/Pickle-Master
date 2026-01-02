@@ -190,8 +190,8 @@ export function CountingItemCard({
   return (
     <div
       className={cn(
-        'p-4 rounded-2xl bg-white border-2 border-pickle-500',
-        'shadow-lg shadow-pickle-500/10',
+        'p-4 rounded-2xl bg-white border-2 border-primary',
+        'shadow-lg shadow-primary/10',
         'transition-all duration-200'
       )}
     >

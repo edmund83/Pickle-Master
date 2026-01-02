@@ -238,7 +238,7 @@ function LotRow({ lot }: { lot: ExpiringLot }) {
         <div>
           <Link
             href={`/inventory/${lot.item_id}`}
-            className="font-medium text-neutral-900 hover:text-pickle-600"
+            className="font-medium text-neutral-900 hover:text-primary"
           >
             {lot.item_name}
           </Link>

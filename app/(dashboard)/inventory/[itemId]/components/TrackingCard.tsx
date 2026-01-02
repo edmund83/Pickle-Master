@@ -109,7 +109,7 @@ export function TrackingCard({
             </div>
             <Link
               href={`/inventory/${itemId}/edit#tracking`}
-              className="flex items-center justify-end gap-1 text-xs text-pickle-600 hover:text-pickle-700 pt-1"
+              className="flex items-center justify-end gap-1 text-xs text-primary hover:text-primary pt-1"
             >
               View All Serials
               <ChevronRight className="h-3 w-3" />
@@ -220,7 +220,7 @@ export function TrackingCard({
 
             <Link
               href={`/inventory/${itemId}/edit#tracking`}
-              className="flex items-center justify-end gap-1 text-xs text-pickle-600 hover:text-pickle-700 pt-1"
+              className="flex items-center justify-end gap-1 text-xs text-primary hover:text-primary pt-1"
             >
               View Lots
               <ChevronRight className="h-3 w-3" />

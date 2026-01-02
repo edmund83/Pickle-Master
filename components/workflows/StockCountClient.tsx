@@ -272,7 +272,7 @@ export function StockCountClient({
                                 {sc.total_items > 0 && (
                                   <div className="w-16 h-2 bg-neutral-200 rounded-full overflow-hidden">
                                     <div
-                                      className="h-full bg-pickle-500 rounded-full transition-all"
+                                      className="h-full bg-primary rounded-full transition-all"
                                       style={{ width: `${progress.percent}%` }}
                                     />
                                   </div>
@@ -347,7 +347,7 @@ export function StockCountClient({
                           </div>
                           <div className="h-2 bg-neutral-100 rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-pickle-500 rounded-full transition-all"
+                              className="h-full bg-primary rounded-full transition-all"
                               style={{ width: `${progress.percent}%` }}
                             />
                           </div>

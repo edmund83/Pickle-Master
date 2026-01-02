@@ -141,7 +141,7 @@ export default function OnboardingPage() {
   if (initialLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-neutral-50">
-        <Loader2 className="h-8 w-8 animate-spin text-pickle-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
   }
@@ -152,7 +152,7 @@ export default function OnboardingPage() {
       <div className="mb-8 flex items-center gap-2">
         <div
           className={`flex h-8 w-8 items-center justify-center rounded-full ${
-            step === 'company' ? 'bg-pickle-500 text-white' : 'bg-pickle-100 text-pickle-600'
+            step === 'company' ? 'bg-primary text-white' : 'bg-primary/20 text-primary'
           }`}
         >
           {step !== 'company' ? <CheckCircle className="h-5 w-5" /> : '1'}
@@ -161,9 +161,9 @@ export default function OnboardingPage() {
         <div
           className={`flex h-8 w-8 items-center justify-center rounded-full ${
             step === 'category'
-              ? 'bg-pickle-500 text-white'
+              ? 'bg-primary text-white'
               : step === 'complete'
-              ? 'bg-pickle-100 text-pickle-600'
+              ? 'bg-primary/20 text-primary'
               : 'bg-neutral-200 text-neutral-400'
           }`}
         >
@@ -172,7 +172,7 @@ export default function OnboardingPage() {
         <div className="h-0.5 w-12 bg-neutral-200" />
         <div
           className={`flex h-8 w-8 items-center justify-center rounded-full ${
-            step === 'complete' ? 'bg-pickle-500 text-white' : 'bg-neutral-200 text-neutral-400'
+            step === 'complete' ? 'bg-primary text-white' : 'bg-neutral-200 text-neutral-400'
           }`}
         >
           3
@@ -183,8 +183,8 @@ export default function OnboardingPage() {
       {step === 'company' && (
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-pickle-100">
-              <Building2 className="h-6 w-6 text-pickle-600" />
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/20">
+              <Building2 className="h-6 w-6 text-primary" />
             </div>
             <CardTitle>Tell us about your company</CardTitle>
             <CardDescription>
@@ -211,7 +211,7 @@ export default function OnboardingPage() {
                 <select
                   value={industry}
                   onChange={(e) => setIndustry(e.target.value)}
-                  className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                  className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 >
                   <option value="">Select an industry</option>
                   <option value="retail">Retail</option>
@@ -236,8 +236,8 @@ export default function OnboardingPage() {
       {step === 'category' && (
         <Card className="w-full max-w-md">
           <CardHeader className="text-center">
-            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-pickle-100">
-              <Package className="h-6 w-6 text-pickle-600" />
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/20">
+              <Package className="h-6 w-6 text-primary" />
             </div>
             <CardTitle>Create your first category</CardTitle>
             <CardDescription>

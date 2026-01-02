@@ -36,7 +36,7 @@ export function Breadcrumbs({ folders, currentFolderId, onNavigate }: Breadcrumb
         className={cn(
           'flex items-center gap-1.5 rounded px-2 py-1 transition-colors',
           'hover:bg-neutral-100',
-          currentFolderId === null && 'font-medium text-pickle-600'
+          currentFolderId === null && 'font-medium text-primary'
         )}
       >
         <Home className="h-4 w-4" />

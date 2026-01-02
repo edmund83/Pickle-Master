@@ -168,7 +168,7 @@ export function MentionInput({
                 disabled={disabled}
                 className={cn(
                     'w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm',
-                    'focus:border-pickle-500 focus:outline-none focus:ring-2 focus:ring-pickle-200',
+                    'focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30',
                     'resize-none placeholder:text-neutral-400',
                     'disabled:bg-neutral-50 disabled:cursor-not-allowed'
                 )}
@@ -188,7 +188,7 @@ export function MentionInput({
                             className={cn(
                                 'flex w-full items-center gap-2 px-3 py-2 text-left transition-colors',
                                 index === selectedIndex
-                                    ? 'bg-pickle-50 text-pickle-700'
+                                    ? 'bg-primary/10 text-primary'
                                     : 'hover:bg-neutral-50'
                             )}
                         >
@@ -199,7 +199,7 @@ export function MentionInput({
                                     className="h-6 w-6 rounded-full object-cover"
                                 />
                             ) : (
-                                <div className="h-6 w-6 rounded-full bg-pickle-100 flex items-center justify-center text-xs font-medium text-pickle-600">
+                                <div className="h-6 w-6 rounded-full bg-primary/20 flex items-center justify-center text-xs font-medium text-primary">
                                     {member.user_name.charAt(0).toUpperCase()}
                                 </div>
                             )}

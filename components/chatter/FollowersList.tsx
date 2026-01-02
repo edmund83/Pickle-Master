@@ -63,9 +63,9 @@ export function FollowersList({
 
             {/* Invite hint */}
             {showInviteHint && (
-                <div className="p-3 bg-pickle-50 rounded-lg text-sm text-pickle-700">
+                <div className="p-3 bg-primary/10 rounded-lg text-sm text-primary">
                     <p className="font-medium mb-1">How to invite followers:</p>
-                    <p className="text-pickle-600">
+                    <p className="text-primary">
                         When team members comment on this item or @mention it, they will automatically
                         become followers and receive notifications.
                     </p>
@@ -84,7 +84,7 @@ export function FollowersList({
                             className={cn(
                                 'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm transition-colors',
                                 currentUserFollow.notify_in_app
-                                    ? 'bg-pickle-100 text-pickle-700'
+                                    ? 'bg-primary/20 text-primary'
                                     : 'bg-neutral-200 text-neutral-500'
                             )}
                         >
@@ -96,7 +96,7 @@ export function FollowersList({
                             className={cn(
                                 'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm transition-colors',
                                 currentUserFollow.notify_email
-                                    ? 'bg-pickle-100 text-pickle-700'
+                                    ? 'bg-primary/20 text-primary'
                                     : 'bg-neutral-200 text-neutral-500'
                             )}
                         >
@@ -108,7 +108,7 @@ export function FollowersList({
                             className={cn(
                                 'flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm transition-colors',
                                 currentUserFollow.notify_push
-                                    ? 'bg-pickle-100 text-pickle-700'
+                                    ? 'bg-primary/20 text-primary'
                                     : 'bg-neutral-200 text-neutral-500'
                             )}
                         >
@@ -133,7 +133,7 @@ export function FollowersList({
                                 className="h-8 w-8 rounded-full object-cover"
                             />
                         ) : (
-                            <div className="h-8 w-8 rounded-full bg-pickle-100 flex items-center justify-center text-sm text-pickle-600 font-medium">
+                            <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center text-sm text-primary font-medium">
                                 {follower.user_name.charAt(0).toUpperCase()}
                             </div>
                         )}

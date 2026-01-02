@@ -85,7 +85,7 @@ export function MessageItem({
         return parts.map((part, i) => {
             if (part.startsWith('@')) {
                 return (
-                    <span key={i} className="text-pickle-600 font-medium">
+                    <span key={i} className="text-primary font-medium">
                         {part}
                     </span>
                 )
@@ -109,7 +109,7 @@ export function MessageItem({
                         className="h-8 w-8 rounded-full flex-shrink-0 object-cover"
                     />
                 ) : (
-                    <div className="h-8 w-8 rounded-full bg-pickle-100 flex items-center justify-center flex-shrink-0 text-sm text-pickle-600 font-medium">
+                    <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center flex-shrink-0 text-sm text-primary font-medium">
                         {message.author_name.charAt(0).toUpperCase()}
                     </div>
                 )}
@@ -139,7 +139,7 @@ export function MessageItem({
                             <textarea
                                 value={editContent}
                                 onChange={(e) => setEditContent(e.target.value)}
-                                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm focus:border-pickle-500 focus:outline-none focus:ring-2 focus:ring-pickle-200"
+                                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/30"
                                 rows={2}
                                 autoFocus
                             />
@@ -174,7 +174,7 @@ export function MessageItem({
                     {!isReply && replyCount > 0 && (
                         <button
                             onClick={handleToggleReplies}
-                            className="mt-2 flex items-center gap-1 text-xs text-pickle-600 hover:text-pickle-700"
+                            className="mt-2 flex items-center gap-1 text-xs text-primary hover:text-primary"
                             disabled={loadingReplies}
                         >
                             {showReplies ? (

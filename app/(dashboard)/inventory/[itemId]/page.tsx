@@ -364,7 +364,7 @@ export default async function ItemDetailPage({ params }: PageProps) {
                     {item.image_urls.map((url, index) => (
                       <button
                         key={index}
-                        className={`h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all ${index === 0 ? 'border-pickle-500 ring-2 ring-pickle-200' : 'border-neutral-200 hover:border-neutral-300'
+                        className={`h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all ${index === 0 ? 'border-primary ring-2 ring-primary/30' : 'border-neutral-200 hover:border-neutral-300'
                           }`}
                         type="button"
                       >

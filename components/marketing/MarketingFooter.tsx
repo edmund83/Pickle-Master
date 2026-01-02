@@ -9,11 +9,11 @@ export function MarketingFooter() {
             {/* Newsletter section */}
             <div className="col-span-2 mb-8 flex flex-col justify-between gap-6 sm:mb-16 lg:mb-0 lg:gap-12">
               <div>
-                <Link title="Pickle" className="text-base-content flex items-center gap-3 text-xl font-bold" href="/">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-pickle-500">
-                    <span className="text-base font-bold text-white">P</span>
+                <Link title="Nook" className="text-base-content flex items-center gap-3 text-xl font-bold" href="/">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary">
+                    <span className="text-base font-bold text-white">N</span>
                   </div>
-                  <span>Pickle</span>
+                  <span>Nook</span>
                 </Link>
                 <p className="text-base-content/80 mt-4 text-balance lg:max-w-md">
                   Simple, mobile-first inventory management for small teams — barcode scanning, offline reliability, and
@@ -105,7 +105,7 @@ export function MarketingFooter() {
         {/* Payment / Copyright section */}
         <div className="mx-auto flex max-w-7xl justify-between gap-3 px-4 py-6 max-lg:flex-col sm:px-6 lg:items-center lg:px-8">
           <div className="text-base-content text-base text-wrap">
-            &copy;{new Date().getFullYear()} <Link href="/" className="text-primary">Pickle</Link>. All rights reserved.
+            &copy;{new Date().getFullYear()} <Link href="/" className="text-primary">Nook</Link>. All rights reserved.
           </div>
           <div className="flex flex-wrap items-center gap-4">
             <span className="badge badge-outline badge-secondary badge-lg rounded-full">

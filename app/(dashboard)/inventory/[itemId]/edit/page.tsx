@@ -253,7 +253,7 @@ export default function EditItemPage() {
   if (loading) {
     return (
       <div className="flex flex-1 items-center justify-center">
-        <Loader2 className="h-8 w-8 animate-spin text-pickle-500" />
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
       </div>
     )
   }
@@ -410,7 +410,7 @@ export default function EditItemPage() {
                   value={formData.description}
                   onChange={handleChange}
                   rows={3}
-                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   placeholder="Describe the item..."
                 />
               </div>
@@ -450,7 +450,7 @@ export default function EditItemPage() {
                     name="unit"
                     value={formData.unit}
                     onChange={handleChange}
-                    className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                    className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   >
                     <option value="pcs">Pieces (pcs)</option>
                     <option value="kg">Kilograms (kg)</option>
@@ -521,7 +521,7 @@ export default function EditItemPage() {
                     name="currency"
                     value={formData.currency}
                     onChange={handleChange}
-                    className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                    className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   >
                     <option value="RM">RM (Malaysian Ringgit)</option>
                     <option value="USD">USD (US Dollar)</option>
@@ -534,7 +534,7 @@ export default function EditItemPage() {
                 <div className="rounded-lg bg-neutral-50 p-3">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-neutral-600">Margin</span>
-                    <span className="font-medium text-pickle-600">
+                    <span className="font-medium text-primary">
                       {(((formData.price - formData.cost_price) / formData.cost_price) * 100).toFixed(1)}% / {getCurrencySymbol(formData.currency)} {(formData.price - formData.cost_price).toFixed(2)}
                     </span>
                   </div>
@@ -557,7 +557,7 @@ export default function EditItemPage() {
                   </CardTitle>
                   <div className="flex items-center gap-2">
                     {!shippingExpanded && (formData.weight > 0 || formData.length > 0) && (
-                      <span className="text-xs text-pickle-600 bg-pickle-50 px-2 py-1 rounded-full">
+                      <span className="text-xs text-primary bg-primary/10 px-2 py-1 rounded-full">
                         Has data
                       </span>
                     )}
@@ -591,7 +591,7 @@ export default function EditItemPage() {
                           name="weight_unit"
                           value={formData.weight_unit}
                           onChange={handleChange}
-                          className="w-20 rounded-lg border border-neutral-300 px-2 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                          className="w-20 rounded-lg border border-neutral-300 px-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                         >
                           <option value="kg">kg</option>
                           <option value="g">g</option>
@@ -608,7 +608,7 @@ export default function EditItemPage() {
                         name="dimension_unit"
                         value={formData.dimension_unit}
                         onChange={handleChange}
-                        className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                        className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                       >
                         <option value="cm">Centimeters (cm)</option>
                         <option value="in">Inches (in)</option>
@@ -664,7 +664,7 @@ export default function EditItemPage() {
                     <div className="rounded-lg bg-neutral-50 p-3">
                       <div className="flex items-center justify-between text-sm">
                         <span className="text-neutral-600">Volume</span>
-                        <span className="font-medium text-pickle-600">
+                        <span className="font-medium text-primary">
                           {(formData.length * formData.width * formData.height).toFixed(2)} {formData.dimension_unit}³
                         </span>
                       </div>
@@ -689,7 +689,7 @@ export default function EditItemPage() {
                   </CardTitle>
                   <div className="flex items-center gap-2">
                     {!lotExpanded && formData.tracking_mode !== 'none' && (
-                      <span className="text-xs text-pickle-600 bg-pickle-50 px-2 py-1 rounded-full capitalize">
+                      <span className="text-xs text-primary bg-primary/10 px-2 py-1 rounded-full capitalize">
                         {formData.tracking_mode.replace('_', ' ')}
                       </span>
                     )}
@@ -718,12 +718,12 @@ export default function EditItemPage() {
                         onClick={() => setFormData({ ...formData, tracking_mode: mode.value as ItemTrackingMode })}
                         className={`flex flex-col items-start rounded-lg border p-3 text-left transition-colors ${
                           formData.tracking_mode === mode.value
-                            ? 'border-pickle-500 bg-pickle-50'
+                            ? 'border-primary bg-primary/10'
                             : 'border-neutral-200 hover:bg-neutral-50'
                         }`}
                       >
                         <span className={`text-sm font-medium ${
-                          formData.tracking_mode === mode.value ? 'text-pickle-900' : 'text-neutral-700'
+                          formData.tracking_mode === mode.value ? 'text-primary' : 'text-neutral-700'
                         }`}>
                           {mode.label}
                         </span>
@@ -762,7 +762,7 @@ export default function EditItemPage() {
                 value={formData.notes}
                 onChange={handleChange}
                 rows={4}
-                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 placeholder="Internal notes about this item..."
               />
             </CardContent>

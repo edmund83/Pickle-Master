@@ -222,7 +222,7 @@ export default function NewItemPage() {
                   value={formData.description}
                   onChange={handleChange}
                   rows={3}
-                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   placeholder="Describe the item..."
                 />
               </div>
@@ -257,7 +257,7 @@ export default function NewItemPage() {
                     name="unit"
                     value={formData.unit}
                     onChange={handleChange}
-                    className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                    className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   >
                     <option value="pcs">Pieces (pcs)</option>
                     <option value="kg">Kilograms (kg)</option>
@@ -325,7 +325,7 @@ export default function NewItemPage() {
                 <div className="rounded-lg bg-neutral-50 p-3">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-neutral-600">Margin</span>
-                    <span className="font-medium text-pickle-600">
+                    <span className="font-medium text-primary">
                       {(((formData.price - formData.cost_price) / formData.cost_price) * 100).toFixed(1)}% / {currencySymbol} {(formData.price - formData.cost_price).toFixed(2)}
                     </span>
                   </div>
@@ -345,7 +345,7 @@ export default function NewItemPage() {
                 value={formData.notes}
                 onChange={handleChange}
                 rows={4}
-                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 placeholder="Internal notes about this item..."
               />
             </CardContent>

@@ -17,36 +17,9 @@ const config: Config = {
   }
 }
 
-// Add flyonui config
+// Add flyonui config - using corporate theme as default
 ;(config as Config & { flyonui?: unknown }).flyonui = {
-  themes: [
-    'corporate',
-    'dark',
-    {
-      'pickle-red': {
-        primary: '#de4a4a',
-        'primary-content': '#ffffff',
-        secondary: '#c73e3e',
-        'secondary-content': '#ffffff',
-        accent: '#f87171',
-        'accent-content': '#1f2937',
-        neutral: '#374151',
-        'neutral-content': '#f3f4f6',
-        'base-100': '#ffffff',
-        'base-200': '#f9fafb',
-        'base-300': '#f3f4f6',
-        'base-content': '#1f2937',
-        info: '#3b82f6',
-        'info-content': '#ffffff',
-        success: '#22c55e',
-        'success-content': '#ffffff',
-        warning: '#f59e0b',
-        'warning-content': '#1f2937',
-        error: '#ef4444',
-        'error-content': '#ffffff',
-      },
-    },
-  ],
+  themes: ['corporate', 'dark'],
 }
 
 export default config

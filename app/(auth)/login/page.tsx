@@ -78,7 +78,7 @@ function LoginForm() {
       <div className="flex items-center justify-end">
         <Link
           href="/forgot-password"
-          className="text-sm text-pickle-500 hover:text-pickle-600"
+          className="text-sm text-primary hover:text-primary"
         >
           Forgot password?
         </Link>
@@ -111,7 +111,7 @@ export default function LoginPage() {
 
         <div className="mt-6 text-center text-sm text-neutral-500">
           Don&apos;t have an account?{' '}
-          <Link href="/signup" className="text-pickle-500 hover:text-pickle-600">
+          <Link href="/signup" className="text-primary hover:text-primary">
             Sign up
           </Link>
         </div>

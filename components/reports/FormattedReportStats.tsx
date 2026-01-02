@@ -175,7 +175,7 @@ export function MarginItemRow({ index, name, href, costPrice, price, marginPerce
           <div>
             <a
               href={href}
-              className="font-medium text-neutral-900 hover:text-pickle-600 hover:underline"
+              className="font-medium text-neutral-900 hover:text-primary hover:underline"
             >
               {name}
             </a>
@@ -224,7 +224,7 @@ export function ProfitTableRow({
       <td className="px-6 py-3">
         <a
           href={`/inventory/${id}`}
-          className="font-medium text-neutral-900 hover:text-pickle-600 hover:underline"
+          className="font-medium text-neutral-900 hover:text-primary hover:underline"
         >
           {name}
         </a>
@@ -288,7 +288,7 @@ export function ValueByFolderRow({
       </div>
       <div className="mt-2 h-2 overflow-hidden rounded-full bg-neutral-100">
         <div
-          className="h-full bg-pickle-500"
+          className="h-full bg-primary"
           style={{ width: `${percentage}%` }}
         />
       </div>
@@ -319,7 +319,7 @@ export function TopValueItemRow({ index, id, name, quantity, price, totalValue }
           {index + 1}
         </span>
         <div>
-          <a href={`/inventory/${id}`} className="font-medium text-neutral-900 hover:text-pickle-600 hover:underline">
+          <a href={`/inventory/${id}`} className="font-medium text-neutral-900 hover:text-primary hover:underline">
             {name}
           </a>
           <p className="text-xs text-neutral-500">

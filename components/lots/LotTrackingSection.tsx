@@ -260,7 +260,7 @@ export function LotTrackingSection({ itemId, onTotalChange }: LotTrackingSection
         {!showAddForm ? (
           <button
             onClick={() => setShowAddForm(true)}
-            className="flex w-full items-center justify-center gap-2 px-4 py-3 text-sm text-pickle-600 hover:bg-pickle-50 transition-colors"
+            className="flex w-full items-center justify-center gap-2 px-4 py-3 text-sm text-primary hover:bg-primary/10 transition-colors"
           >
             <Plus className="h-4 w-4" />
             Add New Lot

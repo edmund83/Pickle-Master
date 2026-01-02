@@ -57,7 +57,7 @@ export function InventoryValueChart({ data }: InventoryValueChartProps) {
                     />
                     <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={40}>
                         {chartData.map((_, index) => (
-                            <Cell key={`cell-${index}`} fill="#10B981" /> /* Pickle Green */
+                            <Cell key={`cell-${index}`} fill="#10B981" /> /*/* Nook Green */
                         ))}
                     </Bar>
                 </BarChart>

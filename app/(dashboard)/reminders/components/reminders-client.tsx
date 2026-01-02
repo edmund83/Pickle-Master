@@ -112,7 +112,7 @@ export function RemindersClient({
           </div>
           <button
             onClick={() => setIsModalOpen(true)}
-            className="inline-flex items-center gap-2 rounded-lg bg-pickle-500 px-4 py-2 text-sm font-medium text-white hover:bg-pickle-600 transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary transition-colors"
           >
             <Plus className="h-4 w-4" />
             New Reminder
@@ -123,8 +123,8 @@ export function RemindersClient({
         <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
           <div className="rounded-xl bg-white p-4 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-pickle-100">
-                <Bell className="h-5 w-5 text-pickle-600" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/20">
+                <Bell className="h-5 w-5 text-primary" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-neutral-900">{stats.total}</p>
@@ -183,7 +183,7 @@ export function RemindersClient({
             value={typeFilter}
             onChange={(e) => handleFilterChange(e.target.value as FilterType)}
             disabled={isPending}
-            className="rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-sm text-neutral-700 focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+            className="rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-sm text-neutral-700 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           >
             <option value="all">All Types</option>
             <option value="low_stock">Low Stock</option>
@@ -198,7 +198,7 @@ export function RemindersClient({
               handleFilterChange(undefined, e.target.value as FilterStatus)
             }
             disabled={isPending}
-            className="rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-sm text-neutral-700 focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+            className="rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-sm text-neutral-700 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           >
             <option value="all">All Status</option>
             <option value="active">Active</option>
@@ -212,7 +212,7 @@ export function RemindersClient({
               handleFilterChange(undefined, undefined, e.target.value as FilterSource)
             }
             disabled={isPending}
-            className="rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-sm text-neutral-700 focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+            className="rounded-lg border border-neutral-200 bg-white px-3 py-1.5 text-sm text-neutral-700 focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
           >
             <option value="all">All Sources</option>
             <option value="item">Items Only</option>
@@ -220,7 +220,7 @@ export function RemindersClient({
           </select>
 
           {isPending && (
-            <div className="h-4 w-4 animate-spin rounded-full border-2 border-neutral-200 border-t-pickle-500" />
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-neutral-200 border-t-primary" />
           )}
         </div>
 
@@ -239,7 +239,7 @@ export function RemindersClient({
               </p>
               <button
                 onClick={() => setIsModalOpen(true)}
-                className="mt-4 inline-flex items-center gap-2 rounded-lg bg-pickle-500 px-4 py-2 text-sm font-medium text-white hover:bg-pickle-600"
+                className="mt-4 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary"
               >
                 <Plus className="h-4 w-4" />
                 New Reminder

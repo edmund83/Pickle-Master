@@ -283,8 +283,8 @@ export default function LocationsSettingsPage() {
         {locations.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12 text-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-pickle-100 mb-4">
-                <MapPin className="h-8 w-8 text-pickle-600" />
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/20 mb-4">
+                <MapPin className="h-8 w-8 text-primary" />
               </div>
               <h3 className="text-lg font-medium text-neutral-900 mb-2">No Locations Yet</h3>
               <p className="text-neutral-500 mb-6">
@@ -430,12 +430,12 @@ export default function LocationsSettingsPage() {
                         onClick={() => setFormData({ ...formData, type })}
                         className={`flex items-center gap-2 rounded-lg border p-3 transition-colors ${
                           isSelected
-                            ? 'border-pickle-500 bg-pickle-50'
+                            ? 'border-primary bg-primary/10'
                             : 'border-neutral-200 hover:bg-neutral-50'
                         }`}
                       >
-                        <Icon className={`h-5 w-5 ${isSelected ? 'text-pickle-600' : 'text-neutral-500'}`} />
-                        <span className={`text-sm font-medium ${isSelected ? 'text-pickle-900' : 'text-neutral-700'}`}>
+                        <Icon className={`h-5 w-5 ${isSelected ? 'text-primary' : 'text-neutral-500'}`} />
+                        <span className={`text-sm font-medium ${isSelected ? 'text-primary' : 'text-neutral-700'}`}>
                           {config.label}
                         </span>
                       </button>

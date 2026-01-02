@@ -60,7 +60,7 @@ export default function MarketingHomePage() {
               Switching from Sortly?
             </h2>
             <p className="text-base-content/80 mx-auto mt-3 max-w-3xl text-lg">
-              Pickle is built for real workflows (offline scanning + check-in/out) with pricing that won&apos;t punish growth.
+              Nook is built for real workflows (offline scanning + check-in/out) with pricing that won&apos;t punish growth.
               Migrate your data fast and keep your team moving.
             </p>
             <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -86,7 +86,7 @@ export default function MarketingHomePage() {
               Start tracking stock with confidence
             </h2>
             <p className="text-base-content/80 mx-auto mt-3 max-w-3xl text-lg">
-              Try Pickle free and see how fast your team can scan, update, and stay accurate.
+              Try Nook free and see how fast your team can scan, update, and stay accurate.
             </p>
             <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link href="/signup" className="btn btn-primary btn-gradient btn-lg">

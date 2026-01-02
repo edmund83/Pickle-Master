@@ -175,7 +175,7 @@ export function ItemCheckoutStatusCard({ item }: ItemCheckoutSectionProps) {
           </p>
           <Button
             onClick={() => setShowCheckOutModal(true)}
-            className="w-full bg-pickle-600 text-white hover:bg-pickle-700"
+            className="w-full bg-primary text-white hover:bg-primary/90"
           >
             <LogOut className="mr-2 h-4 w-4" />
             Borrow

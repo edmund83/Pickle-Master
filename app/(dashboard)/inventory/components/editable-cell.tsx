@@ -76,7 +76,7 @@ export function EditableCell({
                 onKeyDown={handleKeyDown}
                 type={type}
                 className={cn(
-                    "h-8 px-2 py-1 text-sm bg-white shadow-sm ring-1 ring-pickle-500",
+                    "h-8 px-2 py-1 text-sm bg-white shadow-sm ring-1 ring-primary",
                     align === 'right' && "text-right",
                     className
                 )}

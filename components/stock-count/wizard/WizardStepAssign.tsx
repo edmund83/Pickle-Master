@@ -85,13 +85,13 @@ export function WizardStepAssign({
               'rounded-xl border-2 text-left',
               'transition-all duration-200',
               data.assignedTo
-                ? 'border-pickle-300 bg-pickle-50'
+                ? 'border-primary/30 bg-primary/10'
                 : 'border-neutral-200 bg-white hover:border-neutral-300'
             )}
           >
             {data.assignedTo ? (
               <>
-                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-pickle-500 text-white font-semibold text-sm">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-white font-semibold text-sm">
                   {getInitials(data.assignedToName, '')}
                 </div>
                 <div className="flex-1">
@@ -142,7 +142,7 @@ export function WizardStepAssign({
                           'w-full flex items-center gap-3 p-3',
                           'text-left transition-colors',
                           data.assignedTo === member.id
-                            ? 'bg-pickle-50'
+                            ? 'bg-primary/10'
                             : 'hover:bg-neutral-50'
                         )}
                       >
@@ -158,7 +158,7 @@ export function WizardStepAssign({
                           </p>
                         </div>
                         {data.assignedTo === member.id && (
-                          <Check className="h-5 w-5 text-pickle-500" />
+                          <Check className="h-5 w-5 text-primary" />
                         )}
                       </button>
                     ))}
@@ -218,7 +218,7 @@ export function WizardStepAssign({
           className={cn(
             'w-full px-4 py-3 rounded-xl border border-neutral-300',
             'text-sm placeholder:text-neutral-400',
-            'focus:outline-none focus:ring-2 focus:ring-pickle-500/20 focus:border-pickle-500',
+            'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
             'transition-all duration-200 resize-none'
           )}
         />
@@ -226,17 +226,17 @@ export function WizardStepAssign({
 
       {/* Selected Summary */}
       {(data.assignedTo || data.dueDate) && (
-        <div className="p-4 bg-pickle-50 border border-pickle-200 rounded-xl space-y-2 animate-in fade-in duration-200">
-          <p className="text-xs font-semibold text-pickle-600 uppercase tracking-wider">
+        <div className="p-4 bg-primary/10 border border-primary/30 rounded-xl space-y-2 animate-in fade-in duration-200">
+          <p className="text-xs font-semibold text-primary uppercase tracking-wider">
             Assignment Summary
           </p>
           {data.assignedTo && (
-            <p className="text-sm text-pickle-700">
+            <p className="text-sm text-primary">
               Assigned to: <strong>{data.assignedToName}</strong>
             </p>
           )}
           {data.dueDate && (
-            <p className="text-sm text-pickle-700">
+            <p className="text-sm text-primary">
               Due: <strong>{new Date(data.dueDate).toLocaleDateString()}</strong>
             </p>
           )}

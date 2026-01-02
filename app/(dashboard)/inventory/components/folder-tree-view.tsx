@@ -208,8 +208,8 @@ function FolderTreeItem({
         className={cn(
           'group flex w-full cursor-pointer items-center rounded-md py-1.5 text-[13px] transition-all duration-150',
           'hover:bg-neutral-100/80',
-          isActive && 'bg-pickle-50/80 text-pickle-700',
-          isHighlighted && !isSelected && 'border-l-2 border-pickle-500',
+          isActive && 'bg-primary/10/80 text-primary',
+          isHighlighted && !isSelected && 'border-l-2 border-primary',
           !isActive && 'text-neutral-700'
         )}
         style={{ paddingLeft: `${8 + depth * 16}px`, paddingRight: '8px' }}
@@ -223,7 +223,7 @@ function FolderTreeItem({
               className={cn(
                 'flex h-4 w-4 items-center justify-center rounded transition-colors',
                 'hover:bg-neutral-200/80',
-                isActive && 'hover:bg-pickle-100'
+                isActive && 'hover:bg-primary/20'
               )}
               aria-label={isExpanded ? 'Collapse folder' : 'Expand folder'}
             >
@@ -231,7 +231,7 @@ function FolderTreeItem({
                 className={cn(
                   'h-3 w-3 transition-transform duration-200',
                   isExpanded && 'rotate-90',
-                  isActive ? 'text-pickle-500' : 'text-neutral-400'
+                  isActive ? 'text-primary' : 'text-neutral-400'
                 )}
               />
             </button>
@@ -257,13 +257,13 @@ function FolderTreeItem({
               onChange={(e) => setEditName(e.target.value)}
               onKeyDown={handleEditKeyDown}
               onBlur={handleSaveEdit}
-              className="flex-1 rounded border border-pickle-300 bg-white px-2 py-0.5 text-[13px] outline-none focus:ring-2 focus:ring-pickle-500/30"
+              className="flex-1 rounded border border-primary/30 bg-white px-2 py-0.5 text-[13px] outline-none focus:ring-2 focus:ring-primary/30"
               disabled={isPending}
             />
             <button
               onClick={handleSaveEdit}
               disabled={isPending}
-              className="flex h-5 w-5 items-center justify-center rounded text-pickle-600 hover:bg-pickle-100"
+              className="flex h-5 w-5 items-center justify-center rounded text-primary hover:bg-primary/20"
             >
               {isPending ? <Loader2 className="h-3 w-3 animate-spin" /> : <Check className="h-3 w-3" />}
             </button>
@@ -298,7 +298,7 @@ function FolderTreeItem({
                 className={cn(
                   'flex h-5 w-5 items-center justify-center rounded transition-colors',
                   'text-neutral-400 hover:bg-neutral-200 hover:text-neutral-600',
-                  isActive && 'hover:bg-pickle-100 hover:text-pickle-700'
+                  isActive && 'hover:bg-primary/20 hover:text-primary'
                 )}
                 title="Rename"
               >
@@ -313,7 +313,7 @@ function FolderTreeItem({
                   className={cn(
                     'flex h-5 w-5 items-center justify-center rounded transition-colors',
                     'text-neutral-400 hover:bg-neutral-200 hover:text-neutral-600',
-                    isActive && 'hover:bg-pickle-100 hover:text-pickle-700'
+                    isActive && 'hover:bg-primary/20 hover:text-primary'
                   )}
                   title="More options"
                 >
@@ -353,7 +353,7 @@ function FolderTreeItem({
             )}
             <span className={cn(
               'min-w-5 text-right text-xs tabular-nums',
-              isActive ? 'text-pickle-400' : 'text-neutral-400'
+              isActive ? 'text-primary/60' : 'text-neutral-400'
             )}>
               {itemCount}
             </span>

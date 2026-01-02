@@ -70,13 +70,13 @@ export default function DetailsSelector({ selected, onChange, disabled, maxSelec
         className={`w-full flex items-center justify-between rounded-lg border bg-white px-3 py-2.5 text-sm font-medium text-left transition-colors ${
           disabled
             ? 'border-neutral-200 text-neutral-400 cursor-not-allowed'
-            : 'border-neutral-300 text-neutral-700 hover:border-neutral-400 focus:outline-none focus:ring-2 focus:ring-pickle-500'
+            : 'border-neutral-300 text-neutral-700 hover:border-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary'
         }`}
       >
         <span className={selected.length === 0 ? 'text-neutral-400' : ''}>{getDisplayText()}</span>
         <div className="flex items-center gap-2">
           {selected.length > 0 && (
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-pickle-100 text-xs font-semibold text-pickle-700">
+            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary/20 text-xs font-semibold text-primary">
               {selected.length}
             </span>
           )}
@@ -109,11 +109,11 @@ export default function DetailsSelector({ selected, onChange, disabled, maxSelec
                 type="button"
                 onClick={() => toggleOption(option.value)}
                 className={`w-full flex items-center justify-between px-3 py-2 text-left hover:bg-neutral-50 transition-colors ${
-                  isSelected ? 'bg-pickle-50' : ''
+                  isSelected ? 'bg-primary/10' : ''
                 }`}
               >
                 <div className="flex flex-col">
-                  <span className={`text-sm font-medium ${isSelected ? 'text-pickle-700' : 'text-neutral-700'}`}>
+                  <span className={`text-sm font-medium ${isSelected ? 'text-primary' : 'text-neutral-700'}`}>
                     {option.label}
                   </span>
                   <span className="text-xs text-neutral-400">{option.description}</span>
@@ -121,7 +121,7 @@ export default function DetailsSelector({ selected, onChange, disabled, maxSelec
                 <div
                   className={`flex h-5 w-5 items-center justify-center rounded border transition-colors ${
                     isSelected
-                      ? 'border-pickle-500 bg-pickle-500 text-white'
+                      ? 'border-primary bg-primary text-white'
                       : 'border-neutral-300 bg-white'
                   }`}
                 >

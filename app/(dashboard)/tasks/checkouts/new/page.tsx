@@ -423,7 +423,7 @@ export default function NewCheckoutPage() {
                       <Filter className="h-4 w-4" />
                       Filter
                       {activeFilterCount > 0 && (
-                        <span className="rounded-full bg-pickle-500 px-1.5 text-xs text-white">
+                        <span className="rounded-full bg-primary px-1.5 text-xs text-white">
                           {activeFilterCount}
                         </span>
                       )}
@@ -514,14 +514,14 @@ export default function NewCheckoutPage() {
                       <li
                         key={item.id}
                         className={`flex cursor-pointer items-center gap-4 px-6 py-3 hover:bg-neutral-50 ${
-                          isSelected ? 'bg-pickle-50' : ''
+                          isSelected ? 'bg-primary/10' : ''
                         }`}
                         onClick={() => toggleItem(item)}
                       >
                         <div
                           className={`flex h-5 w-5 flex-shrink-0 items-center justify-center rounded border ${
                             isSelected
-                              ? 'border-pickle-500 bg-pickle-500'
+                              ? 'border-primary bg-primary'
                               : 'border-neutral-300 bg-white'
                           }`}
                         >
@@ -611,7 +611,7 @@ export default function NewCheckoutPage() {
                     }}
                     className={`flex flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-3 text-sm font-medium transition-colors ${
                       assigneeType === type
-                        ? 'border-pickle-500 bg-pickle-50 text-pickle-700'
+                        ? 'border-primary bg-primary/10 text-primary'
                         : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50'
                     }`}
                   >
@@ -631,7 +631,7 @@ export default function NewCheckoutPage() {
                   <select
                     value={assigneeId}
                     onChange={(e) => handleAssigneeChange(e.target.value)}
-                    className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                    className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2.5 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                   >
                     <option value="">
                       {assigneeType === 'person' && 'Choose a team member...'}
@@ -666,7 +666,7 @@ export default function NewCheckoutPage() {
                       ) : (
                         <button
                           onClick={() => setShowNewJob(true)}
-                          className="flex items-center gap-1 text-sm text-pickle-600 hover:text-pickle-700"
+                          className="flex items-center gap-1 text-sm text-primary hover:text-primary"
                         >
                           <Plus className="h-4 w-4" />
                           Create new job
@@ -701,7 +701,7 @@ export default function NewCheckoutPage() {
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Add any notes about this checkout..."
                   rows={3}
-                  className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-pickle-500 focus:outline-none focus:ring-1 focus:ring-pickle-500"
+                  className="w-full rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 />
               </div>
             </div>

@@ -45,7 +45,7 @@ export function FormattedPricingCard({ price, costPrice, quantity }: FormattedPr
         )}
         <div className="flex justify-between border-t border-neutral-100 pt-2">
           <span className="text-neutral-500">Total Value</span>
-          <span className="font-bold text-pickle-600">
+          <span className="font-bold text-primary">
             {formatCurrency(totalValue)}
           </span>
         </div>

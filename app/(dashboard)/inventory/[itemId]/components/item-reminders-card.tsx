@@ -75,7 +75,7 @@ export function ItemRemindersCard({
           <Button
             variant="ghost"
             size="sm"
-            className="h-8 gap-1.5 text-pickle-600 hover:text-pickle-700 hover:bg-pickle-50"
+            className="h-8 gap-1.5 text-primary hover:text-primary hover:bg-primary/10"
             onClick={handleAddClick}
           >
             <Plus className="h-4 w-4" />
@@ -86,7 +86,7 @@ export function ItemRemindersCard({
       >
         {isLoading ? (
           <div className="flex items-center justify-center py-8">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-neutral-200 border-t-pickle-500" />
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-neutral-200 border-t-primary" />
           </div>
         ) : reminders.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 text-center">

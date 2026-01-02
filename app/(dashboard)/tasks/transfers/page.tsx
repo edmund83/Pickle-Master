@@ -356,7 +356,7 @@ function TransferRow({
         <div className="min-w-0">
           <Link
             href={`/inventory/${transfer.item_id}`}
-            className="font-medium text-neutral-900 hover:text-pickle-600 truncate block"
+            className="font-medium text-neutral-900 hover:text-primary truncate block"
           >
             {transfer.item_name}
           </Link>
@@ -456,7 +456,7 @@ function SuggestionRow({
         <div className="min-w-0">
           <Link
             href={`/inventory/${suggestion.item_id}`}
-            className="font-medium text-neutral-900 hover:text-pickle-600 truncate block"
+            className="font-medium text-neutral-900 hover:text-primary truncate block"
           >
             {suggestion.item_name}
           </Link>

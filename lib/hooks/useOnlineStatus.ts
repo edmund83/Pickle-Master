@@ -63,12 +63,12 @@ export function useOnlineStatus(options: UseOnlineStatusOptions = {}) {
 
       // Dispatch custom event when coming back online
       if (online && wasOffline) {
-        window.dispatchEvent(new CustomEvent('pickle:online'))
+        window.dispatchEvent(new CustomEvent('nook:online'))
       }
 
       // Dispatch custom event when going offline
       if (!online && !wasOffline) {
-        window.dispatchEvent(new CustomEvent('pickle:offline'))
+        window.dispatchEvent(new CustomEvent('nook:offline'))
       }
     },
     [setOnline]
@@ -140,9 +140,9 @@ export function useOnlineStatus(options: UseOnlineStatusOptions = {}) {
  */
 export function useOnlineEvent(callback: () => void) {
   useEffect(() => {
-    window.addEventListener('pickle:online', callback)
+    window.addEventListener('nook:online', callback)
     return () => {
-      window.removeEventListener('pickle:online', callback)
+      window.removeEventListener('nook:online', callback)
     }
   }, [callback])
 }
@@ -152,9 +152,9 @@ export function useOnlineEvent(callback: () => void) {
  */
 export function useOfflineEvent(callback: () => void) {
   useEffect(() => {
-    window.addEventListener('pickle:offline', callback)
+    window.addEventListener('nook:offline', callback)
     return () => {
-      window.removeEventListener('pickle:offline', callback)
+      window.removeEventListener('nook:offline', callback)
     }
   }, [callback])
 }

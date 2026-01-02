@@ -8,7 +8,7 @@ export function organizationJsonLd() {
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'Pickle',
+    name: 'Nook',
     url: siteUrl,
   }
 }
@@ -19,7 +19,7 @@ export function websiteJsonLd() {
   return {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'Pickle',
+    name: 'Nook',
     url: siteUrl,
     potentialAction: {
       '@type': 'SearchAction',
@@ -101,7 +101,7 @@ export function articleJsonLd({
     mainEntityOfPage: url,
     datePublished,
     dateModified: dateModified ?? datePublished,
-    author: { '@type': 'Organization', name: 'Pickle' },
-    publisher: { '@type': 'Organization', name: 'Pickle' },
+    author: { '@type': 'Organization', name: 'Nook' },
+    publisher: { '@type': 'Organization', name: 'Nook' },
   }
 }

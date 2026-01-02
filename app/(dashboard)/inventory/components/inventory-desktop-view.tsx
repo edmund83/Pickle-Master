@@ -349,13 +349,13 @@ export function InventoryDesktopView({ items, folders, view }: InventoryDesktopV
 
         {/* Header - Selection Mode or Normal */}
         {isSelectionMode ? (
-          <div className="flex items-center justify-between border-b border-neutral-200 bg-pickle-50 px-6 py-4">
+          <div className="flex items-center justify-between border-b border-neutral-200 bg-primary/10 px-6 py-4">
             <div className="flex items-center gap-4">
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={toggleSelectAll}
-                className="text-pickle-700"
+                className="text-primary"
               >
                 {selectedItemIds.size === filteredItems.length ? (
                   <CheckSquare className="mr-2 h-4 w-4" />
@@ -364,7 +364,7 @@ export function InventoryDesktopView({ items, folders, view }: InventoryDesktopV
                 )}
                 {selectedItemIds.size === filteredItems.length ? 'Deselect All' : 'Select All'}
               </Button>
-              <span className="text-sm font-medium text-pickle-700">
+              <span className="text-sm font-medium text-primary">
                 {selectedItemIds.size} item{selectedItemIds.size !== 1 ? 's' : ''} selected
               </span>
             </div>
@@ -401,7 +401,7 @@ export function InventoryDesktopView({ items, folders, view }: InventoryDesktopV
                     <Filter className="mr-2 h-4 w-4" />
                     Filter
                     {activeFilterCount > 0 && (
-                      <span className="ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-pickle-500 text-xs text-white">
+                      <span className="ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-white">
                         {activeFilterCount}
                       </span>
                     )}
@@ -581,7 +581,7 @@ function ItemCard({ item, isSelectionMode, isSelected, onToggleSelect }: ItemCar
       ? 'cursor-pointer'
       : 'hover:shadow-md',
     isSelected
-      ? 'border-pickle-500 bg-pickle-50 ring-2 ring-pickle-500'
+      ? 'border-primary bg-primary/10 ring-2 ring-primary'
       : 'border-neutral-200'
   )
 
@@ -594,7 +594,7 @@ function ItemCard({ item, isSelectionMode, isSelected, onToggleSelect }: ItemCar
             className={cn(
               'flex h-6 w-6 items-center justify-center rounded-md border-2 transition-colors',
               isSelected
-                ? 'border-pickle-500 bg-pickle-500 text-white'
+                ? 'border-primary bg-primary text-white'
                 : 'border-neutral-300 bg-white'
             )}
           >
@@ -619,7 +619,7 @@ function ItemCard({ item, isSelectionMode, isSelected, onToggleSelect }: ItemCar
       {/* Info */}
       <h3 className={cn(
         'font-medium',
-        isSelected ? 'text-pickle-700' : 'text-neutral-900 group-hover:text-pickle-600'
+        isSelected ? 'text-primary' : 'text-neutral-900 group-hover:text-primary'
       )}>
         {item.name}
       </h3>

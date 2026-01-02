@@ -4,26 +4,10 @@
 
 @theme {
   --font-family-sans: 'Inter', system-ui, sans-serif;
-
-  /* Pickle brand colors */
-  --color-pickle-50: #fef2f2;
-  --color-pickle-100: #fee2e2;
-  --color-pickle-200: #fecaca;
-  --color-pickle-300: #fca5a5;
-  --color-pickle-400: #f87171;
-  --color-pickle-500: #de4a4a;
-  --color-pickle-600: #c73e3e;
-  --color-pickle-700: #a13232;
-  --color-pickle-800: #862929;
-  --color-pickle-900: #6f2525;
-  --color-pickle-950: #3c1111;
 }
 
 @layer base {
   :root {
-    --pickle-primary: 222 74 74;
-    --pickle-primary-foreground: 255 255 255;
-
     --background: 255 255 255;
     --foreground: 23 23 23;
 
@@ -32,8 +16,6 @@
 
     --border: 229 229 229;
     --input: 229 229 229;
-
-    --ring: 222 74 74;
 
     --radius: 0.5rem;
   }
@@ -348,13 +330,13 @@
 @keyframes center-pulse {
   0%, 100% {
     box-shadow:
-      0 10px 25px -3px rgba(222, 74, 74, 0.4),
-      0 0 0 0 rgba(222, 74, 74, 0.3);
+      0 10px 25px -3px oklch(from var(--color-primary) l c h / 0.4),
+      0 0 0 0 oklch(from var(--color-primary) l c h / 0.3);
   }
   50% {
     box-shadow:
-      0 10px 25px -3px rgba(222, 74, 74, 0.4),
-      0 0 0 12px rgba(222, 74, 74, 0);
+      0 10px 25px -3px oklch(from var(--color-primary) l c h / 0.4),
+      0 0 0 12px oklch(from var(--color-primary) l c h / 0);
   }
 }
 
@@ -366,6 +348,6 @@
 .center-button-pulse:hover {
   animation: none;
   box-shadow:
-    0 10px 25px -3px rgba(222, 74, 74, 0.5),
-    0 0 20px 4px rgba(222, 74, 74, 0.25);
+    0 10px 25px -3px oklch(from var(--color-primary) l c h / 0.5),
+    0 0 20px 4px oklch(from var(--color-primary) l c h / 0.25);
 }

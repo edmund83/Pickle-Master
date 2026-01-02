@@ -48,7 +48,7 @@ export function UndoToast() {
       <div className="relative overflow-hidden rounded-lg bg-neutral-900 px-4 py-3 shadow-lg">
         {/* Progress bar */}
         <div
-          className="absolute bottom-0 left-0 h-1 bg-pickle-500 transition-all duration-100"
+          className="absolute bottom-0 left-0 h-1 bg-primary transition-all duration-100"
           style={{ width: `${progress}%` }}
         />
 
@@ -60,7 +60,7 @@ export function UndoToast() {
               size="sm"
               onClick={handleUndo}
               disabled={isUndoing}
-              className="text-pickle-400 hover:text-pickle-300 hover:bg-neutral-800"
+              className="text-primary/60 hover:text-primary/40 hover:bg-neutral-800"
             >
               <Undo2 className="mr-1 h-4 w-4" />
               {isUndoing ? 'Undoing...' : 'Undo'}

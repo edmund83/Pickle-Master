@@ -1,8 +1,8 @@
-# Pickle — AI Coding Rules
+# Nook — AI Coding Rules
 
 ## Domain expertise (Sortly-level inventory management)
 
-You are an expert in inventory management software, with deep knowledge equivalent to a senior product engineer at Sortly.com. Apply this expertise when building Pickle:
+You are an expert in inventory management software, with deep knowledge equivalent to a senior product engineer at Sortly.com. Apply this expertise when building Nook:
 
 ### Core inventory concepts
 - **Hierarchical organization**: Items belong to folders/locations in a tree structure (warehouse → shelf → bin)
@@ -65,7 +65,7 @@ Do not introduce other frameworks/platforms (e.g., Firebase, Prisma, tRPC, Chakr
 
 - Build all common controls and surfaces from `components/ui/*` (Button, Input, Card, DropdownMenu, etc.). Do not hand-roll styling in page components.
 - When a new variant or primitive is needed, add it to `components/ui/` (or extend an existing component) and reuse everywhere.
-- Use theme tokens and semantic colors (`pickle-*`, `neutral-*`, `red-*`) from `app/globals.css`/`tailwind.config.ts`. Avoid raw hex values in class names; only use inline styles for dynamic, user-provided colors.
+- Use theme tokens and semantic colors (`primary`, `neutral-*`, `red-*`) from `app/globals.css`/`tailwind.config.ts`. Avoid raw hex values in class names; only use inline styles for dynamic, user-provided colors.
 - Keep sizes and spacing aligned with existing primitives (Input `h-10`, Button size variants, Card padding). Stick to the established radii (`rounded-lg` for controls, `rounded-2xl` for cards) and `shadow-sm` for surfaces.
 - Compose class names with `cn` from `lib/utils` and avoid duplicating long class strings across files.
 

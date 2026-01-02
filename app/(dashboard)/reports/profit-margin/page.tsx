@@ -208,7 +208,7 @@ export default async function ProfitMarginPage() {
         <div className="mt-8 rounded-xl border border-neutral-200 bg-white">
           <div className="border-b border-neutral-200 px-6 py-4">
             <div className="flex items-center gap-2">
-              <DollarSign className="h-5 w-5 text-pickle-500" />
+              <DollarSign className="h-5 w-5 text-primary" />
               <h2 className="text-lg font-semibold text-neutral-900">Top Profit Contributors</h2>
             </div>
             <p className="text-sm text-neutral-500 mt-1">

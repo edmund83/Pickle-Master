@@ -49,7 +49,7 @@ export function CompactProgress({
         <div
           className={cn(
             'h-full rounded-full transition-all duration-300',
-            isComplete ? 'bg-green-500' : 'bg-pickle-500'
+            isComplete ? 'bg-green-500' : 'bg-primary'
           )}
           style={{ width: `${percentage}%` }}
         />

@@ -135,7 +135,7 @@ export default function AIAssistantPage() {
       {/* Header */}
       <div className="border-b border-neutral-200 bg-white px-8 py-6">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-pickle-500 to-pickle-600 text-white">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/90 text-white">
             <Sparkles className="h-5 w-5" />
           </div>
           <div>
@@ -212,13 +212,13 @@ export default function AIAssistantPage() {
         <div className="lg:col-span-2 flex flex-col min-h-0 rounded-2xl border border-neutral-200 bg-white overflow-hidden">
           {/* Chat Header */}
           <div className="flex items-center gap-4 px-6 py-4 border-b border-neutral-200 bg-neutral-50/50">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-pickle-500 text-white shadow-lg shadow-pickle-500/20">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/20">
               <Bot className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="font-semibold text-neutral-900">Pickle AI</h3>
-              <p className="text-xs text-pickle-600 font-medium flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 bg-pickle-500 rounded-full animate-pulse"></span>
+              <h3 className="font-semibold text-neutral-900">Nook AI</h3>
+              <p className="text-xs text-primary font-medium flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></span>
                 Analyzing your inventory
               </p>
             </div>
@@ -247,7 +247,7 @@ export default function AIAssistantPage() {
                     <button
                       key={idx}
                       onClick={() => setChatInput(suggestion)}
-                      className="block w-full text-sm text-pickle-600 hover:text-pickle-700 hover:underline"
+                      className="block w-full text-sm text-primary hover:text-primary hover:underline"
                     >
                       &quot;{suggestion}&quot;
                     </button>
@@ -262,13 +262,13 @@ export default function AIAssistantPage() {
                 >
                   <div className={`flex items-start gap-3 max-w-[85%] ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
                     <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg ${
-                      msg.role === 'user' ? 'bg-pickle-100 text-pickle-600' : 'bg-neutral-100 text-neutral-600'
+                      msg.role === 'user' ? 'bg-primary/20 text-primary' : 'bg-neutral-100 text-neutral-600'
                     }`}>
                       {msg.role === 'user' ? <User className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
                     </div>
                     <div className={`px-4 py-3 rounded-2xl text-sm ${
                       msg.role === 'user'
-                        ? 'bg-pickle-500 text-white rounded-tr-none'
+                        ? 'bg-primary text-white rounded-tr-none'
                         : 'bg-white border border-neutral-200 text-neutral-800 rounded-tl-none'
                     }`}>
                       <div className="whitespace-pre-wrap">{msg.content}</div>
@@ -285,9 +285,9 @@ export default function AIAssistantPage() {
                   </div>
                   <div className="bg-white border border-neutral-200 px-4 py-3 rounded-2xl rounded-tl-none">
                     <div className="flex items-center gap-1.5">
-                      <div className="w-2 h-2 bg-pickle-300 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-pickle-400 rounded-full animate-bounce [animation-delay:0.1s]"></div>
-                      <div className="w-2 h-2 bg-pickle-500 rounded-full animate-bounce [animation-delay:0.2s]"></div>
+                      <div className="w-2 h-2 bg-primary/40 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-primary/60 rounded-full animate-bounce [animation-delay:0.1s]"></div>
+                      <div className="w-2 h-2 bg-primary rounded-full animate-bounce [animation-delay:0.2s]"></div>
                     </div>
                   </div>
                 </div>

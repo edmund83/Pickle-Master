@@ -1,6 +1,6 @@
 # Website Guideline (SEO + Conversion) — Multi‑Tenant Inventory SaaS vs Sortly
 **Document purpose:** Give web developers + content writers a single source of truth to build a high‑performing marketing site that ranks, converts, and supports 2026 search + LLM discovery.  
-**Product:** Pickle Inventory (replace with final brand)  
+**Product:** Nook Inventory (replace with final brand)  
 **Date:** 2026-01-01
 
 ---
@@ -316,7 +316,7 @@
 ## 7) On-page SEO requirements (writer checklist)
 ### Title tag formula (≤ 60 chars)
 - **Primary keyword** + primary outcome + brand
-  - Example: “Barcode Inventory Software That Works Offline | Pickle Inventory”
+  - Example: “Barcode Inventory Software That Works Offline | Nook Inventory”
 
 ### H1 rules
 - Must be human-friendly; include primary keyword or close variant.

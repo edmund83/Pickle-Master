@@ -85,7 +85,7 @@ export function BatchScanList({
           </div>
           <div>
             <span className="text-neutral-500">Verified: </span>
-            <span className="font-semibold text-pickle-600">{verifiedCount}</span>
+            <span className="font-semibold text-primary">{verifiedCount}</span>
           </div>
         </div>
       </div>
