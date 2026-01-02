@@ -485,7 +485,7 @@ export default function FishbowlAlternativePage() {
                   Start Free Trial
                   <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
                 </Link>
-                <Link href="/solutions/warehouse" className="btn btn-outline btn-secondary btn-lg">
+                <Link href="/solutions/warehouse-inventory" className="btn btn-outline btn-secondary btn-lg">
                   Warehouse solution
                 </Link>
               </div>

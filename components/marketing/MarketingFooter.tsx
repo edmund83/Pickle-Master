@@ -41,6 +41,7 @@ export function MarketingFooter() {
                 <li><Link href="/features" className="link link-animated text-base-content/80">Features</Link></li>
                 <li><Link href="/solutions" className="link link-animated text-base-content/80">Solutions</Link></li>
                 <li><Link href="/pricing" className="link link-animated text-base-content/80">Pricing</Link></li>
+                <li><Link href="/demo" className="link link-animated text-base-content/80">Demo</Link></li>
                 <li><Link href="/migration/sortly" className="link link-animated text-base-content/80">Sortly migration</Link></li>
               </ul>
             </div>
@@ -54,6 +55,21 @@ export function MarketingFooter() {
                     Sortly alternative
                   </Link>
                 </li>
+                <li>
+                  <Link href="/compare/boxhero-alternative" className="link link-animated text-base-content/80">
+                    BoxHero alternative
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/compare/fishbowl-alternative" className="link link-animated text-base-content/80">
+                    Fishbowl alternative
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/compare/inflow-alternative" className="link link-animated text-base-content/80">
+                    inFlow alternative
+                  </Link>
+                </li>
               </ul>
             </div>
 
@@ -62,6 +78,7 @@ export function MarketingFooter() {
               <h4 className="text-base-content text-lg font-medium">Resources</h4>
               <ul className="space-y-3">
                 <li><Link href="/learn" className="link link-animated text-base-content/80">Learning Center</Link></li>
+                <li><Link href="/integrations" className="link link-animated text-base-content/80">Integrations</Link></li>
                 <li><Link href="/security" className="link link-animated text-base-content/80">Security</Link></li>
               </ul>
             </div>

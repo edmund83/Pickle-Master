@@ -54,6 +54,32 @@ const nextConfig: NextConfig = {
         destination: '/:path*',
         permanent: true,
       },
+      // Legacy/content-plan slugs → current marketing IA (avoid duplicate content)
+      {
+        source: '/blog',
+        destination: '/learn',
+        permanent: true,
+      },
+      {
+        source: '/blog/perpetual-vs-periodic-inventory',
+        destination: '/learn/perpetual-vs-periodic-inventory',
+        permanent: true,
+      },
+      {
+        source: '/blog/how-to-set-reorder-points',
+        destination: '/learn/how-to-set-reorder-points',
+        permanent: true,
+      },
+      {
+        source: '/solutions/warehouse-inventory',
+        destination: '/solutions/warehouse',
+        permanent: true,
+      },
+      {
+        source: '/solutions/ecommerce-inventory',
+        destination: '/solutions/ecommerce',
+        permanent: true,
+      },
     ]
   },
   images: {

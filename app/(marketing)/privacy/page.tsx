@@ -4,12 +4,15 @@ import { JsonLd } from '@/components/marketing/JsonLd'
 import { marketingMetadata } from '@/lib/marketing/metadata'
 import { breadcrumbJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Privacy policy',
-  description:
-    'Privacy policy for Nook Inventory. Learn what data we collect, how we use it, and your choices as a customer.',
-  pathname: '/privacy',
-})
+export const metadata: Metadata = {
+  ...marketingMetadata({
+    title: 'Privacy policy',
+    description:
+      'Privacy policy for Nook Inventory. Learn what data we collect, how we use it, and your choices as a customer.',
+    pathname: '/privacy',
+  }),
+  robots: { index: false, follow: true },
+}
 
 export default function PrivacyPage() {
   return (

@@ -19,7 +19,7 @@ import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, softwareApplicationJsonLd, faqPageJsonLd } from '@/lib/marketing/jsonld'
 
 export const metadata: Metadata = marketingMetadata({
-  title: 'Inventory Management Software Use Cases | Nook Inventory',
+  title: 'Inventory Management Software Use Cases',
   description:
     'Find the right inventory solution for warehouses, ecommerce, construction, small business, and mobile teams. Barcode scanning, offline mode, and team accountability.',
   pathname: '/solutions',
@@ -30,7 +30,7 @@ const SOLUTIONS = [
     title: 'Warehouse Inventory',
     description:
       'Receive shipments, run cycle counts, and pick orders with scan-first workflows. Works offline in dead zones.',
-    href: '/solutions/warehouse',
+    href: '/solutions/warehouse-inventory',
     icon: 'icon-[tabler--building-warehouse]',
     keywords: 'warehouse inventory tracking, receiving, cycle counts',
   },
@@ -38,7 +38,7 @@ const SOLUTIONS = [
     title: 'Ecommerce Inventory',
     description:
       'Keep accurate stock counts across locations and channels. Prevent stockouts and overselling with real-time sync.',
-    href: '/solutions/ecommerce',
+    href: '/solutions/ecommerce-inventory',
     icon: 'icon-[tabler--shopping-cart]',
     keywords: 'ecommerce inventory management, multi-channel stock',
   },

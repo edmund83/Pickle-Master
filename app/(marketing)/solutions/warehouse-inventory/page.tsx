@@ -17,10 +17,10 @@ import { marketingMetadata } from '@/lib/marketing/metadata'
 import { breadcrumbJsonLd, softwareApplicationJsonLd, faqPageJsonLd } from '@/lib/marketing/jsonld'
 
 export const metadata: Metadata = marketingMetadata({
-  title: 'Warehouse Inventory Management | Barcode Scanning for Receiving & Cycle Counts',
+  title: 'Warehouse Inventory Tracking | Barcode Scanning for Receiving & Cycle Counts',
   description:
     'Warehouse inventory tracking with barcode scanning, fast stock counts, and offline reliability for real-world conditions. Scan to receive, count, and pick.',
-  pathname: '/solutions/warehouse',
+  pathname: '/solutions/warehouse-inventory',
 })
 
 const faqs = [
@@ -74,15 +74,15 @@ export default function WarehouseSolutionPage() {
         data={breadcrumbJsonLd([
           { name: 'Home', pathname: '/' },
           { name: 'Solutions', pathname: '/solutions' },
-          { name: 'Warehouse', pathname: '/solutions/warehouse' },
+          { name: 'Warehouse Inventory', pathname: '/solutions/warehouse-inventory' },
         ])}
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory - Warehouse Management',
+          name: 'Nook Inventory - Warehouse Inventory Tracking',
           description:
-            'Warehouse inventory management with barcode scanning, cycle counts, and offline mode for real-world warehouse conditions.',
-          pathname: '/solutions/warehouse',
+            'Warehouse inventory tracking with barcode scanning, cycle counts, and offline mode for real-world warehouse conditions.',
+          pathname: '/solutions/warehouse-inventory',
         })}
       />
       <JsonLd data={faqPageJsonLd(faqs)} />
@@ -423,7 +423,7 @@ export default function WarehouseSolutionPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="text-base-content text-center text-2xl font-semibold md:text-3xl">Related Solutions</h2>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
-            <Link href="/solutions/ecommerce" className="card bg-base-100 shadow-sm hover:shadow-md">
+            <Link href="/solutions/ecommerce-inventory" className="card bg-base-100 shadow-sm hover:shadow-md">
               <div className="card-body">
                 <span className="icon-[tabler--shopping-cart] text-primary size-8"></span>
                 <h3 className="text-base-content mt-2 text-lg font-semibold">E-commerce</h3>

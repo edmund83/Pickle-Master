@@ -18,7 +18,7 @@ import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/lib/marketing/jsonld'
 
 export const metadata: Metadata = marketingMetadata({
-  title: 'Inventory Management Features | Nook',
+  title: 'Inventory Management Features',
   description:
     "Explore Nook's inventory features: barcode scanning, offline mobile, check-in/check-out, bulk editing, and low stock alerts. Start free.",
   pathname: '/features',
@@ -264,7 +264,7 @@ export default function FeaturesPage() {
         </div>
       </section>
 
-      {/* ===== WHO USES PICKLE SECTION ===== */}
+      {/* ===== WHO USES NOOK SECTION ===== */}
       <section className="py-12 sm:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
@@ -293,7 +293,7 @@ export default function FeaturesPage() {
             </Link>
 
             <Link
-              href="/solutions/warehouse"
+              href="/solutions/warehouse-inventory"
               className="card card-border shadow-none transition-all duration-300 hover:border-primary hover:shadow-md"
             >
               <div className="card-body items-center text-center">
@@ -323,7 +323,7 @@ export default function FeaturesPage() {
             </Link>
 
             <Link
-              href="/solutions/ecommerce"
+              href="/solutions/ecommerce-inventory"
               className="card card-border shadow-none transition-all duration-300 hover:border-primary hover:shadow-md"
             >
               <div className="card-body items-center text-center">
@@ -502,7 +502,7 @@ export default function FeaturesPage() {
           </p>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
             <Link
-              href="/solutions/warehouse"
+              href="/solutions/warehouse-inventory"
               className="card bg-base-100 shadow-sm transition-all duration-300 hover:shadow-md hover:border-primary"
             >
               <div className="card-body">
@@ -515,7 +515,7 @@ export default function FeaturesPage() {
             </Link>
 
             <Link
-              href="/solutions/ecommerce"
+              href="/solutions/ecommerce-inventory"
               className="card bg-base-100 shadow-sm transition-all duration-300 hover:shadow-md hover:border-primary"
             >
               <div className="card-body">

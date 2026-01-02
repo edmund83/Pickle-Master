@@ -4,12 +4,15 @@ import { JsonLd } from '@/components/marketing/JsonLd'
 import { marketingMetadata } from '@/lib/marketing/metadata'
 import { breadcrumbJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Terms of service',
-  description:
-    'Terms of service for Nook Inventory. Service rules, acceptable use, and customer responsibilities.',
-  pathname: '/terms',
-})
+export const metadata: Metadata = {
+  ...marketingMetadata({
+    title: 'Terms of service',
+    description:
+      'Terms of service for Nook Inventory. Service rules, acceptable use, and customer responsibilities.',
+    pathname: '/terms',
+  }),
+  robots: { index: false, follow: true },
+}
 
 export default function TermsPage() {
   return (

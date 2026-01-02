@@ -257,7 +257,7 @@ export default function SecurityPage() {
         <div className="mt-16">
           <h2 className="text-base-content text-2xl font-semibold">Complete audit trail</h2>
           <p className="text-base-content/80 mt-2 max-w-3xl">
-            Every inventory change is logged automatically. No guesswork when you need to answer "what happened?"
+            Every inventory change is logged automatically. No guesswork when you need to answer &quot;what happened?&quot;
           </p>
           <div className="mt-8 grid gap-6 lg:grid-cols-2">
             <div className="card card-border shadow-none">

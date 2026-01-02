@@ -18,7 +18,7 @@ import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/lib/marketing/jsonld'
 
 export const metadata: Metadata = marketingMetadata({
-  title: 'Inventory Management Guides | Nook',
+  title: 'Inventory Management Guides',
   description:
     'Master inventory management with practical guides on perpetual vs periodic systems, reorder points, and barcode workflows. Free for small teams.',
   pathname: '/learn',
@@ -249,7 +249,7 @@ export default function LearnPage() {
             </Link>
 
             <Link
-              href="/solutions/warehouse"
+              href="/solutions/warehouse-inventory"
               className="card card-border bg-base-100 shadow-none transition-all duration-300 hover:border-primary hover:shadow-md"
             >
               <div className="card-body items-center text-center">
@@ -275,7 +275,7 @@ export default function LearnPage() {
             </Link>
 
             <Link
-              href="/solutions/ecommerce"
+              href="/solutions/ecommerce-inventory"
               className="card card-border bg-base-100 shadow-none transition-all duration-300 hover:border-primary hover:shadow-md"
             >
               <div className="card-body items-center text-center">

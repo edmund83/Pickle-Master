@@ -22,7 +22,7 @@ export const metadata: Metadata = marketingMetadata({
   title: 'Ecommerce Inventory Management | Prevent Stockouts & Overselling',
   description:
     'Ecommerce inventory management software that keeps your stock accurate across locations, prevents stockouts with low-stock alerts, and scales with your growth.',
-  pathname: '/solutions/ecommerce',
+  pathname: '/solutions/ecommerce-inventory',
 })
 
 const ECOMMERCE_FAQS: FaqItem[] = [
@@ -147,14 +147,14 @@ export default function EcommerceSolutionPage() {
         data={breadcrumbJsonLd([
           { name: 'Home', pathname: '/' },
           { name: 'Solutions', pathname: '/solutions' },
-          { name: 'Ecommerce', pathname: '/solutions/ecommerce' },
+          { name: 'Ecommerce Inventory', pathname: '/solutions/ecommerce-inventory' },
         ])}
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory',
+          name: 'Nook Inventory - Ecommerce',
           description: 'Ecommerce inventory management with low-stock alerts, barcode scanning, and multi-location tracking.',
-          pathname: '/solutions/ecommerce',
+          pathname: '/solutions/ecommerce-inventory',
         })}
       />
       <JsonLd data={faqPageJsonLd(ECOMMERCE_FAQS)} />
@@ -283,7 +283,7 @@ export default function EcommerceSolutionPage() {
         <div className="mt-16">
           <h2 className="text-base-content text-xl font-semibold">Related solutions</h2>
           <div className="mt-6 grid gap-6 md:grid-cols-3">
-            <Link href="/solutions/warehouse" className="card card-border shadow-none hover:border-primary/30 transition-colors">
+            <Link href="/solutions/warehouse-inventory" className="card card-border shadow-none hover:border-primary/30 transition-colors">
               <div className="card-body">
                 <span className="icon-[tabler--building-warehouse] text-primary size-8"></span>
                 <h3 className="text-base-content mt-4 text-lg font-semibold">Warehouse management</h3>

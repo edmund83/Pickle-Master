@@ -41,11 +41,27 @@ Nook is a modern, mobile-first inventory management SaaS built with a serverless
 | Technology | Version | Purpose |
 |------------|---------|---------|
 | **Zustand** | 5.0.2 | Lightweight state management |
+| **Dexie** | 4.x | IndexedDB wrapper for offline-first storage |
+
+### Offline-First
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| **Dexie** | 4.x | IndexedDB wrapper for local item cache |
+| **useOnlineStatus** | Custom | Hook for connection monitoring |
+| **Sync Queue** | Custom | Pending operations stored for sync |
+
+### Barcode & Scanning
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| **bwip-js** | 4.x | Barcode generation (Code 128, Code 39, UPC, EAN, ITF, GS1) |
+| **html5-qrcode** | 2.x | Camera-based barcode/QR scanning |
+| **qrcode** | 1.5.4 | QR code generation |
 
 ### Utilities
 | Technology | Version | Purpose |
 |------------|---------|---------|
 | **date-fns** | 4.1.0 | Date manipulation |
+| **Recharts** | 2.x | Dashboard charts and visualizations |
 
 ---
 
@@ -61,6 +77,12 @@ Nook is a modern, mobile-first inventory management SaaS built with a serverless
 | Technology | Version | Purpose |
 |------------|---------|---------|
 | **@google/generative-ai** | 0.24.1 | Google Gemini AI for insights & chat |
+| **pgvector** | Extension | PostgreSQL vector embeddings for semantic search |
+
+### Email
+| Technology | Version | Purpose |
+|------------|---------|---------|
+| **Resend** | 4.x | Transactional email delivery (alerts, labels) |
 
 ---
 
@@ -88,6 +110,20 @@ Nook is a modern, mobile-first inventory management SaaS built with a serverless
 | **Turbopack** | Fast development bundler (Next.js 16 default) |
 | **ESLint** | Code linting |
 | **PostCSS** | CSS processing for Tailwind v4 |
+
+### Testing
+| Tool | Purpose |
+|------|---------|
+| **Vitest** | Unit and integration testing |
+| **Playwright** | End-to-end testing |
+| **React Testing Library** | Component testing |
+| **293+ Tests** | Comprehensive test coverage |
+
+### CI/CD
+| Tool | Purpose |
+|------|---------|
+| **GitHub Actions** | CI/CD pipelines |
+| **process-reminders.yml** | Daily CRON for reminder processing |
 
 ### Type Definitions
 | Package | Purpose |
@@ -119,7 +155,7 @@ nook-master/
 │   ├── labels/            # Barcode/QR generation
 │   └── supabase/          # Supabase client utilities
 ├── supabase/              # Supabase configuration
-│   └── migrations/        # Database migrations (12 files)
+│   └── migrations/        # Database migrations (47+ files)
 ├── types/                 # TypeScript type definitions
 ├── docs/                  # Documentation
 └── .claude/               # AI coding rules
