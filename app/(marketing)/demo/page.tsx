@@ -8,6 +8,13 @@
  *
  * Primary keyword: "inventory management software demo"
  * Secondary keywords: barcode inventory demo, inventory software walkthrough, inventory barcode scanning demo
+ *
+ * TODO: Proof Assets Required
+ * - 90-second overview video showing core workflows (scan, adjust, count, check-out)
+ * - 30-second Scan & Adjust workflow video
+ * - 45-second Stock Count workflow video
+ * - 30-second Check-Out workflow video
+ * - Add VideoObject schema once videos are embedded
  */
 import type { Metadata } from 'next'
 import Link from 'next/link'

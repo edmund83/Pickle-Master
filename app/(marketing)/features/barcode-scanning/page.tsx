@@ -8,6 +8,13 @@
  *
  * Primary keyword: "barcode scanning inventory software"
  * Secondary keywords: "QR code inventory app", "mobile barcode scanner for inventory"
+ *
+ * TODO: Proof Assets Required
+ * - Screenshot: Camera scanning UI on mobile device
+ * - Screenshot: Bluetooth scanner pairing flow
+ * - Screenshot: Scan result showing item details
+ * - Short video clip: Scanning workflow demo (15-30 seconds)
+ * - Photo: Supported scanner hardware (Socket Mobile, Zebra, etc.)
  */
 
 import type { Metadata } from 'next'

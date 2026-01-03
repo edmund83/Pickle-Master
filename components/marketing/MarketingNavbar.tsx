@@ -77,10 +77,12 @@ export function MarketingNavbar() {
                 <li><Link href="/solutions/small-business" className="dropdown-item">Small Business</Link></li>
                 <li><Link href="/solutions/construction-tools" className="dropdown-item">Construction Tools</Link></li>
                 <li><Link href="/solutions/mobile-inventory-app" className="dropdown-item">Mobile App</Link></li>
+                <li><Link href="/solutions/asset-tracking" className="dropdown-item">Asset Tracking</Link></li>
               </ul>
             </div>
 
             <Link href="/pricing" className="hover:text-primary active:text-primary">Pricing</Link>
+            <Link href="/demo" className="hover:text-primary active:text-primary">Demo</Link>
 
             {/* Learn Dropdown */}
             <div className="dropdown relative inline-flex [--offset:8] max-md:[--strategy:static] md:[--trigger:hover]">
@@ -97,9 +99,10 @@ export function MarketingNavbar() {
                 className="dropdown-menu dropdown-open:opacity-100 hidden min-w-60 before:absolute before:-top-2 before:left-0 before:h-2 before:w-full max-md:static max-md:mt-2 max-md:w-full max-md:border-0 max-md:bg-transparent max-md:shadow-none max-md:before:hidden"
                 role="menu"
               >
-                <li><Link href="/learn" className="dropdown-item">Learning Center</Link></li>
-                <li><Link href="/learn/how-to-set-reorder-points" className="dropdown-item">How to Set Reorder Points</Link></li>
-                <li><Link href="/learn/perpetual-vs-periodic-inventory" className="dropdown-item">Perpetual vs Periodic</Link></li>
+                <li><Link href="/learn/guide" className="dropdown-item">Guides</Link></li>
+                <li><Link href="/learn/blog" className="dropdown-item">Blog</Link></li>
+                <li><Link href="/learn/templates" className="dropdown-item">Templates &amp; Tools</Link></li>
+                <li><Link href="/learn/glossary" className="dropdown-item">Glossary</Link></li>
               </ul>
             </div>
 

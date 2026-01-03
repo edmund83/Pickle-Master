@@ -8,6 +8,13 @@
  *
  * Primary keyword: "warehouse inventory management"
  * Secondary keywords: "warehouse barcode scanning", "warehouse cycle counts", "receiving workflow"
+ *
+ * TODO: Proof Assets Required
+ * - Screenshot: Cycle count workflow showing discrepancies
+ * - Screenshot: Receiving workflow with scan-to-confirm
+ * - Screenshot: Audit trail showing stock movement history
+ * - Case study or testimonial from warehouse team
+ * - Speed metrics (e.g., "50% faster cycle counts")
  */
 
 import type { Metadata } from 'next'

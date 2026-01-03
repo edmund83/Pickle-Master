@@ -1,10 +1,11 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { ArrowLeft, Scan, Edit3, ListChecks } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { BarcodeScanner } from '@/components/scanner/BarcodeScanner'
+import { HardwareScannerInput } from '@/components/scanner/HardwareScannerInput'
 import { ScanResultModal, ScannedItem } from '@/components/scanner/ScanResultModal'
 import { QuickAdjustModal } from '@/components/scanner/QuickAdjustModal'
 import { BatchScanList, BatchScanItem } from '@/components/scanner/BatchScanList'
@@ -20,6 +21,7 @@ import {
   deleteScanSession,
 } from '@/lib/offline/db'
 import type { ScanResult } from '@/lib/scanner/useBarcodeScanner'
+import { useHardwareScanner } from '@/lib/scanner/useHardwareScanner'
 
 type ScanMode = 'single' | 'quick-adjust' | 'batch'
 type ViewState = 'scanning' | 'result' | 'adjust' | 'batch-list'
@@ -29,13 +31,6 @@ export default function ScanPage() {
   const isDesktop = useIsDesktop()
   const [mode, setMode] = useState<ScanMode>('single')
   const [viewState, setViewState] = useState<ViewState>('scanning')
-
-  // Redirect desktop users - scan is mobile/tablet only
-  useEffect(() => {
-    if (isDesktop) {
-      router.replace('/dashboard')
-    }
-  }, [isDesktop, router])
 
   // Scan result state
   const [lastBarcode, setLastBarcode] = useState<string | null>(null)
@@ -56,6 +51,17 @@ export default function ScanPage() {
   } = useOfflineSync()
 
   const supabase = createClient()
+
+  // Hardware scanner for desktop mode
+  // Note: The hook is always active but we only render the UI on desktop
+  // The handleScan callback is defined below, so we need to use a ref pattern
+  const handleScanRef = useRef<(result: ScanResult) => void>(() => {})
+
+  const { isListening: isHardwareScannerListening, lastScan: hardwareLastScan } =
+    useHardwareScanner({
+      onScan: (result) => handleScanRef.current(result),
+      enabled: isDesktop && viewState === 'scanning',
+    })
 
   // Restore batch session from IndexedDB on mount
   useEffect(() => {
@@ -243,6 +249,11 @@ export default function ScanPage() {
     },
     [mode, batchItems, lookupItem]
   )
+
+  // Keep the ref updated for the hardware scanner hook
+  useEffect(() => {
+    handleScanRef.current = handleScan
+  }, [handleScan])
 
   // Save quantity adjustment - uses offline queue
   const handleSaveAdjustment = useCallback(
@@ -462,15 +473,22 @@ export default function ScanPage() {
 
       {/* Main content */}
       <div className="flex-1 overflow-hidden">
-        {/* Scanner view */}
-        {viewState === 'scanning' && (
-          <BarcodeScanner
-            onScan={handleScan}
-            showCloseButton={false}
-            continuous={mode === 'batch'}
-            className="h-full"
-          />
-        )}
+        {/* Scanner view - Desktop uses hardware scanner, Mobile uses camera */}
+        {viewState === 'scanning' &&
+          (isDesktop ? (
+            <HardwareScannerInput
+              isListening={isHardwareScannerListening}
+              lastScan={hardwareLastScan}
+              className="h-full"
+            />
+          ) : (
+            <BarcodeScanner
+              onScan={handleScan}
+              showCloseButton={false}
+              continuous={mode === 'batch'}
+              className="h-full"
+            />
+          ))}
 
         {/* Result view (single mode) */}
         {viewState === 'result' && lastBarcode && (

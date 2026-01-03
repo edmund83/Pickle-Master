@@ -21,7 +21,7 @@ export const metadata: Metadata = marketingMetadata({
   title: 'How to Set Reorder Points and Low Stock Alerts | Complete Guide',
   description:
     'Learn how to calculate reorder points and set up low stock alerts to prevent stockouts. Includes the reorder point formula, safety stock calculation, and best practices for small businesses.',
-  pathname: '/learn/how-to-set-reorder-points',
+  pathname: '/learn/guide/how-to-set-reorder-points',
   ogType: 'article',
 })
 
@@ -68,7 +68,7 @@ export default function HowToSetReorderPointsPage() {
         data={breadcrumbJsonLd([
           { name: 'Home', pathname: '/' },
           { name: 'Learn', pathname: '/learn' },
-          { name: 'How to Set Reorder Points', pathname: '/learn/how-to-set-reorder-points' },
+          { name: 'How to Set Reorder Points', pathname: '/learn/guide/how-to-set-reorder-points' },
         ])}
       />
       <JsonLd
@@ -76,7 +76,7 @@ export default function HowToSetReorderPointsPage() {
           headline: 'How to Set Reorder Points and Low Stock Alerts',
           description:
             'A practical guide for small businesses: calculate reorder points, set safety stock levels, and configure low stock alerts to prevent stockouts.',
-          pathname: '/learn/how-to-set-reorder-points',
+          pathname: '/learn/guide/how-to-set-reorder-points',
           datePublished: published,
           dateModified: published,
         })}

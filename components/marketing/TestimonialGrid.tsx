@@ -1,21 +1,28 @@
+/**
+ * TODO: Proof Assets Required
+ * - Replace placeholder testimonials with real customer quotes
+ * - Add customer photos or company logos
+ * - Include full names and company names with permission
+ * - Link to case studies when available
+ */
 const TESTIMONIALS = [
   {
-    name: 'Warehouse Manager',
+    name: 'Warehouse Manager', // TODO: Replace with real customer name + company
     title: 'Fewer count mistakes',
     quote:
       'We cut our monthly stock count time in half. Scanning + quick adjustments make discrepancies obvious, and the audit trail keeps everyone honest.',
   },
   {
-    name: 'Small Business Owner',
+    name: 'Small Business Owner', // TODO: Replace with real customer name + company
     title: 'Finally predictable pricing',
     quote:
-      'We outgrew spreadsheets fast, but other tools punished us for having more items. Nook stayed simple and the pricing didn’t spike.',
+      "We outgrew spreadsheets fast, but other tools punished us for having more items. Nook stayed simple and the pricing didn't spike.",
   },
   {
-    name: 'Construction Ops',
-    title: 'Tools stop “walking away”',
+    name: 'Construction Ops', // TODO: Replace with real customer name + company
+    title: 'Tools stop "walking away"',
     quote:
-      'Check-out to staff by scan changed everything. We know who has what, and returns don’t rely on memory anymore.',
+      "Check-out to staff by scan changed everything. We know who has what, and returns don't rely on memory anymore.",
   },
 ]
 

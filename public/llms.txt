@@ -56,7 +56,21 @@ Nook is a simple, mobile-first inventory management system for small teams. It f
 
 ### Learning Center
 - Learn Hub: https://nook.app/learn
-- Perpetual vs Periodic Inventory: https://nook.app/learn/perpetual-vs-periodic-inventory
+- Guides:
+  - Perpetual vs Periodic Inventory: https://nook.app/learn/guide/perpetual-vs-periodic-inventory
+  - How to Set Reorder Points: https://nook.app/learn/guide/how-to-set-reorder-points
+- Blog: https://nook.app/learn/blog
+- Glossary:
+  - Glossary Hub: https://nook.app/learn/glossary
+  - Inventory Turnover: https://nook.app/learn/glossary/inventory-turnover
+  - Economic Order Quantity: https://nook.app/learn/glossary/economic-order-quantity
+- Tools:
+  - Tools Hub: https://nook.app/learn/tools
+  - Reorder Point Calculator: https://nook.app/learn/tools/reorder-point-calculator
+- Templates:
+  - Templates Hub: https://nook.app/learn/templates
+  - Inventory Spreadsheet: https://nook.app/learn/templates/inventory-spreadsheet
+  - Cycle Count Sheet: https://nook.app/learn/templates/cycle-count-sheet
 
 ## Pricing Summary
 Nook uses trust-first pricing designed to scale predictably:

@@ -8,6 +8,13 @@
  *
  * Primary keyword: "tool tracking software"
  * Secondary keywords: "construction inventory management", "asset checkouts", "offline jobsites"
+ *
+ * TODO: Proof Assets Required
+ * - Screenshot: Check-out workflow showing issue-to-staff flow
+ * - Screenshot: Overdue items list with due dates
+ * - Screenshot: Check-in return confirmation
+ * - Short video clip: Tool checkout workflow (15-30 seconds)
+ * - Case study or testimonial from construction/contractor team
  */
 
 import type { Metadata } from 'next'
