@@ -141,7 +141,7 @@ export default function PricingPage() {
                     <span>1 user included</span>
                   </li>
                 </ul>
-                <Link href="/signup" className="btn btn-primary btn-gradient">
+                <Link href="/signup?plan=starter" className="btn btn-primary btn-gradient">
                   Start 14-Day Free Trial
                 </Link>
                 <p className="text-base-content/60 text-center text-xs">No credit card required</p>
@@ -187,7 +187,7 @@ export default function PricingPage() {
                     <span>Up to 10 users</span>
                   </li>
                 </ul>
-                <Link href="/signup" className="btn btn-primary btn-gradient">
+                <Link href="/signup?plan=team" className="btn btn-primary btn-gradient">
                   Start 14-Day Free Trial
                 </Link>
                 <p className="text-base-content/60 text-center text-xs">No credit card required</p>
@@ -230,7 +230,7 @@ export default function PricingPage() {
                     <span>Up to 25 users</span>
                   </li>
                 </ul>
-                <Link href="/signup" className="btn btn-primary btn-gradient">
+                <Link href="/signup?plan=business" className="btn btn-primary btn-gradient">
                   Start 14-Day Free Trial
                 </Link>
                 <p className="text-base-content/60 text-center text-xs">No credit card required</p>
@@ -498,7 +498,7 @@ export default function PricingPage() {
               best plan.
             </p>
             <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Link href="/signup" className="btn btn-primary btn-gradient btn-lg">
+              <Link href="/signup?plan=team" className="btn btn-primary btn-gradient btn-lg">
                 Start Free Trial
                 <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
               </Link>

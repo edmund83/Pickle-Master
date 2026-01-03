@@ -1,14 +1,27 @@
 'use client'
 
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Mail, Lock, User, Building, AlertCircle, CheckCircle } from 'lucide-react'
+import { Mail, Lock, User, Building, AlertCircle, CheckCircle, Sparkles, Loader2 } from 'lucide-react'
 
-export default function SignupPage() {
+const PLAN_DETAILS = {
+  starter: { name: 'Starter', price: '$19/mo', color: 'bg-blue-100 text-blue-700' },
+  team: { name: 'Team', price: '$49/mo', color: 'bg-primary/10 text-primary', badge: 'Most Popular' },
+  business: { name: 'Business', price: '$99/mo', color: 'bg-purple-100 text-purple-700' },
+} as const
+
+type PlanType = keyof typeof PLAN_DETAILS
+
+function SignupForm() {
+  const searchParams = useSearchParams()
+  const planParam = searchParams.get('plan') as PlanType | null
+  const selectedPlan = planParam && PLAN_DETAILS[planParam] ? planParam : 'team'
+  const planInfo = PLAN_DETAILS[selectedPlan]
   const [fullName, setFullName] = useState('')
   const [companyName, setCompanyName] = useState('')
   const [email, setEmail] = useState('')
@@ -25,8 +38,8 @@ export default function SignupPage() {
     try {
       const supabase = createClient()
 
-      // Create the user with metadata
-      // The database trigger will handle creating tenant and profile
+      // Create the user with metadata including selected plan
+      // The database trigger will handle creating tenant and profile with trial
       const { error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -34,6 +47,7 @@ export default function SignupPage() {
           data: {
             full_name: fullName,
             company_name: companyName,
+            plan: selectedPlan,
           },
           emailRedirectTo: `${window.location.origin}/auth/callback`,
         },
@@ -82,6 +96,22 @@ export default function SignupPage() {
         <CardDescription>
           Start managing your inventory in minutes
         </CardDescription>
+        {/* Plan badge */}
+        <div className="mt-4 flex items-center justify-center gap-2">
+          <div className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium ${planInfo.color}`}>
+            <Sparkles className="h-3.5 w-3.5" />
+            Starting {planInfo.name} plan trial
+            {'badge' in planInfo && (
+              <span className="ml-1 rounded-full bg-primary/20 px-2 py-0.5 text-xs">{planInfo.badge}</span>
+            )}
+          </div>
+        </div>
+        <p className="mt-2 text-xs text-neutral-500">
+          14 days free • {planInfo.price} after trial • Cancel anytime
+        </p>
+        <Link href="/pricing" className="mt-1 inline-block text-xs text-primary hover:underline">
+          Change plan
+        </Link>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSignup} className="space-y-4">
@@ -165,5 +195,38 @@ export default function SignupPage() {
         </div>
       </CardContent>
     </Card>
+  )
+}
+
+function SignupFormFallback() {
+  return (
+    <Card>
+      <CardHeader className="text-center">
+        <CardTitle>Create an account</CardTitle>
+        <CardDescription>
+          Start managing your inventory in minutes
+        </CardDescription>
+        <div className="mt-4 flex items-center justify-center">
+          <Loader2 className="h-5 w-5 animate-spin text-neutral-400" />
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          <div className="h-10 animate-pulse rounded-lg bg-neutral-100" />
+          <div className="h-10 animate-pulse rounded-lg bg-neutral-100" />
+          <div className="h-10 animate-pulse rounded-lg bg-neutral-100" />
+          <div className="h-10 animate-pulse rounded-lg bg-neutral-100" />
+          <div className="h-10 animate-pulse rounded-lg bg-neutral-100" />
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+export default function SignupPage() {
+  return (
+    <Suspense fallback={<SignupFormFallback />}>
+      <SignupForm />
+    </Suspense>
   )
 }

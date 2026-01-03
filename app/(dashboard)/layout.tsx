@@ -4,6 +4,7 @@ import { QuotaWarningBanner } from '@/components/QuotaWarningBanner'
 import { UndoProvider } from '@/lib/hooks/useUndo'
 import { UndoToast } from '@/components/UndoToast'
 import { TenantSettingsProvider } from '@/contexts/TenantSettingsContext'
+import { SubscriptionGuard } from '@/components/SubscriptionGuard'
 
 export default function DashboardLayout({
   children,
@@ -14,13 +15,15 @@ export default function DashboardLayout({
     <OfflineProvider>
       <TenantSettingsProvider>
         <UndoProvider>
-          <div className="flex min-h-screen flex-col">
-            <QuotaWarningBanner />
-            <MobileLayoutWrapper>
-              {children}
-            </MobileLayoutWrapper>
-            <UndoToast />
-          </div>
+          <SubscriptionGuard>
+            <div className="flex min-h-screen flex-col">
+              <QuotaWarningBanner />
+              <MobileLayoutWrapper>
+                {children}
+              </MobileLayoutWrapper>
+              <UndoToast />
+            </div>
+          </SubscriptionGuard>
         </UndoProvider>
       </TenantSettingsProvider>
     </OfflineProvider>
