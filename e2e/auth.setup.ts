@@ -29,9 +29,9 @@ setup('authenticate', async ({ page }) => {
   // Wait for the form to be visible
   await page.waitForSelector('input[type="email"]', { timeout: 10000 })
 
-  // Fill in credentials using placeholder selectors
-  await page.getByPlaceholder('Email address').fill(TEST_EMAIL)
-  await page.getByPlaceholder('Password').fill(TEST_PASSWORD)
+  // Fill in credentials using ID selectors (more reliable than placeholder)
+  await page.locator('#userEmail').fill(TEST_EMAIL)
+  await page.locator('#userPassword').fill(TEST_PASSWORD)
 
   // Click login button
   await page.getByRole('button', { name: 'Sign in' }).click()
