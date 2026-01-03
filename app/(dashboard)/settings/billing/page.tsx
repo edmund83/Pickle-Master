@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import {
   CreditCard,
@@ -12,19 +13,37 @@ import {
   Building2,
   Loader2,
   ExternalLink,
-  Calendar
+  Calendar,
+  AlertTriangle,
+  Sparkles
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useFormatting } from '@/hooks/useFormatting'
+import { StripePricingTable, StripePricingTablePlaceholder } from '@/components/StripePricingTable'
+import {
+  getSubscriptionState,
+  getStatusLabel,
+  getStatusColor,
+  isAccountPaused,
+  isInGracePeriod,
+  type Tenant,
+} from '@/lib/subscription/status'
 
 interface TenantSubscription {
+  id: string
   subscription_tier: string
   subscription_status: string
   trial_ends_at: string | null
   max_items: number
   max_users: number
   max_folders: number
+  stripe_customer_id: string | null
 }
+
+// Stripe config (would come from env in production)
+const STRIPE_PUBLISHABLE_KEY = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ''
+const STRIPE_PRICING_TABLE_ID = process.env.NEXT_PUBLIC_STRIPE_PRICING_TABLE_ID || ''
+const isStripeConfigured = !!(STRIPE_PUBLISHABLE_KEY && STRIPE_PRICING_TABLE_ID)
 
 interface UsageStats {
   items: number
@@ -105,6 +124,7 @@ export default function BillingPage() {
   const [subscription, setSubscription] = useState<TenantSubscription | null>(null)
   const [usage, setUsage] = useState<UsageStats>({ items: 0, users: 0, folders: 0 })
   const [loading, setLoading] = useState(true)
+  const [userEmail, setUserEmail] = useState<string>('')
   const { formatCurrency } = useFormatting()
 
   useEffect(() => {
@@ -118,6 +138,7 @@ export default function BillingPage() {
     try {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
+      setUserEmail(user.email || '')
 
       // Get profile and tenant info
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -133,7 +154,7 @@ export default function BillingPage() {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: tenant } = await (supabase as any)
         .from('tenants')
-        .select('subscription_tier, subscription_status, trial_ends_at, max_items, max_users, max_folders')
+        .select('id, subscription_tier, subscription_status, trial_ends_at, max_items, max_users, max_folders, stripe_customer_id')
         .eq('id', profile.tenant_id)
         .single()
 
@@ -207,19 +228,67 @@ export default function BillingPage() {
       <div className="p-8 max-w-5xl">
         {/* Trial Banner */}
         {isTrialing && trialDaysLeft > 0 && (
-          <div className="mb-6 flex items-center gap-4 rounded-xl bg-primary/10 border border-primary/30 p-4">
-            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-white">
-              <Calendar className="h-5 w-5" />
+          <div className={`mb-6 flex items-center gap-4 rounded-xl p-4 ${
+            trialDaysLeft <= 3
+              ? 'bg-yellow-50 border border-yellow-200'
+              : 'bg-primary/10 border border-primary/30'
+          }`}>
+            <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+              trialDaysLeft <= 3 ? 'bg-yellow-500 text-white' : 'bg-primary text-white'
+            }`}>
+              {trialDaysLeft <= 3 ? <AlertTriangle className="h-5 w-5" /> : <Sparkles className="h-5 w-5" />}
             </div>
             <div className="flex-1">
-              <p className="font-medium text-primary">
-                Trial Period: {trialDaysLeft} days remaining
+              <p className={`font-medium ${trialDaysLeft <= 3 ? 'text-yellow-700' : 'text-primary'}`}>
+                Trial Period: {trialDaysLeft} day{trialDaysLeft === 1 ? '' : 's'} remaining
               </p>
-              <p className="text-sm text-primary">
+              <p className={`text-sm ${trialDaysLeft <= 3 ? 'text-yellow-600' : 'text-primary/80'}`}>
                 Your trial will end on {new Date(subscription?.trial_ends_at || '').toLocaleDateString()}
               </p>
             </div>
-            <Button disabled title="Coming soon">Upgrade Now</Button>
+            <a href="#upgrade" className="btn btn-primary">
+              Upgrade Now
+            </a>
+          </div>
+        )}
+
+        {/* Grace Period Warning */}
+        {subscription && isInGracePeriod(subscription as unknown as Tenant) && (
+          <div className="mb-6 flex items-center gap-4 rounded-xl bg-orange-50 border border-orange-200 p-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-500 text-white">
+              <AlertTriangle className="h-5 w-5" />
+            </div>
+            <div className="flex-1">
+              <p className="font-medium text-orange-700">
+                Trial Ended - Grace Period Active
+              </p>
+              <p className="text-sm text-orange-600">
+                Your account will be paused soon. Upgrade now to keep your data.
+              </p>
+            </div>
+            <a href="#upgrade" className="btn btn-warning">
+              Upgrade Now
+            </a>
+          </div>
+        )}
+
+        {/* Account Paused Warning */}
+        {subscription && isAccountPaused(subscription as unknown as Tenant) && (
+          <div className="mb-6 flex items-center gap-4 rounded-xl bg-red-50 border border-red-200 p-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-500 text-white">
+              <AlertTriangle className="h-5 w-5" />
+            </div>
+            <div className="flex-1">
+              <p className="font-medium text-red-700">
+                Account Paused
+              </p>
+              <p className="text-sm text-red-600">
+                Your account has been paused. Upgrade to restore access to your inventory.
+              </p>
+            </div>
+            <a href="#upgrade" className="btn btn-error">
+              Upgrade Now
+            </a>
           </div>
         )}
 
@@ -332,79 +401,98 @@ export default function BillingPage() {
           </div>
         </div>
 
-        {/* Available Plans */}
-        <div className="rounded-xl border border-neutral-200 bg-white">
+        {/* Upgrade Section with Stripe Pricing Table */}
+        <div id="upgrade" className="rounded-xl border border-neutral-200 bg-white scroll-mt-8">
           <div className="border-b border-neutral-200 px-6 py-4">
-            <h2 className="text-lg font-semibold text-neutral-900">Available Plans</h2>
+            <h2 className="text-lg font-semibold text-neutral-900">
+              {subscription?.subscription_status === 'active' ? 'Change Plan' : 'Upgrade Your Plan'}
+            </h2>
+            <p className="mt-1 text-sm text-neutral-500">
+              {subscription?.subscription_status === 'active'
+                ? 'Upgrade or downgrade your subscription'
+                : 'Choose a plan that fits your needs'}
+            </p>
           </div>
           <div className="p-6">
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              {PLANS.map((plan) => {
-                const isCurrent = plan.id === subscription?.subscription_tier
-                const PlanIcon = plan.icon
+            {isStripeConfigured ? (
+              <StripePricingTable
+                pricingTableId={STRIPE_PRICING_TABLE_ID}
+                publishableKey={STRIPE_PUBLISHABLE_KEY}
+                customerEmail={userEmail}
+                clientReferenceId={subscription?.id}
+              />
+            ) : (
+              <>
+                <StripePricingTablePlaceholder />
+                {/* Fallback: Show plan cards for reference */}
+                <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                  {PLANS.map((plan) => {
+                    const isCurrent = plan.id === subscription?.subscription_tier
+                    const PlanIcon = plan.icon
 
-                return (
-                  <div
-                    key={plan.id}
-                    className={`relative rounded-xl border p-5 transition-all ${
-                      isCurrent
-                        ? 'border-primary bg-primary/10 ring-1 ring-primary'
-                        : plan.popular
-                        ? 'border-primary/30 hover:border-primary/60'
-                        : 'border-neutral-200 hover:border-neutral-300'
-                    }`}
-                  >
-                    {plan.popular && !isCurrent && (
-                      <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-0.5 text-xs font-medium text-white">
-                        Popular
-                      </span>
-                    )}
-                    {isCurrent && (
-                      <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-0.5 text-xs font-medium text-white">
-                        Current
-                      </span>
-                    )}
+                    return (
+                      <div
+                        key={plan.id}
+                        className={`relative rounded-xl border p-5 transition-all ${
+                          isCurrent
+                            ? 'border-primary bg-primary/10 ring-1 ring-primary'
+                            : plan.popular
+                            ? 'border-primary/30 hover:border-primary/60'
+                            : 'border-neutral-200 hover:border-neutral-300'
+                        }`}
+                      >
+                        {plan.popular && !isCurrent && (
+                          <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-0.5 text-xs font-medium text-white">
+                            Popular
+                          </span>
+                        )}
+                        {isCurrent && (
+                          <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 rounded-full bg-primary px-3 py-0.5 text-xs font-medium text-white">
+                            Current
+                          </span>
+                        )}
 
-                    <div className="mb-4 flex items-center gap-3">
-                      <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-                        isCurrent ? 'bg-primary text-white' : 'bg-neutral-100 text-neutral-600'
-                      }`}>
-                        <PlanIcon className="h-5 w-5" />
+                        <div className="mb-4 flex items-center gap-3">
+                          <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                            isCurrent ? 'bg-primary text-white' : 'bg-neutral-100 text-neutral-600'
+                          }`}>
+                            <PlanIcon className="h-5 w-5" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-neutral-900">{plan.name}</h3>
+                            <p className="text-lg font-bold text-neutral-900">
+                              {formatPrice(plan.price)}
+                            </p>
+                          </div>
+                        </div>
+
+                        <ul className="mb-4 space-y-2">
+                          {plan.features.slice(0, 4).map((feature, idx) => (
+                            <li key={idx} className="flex items-start gap-2 text-sm text-neutral-600">
+                              <Check className="h-4 w-4 shrink-0 text-primary mt-0.5" />
+                              <span>{feature}</span>
+                            </li>
+                          ))}
+                          {plan.features.length > 4 && (
+                            <li className="text-sm text-neutral-400">
+                              +{plan.features.length - 4} more features
+                            </li>
+                          )}
+                        </ul>
+
+                        <Button
+                          variant={isCurrent ? 'outline' : plan.popular ? 'default' : 'outline'}
+                          className="w-full"
+                          disabled
+                        >
+                          {isCurrent ? 'Current Plan' : plan.price < 0 ? 'Contact Sales' : 'Coming Soon'}
+                        </Button>
                       </div>
-                      <div>
-                        <h3 className="font-semibold text-neutral-900">{plan.name}</h3>
-                        <p className="text-lg font-bold text-neutral-900">
-                          {formatPrice(plan.price)}
-                        </p>
-                      </div>
-                    </div>
-
-                    <ul className="mb-4 space-y-2">
-                      {plan.features.slice(0, 4).map((feature, idx) => (
-                        <li key={idx} className="flex items-start gap-2 text-sm text-neutral-600">
-                          <Check className="h-4 w-4 shrink-0 text-primary mt-0.5" />
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                      {plan.features.length > 4 && (
-                        <li className="text-sm text-neutral-400">
-                          +{plan.features.length - 4} more features
-                        </li>
-                      )}
-                    </ul>
-
-                    <Button
-                      variant={isCurrent ? 'outline' : plan.popular ? 'default' : 'outline'}
-                      className="w-full"
-                      disabled
-                      title={isCurrent ? undefined : 'Coming soon'}
-                    >
-                      {isCurrent ? 'Current Plan' : plan.price < 0 ? 'Contact Sales' : 'Upgrade'}
-                    </Button>
-                  </div>
-                )
-              })}
-            </div>
+                    )
+                  })}
+                </div>
+              </>
+            )}
           </div>
         </div>
 
