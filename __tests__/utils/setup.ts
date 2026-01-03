@@ -1,6 +1,10 @@
 import { vi, beforeEach, afterEach } from 'vitest'
 import '@testing-library/jest-dom/vitest'
 
+// Enable React 19 act environment
+// @ts-expect-error -- React 19 requires this global flag
+globalThis.IS_REACT_ACT_ENVIRONMENT = true
+
 // Mock Next.js navigation
 vi.mock('next/navigation', () => ({
   redirect: vi.fn(),

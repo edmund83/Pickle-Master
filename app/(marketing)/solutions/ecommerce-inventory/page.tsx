@@ -8,6 +8,13 @@
  *
  * Primary keyword: "ecommerce inventory management"
  * Secondary keywords: "inventory software for online sellers", "stock sync", "prevent stockouts"
+ *
+ * TODO: Proof Assets Required
+ * - Screenshot: Low stock alerts dashboard
+ * - Screenshot: Multi-location inventory view
+ * - Screenshot: CSV import mapping interface
+ * - Case study or testimonial from ecommerce seller
+ * - Accuracy metrics (e.g., "99% stock accuracy")
  */
 
 import type { Metadata } from 'next'

@@ -10,7 +10,7 @@ export const metadata: Metadata = marketingMetadata({
   title: 'Perpetual vs periodic inventory',
   description:
     'Perpetual inventory vs periodic inventory explained: definitions, pros/cons, and which system small teams can keep accurate with barcode scanning.',
-  pathname: '/learn/perpetual-vs-periodic-inventory',
+  pathname: '/learn/guide/perpetual-vs-periodic-inventory',
   ogType: 'article',
 })
 
@@ -46,7 +46,7 @@ export default function PerpetualVsPeriodicInventoryPage() {
         data={breadcrumbJsonLd([
           { name: 'Home', pathname: '/' },
           { name: 'Learn', pathname: '/learn' },
-          { name: 'Perpetual vs periodic inventory', pathname: '/learn/perpetual-vs-periodic-inventory' },
+          { name: 'Perpetual vs periodic inventory', pathname: '/learn/guide/perpetual-vs-periodic-inventory' },
         ])}
       />
       <JsonLd
@@ -54,7 +54,7 @@ export default function PerpetualVsPeriodicInventoryPage() {
           headline: 'Perpetual vs periodic inventory: what’s the difference?',
           description:
             'A practical guide for small teams: definitions, pros/cons, and how barcode scanning makes perpetual inventory easier to keep accurate.',
-          pathname: '/learn/perpetual-vs-periodic-inventory',
+          pathname: '/learn/guide/perpetual-vs-periodic-inventory',
           datePublished: published,
           dateModified: published,
         })}

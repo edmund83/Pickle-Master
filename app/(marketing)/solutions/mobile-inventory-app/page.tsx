@@ -8,6 +8,13 @@
  *
  * Primary keyword: "mobile inventory app"
  * Secondary keywords: inventory app android, inventory app ios, offline inventory app, barcode scanner app
+ *
+ * TODO: Proof Assets Required
+ * - Screenshot: Mobile app UI on Android device
+ * - Screenshot: Mobile app UI on iOS device
+ * - Screenshot: Offline mode indicator and sync status
+ * - Short video clip: Mobile scanning workflow (15-30 seconds)
+ * - Device compatibility list with photos
  */
 import type { Metadata } from 'next'
 import Link from 'next/link'

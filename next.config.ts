@@ -54,20 +54,65 @@ const nextConfig: NextConfig = {
         destination: '/:path*',
         permanent: true,
       },
-      // Legacy/content-plan slugs → current marketing IA (avoid duplicate content)
+      // ===== CONTENT RESTRUCTURE: All content now under /learn/* =====
+
+      // Blog hub and pages → /learn/blog/*
       {
         source: '/blog',
-        destination: '/learn',
+        destination: '/learn/blog',
         permanent: true,
       },
       {
-        source: '/blog/perpetual-vs-periodic-inventory',
-        destination: '/learn/perpetual-vs-periodic-inventory',
+        source: '/blog/:slug*',
+        destination: '/learn/blog/:slug*',
+        permanent: true,
+      },
+
+      // Glossary hub and pages → /learn/glossary/*
+      {
+        source: '/glossary',
+        destination: '/learn/glossary',
         permanent: true,
       },
       {
-        source: '/blog/how-to-set-reorder-points',
-        destination: '/learn/how-to-set-reorder-points',
+        source: '/glossary/:slug*',
+        destination: '/learn/glossary/:slug*',
+        permanent: true,
+      },
+
+      // Tools hub and pages → /learn/tools/*
+      {
+        source: '/tools',
+        destination: '/learn/tools',
+        permanent: true,
+      },
+      {
+        source: '/tools/:slug*',
+        destination: '/learn/tools/:slug*',
+        permanent: true,
+      },
+
+      // Templates hub and pages → /learn/templates/*
+      {
+        source: '/templates',
+        destination: '/learn/templates',
+        permanent: true,
+      },
+      {
+        source: '/templates/:slug*',
+        destination: '/learn/templates/:slug*',
+        permanent: true,
+      },
+
+      // Flat /learn/* guide URLs → nested /learn/guide/* structure
+      {
+        source: '/learn/perpetual-vs-periodic-inventory',
+        destination: '/learn/guide/perpetual-vs-periodic-inventory',
+        permanent: true,
+      },
+      {
+        source: '/learn/how-to-set-reorder-points',
+        destination: '/learn/guide/how-to-set-reorder-points',
         permanent: true,
       },
       {

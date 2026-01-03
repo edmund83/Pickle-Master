@@ -20,7 +20,7 @@ import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/li
 export const metadata: Metadata = marketingMetadata({
   title: 'Inventory Management Guides',
   description:
-    'Master inventory management with practical guides on perpetual vs periodic systems, reorder points, and barcode workflows. Free for small teams.',
+    'Learn inventory management with practical guides, templates, and tools for perpetual vs periodic systems, reorder points, and barcode workflows.',
   pathname: '/learn',
 })
 
@@ -28,7 +28,7 @@ const LEARN_FAQS: FaqItem[] = [
   {
     question: 'What will I learn from these guides?',
     answer:
-      'Our guides cover practical inventory management topics: perpetual vs periodic systems, setting reorder points, barcode scanning workflows, cycle counting, and more. Each guide is written for small teams managing real inventory.',
+      'You’ll find practical inventory management guidance: perpetual vs periodic systems, setting reorder points, barcode scanning workflows, cycle counting, and more. We also link to templates, tools, and glossary definitions to help you apply what you learn.',
   },
   {
     question: 'Which guide should I read first?',
@@ -62,7 +62,7 @@ const GUIDES = [
     title: "Perpetual vs Periodic Inventory: What's the Difference?",
     description:
       'A practical guide for small businesses: definitions, pros/cons, and which system is easier to keep accurate.',
-    href: '/learn/perpetual-vs-periodic-inventory',
+    href: '/learn/guide/perpetual-vs-periodic-inventory',
     icon: 'icon-[tabler--exchange]',
     readTime: '8 min read',
   },
@@ -70,9 +70,48 @@ const GUIDES = [
     title: 'How to Set Reorder Points and Low Stock Alerts',
     description:
       'Calculate reorder points, set up low stock alerts, and prevent stockouts. A practical formula for small teams.',
-    href: '/learn/how-to-set-reorder-points',
+    href: '/learn/guide/how-to-set-reorder-points',
     icon: 'icon-[tabler--alert-triangle]',
     readTime: '10 min read',
+  },
+]
+
+const TEMPLATES = [
+  {
+    title: 'Inventory Spreadsheet Template',
+    description: 'Ready-to-use spreadsheet with 12 essential columns. Import directly into Nook.',
+    href: '/templates/inventory-spreadsheet',
+    icon: 'icon-[tabler--file-spreadsheet]',
+  },
+  {
+    title: 'Cycle Count Sheet Template',
+    description: 'Weekly and monthly cycle count schedules with ABC analysis and zone rotation strategies.',
+    href: '/templates/cycle-count-sheet',
+    icon: 'icon-[tabler--clipboard-check]',
+  },
+]
+
+const TOOLS = [
+  {
+    title: 'Reorder Point Calculator',
+    description: 'Calculate optimal reorder points based on lead time, demand, and safety stock.',
+    href: '/tools/reorder-point-calculator',
+    icon: 'icon-[tabler--calculator]',
+  },
+]
+
+const GLOSSARY_FEATURED = [
+  {
+    title: 'Inventory Turnover',
+    description: 'Learn the formula, see industry benchmarks, and discover how to improve your turnover ratio.',
+    href: '/glossary/inventory-turnover',
+    icon: 'icon-[tabler--refresh]',
+  },
+  {
+    title: 'Economic Order Quantity (EOQ)',
+    description: 'The classic formula for calculating optimal order quantities to minimize costs.',
+    href: '/glossary/economic-order-quantity',
+    icon: 'icon-[tabler--math-function]',
   },
 ]
 
@@ -113,7 +152,7 @@ export default function LearnPage() {
         data={softwareApplicationJsonLd({
           name: 'Nook Inventory Guides',
           description:
-            'Free inventory management guides covering perpetual vs periodic systems, reorder points, barcode workflows, and best practices for small teams.',
+            'Inventory management guides, templates, and tools covering perpetual vs periodic systems, reorder points, barcode workflows, and best practices for small teams.',
           pathname: '/learn',
         })}
       />
@@ -185,14 +224,18 @@ export default function LearnPage() {
       {/* ===== GUIDES SECTION ===== */}
       <section id="guides" className="py-12 md:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h2 className="text-base-content text-2xl font-semibold md:text-3xl">Practical Inventory Guides</h2>
-            <p className="text-base-content/80 mx-auto mt-4 max-w-2xl text-lg">
-              Start with the fundamentals, then dive deeper into specific topics.
-            </p>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-primary text-sm font-medium uppercase">Guides</p>
+              <h2 className="text-base-content mt-1 text-2xl font-semibold md:text-3xl">Practical Inventory Guides</h2>
+            </div>
+            <Link href="/learn/guide" className="link link-primary hidden sm:inline-flex items-center gap-1">
+              View all guides
+              <span className="icon-[tabler--arrow-right] size-4"></span>
+            </Link>
           </div>
 
-          <div className="mt-10 grid gap-6 md:grid-cols-2">
+          <div className="mt-8 grid gap-6 md:grid-cols-2">
             {GUIDES.map((guide) => (
               <Link
                 key={guide.href}
@@ -218,14 +261,161 @@ export default function LearnPage() {
             ))}
           </div>
 
-          <div className="mt-8 text-center">
-            <p className="text-base-content/60 text-sm">More guides coming soon: cycle counting, barcode labels, audit trails</p>
+          <div className="mt-6 text-center sm:hidden">
+            <Link href="/learn/guide" className="link link-primary inline-flex items-center gap-1">
+              View all guides
+              <span className="icon-[tabler--arrow-right] size-4"></span>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== TEMPLATES SECTION ===== */}
+      <section className="bg-base-200/50 py-12 md:py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-success text-sm font-medium uppercase">Templates</p>
+              <h2 className="text-base-content mt-1 text-2xl font-semibold md:text-3xl">Downloadable Templates</h2>
+            </div>
+            <Link href="/learn/templates" className="link link-primary hidden sm:inline-flex items-center gap-1">
+              View all templates
+              <span className="icon-[tabler--arrow-right] size-4"></span>
+            </Link>
+          </div>
+
+          <div className="mt-8 grid gap-6 md:grid-cols-2">
+            {TEMPLATES.map((template) => (
+              <Link
+                key={template.href}
+                href={template.href}
+                className="card card-border shadow-none hover:border-success hover:shadow-md transition-all duration-300"
+              >
+                <div className="card-body">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-success/10 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl">
+                      <span className={`${template.icon} text-success size-6`}></span>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-base-content text-xl font-semibold">{template.title}</h3>
+                      <p className="text-base-content/80 mt-2">{template.description}</p>
+                      <div className="mt-4">
+                        <span className="link link-success link-animated">Download template →</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          <div className="mt-6 text-center sm:hidden">
+            <Link href="/learn/templates" className="link link-primary inline-flex items-center gap-1">
+              View all templates
+              <span className="icon-[tabler--arrow-right] size-4"></span>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== TOOLS SECTION ===== */}
+      <section className="py-12 md:py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-info text-sm font-medium uppercase">Tools</p>
+              <h2 className="text-base-content mt-1 text-2xl font-semibold md:text-3xl">Interactive Calculators</h2>
+            </div>
+            <Link href="/learn/tools" className="link link-primary hidden sm:inline-flex items-center gap-1">
+              View all tools
+              <span className="icon-[tabler--arrow-right] size-4"></span>
+            </Link>
+          </div>
+
+          <div className="mt-8 grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {TOOLS.map((tool) => (
+              <Link
+                key={tool.href}
+                href={tool.href}
+                className="card card-border shadow-none hover:border-info hover:shadow-md transition-all duration-300"
+              >
+                <div className="card-body">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-info/10 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl">
+                      <span className={`${tool.icon} text-info size-6`}></span>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-base-content text-xl font-semibold">{tool.title}</h3>
+                      <p className="text-base-content/80 mt-2">{tool.description}</p>
+                      <div className="mt-4">
+                        <span className="link link-info link-animated">Use calculator →</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          <div className="mt-6 text-center sm:hidden">
+            <Link href="/learn/tools" className="link link-primary inline-flex items-center gap-1">
+              View all tools
+              <span className="icon-[tabler--arrow-right] size-4"></span>
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* ===== GLOSSARY SECTION ===== */}
+      <section className="bg-base-200/50 py-12 md:py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-warning text-sm font-medium uppercase">Glossary</p>
+              <h2 className="text-base-content mt-1 text-2xl font-semibold md:text-3xl">Key Inventory Terms</h2>
+            </div>
+            <Link href="/learn/glossary" className="link link-primary hidden sm:inline-flex items-center gap-1">
+              View all terms
+              <span className="icon-[tabler--arrow-right] size-4"></span>
+            </Link>
+          </div>
+
+          <div className="mt-8 grid gap-6 md:grid-cols-2">
+            {GLOSSARY_FEATURED.map((term) => (
+              <Link
+                key={term.href}
+                href={term.href}
+                className="card card-border shadow-none hover:border-warning hover:shadow-md transition-all duration-300"
+              >
+                <div className="card-body">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-warning/10 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl">
+                      <span className={`${term.icon} text-warning size-6`}></span>
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-base-content text-xl font-semibold">{term.title}</h3>
+                      <p className="text-base-content/80 mt-2">{term.description}</p>
+                      <div className="mt-4">
+                        <span className="link link-warning link-animated">Learn more →</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+
+          <div className="mt-6 text-center sm:hidden">
+            <Link href="/learn/glossary" className="link link-primary inline-flex items-center gap-1">
+              View all terms
+              <span className="icon-[tabler--arrow-right] size-4"></span>
+            </Link>
           </div>
         </div>
       </section>
 
       {/* ===== WHO THIS IS FOR SECTION ===== */}
-      <section className="bg-base-200/50 py-12 md:py-16">
+      <section className="py-12 md:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <h2 className="text-base-content text-2xl font-semibold md:text-3xl">Who These Guides Are For</h2>

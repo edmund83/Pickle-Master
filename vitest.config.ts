@@ -10,6 +10,10 @@ export default defineConfig({
     setupFiles: ['./__tests__/utils/setup.ts'],
     include: ['__tests__/**/*.test.ts', '__tests__/**/*.test.tsx'],
     exclude: ['node_modules', 'e2e'],
+    // Ensure React 19 act() is available (not production mode)
+    env: {
+      NODE_ENV: 'test',
+    },
     coverage: {
       provider: 'v8',
       reporter: ['text', 'html'],
