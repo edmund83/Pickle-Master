@@ -43,7 +43,7 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
-      <body className="min-h-screen bg-base-100 font-sans antialiased">
+      <body className="min-h-screen bg-base-100 font-sans antialiased" suppressHydrationWarning>
         {children}
       </body>
     </html>

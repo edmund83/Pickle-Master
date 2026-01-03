@@ -147,7 +147,7 @@ export default function BlogPage() {
               className="card card-border shadow-none transition-colors hover:border-primary/30"
             >
               <div className="card-body">
-                <span className="icon-[tabler--book-2] text-warning size-8"></span>
+                <span className="icon-[tabler--book-2] text-accent size-8"></span>
                 <h3 className="text-base-content mt-4 text-lg font-semibold">Glossary</h3>
                 <p className="text-base-content/80 mt-2 text-sm">
                   Clear definitions for inventory turnover, EOQ, and other key terms.

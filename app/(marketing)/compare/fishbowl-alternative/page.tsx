@@ -200,7 +200,7 @@ export default function FishbowlAlternativePage() {
               <h2 className="text-base-content text-xl font-semibold">Common Fishbowl frustrations</h2>
               <ul className="mt-6 space-y-4">
                 <li className="flex items-start gap-3">
-                  <span className="icon-[tabler--building-enterprise] text-error mt-0.5 size-5 shrink-0"></span>
+                  <span className="icon-[tabler--building-2] text-error mt-0.5 size-5 shrink-0"></span>
                   <div>
                     <span className="text-base-content font-medium">Overkill for your team size</span>
                     <p className="text-base-content/70 mt-1 text-sm">
@@ -251,7 +251,7 @@ export default function FishbowlAlternativePage() {
                   <th className="text-base-content text-left">Category</th>
                   <th className="text-base-content text-left">
                     <span className="text-primary flex items-center gap-2">
-                      <span className="icon-[tabler--check-circle] size-5"></span>
+                      <span className="icon-[tabler--circle-check] size-5"></span>
                       Nook
                     </span>
                   </th>

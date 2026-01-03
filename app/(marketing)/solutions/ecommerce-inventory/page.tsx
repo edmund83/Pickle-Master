@@ -250,6 +250,60 @@ export default function EcommerceSolutionPage() {
           </div>
         </div>
 
+        {/* Proof Section - Screenshots & Examples */}
+        <div className="mt-16">
+          <h2 className="text-base-content text-2xl font-semibold">See It In Action</h2>
+          <p className="text-base-content/80 mt-2 max-w-3xl">
+            Real ecommerce workflows, captured from Nook.
+          </p>
+          <div className="mt-8 grid gap-6 md:grid-cols-3">
+            {/* Screenshot 1: Low Stock Alerts */}
+            <div className="rounded-box bg-base-200 p-6">
+              {/* TODO: Screenshot - Low stock alerts dashboard */}
+              <div className="bg-base-100 mb-4 flex h-48 items-center justify-center rounded-lg border-2 border-dashed border-base-content/20">
+                <div className="text-center">
+                  <span className="icon-[tabler--bell-ringing] text-base-content/30 mx-auto size-12"></span>
+                  <p className="text-base-content/40 mt-2 text-sm">Low stock alerts screenshot</p>
+                </div>
+              </div>
+              <h3 className="text-base-content font-semibold">Low Stock Alerts</h3>
+              <p className="text-base-content/70 mt-1 text-sm">
+                Get notified before stockouts happen. Never miss a sale.
+              </p>
+            </div>
+
+            {/* Screenshot 2: Multi-Location View */}
+            <div className="rounded-box bg-base-200 p-6">
+              {/* TODO: Screenshot - Multi-location inventory view */}
+              <div className="bg-base-100 mb-4 flex h-48 items-center justify-center rounded-lg border-2 border-dashed border-base-content/20">
+                <div className="text-center">
+                  <span className="icon-[tabler--map-pin] text-base-content/30 mx-auto size-12"></span>
+                  <p className="text-base-content/40 mt-2 text-sm">Multi-location view screenshot</p>
+                </div>
+              </div>
+              <h3 className="text-base-content font-semibold">Multi-Location Stock</h3>
+              <p className="text-base-content/70 mt-1 text-sm">
+                See stock levels across all warehouses at a glance.
+              </p>
+            </div>
+
+            {/* Screenshot 3: CSV Import */}
+            <div className="rounded-box bg-base-200 p-6">
+              {/* TODO: Screenshot - CSV import mapping interface */}
+              <div className="bg-base-100 mb-4 flex h-48 items-center justify-center rounded-lg border-2 border-dashed border-base-content/20">
+                <div className="text-center">
+                  <span className="icon-[tabler--file-import] text-base-content/30 mx-auto size-12"></span>
+                  <p className="text-base-content/40 mt-2 text-sm">CSV import screenshot</p>
+                </div>
+              </div>
+              <h3 className="text-base-content font-semibold">Easy CSV Import</h3>
+              <p className="text-base-content/70 mt-1 text-sm">
+                Map fields and import your catalog in minutes.
+              </p>
+            </div>
+          </div>
+        </div>
+
         {/* CTA Section - cta-4 pattern */}
         <div className="mt-16 rounded-box bg-base-200 p-8">
           <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">

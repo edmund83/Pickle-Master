@@ -2,6 +2,7 @@
 @plugin "flyonui" {
   themes: light --default, dark --prefersdark;
 }
+@plugin "@iconify/tailwind4";
 @import "../node_modules/flyonui/variants.css";
 
 @theme {

@@ -371,7 +371,7 @@ export default function LearnPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-warning text-sm font-medium uppercase">Glossary</p>
+              <p className="text-accent text-sm font-medium uppercase">Glossary</p>
               <h2 className="text-base-content mt-1 text-2xl font-semibold md:text-3xl">Key Inventory Terms</h2>
             </div>
             <Link href="/learn/glossary" className="link link-primary hidden sm:inline-flex items-center gap-1">
@@ -385,18 +385,18 @@ export default function LearnPage() {
               <Link
                 key={term.href}
                 href={term.href}
-                className="card card-border shadow-none hover:border-warning hover:shadow-md transition-all duration-300"
+                className="card card-border shadow-none hover:border-accent hover:shadow-md transition-all duration-300"
               >
                 <div className="card-body">
                   <div className="flex items-start gap-4">
-                    <div className="bg-warning/10 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl">
-                      <span className={`${term.icon} text-warning size-6`}></span>
+                    <div className="bg-accent/10 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl">
+                      <span className={`${term.icon} text-accent size-6`}></span>
                     </div>
                     <div className="flex-1">
                       <h3 className="text-base-content text-xl font-semibold">{term.title}</h3>
                       <p className="text-base-content/80 mt-2">{term.description}</p>
                       <div className="mt-4">
-                        <span className="link link-warning link-animated">Learn more →</span>
+                        <span className="link link-accent link-animated">Learn more →</span>
                       </div>
                     </div>
                   </div>
@@ -456,8 +456,8 @@ export default function LearnPage() {
               className="card card-border bg-base-100 shadow-none transition-all duration-300 hover:border-primary hover:shadow-md"
             >
               <div className="card-body items-center text-center">
-                <div className="bg-warning/10 flex h-16 w-16 items-center justify-center rounded-2xl">
-                  <span className="icon-[tabler--tool] text-warning size-8"></span>
+                <div className="bg-accent/10 flex h-16 w-16 items-center justify-center rounded-2xl">
+                  <span className="icon-[tabler--tool] text-accent size-8"></span>
                 </div>
                 <h3 className="text-base-content mt-4 text-lg font-semibold">Construction Teams</h3>
                 <p className="text-base-content/70 mt-2 text-sm">Tool tracking with offline jobsite support</p>

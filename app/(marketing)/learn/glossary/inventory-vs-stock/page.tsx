@@ -144,19 +144,19 @@ export default function InventoryVsStockPage() {
         <div className="mt-10">
           <h2 className="text-base-content text-xl font-semibold">The Accounting Distinction</h2>
           <p className="text-base-content/80 mt-2">
-            In accounting, "stock" has an additional meaning that can cause confusion:
+            In accounting, &quot;stock&quot; has an additional meaning that can cause confusion:
           </p>
           <div className="mt-6 grid gap-6 md:grid-cols-2">
             <div className="card card-border">
               <div className="card-body">
                 <h3 className="text-base-content font-semibold">Stock (as Inventory)</h3>
                 <p className="text-base-content/80 mt-2 text-sm">
-                  Physical goods held for sale. Appears as a current asset on the balance sheet. Also called "stock on
-                  hand" or "stock in trade."
+                  Physical goods held for sale. Appears as a current asset on the balance sheet. Also called &quot;stock on
+                  hand&quot; or &quot;stock in trade.&quot;
                 </p>
                 <div className="bg-base-200 mt-4 rounded-lg p-3">
                   <p className="text-base-content/80 text-xs">
-                    <strong>Example:</strong> "Our stock of widgets is running low."
+                    <strong>Example:</strong> &quot;Our stock of widgets is running low.&quot;
                   </p>
                 </div>
               </div>
@@ -169,7 +169,7 @@ export default function InventoryVsStockPage() {
                 </p>
                 <div className="bg-base-200 mt-4 rounded-lg p-3">
                   <p className="text-base-content/80 text-xs">
-                    <strong>Example:</strong> "She owns 100 shares of company stock."
+                    <strong>Example:</strong> &quot;She owns 100 shares of company stock.&quot;
                   </p>
                 </div>
               </div>
@@ -187,7 +187,7 @@ export default function InventoryVsStockPage() {
                 For inventory management
               </h3>
               <p className="text-base-content/80 mt-2 text-sm">
-                Use "inventory" or "stock" interchangeably. Your team and software will understand both. Choose the
+                Use &quot;inventory&quot; or &quot;stock&quot; interchangeably. Your team and software will understand both. Choose the
                 term that matches your region or industry convention.
               </p>
             </div>
@@ -197,8 +197,8 @@ export default function InventoryVsStockPage() {
                 For financial reporting
               </h3>
               <p className="text-base-content/80 mt-2 text-sm">
-                Be clear about context. Say "inventory of goods" or "finished goods inventory" to avoid confusion with
-                "capital stock" or "treasury stock."
+                Be clear about context. Say &quot;inventory of goods&quot; or &quot;finished goods inventory&quot; to avoid confusion with
+                &quot;capital stock&quot; or &quot;treasury stock.&quot;
               </p>
             </div>
           </div>

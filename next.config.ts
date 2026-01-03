@@ -115,16 +115,6 @@ const nextConfig: NextConfig = {
         destination: '/learn/guide/how-to-set-reorder-points',
         permanent: true,
       },
-      {
-        source: '/solutions/warehouse-inventory',
-        destination: '/solutions/warehouse',
-        permanent: true,
-      },
-      {
-        source: '/solutions/ecommerce-inventory',
-        destination: '/solutions/ecommerce',
-        permanent: true,
-      },
     ]
   },
   images: {

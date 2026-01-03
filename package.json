@@ -26,6 +26,8 @@
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
     "dexie": "^4.2.1",
+    "@iconify-json/tabler": "^1.2.10",
+    "@iconify/tailwind4": "^1.2.0",
     "flyonui": "^2.4.1",
     "html5-qrcode": "^2.3.8",
     "jspdf": "^3.0.4",

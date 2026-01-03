@@ -139,7 +139,7 @@ export default function ConsignmentInventoryPage() {
                 <tr>
                   <td className="text-base-content font-medium">Unsold inventory</td>
                   <td className="text-base-content/80">Can be returned</td>
-                  <td className="text-base-content/80">Retailer's problem</td>
+                  <td className="text-base-content/80">Retailer&apos;s problem</td>
                 </tr>
                 <tr>
                   <td className="text-base-content font-medium">Inventory risk</td>
@@ -177,11 +177,11 @@ export default function ConsignmentInventoryPage() {
                 <div className="rounded-lg border border-success/30 bg-success/5 p-3">
                   <p className="text-success text-sm font-medium">✓ Can test new products safely</p>
                 </div>
-                <div className="rounded-lg border border-warning/30 bg-warning/5 p-3">
-                  <p className="text-warning text-sm font-medium">− Lower profit per sale</p>
+                <div className="rounded-lg border border-base-content/20 bg-base-200 p-3">
+                  <p className="text-base-content/70 text-sm font-medium">− Lower profit per sale</p>
                 </div>
-                <div className="rounded-lg border border-warning/30 bg-warning/5 p-3">
-                  <p className="text-warning text-sm font-medium">− Must track supplier's inventory</p>
+                <div className="rounded-lg border border-base-content/20 bg-base-200 p-3">
+                  <p className="text-base-content/70 text-sm font-medium">− Must track supplier&apos;s inventory</p>
                 </div>
               </div>
             </div>
@@ -197,11 +197,11 @@ export default function ConsignmentInventoryPage() {
                 <div className="rounded-lg border border-success/30 bg-success/5 p-3">
                   <p className="text-success text-sm font-medium">✓ Maintain brand presence</p>
                 </div>
-                <div className="rounded-lg border border-warning/30 bg-warning/5 p-3">
-                  <p className="text-warning text-sm font-medium">− Bear all inventory risk</p>
+                <div className="rounded-lg border border-base-content/20 bg-base-200 p-3">
+                  <p className="text-base-content/70 text-sm font-medium">− Bear all inventory risk</p>
                 </div>
-                <div className="rounded-lg border border-warning/30 bg-warning/5 p-3">
-                  <p className="text-warning text-sm font-medium">− Delayed payment (after sale)</p>
+                <div className="rounded-lg border border-base-content/20 bg-base-200 p-3">
+                  <p className="text-base-content/70 text-sm font-medium">− Delayed payment (after sale)</p>
                 </div>
               </div>
             </div>

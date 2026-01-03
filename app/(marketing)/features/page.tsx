@@ -312,8 +312,8 @@ export default function FeaturesPage() {
               className="card card-border shadow-none transition-all duration-300 hover:border-primary hover:shadow-md"
             >
               <div className="card-body items-center text-center">
-                <div className="bg-warning/10 flex h-16 w-16 items-center justify-center rounded-2xl">
-                  <span className="icon-[tabler--tool] text-warning size-8"></span>
+                <div className="bg-accent/10 flex h-16 w-16 items-center justify-center rounded-2xl">
+                  <span className="icon-[tabler--tool] text-accent size-8"></span>
                 </div>
                 <h3 className="text-base-content mt-4 text-lg font-semibold">Construction Teams</h3>
                 <p className="text-base-content/70 mt-2 text-sm">
