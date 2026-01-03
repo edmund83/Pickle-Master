@@ -363,10 +363,69 @@ export default function WarehouseSolutionPage() {
         </div>
       </section>
 
-      {/* CTA Section - Based on /marketing-ui/cta/cta-4 */}
+      {/* Proof Section - Screenshots & Workflow Examples */}
       <section className="bg-base-100 py-12 md:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="bg-base-200 rounded-3xl p-8 sm:p-12 lg:p-16">
+          <div className="text-center">
+            <h2 className="text-base-content text-2xl font-semibold md:text-3xl">See It In Action</h2>
+            <p className="text-base-content/80 mx-auto mt-4 max-w-2xl text-lg">
+              Real warehouse workflows, captured from Nook.
+            </p>
+          </div>
+
+          <div className="mt-10 grid gap-6 md:grid-cols-3">
+            {/* Screenshot 1: Cycle Count */}
+            <div className="rounded-box bg-base-200 p-6">
+              {/* TODO: Screenshot - Cycle count workflow showing discrepancies */}
+              <div className="bg-base-100 mb-4 flex h-48 items-center justify-center rounded-lg border-2 border-dashed border-base-content/20">
+                <div className="text-center">
+                  <span className="icon-[tabler--clipboard-check] text-base-content/30 mx-auto size-12"></span>
+                  <p className="text-base-content/40 mt-2 text-sm">Cycle count screenshot</p>
+                </div>
+              </div>
+              <h3 className="text-base-content font-semibold">Cycle Count with Variance</h3>
+              <p className="text-base-content/70 mt-1 text-sm">
+                Flag discrepancies immediately. Review and resolve with one tap.
+              </p>
+            </div>
+
+            {/* Screenshot 2: Receiving */}
+            <div className="rounded-box bg-base-200 p-6">
+              {/* TODO: Screenshot - Receiving workflow with scan-to-confirm */}
+              <div className="bg-base-100 mb-4 flex h-48 items-center justify-center rounded-lg border-2 border-dashed border-base-content/20">
+                <div className="text-center">
+                  <span className="icon-[tabler--package] text-base-content/30 mx-auto size-12"></span>
+                  <p className="text-base-content/40 mt-2 text-sm">Receiving workflow screenshot</p>
+                </div>
+              </div>
+              <h3 className="text-base-content font-semibold">Scan-to-Receive</h3>
+              <p className="text-base-content/70 mt-1 text-sm">
+                Scan incoming items against purchase orders. Spot shortages instantly.
+              </p>
+            </div>
+
+            {/* Screenshot 3: Audit Trail */}
+            <div className="rounded-box bg-base-200 p-6">
+              {/* TODO: Screenshot - Audit trail showing stock movement history */}
+              <div className="bg-base-100 mb-4 flex h-48 items-center justify-center rounded-lg border-2 border-dashed border-base-content/20">
+                <div className="text-center">
+                  <span className="icon-[tabler--history] text-base-content/30 mx-auto size-12"></span>
+                  <p className="text-base-content/40 mt-2 text-sm">Audit trail screenshot</p>
+                </div>
+              </div>
+              <h3 className="text-base-content font-semibold">Complete Audit Trail</h3>
+              <p className="text-base-content/70 mt-1 text-sm">
+                Every change logged with who, when, and why. Full accountability.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* CTA Section - Based on /marketing-ui/cta/cta-4 */}
+      <section className="bg-base-200/50 py-12 md:py-16">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="bg-base-100 rounded-3xl p-8 shadow-sm sm:p-12 lg:p-16">
             <div className="flex flex-col items-center justify-between gap-12 lg:flex-row">
               <div className="flex grow flex-col gap-6">
                 <h2 className="text-base-content text-2xl font-semibold md:text-3xl lg:text-4xl">

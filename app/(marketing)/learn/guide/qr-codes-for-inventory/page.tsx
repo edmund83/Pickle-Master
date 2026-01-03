@@ -203,7 +203,7 @@ export default function QRCodesForInventoryPage() {
                 </tr>
                 <tr>
                   <td className="text-base-content font-medium">Label size</td>
-                  <td className="text-base-content/80">Larger (1" minimum)</td>
+                  <td className="text-base-content/80">Larger (1&quot; minimum)</td>
                   <td className="text-base-content/80">Can be very small</td>
                 </tr>
                 <tr>
@@ -305,16 +305,16 @@ export default function QRCodesForInventoryPage() {
             {/* Use Case 5 */}
             <div className="card bg-base-100 shadow-sm">
               <div className="card-body">
-                <span className="icon-[tabler--id-badge-2] text-warning size-8"></span>
+                <span className="icon-[tabler--id-badge-2] text-accent size-8"></span>
                 <h3 className="text-base-content mt-4 text-lg font-semibold">Consumables & Supplies</h3>
                 <p className="text-base-content/70 mt-2 text-sm">
                   Post QR codes near supply cabinets. Staff scan to request restock, log usage, or see supply levels.
                   Low barrier—no training needed.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-1">
-                  <span className="badge badge-soft badge-warning badge-sm">Office</span>
-                  <span className="badge badge-soft badge-warning badge-sm">MRO</span>
-                  <span className="badge badge-soft badge-warning badge-sm">Medical</span>
+                  <span className="badge badge-soft badge-accent badge-sm">Office</span>
+                  <span className="badge badge-soft badge-accent badge-sm">MRO</span>
+                  <span className="badge badge-soft badge-accent badge-sm">Medical</span>
                 </div>
               </div>
             </div>

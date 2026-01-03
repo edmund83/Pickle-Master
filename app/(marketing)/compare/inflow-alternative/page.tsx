@@ -249,7 +249,7 @@ export default function InFlowAlternativePage() {
                   <th className="text-base-content text-left">Category</th>
                   <th className="text-base-content text-left">
                     <span className="text-primary flex items-center gap-2">
-                      <span className="icon-[tabler--check-circle] size-5"></span>
+                      <span className="icon-[tabler--circle-check] size-5"></span>
                       Nook
                     </span>
                   </th>

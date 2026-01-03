@@ -70,7 +70,7 @@ const INTEGRATIONS_FAQS: FaqItem[] = [
 
 const ECOMMERCE_INTEGRATIONS = [
   {
-    icon: 'icon-[tabler--brand-shopify]',
+    icon: 'icon-[tabler--shopping-cart]',
     title: 'Shopify',
     description: 'Sync inventory with your Shopify store. When stock changes in Nook, Shopify updates automatically to prevent overselling.',
     status: 'In progress',

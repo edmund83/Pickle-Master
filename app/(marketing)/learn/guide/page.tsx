@@ -147,7 +147,7 @@ export default function GuidesPage() {
               className="card card-border shadow-none transition-colors hover:border-primary/30"
             >
               <div className="card-body">
-                <span className="icon-[tabler--book] text-warning size-8"></span>
+                <span className="icon-[tabler--book] text-accent size-8"></span>
                 <h3 className="text-base-content mt-4 text-lg font-semibold">Inventory Glossary</h3>
                 <p className="text-base-content/80 mt-2">
                   Key terms and definitions for inventory management.

@@ -67,10 +67,8 @@ export function FeatureGrid() {
               className="card card-border hover:border-primary border-primary/30 shadow-none transition-colors duration-300"
             >
               <div className="card-body">
-                <div className="avatar avatar-placeholder mb-2">
-                  <div className="text-primary bg-primary/10 rounded-field size-11.5">
-                    <span className={`${feature.icon} size-7.5`}></span>
-                  </div>
+                <div className="bg-primary/10 mb-2 flex h-12 w-12 items-center justify-center rounded-xl">
+                  <span className={`${feature.icon} text-primary size-7`}></span>
                 </div>
                 <h3 className="card-title text-lg">{feature.title}</h3>
                 <p className="text-base-content/80">{feature.description}</p>

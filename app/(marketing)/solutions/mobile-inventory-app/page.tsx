@@ -225,10 +225,10 @@ export default function MobileInventoryAppPage() {
             </div>
 
             {/* Bluetooth Scanners */}
-            <div className="card card-border hover:border-warning border-warning/30 shadow-none transition-colors duration-300">
+            <div className="card card-border hover:border-secondary border-secondary/30 shadow-none transition-colors duration-300">
               <div className="card-body">
                 <div className="avatar avatar-placeholder mb-2">
-                  <div className="text-warning bg-warning/10 rounded-field size-12">
+                  <div className="text-secondary bg-secondary/10 rounded-field size-12">
                     <span className="icon-[tabler--bluetooth] size-7"></span>
                   </div>
                 </div>
@@ -325,7 +325,7 @@ export default function MobileInventoryAppPage() {
             </div>
             <div className="card bg-base-100 shadow-sm">
               <div className="card-body items-center text-center">
-                <span className="icon-[tabler--device-mobile-bolt] text-warning size-12"></span>
+                <span className="icon-[tabler--device-mobile-bolt] text-secondary size-12"></span>
                 <h3 className="text-base-content mt-3 font-semibold">Rugged Devices</h3>
                 <p className="text-base-content/70 mt-1 text-sm">Zebra, Honeywell, Datalogic</p>
               </div>

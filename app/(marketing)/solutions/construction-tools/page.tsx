@@ -163,7 +163,7 @@ const USE_CASES = [
   {
     title: 'Power Tools',
     description: 'Drills, saws, grinders, compressors — track the expensive equipment that walks off construction sites.',
-    icon: 'icon-[tabler--drill]',
+    icon: 'icon-[tabler--tool]',
   },
   {
     title: 'Hand Tools',

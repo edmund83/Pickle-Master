@@ -110,11 +110,11 @@ export default function BarcodesVsQrCodesPage() {
                 Smaller label footprint
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-warning mt-0.5">−</span>
+                <span className="text-base-content/40 mt-0.5">−</span>
                 Limited data (20-25 characters)
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-warning mt-0.5">−</span>
+                <span className="text-base-content/40 mt-0.5">−</span>
                 Requires line-of-sight alignment
               </li>
             </ul>
@@ -125,8 +125,9 @@ export default function BarcodesVsQrCodesPage() {
               <div className="bg-base-100 flex size-20 items-center justify-center rounded-lg">
                 {/* Placeholder for QR code visual */}
                 <div className="grid size-14 grid-cols-7 gap-0.5">
-                  {Array.from({ length: 49 }).map((_, i) => (
-                    <div key={i} className={`size-1.5 ${Math.random() > 0.4 ? 'bg-base-content' : 'bg-base-100'}`}></div>
+                  {/* Static QR code pattern - deterministic for SSR */}
+                  {[1,0,1,0,1,0,1,0,1,1,0,0,1,0,1,0,1,0,1,1,0,1,0,0,1,1,0,0,0,1,1,0,1,0,1,0,1,0,0,1,1,0,1,0,1,0,1,0,1].map((v, i) => (
+                    <div key={i} className={`size-1.5 ${v ? 'bg-base-content' : 'bg-base-100'}`}></div>
                   ))}
                 </div>
               </div>
@@ -149,11 +150,11 @@ export default function BarcodesVsQrCodesPage() {
                 Can link to URLs, images, forms
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-warning mt-0.5">−</span>
+                <span className="text-base-content/40 mt-0.5">−</span>
                 Requires more label space
               </li>
               <li className="flex items-start gap-2">
-                <span className="text-warning mt-0.5">−</span>
+                <span className="text-base-content/40 mt-0.5">−</span>
                 Slower with some hardware scanners
               </li>
             </ul>
@@ -235,6 +236,43 @@ export default function BarcodesVsQrCodesPage() {
                   <li>You need error correction (outdoor use)</li>
                 </ul>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Label Printing Tips */}
+        <div className="mt-10">
+          <h2 className="text-base-content text-xl font-semibold">Label Printing Tips</h2>
+          <p className="text-base-content/80 mt-2">
+            Proper labeling ensures reliable scanning in any environment.
+          </p>
+          <div className="mt-6 grid gap-6 md:grid-cols-2">
+            <div className="rounded-box bg-base-200 p-6">
+              {/* TODO: Add label printing visual - barcode and QR examples side by side */}
+              <div className="bg-base-100 mb-4 flex h-32 items-center justify-center rounded-lg border-2 border-dashed border-base-content/20">
+                <span className="text-base-content/40 text-sm">Label examples image placeholder</span>
+              </div>
+              <h3 className="text-base-content font-semibold">Sizing Guidelines</h3>
+              <ul className="text-base-content/80 mt-2 space-y-1 text-sm">
+                <li>• Barcodes: Minimum 1.5&quot; wide × 0.5&quot; tall</li>
+                <li>• QR codes: Minimum 1&quot; × 1&quot; square</li>
+                <li>• Leave 0.1&quot; quiet zone around codes</li>
+              </ul>
+            </div>
+            <div className="rounded-box bg-base-200 p-6">
+              <h3 className="text-base-content font-semibold">Material Recommendations</h3>
+              <ul className="text-base-content/80 mt-2 space-y-1 text-sm">
+                <li>• <strong>Indoor:</strong> Standard paper labels work fine</li>
+                <li>• <strong>Outdoor:</strong> Use synthetic (polypropylene) labels</li>
+                <li>• <strong>High-wear:</strong> Laminate or use polyester labels</li>
+                <li>• <strong>Cold storage:</strong> Use freezer-grade adhesive</li>
+              </ul>
+              <h3 className="text-base-content mt-4 font-semibold">Printing</h3>
+              <ul className="text-base-content/80 mt-2 space-y-1 text-sm">
+                <li>• Laser printers produce sharper codes than inkjet</li>
+                <li>• Thermal printers are ideal for high-volume labeling</li>
+                <li>• Always test scan before bulk printing</li>
+              </ul>
             </div>
           </div>
         </div>

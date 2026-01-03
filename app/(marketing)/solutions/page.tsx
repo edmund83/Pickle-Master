@@ -266,8 +266,8 @@ export default function SolutionsPage() {
             </div>
 
             <div className="text-center">
-              <div className="bg-warning/10 mx-auto flex h-16 w-16 items-center justify-center rounded-full">
-                <span className="icon-[tabler--sparkles] text-warning size-8"></span>
+              <div className="bg-accent/10 mx-auto flex h-16 w-16 items-center justify-center rounded-full">
+                <span className="icon-[tabler--sparkles] text-accent size-8"></span>
               </div>
               <h3 className="text-base-content mt-6 text-xl font-semibold">Simplicity</h3>
               <p className="text-base-content/80 mt-3">
