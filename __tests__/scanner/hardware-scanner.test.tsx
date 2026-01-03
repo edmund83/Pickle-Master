@@ -37,8 +37,11 @@ function TestComponent({
   const isListeningRef = React.useRef(isListening)
   const lastScanRef = React.useRef(lastScan)
 
-  isListeningRef.current = isListening
-  lastScanRef.current = lastScan
+  // Update refs in useEffect to avoid setting during render
+  useEffect(() => {
+    isListeningRef.current = isListening
+    lastScanRef.current = lastScan
+  }, [isListening, lastScan])
 
   useEffect(() => {
     onMount?.({

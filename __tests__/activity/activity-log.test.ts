@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import { TEST_TENANT_ID, TEST_USER_ID } from '../utils/test-data'
 
 /**

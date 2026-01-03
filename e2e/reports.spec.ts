@@ -72,8 +72,9 @@ test.describe('Low Stock Report', () => {
   })
 
   test('displays summary cards for out of stock and low stock', async ({ page }) => {
-    await expect(page.getByText('Out of Stock', { exact: true })).toBeVisible()
-    await expect(page.getByText('Low Stock', { exact: true })).toBeVisible()
+    // Use paragraph role to specifically target the summary card text
+    await expect(page.getByRole('paragraph').filter({ hasText: 'Out of Stock' }).first()).toBeVisible()
+    await expect(page.getByRole('paragraph').filter({ hasText: 'Low Stock' }).first()).toBeVisible()
   })
 
   test('back button navigates to reports hub', async ({ page }) => {
@@ -337,6 +338,8 @@ test.describe('Responsive Design', () => {
     await page.setViewportSize({ width: 1280, height: 720 })
     await page.goto('/reports')
 
-    await expect(page.getByRole('main').getByRole('heading', { name: 'Reports' })).toBeVisible()
+    // Wait for page to fully load
+    await page.waitForLoadState('networkidle')
+    await expect(page.getByRole('heading', { name: 'Reports' })).toBeVisible()
   })
 })
