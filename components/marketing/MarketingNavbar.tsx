@@ -2,19 +2,19 @@ import Link from 'next/link'
 
 export function MarketingNavbar() {
   return (
-    <nav className="navbar px-0">
+    <nav className="navbar px-0 bg-transparent">
       <div className="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 md:flex md:items-center md:gap-2 lg:px-8">
         <div className="navbar-start w-max items-center justify-between max-md:w-full">
-          <Link className="text-base-content flex items-center gap-3 text-xl font-bold" href="/">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary">
-              <span className="text-base font-bold text-white">S</span>
+          <Link className="text-white flex items-center gap-3 text-xl font-bold" href="/">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white">
+              <span className="text-base font-bold text-primary">S</span>
             </div>
             StockZip
           </Link>
           <div className="md:hidden">
             <button
               type="button"
-              className="collapse-toggle btn btn-outline btn-secondary btn-square"
+              className="collapse-toggle btn btn-outline btn-square border-white text-white hover:bg-accent hover:border-accent"
               data-collapse="#navbar-block-1"
               aria-controls="navbar-block-1"
               aria-label="Toggle navigation"
@@ -29,14 +29,14 @@ export function MarketingNavbar() {
           id="navbar-block-1"
           className="transition-height collapse hidden grow basis-full overflow-hidden duration-300 max-md:w-full md:ml-auto md:flex md:w-auto md:basis-auto md:grow-0 md:items-center md:justify-end md:overflow-visible"
         >
-          <div className="text-base-content flex gap-6 text-base font-medium max-md:mt-4 max-md:flex-col md:items-center">
-            <Link href="/" className="hover:text-primary active:text-primary">Home</Link>
+          <div className="text-white flex gap-6 text-base font-medium max-md:mt-4 max-md:flex-col md:items-center">
+            <Link href="/" className="hover:text-accent active:text-accent">Home</Link>
 
             {/* Features Dropdown */}
             <div className="dropdown relative inline-flex [--offset:8] max-md:[--strategy:static] md:[--trigger:hover]">
               <button
                 type="button"
-                className="dropdown-toggle dropdown-open:text-primary hover:text-primary flex items-center gap-1"
+                className="dropdown-toggle dropdown-open:text-accent hover:text-accent flex items-center gap-1"
                 aria-haspopup="menu"
                 aria-expanded="false"
               >
@@ -60,7 +60,7 @@ export function MarketingNavbar() {
             <div className="dropdown relative inline-flex [--offset:8] max-md:[--strategy:static] md:[--trigger:hover]">
               <button
                 type="button"
-                className="dropdown-toggle dropdown-open:text-primary hover:text-primary flex items-center gap-1"
+                className="dropdown-toggle dropdown-open:text-accent hover:text-accent flex items-center gap-1"
                 aria-haspopup="menu"
                 aria-expanded="false"
               >
@@ -81,14 +81,14 @@ export function MarketingNavbar() {
               </ul>
             </div>
 
-            <Link href="/pricing" className="hover:text-primary active:text-primary">Pricing</Link>
-            <Link href="/demo" className="hover:text-primary active:text-primary">Demo</Link>
+            <Link href="/pricing" className="hover:text-accent active:text-accent">Pricing</Link>
+            <Link href="/demo" className="hover:text-accent active:text-accent">Demo</Link>
 
             {/* Learn Dropdown */}
             <div className="dropdown relative inline-flex [--offset:8] max-md:[--strategy:static] md:[--trigger:hover]">
               <button
                 type="button"
-                className="dropdown-toggle dropdown-open:text-primary hover:text-primary flex items-center gap-1"
+                className="dropdown-toggle dropdown-open:text-accent hover:text-accent flex items-center gap-1"
                 aria-haspopup="menu"
                 aria-expanded="false"
               >
@@ -106,16 +106,16 @@ export function MarketingNavbar() {
               </ul>
             </div>
 
-            <Link href="/login" className="hover:text-primary active:text-primary md:hidden">Sign in</Link>
+            <Link href="/login" className="hover:text-accent active:text-accent md:hidden">Sign in</Link>
           </div>
 
-          <div className="my-6 h-px w-full shrink-0 bg-base-content/20 md:mx-6 md:my-0 md:h-6 md:w-px"></div>
+          <div className="my-6 h-px w-full shrink-0 bg-white/20 md:mx-6 md:my-0 md:h-6 md:w-px"></div>
 
           <div className="flex flex-col gap-2 md:flex-row md:items-center">
-            <Link href="/login" className="btn btn-text max-md:hidden">
+            <Link href="/login" className="btn btn-text text-white hover:text-accent max-md:hidden">
               Sign in
             </Link>
-            <Link href="/signup" className="btn btn-primary max-md:w-full">
+            <Link href="/signup" className="btn bg-white text-primary hover:bg-accent hover:text-accent-content max-md:w-full">
               Start Free Trial
             </Link>
           </div>
