@@ -1,3 +1,7 @@
+'use client'
+
+import { FadeIn, StaggerContainer, StaggerItem, HoverScale } from './animations'
+
 /**
  * TODO: Proof Assets Required
  * - Replace placeholder testimonials with real customer quotes
@@ -30,34 +34,37 @@ export function TestimonialGrid() {
   return (
     <div className="py-8 sm:py-16 lg:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-12 space-y-4 text-center sm:mb-16 lg:mb-24">
+        <FadeIn className="mb-12 space-y-4 text-center sm:mb-16 lg:mb-24">
           <p className="text-primary text-sm font-medium uppercase">Real teams</p>
           <h2 className="text-base-content text-2xl font-semibold md:text-3xl lg:text-4xl">Loved for speed and simplicity</h2>
           <p className="text-base-content/80 text-xl">Short feedback from people who manage inventory every day.</p>
-        </div>
+        </FadeIn>
 
-        <div className="grid gap-6 md:grid-cols-3">
+        <StaggerContainer className="grid gap-6 md:grid-cols-3">
           {TESTIMONIALS.map((t) => (
-            <div key={t.title} className="card card-border shadow-none">
-              <div className="card-body gap-5">
-                <div className="flex gap-1">
-                  <span className="icon-[tabler--star-filled] text-accent size-6 shrink-0"></span>
-                  <span className="icon-[tabler--star-filled] text-accent size-6 shrink-0"></span>
-                  <span className="icon-[tabler--star-filled] text-accent size-6 shrink-0"></span>
-                  <span className="icon-[tabler--star-filled] text-accent size-6 shrink-0"></span>
-                  <span className="icon-[tabler--star-filled] text-accent size-6 shrink-0"></span>
+            <StaggerItem key={t.title}>
+              <HoverScale>
+                <div className="card card-border shadow-none h-full">
+                  <div className="card-body gap-5">
+                    <div className="flex gap-1">
+                      <span className="icon-[tabler--star-filled] text-accent size-6 shrink-0"></span>
+                      <span className="icon-[tabler--star-filled] text-accent size-6 shrink-0"></span>
+                      <span className="icon-[tabler--star-filled] text-accent size-6 shrink-0"></span>
+                      <span className="icon-[tabler--star-filled] text-accent size-6 shrink-0"></span>
+                      <span className="icon-[tabler--star-filled] text-accent size-6 shrink-0"></span>
+                    </div>
+                    <p className="text-base-content/80">&ldquo;{t.quote}&rdquo;</p>
+                    <div>
+                      <h3 className="text-base-content font-semibold">{t.title}</h3>
+                      <p className="text-base-content/70 text-sm">{t.name}</p>
+                    </div>
+                  </div>
                 </div>
-                <p className="text-base-content/80">&ldquo;{t.quote}&rdquo;</p>
-                <div>
-                  <h3 className="text-base-content font-semibold">{t.title}</h3>
-                  <p className="text-base-content/70 text-sm">{t.name}</p>
-                </div>
-              </div>
-            </div>
+              </HoverScale>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
       </div>
     </div>
   )
 }
-

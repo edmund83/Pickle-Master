@@ -1,4 +1,7 @@
+'use client'
+
 import Link from 'next/link'
+import { FadeIn, StaggerContainer, StaggerItem, HoverScale } from './animations'
 
 const FEATURES = [
   {
@@ -10,7 +13,7 @@ const FEATURES = [
   {
     icon: 'icon-[tabler--wifi-off]',
     title: 'Offline-first mobile',
-    description: 'Keep scanning on jobsites and warehouses. Sync when you’re back online.',
+    description: "Keep scanning on jobsites and warehouses. Sync when you're back online.",
     href: '/features/offline-mobile-scanning',
   },
   {
@@ -43,7 +46,7 @@ export function FeatureGrid() {
   return (
     <div className="bg-base-100 py-8 sm:py-16 lg:py-24">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="mb-12 space-y-4 sm:mb-16 lg:mb-24">
+        <FadeIn className="mb-12 space-y-4 sm:mb-16 lg:mb-24">
           <h2 className="text-base-content text-2xl font-semibold md:text-3xl lg:text-4xl">
             All essentials in one place — without ERP complexity
           </h2>
@@ -57,27 +60,29 @@ export function FeatureGrid() {
             </Link>
             <span className="icon-[tabler--arrow-right] text-primary size-5"></span>
           </div>
-        </div>
+        </FadeIn>
 
-        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <StaggerContainer className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {FEATURES.map((feature) => (
-            <Link
-              key={feature.title}
-              href={feature.href}
-              className="card card-border hover:border-primary border-primary/30 shadow-none transition-colors duration-300"
-            >
-              <div className="card-body">
-                <div className="bg-primary/10 mb-2 flex h-12 w-12 items-center justify-center rounded-xl">
-                  <span className={`${feature.icon} text-primary size-7`}></span>
-                </div>
-                <h3 className="card-title text-lg">{feature.title}</h3>
-                <p className="text-base-content/80">{feature.description}</p>
-              </div>
-            </Link>
+            <StaggerItem key={feature.title}>
+              <HoverScale>
+                <Link
+                  href={feature.href}
+                  className="card card-border hover:border-primary border-primary/30 shadow-none transition-colors duration-300 block h-full"
+                >
+                  <div className="card-body">
+                    <div className="bg-primary/10 mb-2 flex h-12 w-12 items-center justify-center rounded-xl">
+                      <span className={`${feature.icon} text-primary size-7`}></span>
+                    </div>
+                    <h3 className="card-title text-lg">{feature.title}</h3>
+                    <p className="text-base-content/80">{feature.description}</p>
+                  </div>
+                </Link>
+              </HoverScale>
+            </StaggerItem>
           ))}
-        </div>
+        </StaggerContainer>
       </div>
     </div>
   )
 }
-
