@@ -7,15 +7,13 @@ interface StatCardProps {
   title: string
   value: string
   icon: React.ElementType
-  color: 'blue' | 'green' | 'yellow' | 'purple' | 'red'
+  color: 'neutral' | 'green' | 'red'
 }
 
 function StatCard({ title, value, icon: Icon, color }: StatCardProps) {
   const colorClasses = {
-    blue: 'bg-blue-50 text-blue-600',
+    neutral: 'bg-neutral-100 text-neutral-600',
     green: 'bg-green-50 text-green-600',
-    yellow: 'bg-yellow-50 text-yellow-600',
-    purple: 'bg-purple-50 text-purple-600',
     red: 'bg-red-50 text-red-600',
   }
 
@@ -64,19 +62,19 @@ export function ProfitMarginStats({
         title="Average Margin"
         value={`${avgMarginPercent.toFixed(1)}%`}
         icon={Percent}
-        color={avgMarginPercent >= 0 ? 'blue' : 'red'}
+        color={avgMarginPercent >= 0 ? 'neutral' : 'red'}
       />
       <StatCard
         title="Items with Cost Data"
         value={`${itemsWithCost} / ${totalItems}`}
         icon={Package}
-        color="purple"
+        color="neutral"
       />
       <StatCard
         title="Total Cost Value"
         value={formatCurrency(totalCost)}
         icon={TrendingDown}
-        color="yellow"
+        color="neutral"
       />
     </div>
   )
@@ -104,25 +102,25 @@ export function InventoryValueStats({
         title="Total Value"
         value={formatCurrency(totalValue)}
         icon={DollarSign}
-        color="green"
+        color="neutral"
       />
       <StatCard
         title="Total Items"
         value={totalItems.toLocaleString()}
         icon={Package}
-        color="blue"
+        color="neutral"
       />
       <StatCard
         title="Total Quantity"
         value={totalQuantity.toLocaleString()}
         icon={TrendingUp}
-        color="purple"
+        color="neutral"
       />
       <StatCard
         title="Avg Value/Item"
         value={formatCurrency(avgValuePerItem)}
         icon={DollarSign}
-        color="yellow"
+        color="neutral"
       />
     </div>
   )

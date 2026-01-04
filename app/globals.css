@@ -238,6 +238,20 @@
   }
 }
 
+/* Soft pulse animation for alert indicators */
+@keyframes pulse-soft {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.animate-pulse-soft {
+  animation: pulse-soft 2s ease-in-out infinite;
+}
+
 .animate-confetti {
   animation: confetti 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }

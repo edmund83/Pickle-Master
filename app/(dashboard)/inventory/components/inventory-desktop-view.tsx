@@ -22,6 +22,7 @@ import { WarehouseSelector } from './warehouse-selector'
 import { Breadcrumbs } from './breadcrumbs'
 import { ToolbarOverflowMenu } from './toolbar-overflow-menu'
 import { InventoryStatsPills } from './inventory-stats-pills'
+import { InventoryAlertIndicator, type AlertFilter } from './inventory-alert-indicator'
 import { BulkEditModal } from './bulk-edit-modal'
 import { createClient } from '@/lib/supabase/client'
 import { useFormatting } from '@/hooks/useFormatting'
@@ -60,6 +61,12 @@ export function InventoryDesktopView({ items, folders, view }: InventoryDesktopV
     status: [],
     hasImages: null,
   })
+
+  // Alert filter state
+  const [alertFilter, setAlertFilter] = useState<AlertFilter | null>(null)
+
+  // Today's net movement state
+  const [todayNetMovement, setTodayNetMovement] = useState<number | null>(null)
 
   // Bulk selection state
   const [isSelectionMode, setIsSelectionMode] = useState(false)
@@ -138,6 +145,47 @@ export function InventoryDesktopView({ items, folders, view }: InventoryDesktopV
       setTags((data || []) as Tag[])
     }
     loadTags()
+  }, [])
+
+  // Load today's net movement from activity logs
+  useEffect(() => {
+    async function loadTodayMovement() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: profile } = await (supabase as any)
+        .from('profiles')
+        .select('tenant_id')
+        .eq('id', user.id)
+        .single()
+
+      if (!profile?.tenant_id) return
+
+      // Get today's start in UTC
+      const today = new Date()
+      today.setHours(0, 0, 0, 0)
+      const todayISO = today.toISOString()
+
+      // Query activity logs for today's quantity changes
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data } = await (supabase as any)
+        .from('activity_logs')
+        .select('quantity_delta')
+        .eq('tenant_id', profile.tenant_id)
+        .gte('created_at', todayISO)
+        .not('quantity_delta', 'is', null)
+
+      if (data && data.length > 0) {
+        const netMovement = data.reduce((sum: number, log: { quantity_delta: number | null }) =>
+          sum + (log.quantity_delta || 0), 0)
+        setTodayNetMovement(netMovement)
+      } else {
+        setTodayNetMovement(0)
+      }
+    }
+    loadTodayMovement()
   }, [])
 
   // Toggle item selection
@@ -245,8 +293,22 @@ export function InventoryDesktopView({ items, folders, view }: InventoryDesktopV
       })
     }
 
+    // Filter by alert status
+    if (alertFilter) {
+      if (alertFilter === 'all') {
+        result = result.filter(item =>
+          item.status === 'low_stock' || item.status === 'out_of_stock'
+        )
+      } else if (alertFilter === 'low_stock') {
+        result = result.filter(item => item.status === 'low_stock')
+      } else if (alertFilter === 'out_of_stock') {
+        result = result.filter(item => item.status === 'out_of_stock')
+      }
+      // Note: expiring/expired filters would need lots table data
+    }
+
     return result
-  }, [items, selectedFolderId, folders, searchQuery, filters])
+  }, [items, selectedFolderId, folders, searchQuery, filters, alertFilter])
 
   // Select all / deselect all (defined after filteredItems)
   const toggleSelectAll = useCallback(() => {
@@ -319,13 +381,19 @@ export function InventoryDesktopView({ items, folders, view }: InventoryDesktopV
           f.path?.includes(selectedFolderId)
         )
 
+    // Calculate alert counts from ALL items (not filtered)
+    const lowStockCount = items.filter(i => i.status === 'low_stock').length
+    const outOfStockCount = items.filter(i => i.status === 'out_of_stock').length
+
     return {
       folderCount: currentFolders.length,
       itemCount: currentItems.length,
       totalQuantity: currentItems.reduce((sum, item) => sum + (item.quantity || 0), 0),
       totalValue: currentItems.reduce((sum, item) => sum + ((item.quantity || 0) * (item.price || 0)), 0),
+      lowStockCount,
+      outOfStockCount,
     }
-  }, [filteredItems, folders, selectedFolderId])
+  }, [filteredItems, folders, selectedFolderId, items])
 
   return (
     <>
@@ -389,11 +457,19 @@ export function InventoryDesktopView({ items, folders, view }: InventoryDesktopV
                   itemCount={summaryStats.itemCount}
                   totalQuantity={summaryStats.totalQuantity}
                   totalValue={summaryStats.totalValue}
+                  todayNetMovement={todayNetMovement}
                 />
               </div>
 
-              {/* Right: Hero CTAs */}
-              <div className="flex items-center gap-2">
+              {/* Right: Alert Indicator + Hero CTAs */}
+              <div className="flex items-center gap-3">
+                {/* Alert Indicator - only shows when alerts exist */}
+                <InventoryAlertIndicator
+                  lowStockCount={summaryStats.lowStockCount}
+                  outOfStockCount={summaryStats.outOfStockCount}
+                  onFilterAlerts={(filter) => setAlertFilter(filter)}
+                />
+
                 <Link href="/scan">
                   <Button variant="outline">
                     <ScanLine className="mr-2 h-4 w-4" />
@@ -408,6 +484,24 @@ export function InventoryDesktopView({ items, folders, view }: InventoryDesktopV
                 </Link>
               </div>
             </div>
+
+            {/* Alert Filter Active Banner */}
+            {alertFilter && (
+              <div className="flex items-center justify-between bg-amber-50 border-b border-amber-200 px-6 py-2">
+                <span className="text-sm text-amber-800">
+                  Showing {filteredItems.length} {alertFilter === 'all' ? 'alert' : alertFilter.replace('_', ' ')} item{filteredItems.length !== 1 ? 's' : ''}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setAlertFilter(null)}
+                  className="text-amber-700 hover:text-amber-900 hover:bg-amber-100"
+                >
+                  <X className="mr-1 h-3 w-3" />
+                  Clear filter
+                </Button>
+              </div>
+            )}
 
             {/* ROW 2: Search + Filters + Overflow Menu */}
             <div className="flex items-center justify-between border-b border-neutral-200 bg-white px-6 py-2">

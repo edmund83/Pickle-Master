@@ -8,16 +8,16 @@ const tasks = [
     title: 'Purchase Orders',
     description: 'Create and manage orders to suppliers',
     icon: ShoppingCart,
-    color: 'text-green-500',
-    bgColor: 'bg-green-50',
+    color: 'text-neutral-600',
+    bgColor: 'bg-neutral-100',
   },
   {
     href: '/tasks/receives',
     title: 'Receives',
     description: 'Record incoming stock receipts against POs',
     icon: PackageOpen,
-    color: 'text-orange-500',
-    bgColor: 'bg-orange-50',
+    color: 'text-neutral-600',
+    bgColor: 'bg-neutral-100',
   },
 ]
 

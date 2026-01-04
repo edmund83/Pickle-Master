@@ -1,6 +1,6 @@
 'use client'
 
-import { Folder, Package, Hash, DollarSign } from 'lucide-react'
+import { Folder, Package, Hash, DollarSign, TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 interface InventoryStatsCardsProps {
@@ -8,6 +8,7 @@ interface InventoryStatsCardsProps {
   itemCount: number
   totalQuantity: number
   totalValue: number
+  todayNetMovement?: number | null // positive = net in, negative = net out, null = loading
   currency?: string
   className?: string
 }
@@ -17,6 +18,7 @@ export function InventoryStatsCards({
   itemCount,
   totalQuantity,
   totalValue,
+  todayNetMovement,
   currency = 'RM',
   className,
 }: InventoryStatsCardsProps) {
@@ -27,6 +29,32 @@ export function InventoryStatsCards({
       minimumFractionDigits: 2,
       maximumFractionDigits: 2,
     })}`
+
+  // Determine movement display
+  const getMovementDisplay = () => {
+    if (todayNetMovement === null || todayNetMovement === undefined) {
+      return { value: '—', icon: Minus, color: 'text-neutral-400', bg: 'bg-neutral-100 border-neutral-200' }
+    }
+    if (todayNetMovement > 0) {
+      return {
+        value: `+${formatNumber(todayNetMovement)}`,
+        icon: TrendingUp,
+        color: 'text-emerald-600',
+        bg: 'bg-emerald-50 border-emerald-200'
+      }
+    }
+    if (todayNetMovement < 0) {
+      return {
+        value: formatNumber(todayNetMovement),
+        icon: TrendingDown,
+        color: 'text-red-600',
+        bg: 'bg-red-50 border-red-200'
+      }
+    }
+    return { value: '0', icon: Minus, color: 'text-neutral-500', bg: 'bg-neutral-100 border-neutral-200' }
+  }
+
+  const movement = getMovementDisplay()
 
   const stats = [
     { label: 'Folders', value: formatNumber(folderCount), icon: Folder },
@@ -56,6 +84,25 @@ export function InventoryStatsCards({
           </div>
         </div>
       ))}
+
+      {/* Today's Net Movement Card */}
+      <div
+        className={cn(
+          'flex items-center gap-2',
+          'h-10 rounded-lg px-3',
+          'border',
+          movement.bg,
+          'transition-all'
+        )}
+      >
+        <movement.icon className={cn('h-4 w-4 flex-shrink-0', movement.color)} />
+        <div className="flex flex-col justify-center leading-none">
+          <span className="text-[9px] font-medium uppercase tracking-wide text-neutral-400">
+            Today
+          </span>
+          <span className={cn('text-xs font-bold', movement.color)}>{movement.value}</span>
+        </div>
+      </div>
     </div>
   )
 }

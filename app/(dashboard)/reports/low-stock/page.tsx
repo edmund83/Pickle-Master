@@ -59,8 +59,8 @@ export default async function LowStockReportPage() {
         <div className="mb-6 grid gap-4 sm:grid-cols-2">
           <Card>
             <CardContent className="flex items-center gap-4 p-6">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
-                <AlertTriangle className="h-6 w-6 text-red-600" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-neutral-100">
+                <AlertTriangle className="h-6 w-6 text-neutral-600" />
               </div>
               <div>
                 <p className="text-2xl font-semibold text-neutral-900">{outOfStock.length}</p>
@@ -70,8 +70,8 @@ export default async function LowStockReportPage() {
           </Card>
           <Card>
             <CardContent className="flex items-center gap-4 p-6">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-yellow-100">
-                <AlertTriangle className="h-6 w-6 text-yellow-600" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-neutral-100">
+                <AlertTriangle className="h-6 w-6 text-neutral-600" />
               </div>
               <div>
                 <p className="text-2xl font-semibold text-neutral-900">{lowStock.length}</p>
@@ -139,8 +139,8 @@ export default async function LowStockReportPage() {
         ) : (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-                <Package className="h-8 w-8 text-green-600" />
+              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100">
+                <Package className="h-8 w-8 text-neutral-600" />
               </div>
               <h3 className="mt-4 text-lg font-medium text-neutral-900">All stocked up!</h3>
               <p className="mt-1 text-neutral-500">No items are running low.</p>

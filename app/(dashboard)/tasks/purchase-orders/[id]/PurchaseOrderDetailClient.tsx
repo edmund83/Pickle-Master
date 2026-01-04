@@ -33,6 +33,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FormattedShortDate, FormattedDateTime } from '@/components/formatting/FormattedDate'
+import { useFormatting } from '@/hooks/useFormatting'
 import {
   updatePurchaseOrder,
   updatePurchaseOrderStatus,
@@ -73,6 +74,7 @@ export function PurchaseOrderDetailClient({
   currentUserId
 }: PurchaseOrderDetailClientProps) {
   const router = useRouter()
+  const { formatCurrency } = useFormatting()
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -468,7 +470,7 @@ export function PurchaseOrderDetailClient({
           </div>
 
           <div className="mt-2 flex items-center gap-4 text-sm text-neutral-500">
-            <span>Order Total: <strong className="text-neutral-900">${subtotal.toFixed(2)}</strong></span>
+            <span>Order Total: <strong className="text-neutral-900">{formatCurrency(subtotal)}</strong></span>
             <span>·</span>
             <span>Created By: <strong>{createdByName || 'Unknown'}</strong></span>
             <span>·</span>
@@ -619,11 +621,11 @@ export function PurchaseOrderDetailClient({
                 </div>
 
                 <div className="text-right text-neutral-700">
-                  ${item.unit_price.toFixed(2)}
+                  {formatCurrency(item.unit_price)}
                 </div>
 
                 <div className="text-right font-medium text-neutral-900">
-                  ${(item.ordered_quantity * item.unit_price).toFixed(2)}
+                  {formatCurrency(item.ordered_quantity * item.unit_price)}
                 </div>
               </div>
             ))}
@@ -642,7 +644,7 @@ export function PurchaseOrderDetailClient({
                 Subtotal ({purchaseOrder.items.length} item{purchaseOrder.items.length !== 1 ? 's' : ''}):
               </div>
               <div className="col-span-2 text-right text-lg font-semibold text-neutral-900">
-                ${subtotal.toFixed(2)}
+                {formatCurrency(subtotal)}
               </div>
             </div>
           )}
@@ -1029,7 +1031,7 @@ export function PurchaseOrderDetailClient({
           <div className="flex items-center justify-end gap-4">
             <div className="text-right">
               <p className="text-xs text-neutral-500">{purchaseOrder.items.length} item{purchaseOrder.items.length !== 1 ? 's' : ''}</p>
-              <p className="text-lg font-semibold text-neutral-900">${subtotal.toFixed(2)}</p>
+              <p className="text-lg font-semibold text-neutral-900">{formatCurrency(subtotal)}</p>
             </div>
             <Button
               onClick={() => handleStatusChange('submitted')}
@@ -1227,10 +1229,10 @@ export function PurchaseOrderDetailClient({
                               </span>
                             </td>
                             <td className="px-4 py-3 text-right text-neutral-700">
-                              ${item.unit_price.toFixed(2)}
+                              {formatCurrency(item.unit_price)}
                             </td>
                             <td className="px-4 py-3 text-right font-medium text-neutral-900">
-                              ${(item.ordered_quantity * item.unit_price).toFixed(2)}
+                              {formatCurrency(item.ordered_quantity * item.unit_price)}
                             </td>
                           </tr>
                         ))}
@@ -1241,7 +1243,7 @@ export function PurchaseOrderDetailClient({
                             Subtotal:
                           </td>
                           <td className="px-4 py-3 text-right font-semibold text-neutral-900">
-                            ${subtotal.toFixed(2)}
+                            {formatCurrency(subtotal)}
                           </td>
                         </tr>
                       </tfoot>
@@ -1367,7 +1369,7 @@ export function PurchaseOrderDetailClient({
                   <div className="flex justify-between border-t border-neutral-200 pt-3">
                     <dt className="font-medium text-neutral-700">Total</dt>
                     <dd className="font-semibold text-neutral-900">
-                      ${subtotal.toFixed(2)}
+                      {formatCurrency(subtotal)}
                     </dd>
                   </div>
                 </dl>
