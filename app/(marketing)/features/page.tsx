@@ -20,20 +20,20 @@ import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/li
 export const metadata: Metadata = marketingMetadata({
   title: 'Inventory Management Features',
   description:
-    "Explore Nook's inventory features: barcode scanning, offline mobile, check-in/check-out, bulk editing, and low stock alerts. Start free.",
+    "Explore StockZip's inventory features: barcode scanning, offline mobile, check-in/check-out, bulk editing, and low stock alerts. Start free.",
   pathname: '/features',
 })
 
 const FEATURES_FAQS: FaqItem[] = [
   {
-    question: 'What barcode scanners work with Nook?',
+    question: 'What barcode scanners work with StockZip?',
     answer:
-      'Nook supports three scanning methods: (1) Your phone camera for 1D barcodes and QR codes, (2) Bluetooth barcode scanners for faster high-volume scanning, and (3) Rugged Android devices with built-in hardware scanners like Zebra or Honeywell.',
+      'StockZip supports three scanning methods: (1) Your phone camera for 1D barcodes and QR codes, (2) Bluetooth barcode scanners for faster high-volume scanning, and (3) Rugged Android devices with built-in hardware scanners like Zebra or Honeywell.',
   },
   {
-    question: 'Does Nook work offline?',
+    question: 'Does StockZip work offline?',
     answer:
-      'Yes. Nook is built offline-first. You can scan barcodes, adjust quantities, and check items in/out even without internet. Changes sync automatically when connectivity returns — no data loss.',
+      'Yes. StockZip is built offline-first. You can scan barcodes, adjust quantities, and check items in/out even without internet. Changes sync automatically when connectivity returns — no data loss.',
   },
   {
     question: 'What is check-in/check-out?',
@@ -43,7 +43,7 @@ const FEATURES_FAQS: FaqItem[] = [
   {
     question: 'Can I import my existing inventory?',
     answer:
-      'Yes. Import via CSV with field mapping. Nook guides you through matching your columns to our fields. Most teams import and are scanning within 30 minutes.',
+      'Yes. Import via CSV with field mapping. StockZip guides you through matching your columns to our fields. Most teams import and are scanning within 30 minutes.',
   },
   {
     question: 'How do low stock alerts work?',
@@ -56,14 +56,14 @@ const FEATURES_FAQS: FaqItem[] = [
       'Yes. Bulk editing shows a preview of changes before applying. After applying, you can undo the entire batch if something went wrong. No more spreadsheet disasters.',
   },
   {
-    question: 'How does Nook compare to Sortly?',
+    question: 'How does StockZip compare to Sortly?',
     answer:
-      'Nook offers similar features to Sortly — barcode scanning, offline mode, check-in/check-out — but with transparent pricing (no SKU limits or surprise fees). See our detailed comparison at /compare/sortly-alternative.',
+      'StockZip offers similar features to Sortly — barcode scanning, offline mode, check-in/check-out — but with transparent pricing (no SKU limits or surprise fees). See our detailed comparison at /compare/sortly-alternative.',
   },
   {
-    question: 'Can I use Nook to track construction tools?',
+    question: 'Can I use StockZip to track construction tools?',
     answer:
-      'Yes. Nook is popular with construction teams for tool tracking. Features like offline jobsite scanning, check-in/check-out workflows, and multi-location support make it ideal for the field. Learn more at /solutions/construction-tools.',
+      'Yes. StockZip is popular with construction teams for tool tracking. Features like offline jobsite scanning, check-in/check-out workflows, and multi-location support make it ideal for the field. Learn more at /solutions/construction-tools.',
   },
 ]
 
@@ -129,7 +129,7 @@ export default function FeaturesPage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory',
+          name: 'StockZip Inventory',
           description:
             'Inventory management software with barcode scanning, offline mode, check-in/check-out, and low stock alerts.',
           pathname: '/features',
@@ -246,7 +246,7 @@ export default function FeaturesPage() {
           <div className="text-center">
             <h2 className="text-base-content text-2xl font-semibold md:text-3xl">Everything Else You Need</h2>
             <p className="text-base-content/80 mt-4 text-lg">
-              All the features that make Nook a complete inventory solution.
+              All the features that make StockZip a complete inventory solution.
             </p>
           </div>
 
@@ -272,7 +272,7 @@ export default function FeaturesPage() {
               Who Uses Real-Time Inventory Management Software?
             </h2>
             <p className="text-base-content/80 mx-auto mt-4 max-w-3xl text-lg">
-              Teams across industries use Nook to track inventory, assets, and equipment.
+              Teams across industries use StockZip to track inventory, assets, and equipment.
             </p>
           </div>
 
@@ -348,7 +348,7 @@ export default function FeaturesPage() {
               Best App to Track Inventory
             </h2>
             <p className="text-base-content/80 mx-auto mt-4 max-w-2xl text-lg">
-              Teams trust Nook for fast, accurate inventory management.
+              Teams trust StockZip for fast, accurate inventory management.
             </p>
           </div>
 
@@ -356,7 +356,7 @@ export default function FeaturesPage() {
             <div className="card bg-base-100 shadow-sm">
               <div className="card-body text-center">
                 <p className="text-primary text-4xl font-bold">1,000+</p>
-                <h3 className="text-base-content mt-2 text-lg font-semibold">Teams Using Nook</h3>
+                <h3 className="text-base-content mt-2 text-lg font-semibold">Teams Using StockZip</h3>
                 <p className="text-base-content/70 mt-2">From solo operators to 50+ person warehouses</p>
               </div>
             </div>
@@ -419,7 +419,7 @@ export default function FeaturesPage() {
 
             <div className="card card-border bg-success/5 shadow-none">
               <div className="card-body">
-                <h3 className="text-base-content text-lg font-semibold">Nook</h3>
+                <h3 className="text-base-content text-lg font-semibold">StockZip</h3>
                 <ul className="text-base-content/70 mt-4 space-y-2">
                   <li className="flex gap-2">
                     <span className="icon-[tabler--check] text-success size-5 shrink-0"></span>
@@ -498,7 +498,7 @@ export default function FeaturesPage() {
             Explore Barcoding Software for Inventory
           </h2>
           <p className="text-base-content/80 mx-auto mt-4 max-w-2xl text-center text-lg">
-            See how Nook fits your specific use case.
+            See how StockZip fits your specific use case.
           </p>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
             <Link
@@ -535,7 +535,7 @@ export default function FeaturesPage() {
                 <span className="icon-[tabler--arrows-exchange-2] text-primary size-8"></span>
                 <h3 className="text-base-content mt-4 text-lg font-semibold">Compare to Sortly</h3>
                 <p className="text-base-content/80 mt-2">
-                  See how Nook stacks up against Sortly on features and pricing.
+                  See how StockZip stacks up against Sortly on features and pricing.
                 </p>
               </div>
             </Link>

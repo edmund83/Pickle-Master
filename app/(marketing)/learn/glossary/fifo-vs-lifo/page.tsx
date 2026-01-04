@@ -287,9 +287,9 @@ export default function FifoVsLifoPage() {
 
         {/* CTA Section */}
         <div className="mt-10 rounded-box bg-base-200 p-8">
-          <h2 className="text-base-content text-xl font-semibold">Track inventory costs with Nook</h2>
+          <h2 className="text-base-content text-xl font-semibold">Track inventory costs with StockZip</h2>
           <p className="text-base-content/80 mt-2">
-            Nook helps you track purchase costs and maintain accurate inventory valuation. Import cost data, track
+            StockZip helps you track purchase costs and maintain accurate inventory valuation. Import cost data, track
             price changes over time, and export reports for your accountant.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">

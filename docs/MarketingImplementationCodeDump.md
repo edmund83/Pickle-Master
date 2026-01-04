@@ -88,7 +88,7 @@ import { breadcrumbJsonLd, softwareApplicationJsonLd } from '@/lib/marketing/jso
 export const metadata: Metadata = marketingMetadata({
   title: 'Compare',
   description:
-    'Compare Nook to other inventory tools. See how trust-first pricing, offline scanning, and check-in/check-out workflows stack up for small teams.',
+    'Compare StockZip to other inventory tools. See how trust-first pricing, offline scanning, and check-in/check-out workflows stack up for small teams.',
   pathname: '/compare',
 })
 
@@ -103,7 +103,7 @@ export default function CompareHubPage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory',
+          name: 'StockZip Inventory',
           description: 'Inventory management with barcode scanning and offline-first mobile workflows.',
           pathname: '/compare',
         })}
@@ -111,7 +111,7 @@ export default function CompareHubPage() {
 
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
         <h1 className="text-base-content text-3xl font-semibold md:text-4xl">
-          Compare Nook
+          Compare StockZip
         </h1>
         <p className="text-base-content/80 mt-3 max-w-3xl text-lg">
           If you&apos;re switching tools, you probably care about predictable pricing, reliable scanning, and workflows
@@ -149,7 +149,7 @@ export default function CompareHubPage() {
         </div>
 
         <div className="mt-12 rounded-box bg-base-200 p-10">
-          <h2 className="text-base-content text-2xl font-semibold md:text-3xl">Want to see Nook in action?</h2>
+          <h2 className="text-base-content text-2xl font-semibold md:text-3xl">Want to see StockZip in action?</h2>
           <p className="text-base-content/80 mt-3 max-w-3xl text-lg">
             Watch the 90-second demo or start a free trial and scan your first items today.
           </p>
@@ -182,7 +182,7 @@ import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/li
 export const metadata: Metadata = marketingMetadata({
   title: 'Sortly alternative',
   description:
-    'Switch from Sortly to Nook for trust-first pricing, offline-first barcode scanning, and real check-in/check-out workflows built for small teams.',
+    'Switch from Sortly to StockZip for trust-first pricing, offline-first barcode scanning, and real check-in/check-out workflows built for small teams.',
   pathname: '/compare/sortly-alternative',
 })
 
@@ -190,17 +190,17 @@ const SORTLY_FAQS: FaqItem[] = [
   {
     question: 'Do you have hard SKU limits or surprise tier jumps?',
     answer:
-      'No. Nook is designed to scale predictably so you aren’t forced into a huge tier jump just because your catalog grows.',
+      'No. StockZip is designed to scale predictably so you aren’t forced into a huge tier jump just because your catalog grows.',
   },
   {
     question: 'Can my team scan and update inventory offline?',
     answer:
-      'Yes. Nook is built for offline-first mobile workflows so scanning and updates keep working when Wi‑Fi is unreliable.',
+      'Yes. StockZip is built for offline-first mobile workflows so scanning and updates keep working when Wi‑Fi is unreliable.',
   },
   {
     question: 'Can I track tools and assets checked out to employees?',
     answer:
-      'Yes. Nook supports a real check-in/check-out workflow so you can assign items, set due dates, and stay accountable.',
+      'Yes. StockZip supports a real check-in/check-out workflow so you can assign items, set due dates, and stay accountable.',
   },
   {
     question: 'How long does it take to migrate from Sortly?',
@@ -259,7 +259,7 @@ export default function SortlyAlternativePage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory',
+          name: 'StockZip Inventory',
           description: 'Barcode inventory management that works offline, with real check-in/check-out workflows.',
           pathname: '/compare/sortly-alternative',
         })}
@@ -274,7 +274,7 @@ export default function SortlyAlternativePage() {
               A Sortly alternative built for real inventory work
             </h1>
             <p className="text-base-content/80 mt-3 max-w-3xl text-lg">
-              Nook is built for barcode scanning, offline reliability, and accountability workflows (check-in/check-out)
+              StockZip is built for barcode scanning, offline reliability, and accountability workflows (check-in/check-out)
               — with pricing that doesn&apos;t punish growth.
             </p>
           </div>
@@ -292,7 +292,7 @@ export default function SortlyAlternativePage() {
         <div className="mt-10 rounded-box bg-base-200 p-6 sm:p-8">
           <h2 className="text-base-content text-xl font-semibold sm:text-2xl">Quick verdict</h2>
           <p className="text-base-content/80 mt-2 max-w-3xl">
-            If you&apos;re feeling price shock, need offline scanning, or you track tools/assets checked out to staff, Nook
+            If you&apos;re feeling price shock, need offline scanning, or you track tools/assets checked out to staff, StockZip
             is purpose-built for that reality.
           </p>
 
@@ -301,7 +301,7 @@ export default function SortlyAlternativePage() {
               <thead>
                 <tr>
                   <th className="text-base-content">Category</th>
-                  <th className="text-base-content">Nook</th>
+                  <th className="text-base-content">StockZip</th>
                   <th className="text-base-content">Sortly (common complaints)</th>
                 </tr>
               </thead>
@@ -318,7 +318,7 @@ export default function SortlyAlternativePage() {
           </div>
 
           <p className="text-base-content/60 mt-4 text-sm">
-            Nook and Sortly are trademarks of their respective owners. This page is based on publicly available
+            StockZip and Sortly are trademarks of their respective owners. This page is based on publicly available
             information and recurring user-reported pain points.
           </p>
         </div>
@@ -407,7 +407,7 @@ import { breadcrumbJsonLd } from '@/lib/marketing/jsonld'
 
 export const metadata: Metadata = marketingMetadata({
   title: 'Demo',
-  description: 'Watch a quick demo of Nook inventory management: scanning, adjustments, and check-in/check-out.',
+  description: 'Watch a quick demo of StockZip inventory management: scanning, adjustments, and check-in/check-out.',
   pathname: '/demo',
 })
 
@@ -422,7 +422,7 @@ export default function DemoPage() {
       />
 
       <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
-        <h1 className="text-base-content text-3xl font-semibold md:text-4xl">Nook demo</h1>
+        <h1 className="text-base-content text-3xl font-semibold md:text-4xl">StockZip demo</h1>
         <p className="text-base-content/80 mt-3 text-lg">
           A quick walkthrough of the workflows teams use most: scan &amp; adjust, stock counts, and check-in/out.
         </p>
@@ -473,7 +473,7 @@ export default function BarcodeScanningFeaturePage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory',
+          name: 'StockZip Inventory',
           description: 'Barcode scanning inventory management with offline-first mobile workflows.',
           pathname: '/features/barcode-scanning',
         })}
@@ -578,7 +578,7 @@ export default function BulkEditingFeaturePage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory',
+          name: 'StockZip Inventory',
           description: 'Bulk inventory editing with preview and undo.',
           pathname: '/features/bulk-editing',
         })}
@@ -590,7 +590,7 @@ export default function BulkEditingFeaturePage() {
           Bulk edits with guardrails (so mistakes don’t ship)
         </h1>
         <p className="text-base-content/80 mt-3 max-w-3xl text-lg">
-          Spreadsheets are fast — until they break trust. Nook keeps speed while adding preview and undo so your team
+          Spreadsheets are fast — until they break trust. StockZip keeps speed while adding preview and undo so your team
           can move quickly without fear.
         </p>
 
@@ -678,7 +678,7 @@ export default function CheckInCheckOutFeaturePage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory',
+          name: 'StockZip Inventory',
           description: 'Inventory check-in/check-out with barcode scanning and audit trails.',
           pathname: '/features/check-in-check-out',
         })}
@@ -770,7 +770,7 @@ export default function LowStockAlertsFeaturePage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory',
+          name: 'StockZip Inventory',
           description: 'Low-stock alerts and reorder points for inventory management.',
           pathname: '/features/low-stock-alerts',
         })}
@@ -832,7 +832,7 @@ import { breadcrumbJsonLd, softwareApplicationJsonLd } from '@/lib/marketing/jso
 export const metadata: Metadata = marketingMetadata({
   title: 'Offline-first inventory scanning',
   description:
-    'Keep scanning and updating inventory even without internet. Nook syncs changes when you’re back online.',
+    'Keep scanning and updating inventory even without internet. StockZip syncs changes when you’re back online.',
   pathname: '/features/offline-mobile-scanning',
 })
 
@@ -848,7 +848,7 @@ export default function OfflineMobileScanningFeaturePage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory',
+          name: 'StockZip Inventory',
           description: 'Offline-first mobile inventory management with barcode scanning.',
           pathname: '/features/offline-mobile-scanning',
         })}
@@ -860,7 +860,7 @@ export default function OfflineMobileScanningFeaturePage() {
           Offline-first: keep scanning when Wi‑Fi disappears
         </h1>
         <p className="text-base-content/80 mt-3 max-w-3xl text-lg">
-          Warehouses, basements, and jobsites don&apos;t always have signal. Nook is designed for real conditions — work
+          Warehouses, basements, and jobsites don&apos;t always have signal. StockZip is designed for real conditions — work
           offline and sync later.
         </p>
 
@@ -933,7 +933,7 @@ import { breadcrumbJsonLd, softwareApplicationJsonLd } from '@/lib/marketing/jso
 export const metadata: Metadata = marketingMetadata({
   title: 'Features',
   description:
-    'Explore Nook features: barcode scanning, offline-first mobile inventory, check-in/check-out workflows, bulk editing with undo, and low-stock alerts.',
+    'Explore StockZip features: barcode scanning, offline-first mobile inventory, check-in/check-out workflows, bulk editing with undo, and low-stock alerts.',
   pathname: '/features',
 })
 
@@ -976,7 +976,7 @@ export default function FeaturesPage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory',
+          name: 'StockZip Inventory',
           description: 'Mobile-first inventory management with barcode scanning and offline mode.',
           pathname: '/features',
         })}
@@ -1022,7 +1022,7 @@ import { breadcrumbJsonLd, softwareApplicationJsonLd } from '@/lib/marketing/jso
 export const metadata: Metadata = marketingMetadata({
   title: 'Integrations',
   description:
-    'Integrations for inventory management: ecommerce, accounting, and automation. Connect Nook with tools like Shopify, WooCommerce, QuickBooks, Xero, and Zapier.',
+    'Integrations for inventory management: ecommerce, accounting, and automation. Connect StockZip with tools like Shopify, WooCommerce, QuickBooks, Xero, and Zapier.',
   pathname: '/integrations',
 })
 
@@ -1065,7 +1065,7 @@ export default function IntegrationsPage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory',
+          name: 'StockZip Inventory',
           description: 'Inventory management with barcode scanning and offline-first workflows.',
           pathname: '/integrations',
         })}
@@ -1074,7 +1074,7 @@ export default function IntegrationsPage() {
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
         <h1 className="text-base-content text-3xl font-semibold md:text-4xl">Integrations</h1>
         <p className="text-base-content/80 mt-3 max-w-3xl text-lg">
-          Most small teams don&apos;t want 50 integrations — they want 2–3 that actually work. Nook focuses on ecommerce,
+          Most small teams don&apos;t want 50 integrations — they want 2–3 that actually work. StockZip focuses on ecommerce,
           accounting, and lightweight automation so inventory stays truthful everywhere.
         </p>
 
@@ -1122,8 +1122,8 @@ import { MarketingNavbar } from '@/components/marketing/MarketingNavbar'
 
 export const metadata: Metadata = {
   title: {
-    template: '%s | Nook',
-    default: 'Nook | Simple inventory management',
+    template: '%s | StockZip',
+    default: 'StockZip | Simple inventory management',
   },
 }
 
@@ -1376,7 +1376,7 @@ export default function PerpetualVsPeriodicInventoryPage() {
         <div className="mt-10 rounded-box bg-base-200 p-8">
           <h2 className="text-base-content text-2xl font-semibold">Want perpetual inventory without the pain?</h2>
           <p className="text-base-content/80 mt-3">
-            Nook is built for small teams: barcode scanning, offline reliability, and audit trails that keep counts
+            StockZip is built for small teams: barcode scanning, offline reliability, and audit trails that keep counts
             trustworthy.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -1422,7 +1422,7 @@ export default function MigrationHubPage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory',
+          name: 'StockZip Inventory',
           description: 'Inventory management with barcode scanning and offline-first workflows.',
           pathname: '/migration',
         })}
@@ -1499,7 +1499,7 @@ import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/li
 export const metadata: Metadata = marketingMetadata({
   title: 'Sortly migration',
   description:
-    'Migrate from Sortly to Nook with a simple checklist: export CSV, map folders/locations, import, label, and run a scan-first verification count.',
+    'Migrate from Sortly to StockZip with a simple checklist: export CSV, map folders/locations, import, label, and run a scan-first verification count.',
   pathname: '/migration/sortly',
 })
 
@@ -1538,7 +1538,7 @@ export default function SortlyMigrationPage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory',
+          name: 'StockZip Inventory',
           description: 'Inventory management with barcode scanning, offline-first mobile, and check-in/check-out.',
           pathname: '/migration/sortly',
         })}
@@ -1553,7 +1553,7 @@ export default function SortlyMigrationPage() {
               Sortly migration guide
             </h1>
             <p className="text-base-content/80 mt-3 max-w-3xl text-lg">
-              A simple, safe way to move from Sortly to Nook — without breaking your counts or slowing your team down.
+              A simple, safe way to move from Sortly to StockZip — without breaking your counts or slowing your team down.
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
@@ -1582,7 +1582,7 @@ export default function SortlyMigrationPage() {
                 <li className="flex gap-3">
                   <span className="badge badge-primary badge-soft rounded-full">2</span>
                   <span>
-                    <span className="text-base-content font-medium">Decide your structure</span>: map Sortly folders to Nook
+                    <span className="text-base-content font-medium">Decide your structure</span>: map Sortly folders to StockZip
                     locations (warehouse → shelf → bin) so scanning and counts match reality.
                   </span>
                 </li>
@@ -1596,7 +1596,7 @@ export default function SortlyMigrationPage() {
                 <li className="flex gap-3">
                   <span className="badge badge-primary badge-soft rounded-full">4</span>
                   <span>
-                    <span className="text-base-content font-medium">Import into Nook</span> and spot-check 20–30 items for
+                    <span className="text-base-content font-medium">Import into StockZip</span> and spot-check 20–30 items for
                     names, SKUs, quantities, locations, and tags.
                   </span>
                 </li>
@@ -1629,7 +1629,7 @@ export default function SortlyMigrationPage() {
                   <thead>
                     <tr>
                       <th className="text-base-content">Sortly</th>
-                      <th className="text-base-content">Nook</th>
+                      <th className="text-base-content">StockZip</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -1747,7 +1747,7 @@ export default function MarketingHomePage() {
               Switching from Sortly?
             </h2>
             <p className="text-base-content/80 mx-auto mt-3 max-w-3xl text-lg">
-              Nook is built for real workflows (offline scanning + check-in/out) with pricing that won&apos;t punish growth.
+              StockZip is built for real workflows (offline scanning + check-in/out) with pricing that won&apos;t punish growth.
               Migrate your data fast and keep your team moving.
             </p>
             <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
@@ -1773,7 +1773,7 @@ export default function MarketingHomePage() {
               Start tracking stock with confidence
             </h2>
             <p className="text-base-content/80 mx-auto mt-3 max-w-3xl text-lg">
-              Try Nook free and see how fast your team can scan, update, and stay accurate.
+              Try StockZip free and see how fast your team can scan, update, and stay accurate.
             </p>
             <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link href="/signup" className="btn btn-primary btn-gradient btn-lg">
@@ -1820,7 +1820,7 @@ export default function PricingPage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory',
+          name: 'StockZip Inventory',
           description: 'Mobile-first inventory management with barcode scanning and offline mode.',
           pathname: '/pricing',
         })}
@@ -1866,7 +1866,7 @@ import { breadcrumbJsonLd } from '@/lib/marketing/jsonld'
 export const metadata: Metadata = marketingMetadata({
   title: 'Privacy policy',
   description:
-    'Privacy policy for Nook Inventory. Learn what data we collect, how we use it, and your choices as a customer.',
+    'Privacy policy for StockZip Inventory. Learn what data we collect, how we use it, and your choices as a customer.',
   pathname: '/privacy',
 })
 
@@ -1883,7 +1883,7 @@ export default function PrivacyPage() {
       <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-14">
         <h1 className="text-base-content text-3xl font-semibold md:text-4xl">Privacy Policy</h1>
         <p className="text-base-content/80 mt-3">
-          This is a plain-language privacy policy for Nook. Replace this with your final legal copy before launch.
+          This is a plain-language privacy policy for StockZip. Replace this with your final legal copy before launch.
         </p>
 
         <div className="mt-10 space-y-10">
@@ -1891,7 +1891,7 @@ export default function PrivacyPage() {
             <h2 className="text-base-content text-2xl font-semibold">What we collect</h2>
             <ul className="text-base-content/80 mt-4 list-disc space-y-2 pl-6">
               <li>Account information (name, email).</li>
-              <li>Workspace data you store in Nook (inventory items, locations, activity logs).</li>
+              <li>Workspace data you store in StockZip (inventory items, locations, activity logs).</li>
               <li>Usage data to improve reliability and performance.</li>
             </ul>
           </section>
@@ -1947,7 +1947,7 @@ import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/li
 export const metadata: Metadata = marketingMetadata({
   title: 'Security',
   description:
-    'Security-first inventory software for small teams. Learn how Nook protects tenant data with row-level security, role-based access, and audit trails.',
+    'Security-first inventory software for small teams. Learn how StockZip protects tenant data with row-level security, role-based access, and audit trails.',
   pathname: '/security',
 })
 
@@ -1955,17 +1955,17 @@ const SECURITY_FAQS: FaqItem[] = [
   {
     question: 'How is tenant data isolated?',
     answer:
-      'Nook uses strict database row-level security (RLS) so tenants cannot access each other’s data at the database layer.',
+      'StockZip uses strict database row-level security (RLS) so tenants cannot access each other’s data at the database layer.',
   },
   {
     question: 'Do you support roles and permissions?',
     answer:
-      'Yes. Nook supports role-based access control (RBAC) so teams can limit who can edit, delete, or manage settings.',
+      'Yes. StockZip supports role-based access control (RBAC) so teams can limit who can edit, delete, or manage settings.',
   },
   {
     question: 'Do you keep an audit trail?',
     answer:
-      'Yes. Nook tracks inventory movements and key changes so you can see who did what, when, and why.',
+      'Yes. StockZip tracks inventory movements and key changes so you can see who did what, when, and why.',
   },
   {
     question: 'Can we export our data?',
@@ -1985,7 +1985,7 @@ export default function SecurityPage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory',
+          name: 'StockZip Inventory',
           description: 'Multi-tenant inventory management with barcode scanning and tenant isolation.',
           pathname: '/security',
         })}
@@ -1995,7 +1995,7 @@ export default function SecurityPage() {
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
         <h1 className="text-base-content text-3xl font-semibold md:text-4xl">Security</h1>
         <p className="text-base-content/80 mt-3 max-w-3xl text-lg">
-          Inventory is trust. Nook is built with tenant isolation, access control, and auditability so small teams can
+          Inventory is trust. StockZip is built with tenant isolation, access control, and auditability so small teams can
           move fast without losing confidence.
         </p>
 
@@ -2038,7 +2038,7 @@ export default function SecurityPage() {
         <div className="mt-12 rounded-box bg-base-200 p-10">
           <h2 className="text-base-content text-2xl font-semibold md:text-3xl">Security should be simple</h2>
           <p className="text-base-content/80 mt-3 max-w-3xl text-lg">
-            You shouldn&apos;t need an IT team to run inventory correctly. Nook focuses on the basics that prevent real
+            You shouldn&apos;t need an IT team to run inventory correctly. StockZip focuses on the basics that prevent real
             problems: tenant isolation, access control, and an audit trail your team can understand.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
@@ -2085,7 +2085,7 @@ export default function ConstructionToolsSolutionPage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory',
+          name: 'StockZip Inventory',
           description: 'Tool and asset tracking with check-in/check-out and offline scanning.',
           pathname: '/solutions/construction-tools',
         })}
@@ -2158,7 +2158,7 @@ export default function EcommerceSolutionPage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory',
+          name: 'StockZip Inventory',
           description: 'Ecommerce inventory management with low-stock alerts and barcode scanning.',
           pathname: '/solutions/ecommerce',
         })}
@@ -2212,7 +2212,7 @@ import { breadcrumbJsonLd, softwareApplicationJsonLd } from '@/lib/marketing/jso
 export const metadata: Metadata = marketingMetadata({
   title: 'Solutions',
   description:
-    'Nook inventory solutions for warehouses, ecommerce, construction/tools, and small businesses — built for scanning, offline work, and accountability.',
+    'StockZip inventory solutions for warehouses, ecommerce, construction/tools, and small businesses — built for scanning, offline work, and accountability.',
   pathname: '/solutions',
 })
 
@@ -2250,7 +2250,7 @@ export default function SolutionsPage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory',
+          name: 'StockZip Inventory',
           description: 'Inventory management solutions for small teams.',
           pathname: '/solutions',
         })}
@@ -2259,7 +2259,7 @@ export default function SolutionsPage() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
         <h1 className="text-base-content text-3xl font-semibold md:text-4xl">Solutions</h1>
         <p className="text-base-content/80 mt-3 max-w-3xl text-lg">
-          Nook is flexible enough for warehouses and field teams, but still simple enough for small businesses.
+          StockZip is flexible enough for warehouses and field teams, but still simple enough for small businesses.
         </p>
 
         <div className="mt-10 grid gap-6 md:grid-cols-2">
@@ -2310,7 +2310,7 @@ export default function SmallBusinessSolutionPage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory',
+          name: 'StockZip Inventory',
           description: 'Simple inventory management for small businesses with barcode scanning.',
           pathname: '/solutions/small-business',
         })}
@@ -2321,7 +2321,7 @@ export default function SmallBusinessSolutionPage() {
           Replace spreadsheets without training your whole team
         </h1>
         <p className="text-base-content/80 mt-3 max-w-3xl text-lg">
-          Nook keeps setup light so you can start scanning and staying accurate quickly — without feeling like you
+          StockZip keeps setup light so you can start scanning and staying accurate quickly — without feeling like you
           bought an ERP.
         </p>
 
@@ -2383,7 +2383,7 @@ export default function WarehouseSolutionPage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory',
+          name: 'StockZip Inventory',
           description: 'Warehouse inventory management with barcode scanning and offline mode.',
           pathname: '/solutions/warehouse',
         })}
@@ -2438,7 +2438,7 @@ import { breadcrumbJsonLd } from '@/lib/marketing/jsonld'
 export const metadata: Metadata = marketingMetadata({
   title: 'Terms of service',
   description:
-    'Terms of service for Nook Inventory. Service rules, acceptable use, and customer responsibilities.',
+    'Terms of service for StockZip Inventory. Service rules, acceptable use, and customer responsibilities.',
   pathname: '/terms',
 })
 
@@ -2462,7 +2462,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-base-content text-2xl font-semibold">Using the service</h2>
             <p className="text-base-content/80 mt-3">
-              You agree to use Nook lawfully and not to attempt to access other tenants’ data.
+              You agree to use StockZip lawfully and not to attempt to access other tenants’ data.
             </p>
           </section>
 
@@ -2512,22 +2512,22 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Nook - Simple Inventory Management',
+  title: 'StockZip - Simple Inventory Management',
   description: 'A simple, mobile-first inventory management SaaS for small businesses',
   keywords: ['inventory', 'management', 'small business', 'stock tracking'],
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Nook',
+    title: 'StockZip',
   },
   formatDetection: {
     telephone: false,
   },
   openGraph: {
     type: 'website',
-    siteName: 'Nook',
-    title: 'Nook - Simple Inventory Management',
+    siteName: 'StockZip',
+    title: 'StockZip - Simple Inventory Management',
     description: 'A simple, mobile-first inventory management SaaS for small businesses',
   },
 }
@@ -2880,7 +2880,7 @@ export const DEFAULT_FAQS: FaqItem[] = [
   {
     question: 'Will it work when my team has no internet?',
     answer:
-      'Yes. Nook is built for offline-first mobile workflows. You can keep scanning and updating, then sync when you’re back online.',
+      'Yes. StockZip is built for offline-first mobile workflows. You can keep scanning and updating, then sync when you’re back online.',
   },
   {
     question: 'Can I migrate from Sortly?',
@@ -3168,11 +3168,11 @@ export function MarketingFooter() {
             {/* Newsletter section */}
             <div className="col-span-2 mb-8 flex flex-col justify-between gap-6 sm:mb-16 lg:mb-0 lg:gap-12">
               <div>
-                <Link title="Nook" className="text-base-content flex items-center gap-3 text-xl font-bold" href="/">
+                <Link title="StockZip" className="text-base-content flex items-center gap-3 text-xl font-bold" href="/">
                   <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary">
                     <span className="text-base font-bold text-white">P</span>
                   </div>
-                  <span>Nook</span>
+                  <span>StockZip</span>
                 </Link>
                 <p className="text-base-content/80 mt-4 text-balance lg:max-w-md">
                   Simple, mobile-first inventory management for small teams — barcode scanning, offline reliability, and
@@ -3264,7 +3264,7 @@ export function MarketingFooter() {
         {/* Payment / Copyright section */}
         <div className="mx-auto flex max-w-7xl justify-between gap-3 px-4 py-6 max-lg:flex-col sm:px-6 lg:items-center lg:px-8">
           <div className="text-base-content text-base text-wrap">
-            &copy;{new Date().getFullYear()} <Link href="/" className="text-primary">Nook</Link>. All rights reserved.
+            &copy;{new Date().getFullYear()} <Link href="/" className="text-primary">StockZip</Link>. All rights reserved.
           </div>
           <div className="flex flex-wrap items-center gap-4">
             <span className="badge badge-outline badge-secondary badge-lg rounded-full">
@@ -3292,7 +3292,7 @@ export function MarketingNavbar() {
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary">
               <span className="text-base font-bold text-white">P</span>
             </div>
-            Nook
+            StockZip
           </Link>
           <div className="md:hidden">
             <button
@@ -3444,7 +3444,7 @@ const TESTIMONIALS = [
     name: 'Small Business Owner',
     title: 'Finally predictable pricing',
     quote:
-      'We outgrew spreadsheets fast, but other tools punished us for having more items. Nook stayed simple and the pricing didn’t spike.',
+      'We outgrew spreadsheets fast, but other tools punished us for having more items. StockZip stayed simple and the pricing didn’t spike.',
   },
   {
     name: 'Construction Ops',
@@ -3925,7 +3925,7 @@ export function organizationJsonLd() {
   return {
     '@context': 'https://schema.org',
     '@type': 'Organization',
-    name: 'Nook',
+    name: 'StockZip',
     url: siteUrl,
   }
 }
@@ -3936,7 +3936,7 @@ export function websiteJsonLd() {
   return {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'Nook',
+    name: 'StockZip',
     url: siteUrl,
     potentialAction: {
       '@type': 'SearchAction',
@@ -4018,8 +4018,8 @@ export function articleJsonLd({
     mainEntityOfPage: url,
     datePublished,
     dateModified: dateModified ?? datePublished,
-    author: { '@type': 'Organization', name: 'Nook' },
-    publisher: { '@type': 'Organization', name: 'Nook' },
+    author: { '@type': 'Organization', name: 'StockZip' },
+    publisher: { '@type': 'Organization', name: 'StockZip' },
   }
 }
 ```
@@ -4053,7 +4053,7 @@ export function marketingMetadata({
       url: canonical,
       title,
       description,
-      siteName: 'Nook',
+      siteName: 'StockZip',
     },
     twitter: {
       card: 'summary_large_image',
@@ -4158,7 +4158,7 @@ export default withPWA(nextConfig)
 ## package.json
 ```json
 {
-  "name": "nook-master",
+  "name": "stockzip-master",
   "version": "0.1.0",
   "private": true,
     "scripts": {

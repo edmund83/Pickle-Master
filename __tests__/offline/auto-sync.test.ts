@@ -50,13 +50,13 @@ class AutoSyncManager {
 
     if (online && wasOffline) {
       // Dispatch custom event
-      this.dispatchEvent('nook:online')
+      this.dispatchEvent('stockzip:online')
 
       // Trigger auto-sync with delay
       this.scheduleSync()
     } else if (!online) {
       // Dispatch custom event
-      this.dispatchEvent('nook:offline')
+      this.dispatchEvent('stockzip:offline')
 
       // Cancel any pending sync
       if (this.pendingSyncTimeout) {
@@ -291,9 +291,9 @@ describe('Auto-Sync', () => {
   })
 
   describe('Custom Events', () => {
-    it('dispatches nook:online on reconnect', () => {
+    it('dispatches stockzip:online on reconnect', () => {
       const onlineHandler = vi.fn()
-      manager.addEventListener('nook:online', onlineHandler)
+      manager.addEventListener('stockzip:online', onlineHandler)
 
       manager.setOnline(false)
       manager.setOnline(true)
@@ -301,9 +301,9 @@ describe('Auto-Sync', () => {
       expect(onlineHandler).toHaveBeenCalledTimes(1)
     })
 
-    it('dispatches nook:offline on disconnect', () => {
+    it('dispatches stockzip:offline on disconnect', () => {
       const offlineHandler = vi.fn()
-      manager.addEventListener('nook:offline', offlineHandler)
+      manager.addEventListener('stockzip:offline', offlineHandler)
 
       manager.setOnline(false)
 
@@ -312,7 +312,7 @@ describe('Auto-Sync', () => {
 
     it('does not dispatch event if already in that state', () => {
       const onlineHandler = vi.fn()
-      manager.addEventListener('nook:online', onlineHandler)
+      manager.addEventListener('stockzip:online', onlineHandler)
 
       manager.setOnline(true) // Already online
 
@@ -321,13 +321,13 @@ describe('Auto-Sync', () => {
 
     it('allows removing event listeners', () => {
       const handler = vi.fn()
-      manager.addEventListener('nook:online', handler)
+      manager.addEventListener('stockzip:online', handler)
 
       manager.setOnline(false)
       manager.setOnline(true)
       expect(handler).toHaveBeenCalledTimes(1)
 
-      manager.removeEventListener('nook:online', handler)
+      manager.removeEventListener('stockzip:online', handler)
 
       manager.setOnline(false)
       manager.setOnline(true)
@@ -338,8 +338,8 @@ describe('Auto-Sync', () => {
       const handler1 = vi.fn()
       const handler2 = vi.fn()
 
-      manager.addEventListener('nook:offline', handler1)
-      manager.addEventListener('nook:offline', handler2)
+      manager.addEventListener('stockzip:offline', handler1)
+      manager.addEventListener('stockzip:offline', handler2)
 
       manager.setOnline(false)
 

@@ -2,22 +2,22 @@ import type { Metadata, Viewport } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Nook - Simple Inventory Management',
+  title: 'StockZip - Simple Inventory Management',
   description: 'A simple, mobile-first inventory management SaaS for small businesses',
   keywords: ['inventory', 'management', 'small business', 'stock tracking'],
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
-    title: 'Nook',
+    title: 'StockZip',
   },
   formatDetection: {
     telephone: false,
   },
   openGraph: {
     type: 'website',
-    siteName: 'Nook',
-    title: 'Nook - Simple Inventory Management',
+    siteName: 'StockZip',
+    title: 'StockZip - Simple Inventory Management',
     description: 'A simple, mobile-first inventory management SaaS for small businesses',
   },
 }

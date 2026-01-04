@@ -29,12 +29,12 @@ const SECURITY_FAQS: FaqItem[] = [
   {
     question: 'How is tenant data isolated?',
     answer:
-      'Nook uses strict database row-level security (RLS) enforced at the database layer, not just application logic. Each tenant can only access their own data, and this is enforced on every query.',
+      'StockZip uses strict database row-level security (RLS) enforced at the database layer, not just application logic. Each tenant can only access their own data, and this is enforced on every query.',
   },
   {
     question: 'Do you support roles and permissions?',
     answer:
-      'Yes. Nook supports role-based access control (RBAC) with Admin, Manager, and Staff roles. Each role has specific permissions so you can control who can edit, delete, or manage settings.',
+      'Yes. StockZip supports role-based access control (RBAC) with Admin, Manager, and Staff roles. Each role has specific permissions so you can control who can edit, delete, or manage settings.',
   },
   {
     question: 'Do you keep an audit trail?',
@@ -54,7 +54,7 @@ const SECURITY_FAQS: FaqItem[] = [
   {
     question: 'Where is data stored?',
     answer:
-      'Nook runs on Supabase infrastructure with data stored in secure, SOC 2 Type II compliant data centers. We use reputable cloud providers with strong security track records.',
+      'StockZip runs on Supabase infrastructure with data stored in secure, SOC 2 Type II compliant data centers. We use reputable cloud providers with strong security track records.',
   },
   {
     question: 'Do you have a privacy policy?',
@@ -105,7 +105,7 @@ const TRUST_SIGNALS = [
   {
     icon: 'icon-[tabler--certificate]',
     title: 'SOC 2 compliant infrastructure',
-    description: 'Nook runs on Supabase, which maintains SOC 2 Type II compliance for its infrastructure.',
+    description: 'StockZip runs on Supabase, which maintains SOC 2 Type II compliance for its infrastructure.',
   },
   {
     icon: 'icon-[tabler--cloud-lock]',
@@ -141,7 +141,7 @@ export default function SecurityPage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory',
+          name: 'StockZip Inventory',
           description: 'Secure inventory management with tenant isolation, audit trails, and role-based access.',
           pathname: '/security',
         })}
@@ -157,7 +157,7 @@ export default function SecurityPage() {
               Inventory software security your team can trust
             </h1>
             <p className="text-base-content/80 mt-3 max-w-3xl text-lg">
-              Inventory is trust. Nook is built with tenant isolation, role-based access, and complete audit trails
+              Inventory is trust. StockZip is built with tenant isolation, role-based access, and complete audit trails
               so your team can move fast without losing confidence in your data.
             </p>
           </div>
@@ -323,7 +323,7 @@ export default function SecurityPage() {
             <div>
               <h2 className="text-base-content text-2xl font-semibold">Security should be simple</h2>
               <p className="text-base-content/80 mt-3 max-w-2xl">
-                You should not need an IT team to run inventory securely. Nook focuses on the basics that prevent
+                You should not need an IT team to run inventory securely. StockZip focuses on the basics that prevent
                 real problems: tenant isolation, access control, and an audit trail your team can understand.
               </p>
               <ul className="text-base-content/80 mt-6 space-y-3">
@@ -362,7 +362,7 @@ export default function SecurityPage() {
                 <span className="icon-[tabler--list-check] text-primary size-8"></span>
                 <h3 className="text-base-content mt-4 text-lg font-semibold">All features</h3>
                 <p className="text-base-content/80 mt-2">
-                  See everything Nook offers for inventory management.
+                  See everything StockZip offers for inventory management.
                 </p>
               </div>
             </Link>
@@ -380,7 +380,7 @@ export default function SecurityPage() {
                 <span className="icon-[tabler--player-play] text-primary size-8"></span>
                 <h3 className="text-base-content mt-4 text-lg font-semibold">Request demo</h3>
                 <p className="text-base-content/80 mt-2">
-                  See Nook in action with a personalized walkthrough.
+                  See StockZip in action with a personalized walkthrough.
                 </p>
               </div>
             </Link>

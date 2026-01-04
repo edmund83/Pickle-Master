@@ -263,9 +263,9 @@ export default function EconomicOrderQuantityPage() {
 
         {/* CTA Section */}
         <div className="mt-10 rounded-box bg-base-200 p-8">
-          <h2 className="text-base-content text-xl font-semibold">Optimize ordering with Nook</h2>
+          <h2 className="text-base-content text-xl font-semibold">Optimize ordering with StockZip</h2>
           <p className="text-base-content/80 mt-2">
-            Nook inventory management gives you the demand data and stock visibility you need to calculate EOQ and set
+            StockZip inventory management gives you the demand data and stock visibility you need to calculate EOQ and set
             smart reorder points. Track stock levels, get low-stock alerts, and maintain accurate counts.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">

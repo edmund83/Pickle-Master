@@ -42,7 +42,7 @@ const faqs = [
   {
     question: 'What happens if someone forgets to check in an item?',
     answer:
-      'Nook can send automatic reminders for overdue items. Configure reminder schedules per item category — daily reminders for high-value tools, weekly for general equipment. Escalate to managers after a set period.',
+      'StockZip can send automatic reminders for overdue items. Configure reminder schedules per item category — daily reminders for high-value tools, weekly for general equipment. Escalate to managers after a set period.',
   },
   {
     question: 'Can I track check-outs across multiple locations?',
@@ -79,7 +79,7 @@ export default function CheckInCheckOutFeaturePage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory - Check-In/Check-Out',
+          name: 'StockZip Inventory - Check-In/Check-Out',
           description:
             'Asset check-out software for tracking tool and equipment assignments. Scan-based checkout with complete audit trails.',
           pathname: '/features/check-in-check-out',
@@ -541,7 +541,7 @@ export default function CheckInCheckOutFeaturePage() {
               Frequently Asked Questions About Check-In/Check-Out
             </h2>
             <p className="text-base-content/80 mx-auto mt-4 max-w-2xl text-lg">
-              Everything you need to know about asset checkout tracking in Nook.
+              Everything you need to know about asset checkout tracking in StockZip.
             </p>
           </div>
 

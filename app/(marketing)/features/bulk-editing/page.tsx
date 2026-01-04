@@ -37,7 +37,7 @@ const faqs = [
   {
     question: 'How does the preview feature work?',
     answer:
-      'Before applying changes, Nook shows a diff view highlighting exactly what will change for each item. Review the before/after values, catch errors, and confirm or cancel. Nothing changes until you click Apply.',
+      'Before applying changes, StockZip shows a diff view highlighting exactly what will change for each item. Review the before/after values, catch errors, and confirm or cancel. Nothing changes until you click Apply.',
   },
   {
     question: 'Can I undo a bulk edit after applying it?',
@@ -47,17 +47,17 @@ const faqs = [
   {
     question: 'Is there a limit to how many items I can edit at once?',
     answer:
-      'There is no hard limit. We have tested bulk edits on 50,000+ items. For very large operations, Nook processes in batches and shows progress. You can continue working while large edits complete in the background.',
+      'There is no hard limit. We have tested bulk edits on 50,000+ items. For very large operations, StockZip processes in batches and shows progress. You can continue working while large edits complete in the background.',
   },
   {
     question: 'Can I import changes from a spreadsheet?',
     answer:
-      'Absolutely. Export your items to CSV, make changes in Excel or Google Sheets, then re-import. Nook matches by SKU or barcode and shows a preview of all changes before applying. Perfect for complex multi-field updates.',
+      'Absolutely. Export your items to CSV, make changes in Excel or Google Sheets, then re-import. StockZip matches by SKU or barcode and shows a preview of all changes before applying. Perfect for complex multi-field updates.',
   },
   {
-    question: 'What validation does Nook provide for bulk edits?',
+    question: 'What validation does StockZip provide for bulk edits?',
     answer:
-      'Nook validates data types, required fields, and business rules before applying. For example, it warns if quantity would go negative, if a barcode already exists, or if a required custom field is empty. You can proceed or fix issues first.',
+      'StockZip validates data types, required fields, and business rules before applying. For example, it warns if quantity would go negative, if a barcode already exists, or if a required custom field is empty. You can proceed or fix issues first.',
   },
   {
     question: 'Can I schedule bulk edits to run later?',
@@ -79,7 +79,7 @@ export default function BulkEditingFeaturePage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory - Bulk Editing',
+          name: 'StockZip Inventory - Bulk Editing',
           description:
             'Bulk inventory update software with preview diffs, validation guardrails, and undo capability.',
           pathname: '/features/bulk-editing',
@@ -274,7 +274,7 @@ export default function BulkEditingFeaturePage() {
           <div className="text-center">
             <h2 className="text-base-content text-2xl font-semibold md:text-3xl">Common Bulk Edit Operations</h2>
             <p className="text-base-content/80 mx-auto mt-4 max-w-2xl text-lg">
-              Nook handles the updates your team makes every week.
+              StockZip handles the updates your team makes every week.
             </p>
           </div>
 
@@ -495,7 +495,7 @@ export default function BulkEditingFeaturePage() {
               Frequently Asked Questions About Bulk Editing
             </h2>
             <p className="text-base-content/80 mx-auto mt-4 max-w-2xl text-lg">
-              Everything you need to know about mass inventory updates in Nook.
+              Everything you need to know about mass inventory updates in StockZip.
             </p>
           </div>
 

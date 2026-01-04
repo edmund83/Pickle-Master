@@ -283,9 +283,9 @@ export default function InventoryTurnoverPage() {
 
         {/* CTA Section */}
         <div className="mt-10 rounded-box bg-base-200 p-8">
-          <h2 className="text-base-content text-xl font-semibold">Track turnover with Nook</h2>
+          <h2 className="text-base-content text-xl font-semibold">Track turnover with StockZip</h2>
           <p className="text-base-content/80 mt-2">
-            Nook inventory management gives you real-time visibility into stock levels, movement history, and valuation
+            StockZip inventory management gives you real-time visibility into stock levels, movement history, and valuation
             — the data you need to calculate and improve your inventory turnover.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">

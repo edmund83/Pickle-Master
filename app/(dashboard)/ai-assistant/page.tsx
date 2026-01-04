@@ -216,7 +216,7 @@ export default function AIAssistantPage() {
               <Bot className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="font-semibold text-neutral-900">Nook AI</h3>
+              <h3 className="font-semibold text-neutral-900">StockZip AI</h3>
               <p className="text-xs text-primary font-medium flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></span>
                 Analyzing your inventory

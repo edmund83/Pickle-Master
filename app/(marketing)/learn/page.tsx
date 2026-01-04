@@ -38,12 +38,12 @@ const LEARN_FAQS: FaqItem[] = [
   {
     question: 'Are these guides free?',
     answer:
-      'Yes, all guides are completely free. We believe in helping teams improve their inventory management, whether or not they use Nook.',
+      'Yes, all guides are completely free. We believe in helping teams improve their inventory management, whether or not they use StockZip.',
   },
   {
-    question: 'Do I need Nook to use these guides?',
+    question: 'Do I need StockZip to use these guides?',
     answer:
-      'No. While we show examples using Nook, the concepts apply to any inventory system — spreadsheets, other software, or pen and paper. The principles of accuracy and workflow design are universal.',
+      'No. While we show examples using StockZip, the concepts apply to any inventory system — spreadsheets, other software, or pen and paper. The principles of accuracy and workflow design are universal.',
   },
   {
     question: 'How often are guides updated?',
@@ -79,7 +79,7 @@ const GUIDES = [
 const TEMPLATES = [
   {
     title: 'Inventory Spreadsheet Template',
-    description: 'Ready-to-use spreadsheet with 12 essential columns. Import directly into Nook.',
+    description: 'Ready-to-use spreadsheet with 12 essential columns. Import directly into StockZip.',
     href: '/templates/inventory-spreadsheet',
     icon: 'icon-[tabler--file-spreadsheet]',
   },
@@ -150,7 +150,7 @@ export default function LearnPage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory Guides',
+          name: 'StockZip Inventory Guides',
           description:
             'Inventory management guides, templates, and tools covering perpetual vs periodic systems, reorder points, barcode workflows, and best practices for small teams.',
           pathname: '/learn',
@@ -527,7 +527,7 @@ export default function LearnPage() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <h2 className="text-base-content text-center text-2xl font-semibold md:text-3xl">Related Features</h2>
           <p className="text-base-content/80 mx-auto mt-4 max-w-2xl text-center text-lg">
-            Put your learning into practice with these Nook features.
+            Put your learning into practice with these StockZip features.
           </p>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
             <Link

@@ -238,9 +238,9 @@ export default function CycleCountSheetPage() {
 
         {/* CTA Section */}
         <div className="mt-10 rounded-box bg-base-200 p-8">
-          <h2 className="text-base-content text-xl font-semibold">Simplify counts with Nook</h2>
+          <h2 className="text-base-content text-xl font-semibold">Simplify counts with StockZip</h2>
           <p className="text-base-content/80 mt-2">
-            Nook has a built-in cycle count workflow. Scan items to count, see expected vs. actual in real-time, and
+            StockZip has a built-in cycle count workflow. Scan items to count, see expected vs. actual in real-time, and
             flag variances automatically. No paper sheets, no data entry.
           </p>
           <ul className="text-base-content/80 mt-4 space-y-2">

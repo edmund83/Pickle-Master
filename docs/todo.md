@@ -1,6 +1,6 @@
-# Nook Functional Testing Checklist
+# StockZip Functional Testing Checklist
 
-A comprehensive checklist to verify every function in the Nook inventory management system is error-free.
+A comprehensive checklist to verify every function in the StockZip inventory management system is error-free.
 
 **Legend:**
 - [ ] Not tested

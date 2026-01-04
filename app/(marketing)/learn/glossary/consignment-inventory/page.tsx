@@ -210,9 +210,9 @@ export default function ConsignmentInventoryPage() {
 
         {/* CTA Section */}
         <div className="mt-10 rounded-box bg-base-200 p-8">
-          <h2 className="text-base-content text-xl font-semibold">Track consignment inventory with Nook</h2>
+          <h2 className="text-base-content text-xl font-semibold">Track consignment inventory with StockZip</h2>
           <p className="text-base-content/80 mt-2">
-            Nook helps you track inventory regardless of ownership. Tag consigned goods separately, track sales, and
+            StockZip helps you track inventory regardless of ownership. Tag consigned goods separately, track sales, and
             generate reports for supplier settlements.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">

@@ -32,14 +32,14 @@ export const metadata: Metadata = marketingMetadata({
 
 const faqs = [
   {
-    question: 'Does Nook work in warehouses with poor WiFi?',
+    question: 'Does StockZip work in warehouses with poor WiFi?',
     answer:
-      'Yes. Nook is built offline-first specifically for warehouse environments. Metal racking, concrete walls, and receiving docks often kill connectivity. Nook keeps working without signal and syncs automatically when you reconnect.',
+      'Yes. StockZip is built offline-first specifically for warehouse environments. Metal racking, concrete walls, and receiving docks often kill connectivity. StockZip keeps working without signal and syncs automatically when you reconnect.',
   },
   {
-    question: 'What barcode scanners work with Nook?',
+    question: 'What barcode scanners work with StockZip?',
     answer:
-      'Nook supports phone cameras for 1D barcodes and QR codes, Bluetooth barcode scanners (Socket Mobile, Zebra, Honeywell), and rugged Android devices with built-in hardware scanners. Use whatever fits your workflow best.',
+      'StockZip supports phone cameras for 1D barcodes and QR codes, Bluetooth barcode scanners (Socket Mobile, Zebra, Honeywell), and rugged Android devices with built-in hardware scanners. Use whatever fits your workflow best.',
   },
   {
     question: 'Can multiple warehouse workers scan at the same time?',
@@ -47,24 +47,24 @@ const faqs = [
       'Yes. Every team member can scan simultaneously on their own device. Changes sync in real-time when connected, and offline changes merge automatically when devices reconnect. No conflicts, no double-counting.',
   },
   {
-    question: 'How do cycle counts work in Nook?',
+    question: 'How do cycle counts work in StockZip?',
     answer:
-      'Start a cycle count for a zone, location, or full warehouse. Team members scan items and enter counts. Nook flags discrepancies between expected and actual quantities. Review and approve adjustments with full audit trail.',
+      'Start a cycle count for a zone, location, or full warehouse. Team members scan items and enter counts. StockZip flags discrepancies between expected and actual quantities. Review and approve adjustments with full audit trail.',
   },
   {
     question: 'Can I track items by bin and shelf location?',
     answer:
-      'Yes. Nook supports hierarchical locations: warehouse → zone → aisle → rack → shelf → bin. Create as many levels as you need. Move items between locations with scan-based workflows.',
+      'Yes. StockZip supports hierarchical locations: warehouse → zone → aisle → rack → shelf → bin. Create as many levels as you need. Move items between locations with scan-based workflows.',
   },
   {
-    question: 'Does Nook support receiving against purchase orders?',
+    question: 'Does StockZip support receiving against purchase orders?',
     answer:
-      'Yes. Create a receive from a purchase order and scan incoming items. Nook flags shortages and overages automatically. Close the receive when done and quantities update across your system.',
+      'Yes. Create a receive from a purchase order and scan incoming items. StockZip flags shortages and overages automatically. Close the receive when done and quantities update across your system.',
   },
   {
-    question: 'How does Nook handle serial numbers and lot tracking?',
+    question: 'How does StockZip handle serial numbers and lot tracking?',
     answer:
-      'Nook supports custom fields for serial numbers, lot numbers, expiration dates, and any other item-level data. Search and filter by these fields, and track them through the audit trail.',
+      'StockZip supports custom fields for serial numbers, lot numbers, expiration dates, and any other item-level data. Search and filter by these fields, and track them through the audit trail.',
   },
   {
     question: 'Can warehouse staff adjust quantities without manager approval?',
@@ -86,7 +86,7 @@ export default function WarehouseSolutionPage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory - Warehouse Inventory Tracking',
+          name: 'StockZip Inventory - Warehouse Inventory Tracking',
           description:
             'Warehouse inventory tracking with barcode scanning, cycle counts, and offline mode for real-world warehouse conditions.',
           pathname: '/solutions/warehouse-inventory',
@@ -369,7 +369,7 @@ export default function WarehouseSolutionPage() {
           <div className="text-center">
             <h2 className="text-base-content text-2xl font-semibold md:text-3xl">See It In Action</h2>
             <p className="text-base-content/80 mx-auto mt-4 max-w-2xl text-lg">
-              Real warehouse workflows, captured from Nook.
+              Real warehouse workflows, captured from StockZip.
             </p>
           </div>
 
@@ -530,7 +530,7 @@ export default function WarehouseSolutionPage() {
               Frequently Asked Questions About Warehouse Inventory
             </h2>
             <p className="text-base-content/80 mx-auto mt-4 max-w-2xl text-lg">
-              Common questions from warehouse teams evaluating Nook.
+              Common questions from warehouse teams evaluating StockZip.
             </p>
           </div>
 

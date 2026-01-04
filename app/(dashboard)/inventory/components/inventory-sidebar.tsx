@@ -9,7 +9,7 @@ import type { Folder } from '@/types/database.types'
 import { FolderTreeView, type FolderStats } from './folder-tree-view'
 import { InlineFolderForm } from './inline-folder-form'
 
-const EXPANDED_FOLDERS_KEY = 'nook-expanded-folders'
+const EXPANDED_FOLDERS_KEY = 'stockzip-expanded-folders'
 
 interface InventorySidebarProps {
   folders: Folder[]

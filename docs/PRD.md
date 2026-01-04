@@ -1,6 +1,6 @@
 > **📌 Master Note:** This repo is belongs to Edmund Tong Kwan Kiat
 
-# Nook - Product Requirements Document (PRD)
+# StockZip - Product Requirements Document (PRD)
 
 **Version:** 1.1
 **Last Updated:** January 2026
@@ -30,7 +30,7 @@
 
 ### Product Vision
 
-**Nook** is a simple, mobile-first inventory management SaaS designed for small businesses who have outgrown spreadsheets but don't need enterprise ERP complexity.
+**StockZip** is a simple, mobile-first inventory management SaaS designed for small businesses who have outgrown spreadsheets but don't need enterprise ERP complexity.
 
 ### Positioning Statement
 
@@ -74,7 +74,7 @@ Based on analysis of r/smallbusiness, r/InventoryManagement, r/startups, and r/E
 
 ### The Real Competitor
 
-**Excel/Google Sheets** is the primary competitor, not other SaaS tools. Nook must beat spreadsheets on:
+**Excel/Google Sheets** is the primary competitor, not other SaaS tools. StockZip must beat spreadsheets on:
 - Speed of data entry
 - Clarity of stock visibility
 - Cost-effectiveness
@@ -588,8 +588,8 @@ Two-way sync with e-commerce platforms. Sales automatically decrement inventory;
 
 **Acceptance Criteria:**
 - [ ] Connect Shopify store in < 2 minutes
-- [ ] Sale decrements Nook inventory within 5 minutes
-- [ ] Manual stock update in Nook reflects in Shopify within 5 minutes
+- [ ] Sale decrements StockZip inventory within 5 minutes
+- [ ] Manual stock update in StockZip reflects in Shopify within 5 minutes
 - [ ] SKUs auto-match by exact match
 - [ ] Unmatched SKUs flagged for manual review
 
@@ -617,7 +617,7 @@ Connect-once integration for inventory value, COGS, and product sync.
 **Acceptance Criteria:**
 - [ ] Connect QuickBooks in < 2 minutes
 - [ ] Inventory value syncs daily (configurable)
-- [ ] Products created in Nook appear in QuickBooks
+- [ ] Products created in StockZip appear in QuickBooks
 - [ ] Inventory adjustments create journal entries
 - [ ] Export inventory valuation report for accountant
 
@@ -779,7 +779,7 @@ inventory_items               lots (created on receive)
 
 ```
 ┌─────────────────────────────────────────────────────┐
-│                    Nook Core                       │
+│                    StockZip Core                       │
 │  ┌─────────┐  ┌─────────┐  ┌─────────┐             │
 │  │ Web App │  │ iOS App │  │ Android │             │
 │  └────┬────┘  └────┬────┘  └────┬────┘             │
@@ -946,7 +946,7 @@ inventory_items               lots (created on receive)
 
 ### Market Landscape
 
-| Competitor | Strength | Weakness | Nook Advantage |
+| Competitor | Strength | Weakness | StockZip Advantage |
 |------------|----------|----------|------------------|
 | **Sortly** | Simple UI, visual | Price hikes, no offline, weak check-out | Trust pricing, offline-first, real asset tracking |
 | **Zoho Inventory** | Affordable, integrations | Complex for small teams | Simpler UX, faster onboarding |
@@ -956,7 +956,7 @@ inventory_items               lots (created on receive)
 
 ### Competitive Differentiation Matrix
 
-| Feature | Sortly | Zoho | inFlow | Nook |
+| Feature | Sortly | Zoho | inFlow | StockZip |
 |---------|--------|------|--------|--------|
 | Simple UI (no training) | Yes | No | Yes | **Yes** |
 | Mobile-first | Yes | No | No | **Yes** |

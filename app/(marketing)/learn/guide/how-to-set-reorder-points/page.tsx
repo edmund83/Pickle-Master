@@ -435,10 +435,10 @@ export default function HowToSetReorderPointsPage() {
             <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <h2 className="text-base-content text-2xl font-semibold md:text-3xl">
-                  Let Nook Handle Your Reorder Alerts
+                  Let StockZip Handle Your Reorder Alerts
                 </h2>
                 <p className="text-base-content/80 mt-4 max-w-2xl text-lg">
-                  Nook makes it easy to set minimum stock levels and get notified before you run out. See what needs
+                  StockZip makes it easy to set minimum stock levels and get notified before you run out. See what needs
                   attention at a glance with the low stock report.
                 </p>
                 <ul className="mt-6 grid gap-3 sm:grid-cols-2">

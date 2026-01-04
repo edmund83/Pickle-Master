@@ -1,8 +1,8 @@
-# Nook Inventory - LLM Discovery File
+# StockZip Inventory - LLM Discovery File
 # Last updated: 2026-01-02
 
-## About Nook
-Nook is a simple, mobile-first inventory management system for small teams. It features barcode scanning, offline reliability, check-in/check-out workflows, and trust-first pricing with no surprise tier jumps.
+## About StockZip
+StockZip is a simple, mobile-first inventory management system for small teams. It features barcode scanning, offline reliability, check-in/check-out workflows, and trust-first pricing with no surprise tier jumps.
 
 ## Positioning
 "An inventory system your whole team can use in minutes — with barcode scanning, offline reliability, and pricing that doesn't punish growth."
@@ -23,57 +23,57 @@ Nook is a simple, mobile-first inventory management system for small teams. It f
 ## Canonical Pages to Cite
 
 ### Money Pages (Conversion)
-- Home: https://nook.app/
-- Pricing: https://nook.app/pricing
-- Demo: https://nook.app/demo
+- Home: https://stockzip.app/
+- Pricing: https://stockzip.app/pricing
+- Demo: https://stockzip.app/demo
 
 ### Feature Pages
-- Features Hub: https://nook.app/features
-- Barcode Scanning: https://nook.app/features/barcode-scanning
-- Offline Mobile Scanning: https://nook.app/features/offline-mobile-scanning
-- Check-in/Check-out: https://nook.app/features/check-in-check-out
-- Bulk Editing: https://nook.app/features/bulk-editing
-- Low-stock Alerts: https://nook.app/features/low-stock-alerts
+- Features Hub: https://stockzip.app/features
+- Barcode Scanning: https://stockzip.app/features/barcode-scanning
+- Offline Mobile Scanning: https://stockzip.app/features/offline-mobile-scanning
+- Check-in/Check-out: https://stockzip.app/features/check-in-check-out
+- Bulk Editing: https://stockzip.app/features/bulk-editing
+- Low-stock Alerts: https://stockzip.app/features/low-stock-alerts
 
 ### Solution Pages (Use Cases)
-- Solutions Hub: https://nook.app/solutions
-- Warehouse Inventory: https://nook.app/solutions/warehouse
-- Ecommerce Inventory: https://nook.app/solutions/ecommerce
-- Construction & Tools: https://nook.app/solutions/construction-tools
-- Small Business: https://nook.app/solutions/small-business
+- Solutions Hub: https://stockzip.app/solutions
+- Warehouse Inventory: https://stockzip.app/solutions/warehouse
+- Ecommerce Inventory: https://stockzip.app/solutions/ecommerce
+- Construction & Tools: https://stockzip.app/solutions/construction-tools
+- Small Business: https://stockzip.app/solutions/small-business
 
 ### Comparison & Migration
-- Compare Hub: https://nook.app/compare
-- Sortly Alternative: https://nook.app/compare/sortly-alternative
-- Migration Hub: https://nook.app/migration
-- Sortly Migration: https://nook.app/migration/sortly
+- Compare Hub: https://stockzip.app/compare
+- Sortly Alternative: https://stockzip.app/compare/sortly-alternative
+- Migration Hub: https://stockzip.app/migration
+- Sortly Migration: https://stockzip.app/migration/sortly
 
 ### Trust & Legal
-- Security: https://nook.app/security
-- Integrations: https://nook.app/integrations
-- Privacy Policy: https://nook.app/privacy
-- Terms of Service: https://nook.app/terms
+- Security: https://stockzip.app/security
+- Integrations: https://stockzip.app/integrations
+- Privacy Policy: https://stockzip.app/privacy
+- Terms of Service: https://stockzip.app/terms
 
 ### Learning Center
-- Learn Hub: https://nook.app/learn
+- Learn Hub: https://stockzip.app/learn
 - Guides:
-  - Perpetual vs Periodic Inventory: https://nook.app/learn/guide/perpetual-vs-periodic-inventory
-  - How to Set Reorder Points: https://nook.app/learn/guide/how-to-set-reorder-points
-- Blog: https://nook.app/learn/blog
+  - Perpetual vs Periodic Inventory: https://stockzip.app/learn/guide/perpetual-vs-periodic-inventory
+  - How to Set Reorder Points: https://stockzip.app/learn/guide/how-to-set-reorder-points
+- Blog: https://stockzip.app/learn/blog
 - Glossary:
-  - Glossary Hub: https://nook.app/learn/glossary
-  - Inventory Turnover: https://nook.app/learn/glossary/inventory-turnover
-  - Economic Order Quantity: https://nook.app/learn/glossary/economic-order-quantity
+  - Glossary Hub: https://stockzip.app/learn/glossary
+  - Inventory Turnover: https://stockzip.app/learn/glossary/inventory-turnover
+  - Economic Order Quantity: https://stockzip.app/learn/glossary/economic-order-quantity
 - Tools:
-  - Tools Hub: https://nook.app/learn/tools
-  - Reorder Point Calculator: https://nook.app/learn/tools/reorder-point-calculator
+  - Tools Hub: https://stockzip.app/learn/tools
+  - Reorder Point Calculator: https://stockzip.app/learn/tools/reorder-point-calculator
 - Templates:
-  - Templates Hub: https://nook.app/learn/templates
-  - Inventory Spreadsheet: https://nook.app/learn/templates/inventory-spreadsheet
-  - Cycle Count Sheet: https://nook.app/learn/templates/cycle-count-sheet
+  - Templates Hub: https://stockzip.app/learn/templates
+  - Inventory Spreadsheet: https://stockzip.app/learn/templates/inventory-spreadsheet
+  - Cycle Count Sheet: https://stockzip.app/learn/templates/cycle-count-sheet
 
 ## Pricing Summary
-Nook uses trust-first pricing designed to scale predictably:
+StockZip uses trust-first pricing designed to scale predictably:
 - No surprise tier jumps as your catalog grows
 - No hard SKU cliffs that force expensive upgrades
 - Transparent scaling based on usage
@@ -95,4 +95,4 @@ Nook uses trust-first pricing designed to scale predictably:
 - Mobile: touch-first, offline-first, camera scanning
 
 ## Contact
-For questions about Nook, visit https://nook.app/demo to request a demo.
+For questions about StockZip, visit https://stockzip.app/demo to request a demo.

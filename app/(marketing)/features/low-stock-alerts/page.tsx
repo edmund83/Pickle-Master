@@ -27,12 +27,12 @@ const faqs = [
   {
     question: 'How do I set reorder points for items?',
     answer:
-      'Edit any item and set the "Minimum Stock" field. When quantity drops to or below this level, Nook triggers a low-stock alert. You can bulk-set reorder points using the bulk editing feature.',
+      'Edit any item and set the "Minimum Stock" field. When quantity drops to or below this level, StockZip triggers a low-stock alert. You can bulk-set reorder points using the bulk editing feature.',
   },
   {
     question: 'How will I receive low stock alerts?',
     answer:
-      'Alerts appear in the Nook dashboard, mobile app notifications, and optionally via email. Configure alert preferences per user — some team members might only want daily digests while buyers need immediate notifications.',
+      'Alerts appear in the StockZip dashboard, mobile app notifications, and optionally via email. Configure alert preferences per user — some team members might only want daily digests while buyers need immediate notifications.',
   },
   {
     question: 'Can I set different reorder points per location?',
@@ -42,7 +42,7 @@ const faqs = [
   {
     question: 'How do I calculate the right reorder point?',
     answer:
-      'Consider your lead time (how long it takes to receive new stock) and average daily usage. A simple formula: Reorder Point = Daily Usage × Lead Time Days + Safety Stock. Nook shows usage trends to help you estimate.',
+      'Consider your lead time (how long it takes to receive new stock) and average daily usage. A simple formula: Reorder Point = Daily Usage × Lead Time Days + Safety Stock. StockZip shows usage trends to help you estimate.',
   },
   {
     question: 'Can I set alerts for both low stock and overstock?',
@@ -52,7 +52,7 @@ const faqs = [
   {
     question: 'Do alerts work for items in multiple locations?',
     answer:
-      'Nook can alert on per-location quantities or total quantity across all locations. Configure this based on whether you care about overall stock or location-specific availability.',
+      'StockZip can alert on per-location quantities or total quantity across all locations. Configure this based on whether you care about overall stock or location-specific availability.',
   },
   {
     question: 'Can I export a low-stock report for purchasing?',
@@ -79,7 +79,7 @@ export default function LowStockAlertsFeaturePage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory - Low Stock Alerts',
+          name: 'StockZip Inventory - Low Stock Alerts',
           description:
             'Low stock alerts and reorder point notifications. Prevent stockouts with automated inventory monitoring.',
           pathname: '/features/low-stock-alerts',
@@ -155,7 +155,7 @@ export default function LowStockAlertsFeaturePage() {
                 <div className="bg-primary/10 mx-auto flex h-16 w-16 items-center justify-center rounded-2xl">
                   <span className="icon-[tabler--eye] text-primary size-8"></span>
                 </div>
-                <h3 className="text-base-content mt-4 text-xl font-semibold">2. Nook Monitors</h3>
+                <h3 className="text-base-content mt-4 text-xl font-semibold">2. StockZip Monitors</h3>
                 <p className="text-base-content/80 mt-2">
                   Automatic monitoring of all stock levels. No manual checking required.
                 </p>
@@ -274,7 +274,7 @@ export default function LowStockAlertsFeaturePage() {
                 See Stock Status at a Glance
               </h2>
               <p className="text-base-content/80 mt-4 text-lg">
-                The Nook dashboard shows stock health across your entire catalog. Red for critical, yellow for low,
+                The StockZip dashboard shows stock health across your entire catalog. Red for critical, yellow for low,
                 green for healthy. Know exactly what needs attention.
               </p>
 
@@ -460,7 +460,7 @@ export default function LowStockAlertsFeaturePage() {
               Frequently Asked Questions About Low Stock Alerts
             </h2>
             <p className="text-base-content/80 mx-auto mt-4 max-w-2xl text-lg">
-              Everything you need to know about reorder points and stock alerts in Nook.
+              Everything you need to know about reorder points and stock alerts in StockZip.
             </p>
           </div>
 

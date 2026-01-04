@@ -63,12 +63,12 @@ export function useOnlineStatus(options: UseOnlineStatusOptions = {}) {
 
       // Dispatch custom event when coming back online
       if (online && wasOffline) {
-        window.dispatchEvent(new CustomEvent('nook:online'))
+        window.dispatchEvent(new CustomEvent('stockzip:online'))
       }
 
       // Dispatch custom event when going offline
       if (!online && !wasOffline) {
-        window.dispatchEvent(new CustomEvent('nook:offline'))
+        window.dispatchEvent(new CustomEvent('stockzip:offline'))
       }
     },
     [setOnline]
@@ -140,9 +140,9 @@ export function useOnlineStatus(options: UseOnlineStatusOptions = {}) {
  */
 export function useOnlineEvent(callback: () => void) {
   useEffect(() => {
-    window.addEventListener('nook:online', callback)
+    window.addEventListener('stockzip:online', callback)
     return () => {
-      window.removeEventListener('nook:online', callback)
+      window.removeEventListener('stockzip:online', callback)
     }
   }, [callback])
 }
@@ -152,9 +152,9 @@ export function useOnlineEvent(callback: () => void) {
  */
 export function useOfflineEvent(callback: () => void) {
   useEffect(() => {
-    window.addEventListener('nook:offline', callback)
+    window.addEventListener('stockzip:offline', callback)
     return () => {
-      window.removeEventListener('nook:offline', callback)
+      window.removeEventListener('stockzip:offline', callback)
     }
   }, [callback])
 }

@@ -20,26 +20,26 @@ import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/li
 export const metadata: Metadata = marketingMetadata({
   title: 'BoxHero alternative',
   description:
-    'Switch from BoxHero to Nook for offline-first barcode scanning, real check-in/check-out workflows, and trust-first pricing designed for growing teams.',
+    'Switch from BoxHero to StockZip for offline-first barcode scanning, real check-in/check-out workflows, and trust-first pricing designed for growing teams.',
   pathname: '/compare/boxhero-alternative',
 })
 
 // FAQ items following FlyonUI faq-1 template structure
 const BOXHERO_FAQS: FaqItem[] = [
   {
-    question: 'How is Nook different from BoxHero?',
+    question: 'How is StockZip different from BoxHero?',
     answer:
-      'Nook focuses on offline-first reliability, native check-in/check-out workflows, and trust-first pricing that scales predictably as your catalog grows. Unlike BoxHero, Nook works seamlessly in warehouses and jobsites with unreliable internet.',
+      'StockZip focuses on offline-first reliability, native check-in/check-out workflows, and trust-first pricing that scales predictably as your catalog grows. Unlike BoxHero, StockZip works seamlessly in warehouses and jobsites with unreliable internet.',
   },
   {
-    question: 'Can I scan barcodes offline with Nook?',
+    question: 'Can I scan barcodes offline with StockZip?',
     answer:
-      'Yes. Nook is built for offline-first mobile workflows so scanning and updates work in warehouses, jobsites, and areas with unreliable Wi-Fi. Changes sync automatically when you reconnect.',
+      'Yes. StockZip is built for offline-first mobile workflows so scanning and updates work in warehouses, jobsites, and areas with unreliable Wi-Fi. Changes sync automatically when you reconnect.',
   },
   {
-    question: 'Does Nook support check-in/check-out for tools and assets?',
+    question: 'Does StockZip support check-in/check-out for tools and assets?',
     answer:
-      'Yes. Nook has a native issue/return workflow where you can assign items to staff, set due dates, track overdue items, and maintain full accountability for who has what.',
+      'Yes. StockZip has a native issue/return workflow where you can assign items to staff, set due dates, track overdue items, and maintain full accountability for who has what.',
   },
   {
     question: 'How long does it take to migrate from BoxHero?',
@@ -47,17 +47,17 @@ const BOXHERO_FAQS: FaqItem[] = [
       'Most teams can export from BoxHero, import via CSV, and run a verification count in under an hour. We provide guided field mapping and help with complex migrations.',
   },
   {
-    question: 'Is Nook pricing predictable?',
+    question: 'Is StockZip pricing predictable?',
     answer:
-      'Yes. Nook uses trust-first pricing with no surprise tier jumps or hard SKU limits that force expensive upgrades as your business grows. Your price stays predictable.',
+      'Yes. StockZip uses trust-first pricing with no surprise tier jumps or hard SKU limits that force expensive upgrades as your business grows. Your price stays predictable.',
   },
   {
-    question: 'What barcode scanners work with Nook?',
+    question: 'What barcode scanners work with StockZip?',
     answer:
-      'Nook works with your phone camera, Bluetooth barcode scanners, and rugged Android devices with built-in scanners. No proprietary hardware required.',
+      'StockZip works with your phone camera, Bluetooth barcode scanners, and rugged Android devices with built-in scanners. No proprietary hardware required.',
   },
   {
-    question: 'Can I export my data from Nook anytime?',
+    question: 'Can I export my data from StockZip anytime?',
     answer:
       'Yes. Your data belongs to you. Export your full inventory as CSV anytime with no restrictions or fees. We believe in data ownership.',
   },
@@ -67,39 +67,39 @@ const BOXHERO_FAQS: FaqItem[] = [
 const COMPARISON_ROWS = [
   {
     category: 'Offline reliability',
-    nook: 'Offline-first mobile scanning with automatic sync',
+    stockzip: 'Offline-first mobile scanning with automatic sync',
     boxhero: 'Requires stable internet for real-time updates',
-    nookWins: true,
+    stockzipWins: true,
   },
   {
     category: 'Check-in / check-out',
-    nook: 'Native issue/return workflow with due dates and accountability',
+    stockzip: 'Native issue/return workflow with due dates and accountability',
     boxhero: 'Limited asset tracking workflows',
-    nookWins: true,
+    stockzipWins: true,
   },
   {
     category: 'Pricing model',
-    nook: 'Trust-first pricing with predictable scaling',
+    stockzip: 'Trust-first pricing with predictable scaling',
     boxhero: 'Tiered pricing with feature gating',
-    nookWins: true,
+    stockzipWins: true,
   },
   {
     category: 'Bulk editing',
-    nook: 'Excel-grade bulk updates with preview diffs and undo',
+    stockzip: 'Excel-grade bulk updates with preview diffs and undo',
     boxhero: 'Standard bulk operations',
-    nookWins: true,
+    stockzipWins: true,
   },
   {
     category: 'Audit trail',
-    nook: 'Full audit trail with "who changed what" accountability',
+    stockzip: 'Full audit trail with "who changed what" accountability',
     boxhero: 'Basic activity logging',
-    nookWins: true,
+    stockzipWins: true,
   },
   {
     category: 'Migration',
-    nook: 'CSV import with guided field mapping + verification workflow',
+    stockzip: 'CSV import with guided field mapping + verification workflow',
     boxhero: 'Standard export options',
-    nookWins: true,
+    stockzipWins: true,
   },
 ]
 
@@ -141,7 +141,7 @@ export default function BoxHeroAlternativePage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory',
+          name: 'StockZip Inventory',
           description:
             'Barcode inventory management with offline scanning and check-in/check-out workflows. A BoxHero alternative for small teams.',
           pathname: '/compare/boxhero-alternative',
@@ -165,7 +165,7 @@ export default function BoxHeroAlternativePage() {
                 </span>
               </h1>
               <p className="text-base-content/80 text-lg">
-                Nook is built for barcode scanning that works offline, with native check-in/check-out workflows and
+                StockZip is built for barcode scanning that works offline, with native check-in/check-out workflows and
                 trust-first pricing that scales with your business. No surprise tier jumps. No internet dependency.
               </p>
               <div className="flex flex-wrap items-center gap-4">
@@ -237,10 +237,10 @@ export default function BoxHeroAlternativePage() {
         <div className="mx-auto max-w-7xl">
           <div className="mb-10 text-center">
             <h2 className="text-base-content text-2xl font-semibold md:text-3xl">
-              Quick comparison: Nook vs BoxHero
+              Quick comparison: StockZip vs BoxHero
             </h2>
             <p className="text-base-content/80 mx-auto mt-3 max-w-2xl text-lg">
-              See how Nook compares for small teams that need reliable scanning and accountability.
+              See how StockZip compares for small teams that need reliable scanning and accountability.
             </p>
           </div>
 
@@ -252,7 +252,7 @@ export default function BoxHeroAlternativePage() {
                   <th className="text-base-content text-left">
                     <span className="text-primary flex items-center gap-2">
                       <span className="icon-[tabler--circle-check] size-5"></span>
-                      Nook
+                      StockZip
                     </span>
                   </th>
                   <th className="text-base-content text-left">BoxHero</th>
@@ -264,10 +264,10 @@ export default function BoxHeroAlternativePage() {
                     <td className="text-base-content font-medium">{row.category}</td>
                     <td className="text-base-content/80">
                       <span className="flex items-start gap-2">
-                        {row.nookWins && (
+                        {row.stockzipWins && (
                           <span className="icon-[tabler--check] text-success mt-0.5 size-4 shrink-0"></span>
                         )}
-                        {row.nook}
+                        {row.stockzip}
                       </span>
                     </td>
                     <td className="text-base-content/60">{row.boxhero}</td>
@@ -278,7 +278,7 @@ export default function BoxHeroAlternativePage() {
           </div>
 
           <p className="text-base-content/50 mt-6 text-center text-sm">
-            Nook and BoxHero are trademarks of their respective owners. Comparison based on publicly available
+            StockZip and BoxHero are trademarks of their respective owners. Comparison based on publicly available
             information as of January 2026.
           </p>
         </div>
@@ -288,9 +288,9 @@ export default function BoxHeroAlternativePage() {
       <section className="bg-base-100 px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="mb-12 text-center">
-            <h2 className="text-base-content text-2xl font-semibold md:text-3xl">Why teams switch to Nook</h2>
+            <h2 className="text-base-content text-2xl font-semibold md:text-3xl">Why teams switch to StockZip</h2>
             <p className="text-base-content/80 mx-auto mt-3 max-w-2xl text-lg">
-              Nook is purpose-built for teams that need reliability, accountability, and predictable pricing.
+              StockZip is purpose-built for teams that need reliability, accountability, and predictable pricing.
             </p>
           </div>
 
@@ -343,8 +343,8 @@ export default function BoxHeroAlternativePage() {
             {/* When you should switch */}
             <div className="card border-primary/30 bg-base-100 border shadow-none">
               <div className="card-body">
-                <h2 className="text-base-content text-xl font-semibold">When you should switch to Nook</h2>
-                <p className="text-base-content/70 mt-2">Nook is the better choice when:</p>
+                <h2 className="text-base-content text-xl font-semibold">When you should switch to StockZip</h2>
+                <p className="text-base-content/70 mt-2">StockZip is the better choice when:</p>
                 <ul className="text-base-content/80 mt-4 space-y-3">
                   <li className="flex items-start gap-3">
                     <span className="icon-[tabler--alert-triangle] text-warning mt-0.5 size-5 shrink-0"></span>
@@ -387,7 +387,7 @@ export default function BoxHeroAlternativePage() {
                   Ready to switch from BoxHero?
                 </h2>
                 <p className="text-base-content/80 mt-3 text-lg">
-                  Export your BoxHero data as CSV, import into Nook, and run one scan-first verification count. Most
+                  Export your BoxHero data as CSV, import into StockZip, and run one scan-first verification count. Most
                   teams are up and running in under an hour.
                 </p>
                 <div className="mt-6 grid gap-2 sm:grid-cols-2">
@@ -443,7 +443,7 @@ export default function BoxHeroAlternativePage() {
               Frequently asked questions about switching from BoxHero
             </h2>
             <p className="text-base-content/80 mt-3 text-lg">
-              Common questions from teams evaluating Nook as a BoxHero alternative.
+              Common questions from teams evaluating StockZip as a BoxHero alternative.
             </p>
           </div>
 
@@ -478,7 +478,7 @@ export default function BoxHeroAlternativePage() {
       <section className="bg-base-100 px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <div className="mx-auto max-w-4xl text-center">
           <h2 className="text-base-content text-2xl font-semibold md:text-3xl">
-            Stop fighting unreliable scanning. Start with Nook.
+            Stop fighting unreliable scanning. Start with StockZip.
           </h2>
           <p className="text-base-content/80 mx-auto mt-4 max-w-2xl text-lg">
             Join teams who switched from BoxHero for offline reliability, native check-in/check-out, and pricing that

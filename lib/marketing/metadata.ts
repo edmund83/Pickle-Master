@@ -25,7 +25,7 @@ export function marketingMetadata({
       url: canonical,
       title,
       description,
-      siteName: 'Nook',
+      siteName: 'StockZip',
     },
     twitter: {
       card: 'summary_large_image',

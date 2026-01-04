@@ -9,7 +9,7 @@ export const DEFAULT_FAQS: FaqItem[] = [
   {
     question: 'Will it work when my team has no internet?',
     answer:
-      'Yes. Nook is built for offline-first mobile workflows. You can keep scanning and updating, then sync when you’re back online.',
+      "Yes. StockZip is built for offline-first mobile workflows. You can keep scanning and updating, then sync when you're back online.",
   },
   {
     question: 'Can I migrate from Sortly?',

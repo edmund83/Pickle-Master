@@ -19,27 +19,27 @@ import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/lib/marketing/jsonld'
 
 export const metadata: Metadata = marketingMetadata({
-  title: 'Integrations | Connect Nook with Shopify, QuickBooks, Zapier & More',
+  title: 'Integrations | Connect StockZip with Shopify, QuickBooks, Zapier & More',
   description:
-    'Inventory management integrations that actually work. Connect Nook with Shopify, WooCommerce, QuickBooks, Xero, and Zapier. Keep stock accurate everywhere.',
+    'Inventory management integrations that actually work. Connect StockZip with Shopify, WooCommerce, QuickBooks, Xero, and Zapier. Keep stock accurate everywhere.',
   pathname: '/integrations',
 })
 
 const INTEGRATIONS_FAQS: FaqItem[] = [
   {
-    question: 'Which ecommerce platforms does Nook integrate with?',
+    question: 'Which ecommerce platforms does StockZip integrate with?',
     answer:
       'Shopify and WooCommerce integrations are currently in development. These will sync inventory levels automatically so you avoid overselling.',
   },
   {
-    question: 'Will Nook sync with QuickBooks?',
+    question: 'Will StockZip sync with QuickBooks?',
     answer:
       'QuickBooks Online integration is planned. It will sync inventory valuation and cost of goods sold (COGS) to reduce manual accounting work.',
   },
   {
-    question: 'Can I use Nook with Zapier?',
+    question: 'Can I use StockZip with Zapier?',
     answer:
-      'Zapier integration is planned. Once available, you can connect Nook to 5,000+ apps for alerts, notifications, and custom workflows.',
+      'Zapier integration is planned. Once available, you can connect StockZip to 5,000+ apps for alerts, notifications, and custom workflows.',
   },
   {
     question: 'What if I need an integration that is not listed?',
@@ -72,7 +72,7 @@ const ECOMMERCE_INTEGRATIONS = [
   {
     icon: 'icon-[tabler--shopping-cart]',
     title: 'Shopify',
-    description: 'Sync inventory with your Shopify store. When stock changes in Nook, Shopify updates automatically to prevent overselling.',
+    description: 'Sync inventory with your Shopify store. When stock changes in StockZip, Shopify updates automatically to prevent overselling.',
     status: 'In progress',
     statusColor: 'badge-info',
   },
@@ -96,7 +96,7 @@ const ACCOUNTING_INTEGRATIONS = [
   {
     icon: 'icon-[tabler--brand-xing]',
     title: 'Xero',
-    description: 'Connect Nook to Xero for inventory value sync. Less reconciliation, more accurate financial reporting.',
+    description: 'Connect StockZip to Xero for inventory value sync. Less reconciliation, more accurate financial reporting.',
     status: 'Planned',
     statusColor: 'badge-neutral',
   },
@@ -106,7 +106,7 @@ const AUTOMATION_INTEGRATIONS = [
   {
     icon: 'icon-[tabler--bolt]',
     title: 'Zapier',
-    description: 'Connect Nook to 5,000+ apps. Trigger Slack alerts, email notifications, or custom workflows when inventory changes.',
+    description: 'Connect StockZip to 5,000+ apps. Trigger Slack alerts, email notifications, or custom workflows when inventory changes.',
     status: 'Planned',
     statusColor: 'badge-neutral',
   },
@@ -133,7 +133,7 @@ const NATIVE_FEATURES = [
   {
     icon: 'icon-[tabler--printer]',
     title: 'Label Printing',
-    description: 'Generate barcode and QR labels. Print to thermal or laser printers directly from Nook.',
+    description: 'Generate barcode and QR labels. Print to thermal or laser printers directly from StockZip.',
   },
 ]
 
@@ -148,7 +148,7 @@ export default function IntegrationsPage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory',
+          name: 'StockZip Inventory',
           description: 'Inventory management integrations with Shopify, QuickBooks, Zapier, and more.',
           pathname: '/integrations',
         })}
@@ -164,7 +164,7 @@ export default function IntegrationsPage() {
               Inventory management integrations that actually work
             </h1>
             <p className="text-base-content/80 mt-3 max-w-3xl text-lg">
-              Most small teams do not need 50 integrations — they need 2–3 that work reliably. Nook focuses on
+              Most small teams do not need 50 integrations — they need 2–3 that work reliably. StockZip focuses on
               ecommerce, accounting, and lightweight automation so inventory stays accurate everywhere.
             </p>
           </div>
@@ -244,7 +244,7 @@ export default function IntegrationsPage() {
         <div className="mt-16">
           <h2 className="text-base-content text-2xl font-semibold">Automation & API</h2>
           <p className="text-base-content/80 mt-2 max-w-3xl">
-            Automate workflows and build custom integrations. Connect Nook to your existing tools and processes.
+            Automate workflows and build custom integrations. Connect StockZip to your existing tools and processes.
           </p>
           <div className="mt-8 grid gap-6 md:grid-cols-2">
             {AUTOMATION_INTEGRATIONS.map((integration) => (
@@ -327,7 +327,7 @@ export default function IntegrationsPage() {
                 <span className="icon-[tabler--list-check] text-primary size-8"></span>
                 <h3 className="text-base-content mt-4 text-lg font-semibold">All features</h3>
                 <p className="text-base-content/80 mt-2">
-                  See everything Nook offers.
+                  See everything StockZip offers.
                 </p>
               </div>
             </Link>

@@ -20,46 +20,46 @@ import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/li
 export const metadata: Metadata = marketingMetadata({
   title: 'Fishbowl alternative',
   description:
-    'Looking for a Fishbowl alternative? Nook offers warehouse inventory management with barcode scanning, offline mode, and simpler pricing for small teams.',
+    'Looking for a Fishbowl alternative? StockZip offers warehouse inventory management with barcode scanning, offline mode, and simpler pricing for small teams.',
   pathname: '/compare/fishbowl-alternative',
 })
 
 // FAQ items following FlyonUI faq-1 template structure
 const FISHBOWL_FAQS: FaqItem[] = [
   {
-    question: 'How is Nook different from Fishbowl?',
+    question: 'How is StockZip different from Fishbowl?',
     answer:
-      'Nook is designed for small teams that need warehouse scanning and accountability without the complexity and cost of enterprise software like Fishbowl. We focus on core inventory accuracy, not ERP features.',
+      'StockZip is designed for small teams that need warehouse scanning and accountability without the complexity and cost of enterprise software like Fishbowl. We focus on core inventory accuracy, not ERP features.',
   },
   {
-    question: 'Does Nook integrate with QuickBooks?',
+    question: 'Does StockZip integrate with QuickBooks?',
     answer:
-      'QuickBooks integration is on our roadmap. Nook focuses on core inventory accuracy first, with accounting integrations coming soon. You can export data as CSV for accounting workflows.',
+      'QuickBooks integration is on our roadmap. StockZip focuses on core inventory accuracy first, with accounting integrations coming soon. You can export data as CSV for accounting workflows.',
   },
   {
-    question: 'Can Nook handle warehouse inventory management?',
+    question: 'Can StockZip handle warehouse inventory management?',
     answer:
-      'Yes. Nook supports multi-location hierarchies (warehouse → shelf → bin), barcode scanning, cycle counts, receiving workflows, and full audit trails for warehouse operations.',
+      'Yes. StockZip supports multi-location hierarchies (warehouse → shelf → bin), barcode scanning, cycle counts, receiving workflows, and full audit trails for warehouse operations.',
   },
   {
-    question: 'Is Nook cheaper than Fishbowl?',
+    question: 'Is StockZip cheaper than Fishbowl?',
     answer:
-      'Nook uses trust-first pricing designed for small teams. No enterprise licensing fees, no per-seat costs that scale unpredictably, no implementation consultants required.',
+      'StockZip uses trust-first pricing designed for small teams. No enterprise licensing fees, no per-seat costs that scale unpredictably, no implementation consultants required.',
   },
   {
-    question: 'Can I migrate from Fishbowl to Nook?',
+    question: 'Can I migrate from Fishbowl to StockZip?',
     answer:
-      'Yes. Export your Fishbowl data as CSV, import into Nook with our guided field mapping, and verify with a scan-first count. We help with complex migrations if needed.',
+      'Yes. Export your Fishbowl data as CSV, import into StockZip with our guided field mapping, and verify with a scan-first count. We help with complex migrations if needed.',
   },
   {
-    question: 'Does Nook work offline in warehouses?',
+    question: 'Does StockZip work offline in warehouses?',
     answer:
-      'Yes. Nook is built offline-first so scanning works in warehouses with unreliable Wi-Fi. Changes sync automatically when you reconnect.',
+      'Yes. StockZip is built offline-first so scanning works in warehouses with unreliable Wi-Fi. Changes sync automatically when you reconnect.',
   },
   {
-    question: 'Does Nook have manufacturing and BOM features?',
+    question: 'Does StockZip have manufacturing and BOM features?',
     answer:
-      'Nook focuses on inventory tracking, not manufacturing. If you need Bill of Materials and manufacturing features, Fishbowl may be a better fit. We do what we do exceptionally well.',
+      'StockZip focuses on inventory tracking, not manufacturing. If you need Bill of Materials and manufacturing features, Fishbowl may be a better fit. We do what we do exceptionally well.',
   },
 ]
 
@@ -67,39 +67,39 @@ const FISHBOWL_FAQS: FaqItem[] = [
 const COMPARISON_ROWS = [
   {
     category: 'Target audience',
-    nook: 'Small teams and growing businesses',
+    stockzip: 'Small teams and growing businesses',
     fishbowl: 'Mid-market and enterprise companies',
-    nookWins: true,
+    stockzipWins: true,
   },
   {
     category: 'Complexity',
-    nook: 'Simple, staff-friendly interface',
+    stockzip: 'Simple, staff-friendly interface',
     fishbowl: 'Full-featured with steep learning curve',
-    nookWins: true,
+    stockzipWins: true,
   },
   {
     category: 'Pricing model',
-    nook: 'Trust-first, predictable scaling',
+    stockzip: 'Trust-first, predictable scaling',
     fishbowl: 'Enterprise licensing with per-seat costs',
-    nookWins: true,
+    stockzipWins: true,
   },
   {
     category: 'Mobile scanning',
-    nook: 'Offline-first, camera + Bluetooth scanners',
+    stockzip: 'Offline-first, camera + Bluetooth scanners',
     fishbowl: 'Mobile app with hardware requirements',
-    nookWins: true,
+    stockzipWins: true,
   },
   {
     category: 'Setup time',
-    nook: 'Import and scan in minutes',
+    stockzip: 'Import and scan in minutes',
     fishbowl: 'Days to weeks for full implementation',
-    nookWins: true,
+    stockzipWins: true,
   },
   {
     category: 'Check-in / check-out',
-    nook: 'Native asset workflow with accountability',
+    stockzip: 'Native asset workflow with accountability',
     fishbowl: 'Requires additional modules',
-    nookWins: true,
+    stockzipWins: true,
   },
 ]
 
@@ -110,7 +110,7 @@ const KEY_DIFFERENTIATORS = [
     icon: 'icon-[tabler--target]',
     title: 'Right-Sized for Small Teams',
     description:
-      'Fishbowl is powerful software built for mid-market companies. If you are a smaller team that just needs reliable scanning, counts, and accountability — Nook is purpose-built for you.',
+      'Fishbowl is powerful software built for mid-market companies. If you are a smaller team that just needs reliable scanning, counts, and accountability — StockZip is purpose-built for you.',
   },
   {
     id: 'fast-setup',
@@ -124,7 +124,7 @@ const KEY_DIFFERENTIATORS = [
     icon: 'icon-[tabler--currency-dollar]',
     title: 'No Enterprise Pricing',
     description:
-      'No per-seat licensing that scales unpredictably. No surprise tier jumps. Nook uses trust-first pricing that stays fair as your business grows.',
+      'No per-seat licensing that scales unpredictably. No surprise tier jumps. StockZip uses trust-first pricing that stays fair as your business grows.',
   },
 ]
 
@@ -141,7 +141,7 @@ export default function FishbowlAlternativePage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory',
+          name: 'StockZip Inventory',
           description:
             'Warehouse inventory management with barcode scanning for small teams. A Fishbowl alternative without enterprise complexity.',
           pathname: '/compare/fishbowl-alternative',
@@ -165,7 +165,7 @@ export default function FishbowlAlternativePage() {
                 </span>
               </h1>
               <p className="text-base-content/80 text-lg">
-                Nook gives you warehouse inventory management with barcode scanning — without the enterprise
+                StockZip gives you warehouse inventory management with barcode scanning — without the enterprise
                 complexity and pricing of Fishbowl. Right-sized for growing businesses.
               </p>
               <div className="flex flex-wrap items-center gap-4">
@@ -237,10 +237,10 @@ export default function FishbowlAlternativePage() {
         <div className="mx-auto max-w-7xl">
           <div className="mb-10 text-center">
             <h2 className="text-base-content text-2xl font-semibold md:text-3xl">
-              Quick comparison: Nook vs Fishbowl
+              Quick comparison: StockZip vs Fishbowl
             </h2>
             <p className="text-base-content/80 mx-auto mt-3 max-w-2xl text-lg">
-              See how Nook compares for teams that don&apos;t need enterprise-grade complexity.
+              See how StockZip compares for teams that don&apos;t need enterprise-grade complexity.
             </p>
           </div>
 
@@ -252,7 +252,7 @@ export default function FishbowlAlternativePage() {
                   <th className="text-base-content text-left">
                     <span className="text-primary flex items-center gap-2">
                       <span className="icon-[tabler--circle-check] size-5"></span>
-                      Nook
+                      StockZip
                     </span>
                   </th>
                   <th className="text-base-content text-left">Fishbowl</th>
@@ -264,10 +264,10 @@ export default function FishbowlAlternativePage() {
                     <td className="text-base-content font-medium">{row.category}</td>
                     <td className="text-base-content/80">
                       <span className="flex items-start gap-2">
-                        {row.nookWins && (
+                        {row.stockzipWins && (
                           <span className="icon-[tabler--check] text-success mt-0.5 size-4 shrink-0"></span>
                         )}
-                        {row.nook}
+                        {row.stockzip}
                       </span>
                     </td>
                     <td className="text-base-content/60">{row.fishbowl}</td>
@@ -278,7 +278,7 @@ export default function FishbowlAlternativePage() {
           </div>
 
           <p className="text-base-content/50 mt-6 text-center text-sm">
-            Nook and Fishbowl are trademarks of their respective owners. Comparison based on publicly available
+            StockZip and Fishbowl are trademarks of their respective owners. Comparison based on publicly available
             information as of January 2026.
           </p>
         </div>
@@ -288,9 +288,9 @@ export default function FishbowlAlternativePage() {
       <section className="bg-base-100 px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="mb-12 text-center">
-            <h2 className="text-base-content text-2xl font-semibold md:text-3xl">Why small teams choose Nook</h2>
+            <h2 className="text-base-content text-2xl font-semibold md:text-3xl">Why small teams choose StockZip</h2>
             <p className="text-base-content/80 mx-auto mt-3 max-w-2xl text-lg">
-              Nook is purpose-built for teams that need warehouse-grade features without enterprise overhead.
+              StockZip is purpose-built for teams that need warehouse-grade features without enterprise overhead.
             </p>
           </div>
 
@@ -343,8 +343,8 @@ export default function FishbowlAlternativePage() {
             {/* When you should switch */}
             <div className="card border-primary/30 bg-base-100 border shadow-none">
               <div className="card-body">
-                <h2 className="text-base-content text-xl font-semibold">When you should switch to Nook</h2>
-                <p className="text-base-content/70 mt-2">Nook is the better choice when:</p>
+                <h2 className="text-base-content text-xl font-semibold">When you should switch to StockZip</h2>
+                <p className="text-base-content/70 mt-2">StockZip is the better choice when:</p>
                 <ul className="text-base-content/80 mt-4 space-y-3">
                   <li className="flex items-start gap-3">
                     <span className="icon-[tabler--alert-triangle] text-warning mt-0.5 size-5 shrink-0"></span>
@@ -385,7 +385,7 @@ export default function FishbowlAlternativePage() {
               Warehouse-grade features, small-team simplicity
             </h2>
             <p className="text-base-content/80 mx-auto mt-3 max-w-2xl text-lg">
-              Nook includes the warehouse inventory management features you need without the enterprise overhead.
+              StockZip includes the warehouse inventory management features you need without the enterprise overhead.
             </p>
           </div>
 
@@ -447,7 +447,7 @@ export default function FishbowlAlternativePage() {
                 </h2>
                 <p className="text-base-content/80 mt-3 text-lg">
                   Fishbowl is powerful software built for mid-market companies. If you&apos;re a smaller team that just
-                  needs reliable scanning, counts, and accountability — Nook is purpose-built for you.
+                  needs reliable scanning, counts, and accountability — StockZip is purpose-built for you.
                 </p>
                 <div className="mt-6 grid gap-2 sm:grid-cols-2">
                   <ul className="space-y-2">
@@ -502,7 +502,7 @@ export default function FishbowlAlternativePage() {
               Frequently asked questions about switching from Fishbowl
             </h2>
             <p className="text-base-content/80 mt-3 text-lg">
-              Common questions from teams evaluating Nook as a Fishbowl alternative.
+              Common questions from teams evaluating StockZip as a Fishbowl alternative.
             </p>
           </div>
 

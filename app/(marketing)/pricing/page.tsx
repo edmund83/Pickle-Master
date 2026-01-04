@@ -25,14 +25,14 @@ export const metadata: Metadata = marketingMetadata({
 
 const PRICING_FAQS: FaqItem[] = [
   {
-    question: 'How does Nook inventory software pricing work?',
+    question: 'How does StockZip inventory software pricing work?',
     answer:
-      'Nook uses trust-first pricing with no hidden fees or surprise tier jumps. You pay a flat monthly rate based on your plan — Starter ($19/mo), Team ($49/mo), or Business ($99/mo). All plans include unlimited items and barcode scanning. Upgrade or downgrade anytime.',
+      'StockZip uses trust-first pricing with no hidden fees or surprise tier jumps. You pay a flat monthly rate based on your plan — Starter ($19/mo), Team ($49/mo), or Business ($99/mo). All plans include unlimited items and barcode scanning. Upgrade or downgrade anytime.',
   },
   {
     question: 'Are there SKU limits or per-item charges?',
     answer:
-      'No SKU cliffs, no per-item pricing. All Nook plans include unlimited items. We believe your inventory software cost should be predictable — not a tax on growth.',
+      'No SKU cliffs, no per-item pricing. All StockZip plans include unlimited items. We believe your inventory software cost should be predictable — not a tax on growth.',
   },
   {
     question: 'What happens after the 14-day free trial?',
@@ -57,7 +57,7 @@ const PRICING_FAQS: FaqItem[] = [
   {
     question: 'Is there a setup fee or onboarding cost?',
     answer:
-      'No setup fees. Nook is self-service — import your inventory via CSV, print labels, and start scanning in minutes. If you need hands-on migration help, our team assists Business plan customers at no extra charge.',
+      'No setup fees. StockZip is self-service — import your inventory via CSV, print labels, and start scanning in minutes. If you need hands-on migration help, our team assists Business plan customers at no extra charge.',
   },
   {
     question: 'What if I need to cancel?',
@@ -80,7 +80,7 @@ export default function PricingPage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory',
+          name: 'StockZip Inventory',
           description:
             'Inventory management software with barcode scanning, offline mode, and trust-first pricing. No SKU cliffs.',
           pathname: '/pricing',

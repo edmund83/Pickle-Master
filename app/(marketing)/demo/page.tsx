@@ -25,15 +25,15 @@ import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/lib/marketing/jsonld'
 
 export const metadata: Metadata = marketingMetadata({
-  title: 'Inventory Management Software Demo | See Nook in Action',
+  title: 'Inventory Management Software Demo | See StockZip in Action',
   description:
-    'Watch a quick demo of Nook inventory management: barcode scanning, stock adjustments, check-in/check-out workflows, and offline mobile mode.',
+    'Watch a quick demo of StockZip inventory management: barcode scanning, stock adjustments, check-in/check-out workflows, and offline mobile mode.',
   pathname: '/demo',
 })
 
 const DEMO_FAQS: FaqItem[] = [
   {
-    question: 'How long is the Nook inventory software demo?',
+    question: 'How long is the StockZip inventory software demo?',
     answer:
       'The main overview demo is 90 seconds. We also have focused workflow demos (barcode scanning, stock counts, check-in/check-out) that are 30-60 seconds each.',
   },
@@ -50,12 +50,12 @@ const DEMO_FAQS: FaqItem[] = [
   {
     question: 'What does the demo cover?',
     answer:
-      "The overview demo shows the core workflows: scanning barcodes, adjusting quantities, setting up low stock alerts, and check-in/check-out for tools and assets. It's designed to show you how fast Nook is to use day-to-day.",
+      "The overview demo shows the core workflows: scanning barcodes, adjusting quantities, setting up low stock alerts, and check-in/check-out for tools and assets. It's designed to show you how fast StockZip is to use day-to-day.",
   },
   {
     question: 'Is there a mobile app demo?',
     answer:
-      'Yes. Nook works as a progressive web app on Android and iOS. The mobile demo shows camera scanning, offline mode, and real-time sync — the workflows your warehouse and field teams will use most.',
+      'Yes. StockZip works as a progressive web app on Android and iOS. The mobile demo shows camera scanning, offline mode, and real-time sync — the workflows your warehouse and field teams will use most.',
   },
   {
     question: 'How quickly can I get started after watching the demo?',
@@ -76,9 +76,9 @@ export default function DemoPage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory Demo',
+          name: 'StockZip Inventory Demo',
           description:
-            'Watch a demo of Nook inventory management software: barcode scanning, stock adjustments, and check-in/check-out workflows.',
+            'Watch a demo of StockZip inventory management software: barcode scanning, stock adjustments, and check-in/check-out workflows.',
           pathname: '/demo',
         })}
       />
@@ -92,7 +92,7 @@ export default function DemoPage() {
             Inventory Management Software Demo
           </h1>
           <p className="text-base-content/80 mx-auto mt-4 max-w-3xl text-lg md:text-xl">
-            See Nook in action. Watch how teams scan barcodes, adjust stock, run counts, and track tool checkouts —
+            See StockZip in action. Watch how teams scan barcodes, adjust stock, run counts, and track tool checkouts —
             in under 90 seconds.
           </p>
         </div>
@@ -137,7 +137,7 @@ export default function DemoPage() {
           <div className="text-center">
             <h2 className="text-base-content text-2xl font-semibold md:text-3xl">What You&apos;ll See in the Demo</h2>
             <p className="text-base-content/80 mt-4 text-lg">
-              The workflows that make Nook fast to learn and fast to use.
+              The workflows that make StockZip fast to learn and fast to use.
             </p>
           </div>
 
@@ -249,7 +249,7 @@ export default function DemoPage() {
       <section className="py-12 sm:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-base-content text-2xl font-semibold md:text-3xl">Who Uses Nook?</h2>
+            <h2 className="text-base-content text-2xl font-semibold md:text-3xl">Who Uses StockZip?</h2>
             <p className="text-base-content/80 mt-4 text-lg">
               Teams that need fast, accurate inventory tracking without ERP complexity.
             </p>

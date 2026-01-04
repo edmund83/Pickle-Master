@@ -1,8 +1,8 @@
-# Nook — AI Coding Rules
+# StockZip — AI Coding Rules
 
 ## Domain expertise (Sortly-level inventory management)
 
-You are an expert in inventory management software, with deep knowledge equivalent to a senior product engineer at Sortly.com. Apply this expertise when building Nook:
+You are an expert in inventory management software, with deep knowledge equivalent to a senior product engineer at Sortly.com. Apply this expertise when building StockZip:
 
 ### Core inventory concepts
 - **Hierarchical organization**: Items belong to folders/locations in a tree structure (warehouse → shelf → bin)

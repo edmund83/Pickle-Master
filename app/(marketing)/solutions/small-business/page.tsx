@@ -27,44 +27,44 @@ export const metadata: Metadata = marketingMetadata({
 
 const SMALL_BUSINESS_FAQS: FaqItem[] = [
   {
-    question: 'How long does it take to set up Nook?',
+    question: 'How long does it take to set up StockZip?',
     answer:
       'Most small businesses are scanning and tracking within 30 minutes. Import your existing spreadsheet or product list, print labels, and start. No IT team required.',
   },
   {
     question: 'Can my staff learn to use it without training?',
     answer:
-      'Yes. Nook uses scan-first workflows with plain language. If your team can use a smartphone, they can use Nook.',
+      'Yes. StockZip uses scan-first workflows with plain language. If your team can use a smartphone, they can use StockZip.',
   },
   {
     question: 'What if I already have data in spreadsheets?',
     answer:
-      'Export your spreadsheet as CSV and import directly into Nook. We map common columns automatically and let you review before finalizing.',
+      'Export your spreadsheet as CSV and import directly into StockZip. We map common columns automatically and let you review before finalizing.',
   },
   {
-    question: 'How much does Nook cost for a small business?',
+    question: 'How much does StockZip cost for a small business?',
     answer:
-      'Nook uses predictable, usage-based pricing. Start with the free tier to test it out, then upgrade as you grow. No surprise jumps or hidden fees.',
+      'StockZip uses predictable, usage-based pricing. Start with the free tier to test it out, then upgrade as you grow. No surprise jumps or hidden fees.',
   },
   {
-    question: 'Does Nook work on my phone?',
+    question: 'Does StockZip work on my phone?',
     answer:
-      'Yes. Use the Nook web app on any smartphone or tablet. No app store download required — just log in and start scanning.',
+      'Yes. Use the StockZip web app on any smartphone or tablet. No app store download required — just log in and start scanning.',
   },
   {
     question: 'What if I have multiple locations?',
     answer:
-      'Nook supports unlimited locations. Track inventory at your shop, warehouse, storage unit, or anywhere else. See stock levels per location or across all.',
+      'StockZip supports unlimited locations. Track inventory at your shop, warehouse, storage unit, or anywhere else. See stock levels per location or across all.',
   },
   {
     question: 'Can I print barcode labels?',
     answer:
-      'Yes. Generate QR or barcode labels from Nook and print to any thermal or laser printer. Label your products, shelves, or bins.',
+      'Yes. Generate QR or barcode labels from StockZip and print to any thermal or laser printer. Label your products, shelves, or bins.',
   },
   {
     question: 'What happens when my business grows?',
     answer:
-      'Nook scales with you. Add team members, locations, and items without hitting surprise tier jumps. The same simple interface works at any size.',
+      'StockZip scales with you. Add team members, locations, and items without hitting surprise tier jumps. The same simple interface works at any size.',
   },
 ]
 
@@ -154,7 +154,7 @@ export default function SmallBusinessSolutionPage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory',
+          name: 'StockZip Inventory',
           description: 'Small business inventory software with barcode scanning and offline mode.',
           pathname: '/solutions/small-business',
         })}
@@ -270,7 +270,7 @@ export default function SmallBusinessSolutionPage() {
         <div className="mt-16">
           <h2 className="text-base-content text-2xl font-semibold">Ideal for</h2>
           <p className="text-base-content/80 mt-2 max-w-3xl">
-            Nook works for any small business that needs to track physical inventory.
+            StockZip works for any small business that needs to track physical inventory.
           </p>
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             {IDEAL_FOR.map((useCase) => (
@@ -291,7 +291,7 @@ export default function SmallBusinessSolutionPage() {
             <div>
               <h2 className="text-base-content text-2xl font-semibold">Ready to ditch the spreadsheet?</h2>
               <p className="text-base-content/80 mt-3 max-w-2xl">
-                Join thousands of small businesses who switched to Nook and finally trust their inventory numbers.
+                Join thousands of small businesses who switched to StockZip and finally trust their inventory numbers.
               </p>
               <ul className="text-base-content/80 mt-6 space-y-3">
                 <li className="flex gap-2">

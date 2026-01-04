@@ -34,22 +34,22 @@ export const metadata: Metadata = marketingMetadata({
 
 const ECOMMERCE_FAQS: FaqItem[] = [
   {
-    question: 'How does Nook prevent stockouts for my online store?',
+    question: 'How does StockZip prevent stockouts for my online store?',
     answer:
-      'Nook uses low-stock alerts with customizable thresholds per SKU. When inventory drops below your reorder point, you get notified immediately so you can replenish before running out.',
+      'StockZip uses low-stock alerts with customizable thresholds per SKU. When inventory drops below your reorder point, you get notified immediately so you can replenish before running out.',
   },
   {
     question: 'Can I track inventory across multiple warehouses or locations?',
     answer:
-      'Yes. Nook supports unlimited locations with per-location stock levels. You can see total available quantity across all locations or drill into each warehouse independently.',
+      'Yes. StockZip supports unlimited locations with per-location stock levels. You can see total available quantity across all locations or drill into each warehouse independently.',
   },
   {
     question: 'How do I import my existing product catalog?',
     answer:
-      'Export your catalog as CSV from your current system (Shopify, WooCommerce, etc.) and import directly into Nook. We map common fields automatically and let you customize the rest.',
+      'Export your catalog as CSV from your current system (Shopify, WooCommerce, etc.) and import directly into StockZip. We map common fields automatically and let you customize the rest.',
   },
   {
-    question: 'Does Nook support barcode scanning for faster fulfillment?',
+    question: 'Does StockZip support barcode scanning for faster fulfillment?',
     answer:
       'Yes. Use your phone camera or a Bluetooth scanner to scan barcodes during picking, packing, and receiving. Each scan updates inventory in real-time.',
   },
@@ -59,14 +59,14 @@ const ECOMMERCE_FAQS: FaqItem[] = [
       'Absolutely. Each SKU can have its own minimum stock threshold. Fast-moving items can trigger alerts earlier, while slow-movers can have lower thresholds.',
   },
   {
-    question: 'How does Nook handle overselling?',
+    question: 'How does StockZip handle overselling?',
     answer:
-      'By keeping your inventory counts accurate through scan-based workflows and real-time updates, Nook reduces the data drift that leads to overselling. You always know your true available quantity.',
+      'By keeping your inventory counts accurate through scan-based workflows and real-time updates, StockZip reduces the data drift that leads to overselling. You always know your true available quantity.',
   },
   {
     question: 'Can multiple team members manage inventory simultaneously?',
     answer:
-      'Yes. Nook is built for teams with role-based permissions, real-time sync, and an audit trail showing who changed what and when.',
+      'Yes. StockZip is built for teams with role-based permissions, real-time sync, and an audit trail showing who changed what and when.',
   },
   {
     question: 'What if I need to adjust inventory after a count discrepancy?',
@@ -131,7 +131,7 @@ const WORKFLOWS = [
     step: '1',
     title: 'Receiving',
     description:
-      'Scan incoming shipments against purchase orders. Nook updates stock levels and flags discrepancies automatically.',
+      'Scan incoming shipments against purchase orders. StockZip updates stock levels and flags discrepancies automatically.',
   },
   {
     step: '2',
@@ -159,7 +159,7 @@ export default function EcommerceSolutionPage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory - Ecommerce',
+          name: 'StockZip Inventory - Ecommerce',
           description: 'Ecommerce inventory management with low-stock alerts, barcode scanning, and multi-location tracking.',
           pathname: '/solutions/ecommerce-inventory',
         })}
@@ -212,9 +212,9 @@ export default function EcommerceSolutionPage() {
 
         {/* Core Workflows Section */}
         <div className="mt-16 rounded-box bg-base-200 p-6 sm:p-8">
-          <h2 className="text-base-content text-xl font-semibold sm:text-2xl">How Nook fits your workflow</h2>
+          <h2 className="text-base-content text-xl font-semibold sm:text-2xl">How StockZip fits your workflow</h2>
           <p className="text-base-content/80 mt-2 max-w-3xl">
-            Nook integrates into the three core inventory workflows that keep your ecommerce operation running.
+            StockZip integrates into the three core inventory workflows that keep your ecommerce operation running.
           </p>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
             {WORKFLOWS.map((workflow) => (
@@ -254,7 +254,7 @@ export default function EcommerceSolutionPage() {
         <div className="mt-16">
           <h2 className="text-base-content text-2xl font-semibold">See It In Action</h2>
           <p className="text-base-content/80 mt-2 max-w-3xl">
-            Real ecommerce workflows, captured from Nook.
+            Real ecommerce workflows, captured from StockZip.
           </p>
           <div className="mt-8 grid gap-6 md:grid-cols-3">
             {/* Screenshot 1: Low Stock Alerts */}
@@ -310,7 +310,7 @@ export default function EcommerceSolutionPage() {
             <div>
               <h2 className="text-base-content text-2xl font-semibold">Stop losing sales to stockouts</h2>
               <p className="text-base-content/80 mt-3 max-w-2xl">
-                Join thousands of online sellers who trust Nook to keep their inventory accurate and their customers
+                Join thousands of online sellers who trust StockZip to keep their inventory accurate and their customers
                 happy.
               </p>
               <ul className="text-base-content/80 mt-6 space-y-3">

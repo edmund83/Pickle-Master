@@ -206,9 +206,9 @@ export default function InventoryVsStockPage() {
 
         {/* CTA Section */}
         <div className="mt-10 rounded-box bg-base-200 p-8">
-          <h2 className="text-base-content text-xl font-semibold">Manage your inventory with Nook</h2>
+          <h2 className="text-base-content text-xl font-semibold">Manage your inventory with StockZip</h2>
           <p className="text-base-content/80 mt-2">
-            Whether you call it inventory or stock, Nook helps you track it. Manage quantities, locations, costs, and
+            Whether you call it inventory or stock, StockZip helps you track it. Manage quantities, locations, costs, and
             movements all in one place.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">

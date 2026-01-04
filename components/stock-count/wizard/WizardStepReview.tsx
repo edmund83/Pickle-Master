@@ -21,7 +21,7 @@ const scopeConfig = {
     label: 'Full Inventory',
     description: 'All items in your inventory',
     icon: Package,
-    color: 'nook',
+    color: 'primary',
   },
   folder: {
     label: 'Specific Folder',
@@ -81,7 +81,7 @@ export function WizardStepReview({ data, folders }: WizardStepReviewProps) {
           <div
             className={cn(
               'flex h-10 w-10 items-center justify-center rounded-xl',
-              scope.color === 'nook'
+              scope.color === 'primary'
                 ? 'bg-primary/20 text-primary'
                 : scope.color === 'blue'
                 ? 'bg-blue-100 text-blue-600'

@@ -218,9 +218,9 @@ export default function EightyTwentyRulePage() {
 
         {/* CTA Section */}
         <div className="mt-10 rounded-box bg-base-200 p-8">
-          <h2 className="text-base-content text-xl font-semibold">Focus on what matters with Nook</h2>
+          <h2 className="text-base-content text-xl font-semibold">Focus on what matters with StockZip</h2>
           <p className="text-base-content/80 mt-2">
-            Nook helps you identify and track your most valuable inventory. Use tags, filters, and reports to focus
+            StockZip helps you identify and track your most valuable inventory. Use tags, filters, and reports to focus
             your attention on the items that drive your business.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">

@@ -80,7 +80,7 @@ export default function ToolsPage() {
         <div className="mt-16 rounded-box bg-base-200 p-8 text-center">
           <h2 className="text-base-content text-2xl font-semibold">Want all these calculations automated?</h2>
           <p className="text-base-content/80 mx-auto mt-3 max-w-2xl">
-            Nook inventory management calculates reorder points, tracks stock levels, and alerts you when it is time to
+            StockZip inventory management calculates reorder points, tracks stock levels, and alerts you when it is time to
             order. Start free, upgrade when you are ready.
           </p>
           <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">

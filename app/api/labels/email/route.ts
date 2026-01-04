@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     const pdfBuffer = Buffer.from(pdfBase64, 'base64')
 
     const { data, error } = await resend.emails.send({
-      from: 'Nook Master <onboarding@resend.dev>',
+      from: 'StockZip <onboarding@resend.dev>',
       to: [email],
       subject: `Label for ${itemName}`,
       html: `
@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
 
           <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;" />
           <p style="font-size: 12px; color: #6b7280;">
-            Sent by Nook Master Inventory System.
+            Sent by StockZip Inventory System.
           </p>
         </div>
       `,

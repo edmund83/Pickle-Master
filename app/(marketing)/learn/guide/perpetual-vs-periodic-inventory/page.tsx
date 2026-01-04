@@ -149,7 +149,7 @@ export default function PerpetualVsPeriodicInventoryPage() {
         <div className="mt-10 rounded-box bg-base-200 p-8">
           <h2 className="text-base-content text-2xl font-semibold">Want perpetual inventory without the pain?</h2>
           <p className="text-base-content/80 mt-3">
-            Nook is built for small teams: barcode scanning, offline reliability, and audit trails that keep counts
+            StockZip is built for small teams: barcode scanning, offline reliability, and audit trails that keep counts
             trustworthy.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">

@@ -1,4 +1,4 @@
-# Test Results Log - Nook Inventory Management SaaS
+# Test Results Log - StockZip Inventory Management SaaS
 
 > **Started**: 2026-01-03
 > **Completed**: 2026-01-03

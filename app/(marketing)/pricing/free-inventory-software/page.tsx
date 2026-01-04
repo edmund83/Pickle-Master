@@ -34,7 +34,7 @@ const FREE_TIER_FAQS: FaqItem[] = [
   {
     question: 'Is the free inventory software really free?',
     answer:
-      'Yes. No credit card required to start. You can use Nook indefinitely on the free tier with reasonable limits. We make money from teams who grow and need higher limits or advanced features.',
+      'Yes. No credit card required to start. You can use StockZip indefinitely on the free tier with reasonable limits. We make money from teams who grow and need higher limits or advanced features.',
   },
   {
     question: 'What are the limits on the free tier?',
@@ -59,7 +59,7 @@ const FREE_TIER_FAQS: FaqItem[] = [
   {
     question: 'Can I use the free tier offline?',
     answer:
-      'Yes. Nook works offline on all tiers, including free. Scan and update inventory without internet—changes sync automatically when you reconnect.',
+      'Yes. StockZip works offline on all tiers, including free. Scan and update inventory without internet—changes sync automatically when you reconnect.',
   },
   {
     question: 'Is there a time limit on the free tier?',
@@ -123,37 +123,37 @@ const SPREADSHEET_COMPARISON = [
   {
     feature: 'Barcode scanning',
     spreadsheet: 'No',
-    freeNook: 'Yes',
+    freeStockZip: 'Yes',
   },
   {
     feature: 'Low-stock alerts',
     spreadsheet: 'Manual formulas',
-    freeNook: 'Automatic',
+    freeStockZip: 'Automatic',
   },
   {
     feature: 'Audit trail',
     spreadsheet: 'No',
-    freeNook: 'Yes',
+    freeStockZip: 'Yes',
   },
   {
     feature: 'Offline access',
     spreadsheet: 'Limited',
-    freeNook: 'Full',
+    freeStockZip: 'Full',
   },
   {
     feature: 'Multi-user sync',
     spreadsheet: 'Version conflicts',
-    freeNook: 'Real-time',
+    freeStockZip: 'Real-time',
   },
   {
     feature: 'Location tracking',
     spreadsheet: 'Manual columns',
-    freeNook: 'Hierarchical',
+    freeStockZip: 'Hierarchical',
   },
   {
     feature: 'Mobile friendly',
     spreadsheet: 'Poor',
-    freeNook: 'Native',
+    freeStockZip: 'Native',
   },
 ]
 
@@ -169,7 +169,7 @@ export default function FreeInventorySoftwarePage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Free Inventory Software',
+          name: 'StockZip Free Inventory Software',
           description: 'Free warehouse inventory software with barcode scanning, offline mode, and audit trail.',
           pathname: '/pricing/free-inventory-software',
         })}
@@ -356,7 +356,7 @@ export default function FreeInventorySoftwarePage() {
                 <tr>
                   <th className="text-base-content">Feature</th>
                   <th className="text-base-content text-center">Spreadsheets</th>
-                  <th className="text-base-content text-center">Nook Free</th>
+                  <th className="text-base-content text-center">StockZip Free</th>
                 </tr>
               </thead>
               <tbody>
@@ -371,10 +371,10 @@ export default function FreeInventorySoftwarePage() {
                       )}
                     </td>
                     <td className="text-center">
-                      {row.freeNook === 'Yes' ? (
+                      {row.freeStockZip === 'Yes' ? (
                         <span className="icon-[tabler--check] text-success size-5"></span>
                       ) : (
-                        <span className="text-success font-medium">{row.freeNook}</span>
+                        <span className="text-success font-medium">{row.freeStockZip}</span>
                       )}
                     </td>
                   </tr>
@@ -561,7 +561,7 @@ export default function FreeInventorySoftwarePage() {
                 <span className="icon-[tabler--player-play] text-primary size-8"></span>
                 <h3 className="text-base-content mt-4 text-lg font-semibold">Watch Demo</h3>
                 <p className="text-base-content/80 mt-2">
-                  See Nook in action. Scanning, stock adjustments, and low-stock alerts.
+                  See StockZip in action. Scanning, stock adjustments, and low-stock alerts.
                 </p>
               </div>
             </Link>

@@ -124,7 +124,7 @@ export default function GuidesPage() {
             Put these guides into practice
           </h2>
           <p className="text-base-content/80 mx-auto mt-3 max-w-2xl">
-            Nook inventory management software helps you apply these concepts with barcode scanning,
+            StockZip inventory management software helps you apply these concepts with barcode scanning,
             low-stock alerts, and real-time tracking. Start free, upgrade when you are ready.
           </p>
           <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
