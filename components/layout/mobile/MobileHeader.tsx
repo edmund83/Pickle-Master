@@ -4,6 +4,7 @@ import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { SyncStatusIndicator } from '@/components/ui/SyncStatusIndicator'
 import { NotificationBell } from '@/components/notifications/NotificationBell'
+import { GlobalSearchTrigger } from '@/components/search/GlobalSearchTrigger'
 
 // Page title mapping
 const pageTitles: Record<string, string> = {
@@ -69,6 +70,9 @@ export function MobileHeader() {
 
       {/* Right actions */}
       <div className="flex items-center gap-2">
+        {/* Global Search */}
+        <GlobalSearchTrigger variant="mobile" />
+
         {/* Sync Status */}
         <SyncStatusIndicator size="sm" />
 
