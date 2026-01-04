@@ -5,6 +5,11 @@ import { UndoProvider } from '@/lib/hooks/useUndo'
 import { UndoToast } from '@/components/UndoToast'
 import { TenantSettingsProvider } from '@/contexts/TenantSettingsContext'
 import { SubscriptionGuard } from '@/components/SubscriptionGuard'
+import { GlobalSearchProvider } from '@/contexts/GlobalSearchContext'
+import { GlobalSearchModal } from '@/components/search/GlobalSearchModal'
+import { FloatingSearchButton } from '@/components/search/FloatingSearchButton'
+import { ZoeProvider } from '@/contexts/ZoeContext'
+import { ZoeChatPanel } from '@/components/search/ZoeChatPanel'
 
 export default function DashboardLayout({
   children,
@@ -16,13 +21,20 @@ export default function DashboardLayout({
       <TenantSettingsProvider>
         <UndoProvider>
           <SubscriptionGuard>
-            <div className="flex min-h-screen flex-col">
-              <QuotaWarningBanner />
-              <MobileLayoutWrapper>
-                {children}
-              </MobileLayoutWrapper>
-              <UndoToast />
-            </div>
+            <GlobalSearchProvider>
+              <ZoeProvider>
+                <div className="flex min-h-screen flex-col">
+                  <QuotaWarningBanner />
+                  <MobileLayoutWrapper>
+                    {children}
+                  </MobileLayoutWrapper>
+                  <UndoToast />
+                </div>
+                <FloatingSearchButton />
+                <GlobalSearchModal />
+                <ZoeChatPanel />
+              </ZoeProvider>
+            </GlobalSearchProvider>
           </SubscriptionGuard>
         </UndoProvider>
       </TenantSettingsProvider>
