@@ -72,7 +72,7 @@ export default function MarketingHomePage() {
               Migrate your data fast and keep your team moving.
             </p>
             <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Link href="/compare/sortly-alternative" className="btn btn-primary btn-gradient">
+              <Link href="/compare/sortly-alternative" className="btn btn-primary">
                 See why teams switch
               </Link>
               <Link href="/migration/sortly" className="btn btn-outline btn-secondary">
@@ -97,7 +97,7 @@ export default function MarketingHomePage() {
               Try StockZip free and see how fast your team can scan, update, and stay accurate.
             </p>
             <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Link href="/signup" className="btn btn-primary btn-gradient btn-lg">
+              <Link href="/signup" className="btn btn-primary btn-lg">
                 Start Free Trial
                 <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
               </Link>

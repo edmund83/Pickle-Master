@@ -84,7 +84,7 @@ function LoginForm() {
 
   return (
     <div
-      className="flex h-auto min-h-screen items-center justify-center overflow-x-hidden bg-[url('https://cdn.flyonui.com/fy-assets/blocks/marketing-ui/auth/auth-background-2.png')] bg-cover bg-center bg-no-repeat py-10"
+      className="flex h-auto min-h-screen items-center justify-center overflow-x-hidden bg-base-200 py-10"
     >
       <div className="relative flex items-center justify-center px-4 sm:px-6 lg:px-8">
         {/* Decorative SVG Background */}
@@ -252,7 +252,7 @@ function LoginForm() {
 
             <button
               type="submit"
-              className="btn btn-lg btn-primary btn-gradient btn-block"
+              className="btn btn-lg btn-primary btn-block"
               disabled={loading || oauthLoading !== null}
             >
               {loading ? (
@@ -282,7 +282,7 @@ function LoginForm() {
 function LoginFormSkeleton() {
   return (
     <div
-      className="flex h-auto min-h-screen items-center justify-center overflow-x-hidden bg-[url('https://cdn.flyonui.com/fy-assets/blocks/marketing-ui/auth/auth-background-2.png')] bg-cover bg-center bg-no-repeat py-10"
+      className="flex h-auto min-h-screen items-center justify-center overflow-x-hidden bg-base-200 py-10"
     >
       <div className="relative flex items-center justify-center px-4 sm:px-6 lg:px-8">
         <div className="bg-base-100 shadow-base-300/20 z-10 w-full space-y-6 rounded-xl p-6 shadow-md sm:min-w-md lg:p-8 animate-pulse">

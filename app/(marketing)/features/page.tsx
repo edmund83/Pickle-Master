@@ -478,7 +478,7 @@ export default function FeaturesPage() {
                 </ul>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-                <Link href="/demo" className="btn btn-primary btn-gradient btn-lg">
+                <Link href="/demo" className="btn btn-primary btn-lg">
                   Watch Demo
                   <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
                 </Link>

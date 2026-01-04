@@ -175,7 +175,7 @@ export default function SortlyMigrationPage() {
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Link href="/signup" className="btn btn-primary btn-gradient btn-lg">
+            <Link href="/signup" className="btn btn-primary btn-lg">
               Start Free Trial
               <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
             </Link>
@@ -323,7 +323,7 @@ export default function SortlyMigrationPage() {
               </ul>
             </div>
             <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-              <Link href="/signup" className="btn btn-primary btn-gradient btn-lg">
+              <Link href="/signup" className="btn btn-primary btn-lg">
                 Start Free Trial
                 <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
               </Link>

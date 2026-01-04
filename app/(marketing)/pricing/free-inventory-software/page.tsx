@@ -189,7 +189,7 @@ export default function FreeInventorySoftwarePage() {
               alerts, and offline mode — completely free to start.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link href="/signup" className="btn btn-primary btn-gradient btn-lg">
+              <Link href="/signup" className="btn btn-primary btn-lg">
                 Start Free — No Credit Card
                 <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
               </Link>

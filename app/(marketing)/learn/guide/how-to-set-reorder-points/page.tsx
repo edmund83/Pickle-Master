@@ -461,7 +461,7 @@ export default function HowToSetReorderPointsPage() {
                 </ul>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-                <Link href="/features/low-stock-alerts" className="btn btn-primary btn-gradient btn-lg">
+                <Link href="/features/low-stock-alerts" className="btn btn-primary btn-lg">
                   Learn About Alerts
                   <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
                 </Link>

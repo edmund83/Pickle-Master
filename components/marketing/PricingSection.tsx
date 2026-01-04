@@ -28,7 +28,7 @@ export function PricingSection() {
                 <li className="flex gap-2"><span className="icon-[tabler--circle-check] text-primary size-5"></span>Offline mobile mode</li>
                 <li className="flex gap-2"><span className="icon-[tabler--circle-check] text-primary size-5"></span>Low-stock alerts</li>
               </ul>
-              <Link href="/signup" className="btn btn-primary btn-gradient">
+              <Link href="/signup" className="btn btn-primary">
                 Start free trial
               </Link>
             </div>
@@ -51,7 +51,7 @@ export function PricingSection() {
                 <li className="flex gap-2"><span className="icon-[tabler--circle-check] text-primary size-5"></span>Roles &amp; permissions</li>
                 <li className="flex gap-2"><span className="icon-[tabler--circle-check] text-primary size-5"></span>Audit trail</li>
               </ul>
-              <Link href="/signup" className="btn btn-primary btn-gradient">
+              <Link href="/signup" className="btn btn-primary">
                 Start free trial
               </Link>
             </div>
@@ -71,7 +71,7 @@ export function PricingSection() {
                 <li className="flex gap-2"><span className="icon-[tabler--circle-check] text-primary size-5"></span>Advanced reports</li>
                 <li className="flex gap-2"><span className="icon-[tabler--circle-check] text-primary size-5"></span>Priority support</li>
               </ul>
-              <Link href="/signup" className="btn btn-primary btn-gradient">
+              <Link href="/signup" className="btn btn-primary">
                 Start free trial
               </Link>
             </div>

@@ -115,7 +115,7 @@ export function MarketingNavbar() {
             <Link href="/login" className="btn btn-text max-md:hidden">
               Sign in
             </Link>
-            <Link href="/signup" className="btn btn-primary btn-gradient max-md:w-full">
+            <Link href="/signup" className="btn btn-primary max-md:w-full">
               Start Free Trial
             </Link>
           </div>
