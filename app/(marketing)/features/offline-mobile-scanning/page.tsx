@@ -19,7 +19,7 @@ import { breadcrumbJsonLd, softwareApplicationJsonLd, faqPageJsonLd } from '@/li
 export const metadata: Metadata = marketingMetadata({
   title: 'Offline Inventory App | Mobile Scanning Without Internet',
   description:
-    'Keep scanning and updating inventory even without internet. Nook syncs changes automatically when you reconnect. Perfect for warehouses with dead zones.',
+    'Keep scanning and updating inventory even without internet. StockZip syncs changes automatically when you reconnect. Perfect for warehouses with dead zones.',
   pathname: '/features/offline-mobile-scanning',
 })
 
@@ -32,12 +32,12 @@ const faqs = [
   {
     question: 'How does data sync when I go back online?',
     answer:
-      'When your device reconnects, Nook automatically syncs all pending changes in the background. You can continue working while sync happens. Each change includes a timestamp so the audit trail remains accurate even across multiple offline sessions.',
+      'When your device reconnects, StockZip automatically syncs all pending changes in the background. You can continue working while sync happens. Each change includes a timestamp so the audit trail remains accurate even across multiple offline sessions.',
   },
   {
     question: 'What happens if two people edit the same item offline?',
     answer:
-      'Nook uses smart conflict resolution. For quantity changes, we apply changes in timestamp order. For other fields, the most recent change wins. Conflicts are flagged in the activity log so you can review and correct if needed.',
+      'StockZip uses smart conflict resolution. For quantity changes, we apply changes in timestamp order. For other fields, the most recent change wins. Conflicts are flagged in the activity log so you can review and correct if needed.',
   },
   {
     question: 'How much data is stored offline on my device?',
@@ -47,12 +47,12 @@ const faqs = [
   {
     question: 'Can I use offline mode on tablets and phones?',
     answer:
-      'Yes! Offline mode works on iOS and Android phones and tablets. The Nook mobile app is designed for offline-first operation, so the experience is identical whether you have signal or not.',
+      'Yes! Offline mode works on iOS and Android phones and tablets. The StockZip mobile app is designed for offline-first operation, so the experience is identical whether you have signal or not.',
   },
   {
     question: 'Does offline mode work for multiple users simultaneously?',
     answer:
-      'Each team member can work offline independently. When devices reconnect, changes from all users sync and merge. Nook handles the complexity of multi-user offline sync automatically.',
+      'Each team member can work offline independently. When devices reconnect, changes from all users sync and merge. StockZip handles the complexity of multi-user offline sync automatically.',
   },
   {
     question: 'How long can I work offline before syncing?',
@@ -79,7 +79,7 @@ export default function OfflineMobileScanningFeaturePage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory - Offline Mode',
+          name: 'StockZip Inventory - Offline Mode',
           description:
             'Offline-first mobile inventory management. Scan, update, and manage inventory without internet connection.',
           pathname: '/features/offline-mobile-scanning',
@@ -96,7 +96,7 @@ export default function OfflineMobileScanningFeaturePage() {
               Offline Inventory App That Never Stops Working
             </h1>
             <p className="text-base-content/80 mt-6 max-w-3xl text-lg md:text-xl">
-              Warehouses, basements, and jobsites do not always have signal. Nook is designed for real conditions —
+              Warehouses, basements, and jobsites do not always have signal. StockZip is designed for real conditions —
               scan and update inventory offline, then sync when you reconnect.
             </p>
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
@@ -224,7 +224,7 @@ export default function OfflineMobileScanningFeaturePage() {
                 Smart Sync You Can Trust
               </h2>
               <p className="text-base-content/80 mt-4 text-lg">
-                When your device reconnects, Nook syncs all pending changes automatically. Work continues in the
+                When your device reconnects, StockZip syncs all pending changes automatically. Work continues in the
                 background — no waiting, no interruption.
               </p>
 
@@ -249,7 +249,7 @@ export default function OfflineMobileScanningFeaturePage() {
                   <div>
                     <h3 className="text-base-content text-lg font-semibold">Conflict Resolution</h3>
                     <p className="text-base-content/80 mt-1">
-                      When two users edit the same item offline, Nook merges changes intelligently and flags anything
+                      When two users edit the same item offline, StockZip merges changes intelligently and flags anything
                       that needs review.
                     </p>
                   </div>
@@ -315,7 +315,7 @@ export default function OfflineMobileScanningFeaturePage() {
               Built for Real-World Conditions
             </h2>
             <p className="text-base-content/80 mx-auto mt-4 max-w-2xl text-lg">
-              Nook shines where other apps fail. Designed for the places where connectivity is unreliable.
+              StockZip shines where other apps fail. Designed for the places where connectivity is unreliable.
             </p>
           </div>
 
@@ -523,7 +523,7 @@ export default function OfflineMobileScanningFeaturePage() {
               Frequently Asked Questions About Offline Mode
             </h2>
             <p className="text-base-content/80 mx-auto mt-4 max-w-2xl text-lg">
-              Everything you need to know about offline inventory management in Nook.
+              Everything you need to know about offline inventory management in StockZip.
             </p>
           </div>
 
@@ -562,7 +562,7 @@ export default function OfflineMobileScanningFeaturePage() {
               Work Anywhere, Sync Everywhere
             </h2>
             <p className="text-base-content/80 mx-auto mt-4 max-w-2xl text-lg">
-              Download Nook and experience true offline-first inventory management. No connectivity anxiety.
+              Download StockZip and experience true offline-first inventory management. No connectivity anxiety.
             </p>
             <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
               <Link href="/signup" className="btn btn-primary btn-lg">

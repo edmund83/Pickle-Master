@@ -1,4 +1,4 @@
-# Nook - Features & Benefits
+# StockZip - Features & Benefits
 
 A comprehensive inventory management system built with Next.js, TypeScript, Tailwind CSS, and Supabase.
 
@@ -420,4 +420,4 @@ A comprehensive inventory management system built with Next.js, TypeScript, Tail
 ---
 
 *Document updated: 2026-01-03*
-*Based on comprehensive codebase analysis of Nook (Pickle-Master)*
+*Based on comprehensive codebase analysis of StockZip (Pickle-Master)*

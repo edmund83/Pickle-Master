@@ -17,7 +17,7 @@ import { breadcrumbJsonLd } from '@/lib/marketing/jsonld'
 export const metadata: Metadata = marketingMetadata({
   title: 'Free Inventory Templates | Spreadsheets, Cycle Count Sheets & More',
   description:
-    'Download free inventory management templates. Inventory spreadsheets, cycle count sheets, and more. Ready to use or import into Nook.',
+    'Download free inventory management templates. Inventory spreadsheets, cycle count sheets, and more. Ready to use or import into StockZip.',
   pathname: '/templates',
 })
 
@@ -58,7 +58,7 @@ export default function TemplatesPage() {
             Free Inventory Templates
           </h1>
           <p className="text-base-content/80 mx-auto mt-3 max-w-3xl text-lg">
-            Download ready-to-use inventory templates. Use them standalone or import into Nook to upgrade from
+            Download ready-to-use inventory templates. Use them standalone or import into StockZip to upgrade from
             spreadsheets to scan-based tracking.
           </p>
         </div>
@@ -93,7 +93,7 @@ export default function TemplatesPage() {
         <div className="mt-16 rounded-box bg-base-200 p-8 text-center">
           <h2 className="text-base-content text-2xl font-semibold">Ready to upgrade from spreadsheets?</h2>
           <p className="text-base-content/80 mx-auto mt-3 max-w-2xl">
-            Import your spreadsheet data into Nook and get barcode scanning, low-stock alerts, and real-time tracking.
+            Import your spreadsheet data into StockZip and get barcode scanning, low-stock alerts, and real-time tracking.
             Start free, upgrade when you are ready.
           </p>
           <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">

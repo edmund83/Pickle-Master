@@ -1,4 +1,4 @@
-# Complete Testing Checklist - Nook Inventory Management SaaS
+# Complete Testing Checklist - StockZip Inventory Management SaaS
 
 > **Purpose**: Production-grade testing checklist for multi-tenant SaaS platform
 > **Last Updated**: 2026-01-03

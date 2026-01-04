@@ -173,7 +173,7 @@ export default function WholesalerVsDistributorPage() {
         <div className="mt-10 rounded-box bg-base-200 p-8">
           <h2 className="text-base-content text-xl font-semibold">Manage inventory from any source</h2>
           <p className="text-base-content/80 mt-2">
-            Whether you buy from distributors or wholesalers, Nook helps you track all your inventory in one place.
+            Whether you buy from distributors or wholesalers, StockZip helps you track all your inventory in one place.
             Manage multiple suppliers, track costs, and maintain accurate stock levels.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">

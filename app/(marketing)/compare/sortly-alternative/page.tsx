@@ -7,7 +7,7 @@
  * - FAQ: /marketing-ui/faq/faq-1 (collapsible FAQ accordion)
  *
  * Primary keyword: "Sortly alternative"
- * Secondary keywords: "Sortly vs Nook", "better than Sortly", "switch from Sortly"
+ * Secondary keywords: "Sortly vs StockZip", "better than Sortly", "switch from Sortly"
  */
 
 import type { Metadata } from 'next'
@@ -19,9 +19,9 @@ import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/lib/marketing/jsonld'
 
 export const metadata: Metadata = marketingMetadata({
-  title: 'Sortly Alternative | Switch to Nook for Better Inventory Management',
+  title: 'Sortly Alternative | Switch to StockZip for Better Inventory Management',
   description:
-    'Switch from Sortly to Nook for trust-first pricing, offline-first barcode scanning, and real check-in/check-out workflows built for small teams.',
+    'Switch from Sortly to StockZip for trust-first pricing, offline-first barcode scanning, and real check-in/check-out workflows built for small teams.',
   pathname: '/compare/sortly-alternative',
 })
 
@@ -29,17 +29,17 @@ const SORTLY_FAQS: FaqItem[] = [
   {
     question: 'Do you have hard SKU limits or surprise tier jumps?',
     answer:
-      'No. Nook is designed to scale predictably so you aren’t forced into a huge tier jump just because your catalog grows.',
+      'No. StockZip is designed to scale predictably so you aren’t forced into a huge tier jump just because your catalog grows.',
   },
   {
     question: 'Can my team scan and update inventory offline?',
     answer:
-      'Yes. Nook is built for offline-first mobile workflows so scanning and updates keep working when Wi‑Fi is unreliable.',
+      'Yes. StockZip is built for offline-first mobile workflows so scanning and updates keep working when Wi‑Fi is unreliable.',
   },
   {
     question: 'Can I track tools and assets checked out to employees?',
     answer:
-      'Yes. Nook supports a real check-in/check-out workflow so you can assign items, set due dates, and stay accountable.',
+      'Yes. StockZip supports a real check-in/check-out workflow so you can assign items, set due dates, and stay accountable.',
   },
   {
     question: 'How long does it take to migrate from Sortly?',
@@ -56,32 +56,32 @@ const SORTLY_FAQS: FaqItem[] = [
 const COMPARISON_ROWS = [
   {
     category: 'Pricing trust',
-    nook: 'Predictable scaling; no “punished for growth” surprises',
+    stockzip: 'Predictable scaling; no “punished for growth” surprises',
     sortly: 'Users frequently cite price hikes and SKU caps as pain points',
   },
   {
     category: 'Offline reliability',
-    nook: 'Offline-first mobile scanning + sync when back online',
+    stockzip: 'Offline-first mobile scanning + sync when back online',
     sortly: 'Users report sync delays and trust issues in the field',
   },
   {
     category: 'Check-in / check-out',
-    nook: 'Native issue/return workflow (assets, tools, staff)',
+    stockzip: 'Native issue/return workflow (assets, tools, staff)',
     sortly: 'Often requires workarounds for asset workflows',
   },
   {
     category: 'Bulk editing',
-    nook: 'Excel-grade bulk updates with guardrails (preview/undo)',
+    stockzip: 'Excel-grade bulk updates with guardrails (preview/undo)',
     sortly: 'Bulk workflows can be limiting as catalogs grow',
   },
   {
     category: 'Inventory trust layer',
-    nook: 'Audit trail + “who changed what” accountability',
+    stockzip: 'Audit trail + “who changed what” accountability',
     sortly: 'Teams often double-check counts due to trust gaps',
   },
   {
     category: 'Switching',
-    nook: 'Migration path designed for Sortly switchers',
+    stockzip: 'Migration path designed for Sortly switchers',
     sortly: 'Leaving can feel risky without a clear migration plan',
   },
 ]
@@ -98,7 +98,7 @@ export default function SortlyAlternativePage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory',
+          name: 'StockZip Inventory',
           description: 'Barcode inventory management that works offline, with real check-in/check-out workflows.',
           pathname: '/compare/sortly-alternative',
         })}
@@ -113,7 +113,7 @@ export default function SortlyAlternativePage() {
               A Sortly alternative built for real inventory work
             </h1>
             <p className="text-base-content/80 mt-3 max-w-3xl text-lg">
-              Nook is built for barcode scanning, offline reliability, and accountability workflows (check-in/check-out)
+              StockZip is built for barcode scanning, offline reliability, and accountability workflows (check-in/check-out)
               — with pricing that doesn&apos;t punish growth.
             </p>
           </div>
@@ -131,7 +131,7 @@ export default function SortlyAlternativePage() {
         <div className="mt-10 rounded-box bg-base-200 p-6 sm:p-8">
           <h2 className="text-base-content text-xl font-semibold sm:text-2xl">Quick verdict</h2>
           <p className="text-base-content/80 mt-2 max-w-3xl">
-            If you&apos;re feeling price shock, need offline scanning, or you track tools/assets checked out to staff, Nook
+            If you&apos;re feeling price shock, need offline scanning, or you track tools/assets checked out to staff, StockZip
             is purpose-built for that reality.
           </p>
 
@@ -140,7 +140,7 @@ export default function SortlyAlternativePage() {
               <thead>
                 <tr>
                   <th className="text-base-content">Category</th>
-                  <th className="text-base-content">Nook</th>
+                  <th className="text-base-content">StockZip</th>
                   <th className="text-base-content">Sortly (common complaints)</th>
                 </tr>
               </thead>
@@ -148,7 +148,7 @@ export default function SortlyAlternativePage() {
                 {COMPARISON_ROWS.map((row) => (
                   <tr key={row.category}>
                     <td className="text-base-content font-medium">{row.category}</td>
-                    <td className="text-base-content/80">{row.nook}</td>
+                    <td className="text-base-content/80">{row.stockzip}</td>
                     <td className="text-base-content/80">{row.sortly}</td>
                   </tr>
                 ))}
@@ -157,7 +157,7 @@ export default function SortlyAlternativePage() {
           </div>
 
           <p className="text-base-content/60 mt-4 text-sm">
-            Nook and Sortly are trademarks of their respective owners. This page is based on publicly available
+            StockZip and Sortly are trademarks of their respective owners. This page is based on publicly available
             information and recurring user-reported pain points.
           </p>
         </div>

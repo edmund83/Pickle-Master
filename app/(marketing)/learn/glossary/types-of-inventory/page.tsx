@@ -243,9 +243,9 @@ export default function TypesOfInventoryPage() {
 
         {/* CTA Section */}
         <div className="mt-10 rounded-box bg-base-200 p-8">
-          <h2 className="text-base-content text-xl font-semibold">Track all inventory types with Nook</h2>
+          <h2 className="text-base-content text-xl font-semibold">Track all inventory types with StockZip</h2>
           <p className="text-base-content/80 mt-2">
-            Nook helps you organize inventory by type, location, and status. Use folders and tags to categorize raw
+            StockZip helps you organize inventory by type, location, and status. Use folders and tags to categorize raw
             materials, WIP, finished goods, and MRO supplies all in one system.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">

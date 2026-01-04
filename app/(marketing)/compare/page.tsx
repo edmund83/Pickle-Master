@@ -7,7 +7,7 @@ import { breadcrumbJsonLd, softwareApplicationJsonLd } from '@/lib/marketing/jso
 export const metadata: Metadata = marketingMetadata({
   title: 'Compare',
   description:
-    'Compare Nook to other inventory tools. See how trust-first pricing, offline scanning, and check-in/check-out workflows stack up for small teams.',
+    'Compare StockZip to other inventory tools. See how trust-first pricing, offline scanning, and check-in/check-out workflows stack up for small teams.',
   pathname: '/compare',
 })
 
@@ -22,7 +22,7 @@ export default function CompareHubPage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory',
+          name: 'StockZip Inventory',
           description: 'Inventory management with barcode scanning and offline-first mobile workflows.',
           pathname: '/compare',
         })}
@@ -30,7 +30,7 @@ export default function CompareHubPage() {
 
       <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
         <h1 className="text-base-content text-3xl font-semibold md:text-4xl">
-          Compare Nook
+          Compare StockZip
         </h1>
         <p className="text-base-content/80 mt-3 max-w-3xl text-lg">
           If you&apos;re switching tools, you probably care about predictable pricing, reliable scanning, and workflows
@@ -78,7 +78,7 @@ export default function CompareHubPage() {
                 <h2 className="text-base-content text-xl font-semibold">inFlow alternative</h2>
               </div>
               <p className="text-base-content/80">
-                Looking for simplicity over ERP complexity? See how Nook compares.
+                Looking for simplicity over ERP complexity? See how StockZip compares.
               </p>
               <span className="link link-primary link-animated mt-2 w-fit">View comparison</span>
             </div>
@@ -101,7 +101,7 @@ export default function CompareHubPage() {
         </div>
 
         <div className="mt-12 rounded-box bg-base-200 p-10">
-          <h2 className="text-base-content text-2xl font-semibold md:text-3xl">Want to see Nook in action?</h2>
+          <h2 className="text-base-content text-2xl font-semibold md:text-3xl">Want to see StockZip in action?</h2>
           <p className="text-base-content/80 mt-3 max-w-3xl text-lg">
             Watch the 90-second demo or start a free trial and scan your first items today.
           </p>

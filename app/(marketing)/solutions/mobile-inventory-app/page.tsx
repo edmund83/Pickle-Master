@@ -33,29 +33,29 @@ export const metadata: Metadata = marketingMetadata({
 
 const MOBILE_APP_FAQS: FaqItem[] = [
   {
-    question: 'Does Nook work as a mobile inventory app on Android?',
+    question: 'Does StockZip work as a mobile inventory app on Android?',
     answer:
-      'Yes. Nook works as a progressive web app (PWA) on Android devices with full camera scanning, offline mode, and automatic sync capabilities. No app store download required — just open nook.app in Chrome and add to home screen.',
+      'Yes. StockZip works as a progressive web app (PWA) on Android devices with full camera scanning, offline mode, and automatic sync capabilities. No app store download required — just open stockzip.app in Chrome and add to home screen.',
   },
   {
     question: 'Does the mobile inventory app work offline?',
     answer:
-      'Yes. Nook is built offline-first specifically for warehouse and field environments. You can scan barcodes, adjust quantities, check items in/out, and search inventory even without internet. All changes queue locally and sync automatically when connectivity returns.',
+      'Yes. StockZip is built offline-first specifically for warehouse and field environments. You can scan barcodes, adjust quantities, check items in/out, and search inventory even without internet. All changes queue locally and sync automatically when connectivity returns.',
   },
   {
     question: 'What barcode scanners work with the mobile inventory app?',
     answer:
-      'Nook supports three scanning methods: (1) Your phone camera for 1D barcodes and QR codes, (2) Bluetooth barcode scanners for faster high-volume scanning, and (3) Rugged Android devices with built-in hardware scanners like Zebra or Honeywell.',
+      'StockZip supports three scanning methods: (1) Your phone camera for 1D barcodes and QR codes, (2) Bluetooth barcode scanners for faster high-volume scanning, and (3) Rugged Android devices with built-in hardware scanners like Zebra or Honeywell.',
   },
   {
     question: 'Is there an iOS version of the inventory app?',
     answer:
-      'Yes. Nook works on iPhone and iPad as a progressive web app with the same offline scanning, real-time sync, and full feature set as Android. Open nook.app in Safari and tap "Add to Home Screen" for the native app experience.',
+      'Yes. StockZip works on iPhone and iPad as a progressive web app with the same offline scanning, real-time sync, and full feature set as Android. Open stockzip.app in Safari and tap "Add to Home Screen" for the native app experience.',
   },
   {
     question: 'Can multiple team members use the mobile inventory app simultaneously?',
     answer:
-      'Yes. Nook syncs in real-time across all devices. Your warehouse team can scan items at the same time from different locations, and everyone sees accurate counts immediately. Conflict resolution handles simultaneous edits automatically.',
+      'Yes. StockZip syncs in real-time across all devices. Your warehouse team can scan items at the same time from different locations, and everyone sees accurate counts immediately. Conflict resolution handles simultaneous edits automatically.',
   },
   {
     question: 'Does the mobile app support printing labels?',
@@ -77,7 +77,7 @@ export default function MobileInventoryAppPage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Mobile Inventory App',
+          name: 'StockZip Mobile Inventory App',
           description:
             'Mobile inventory app with offline barcode scanning for Android and iOS. Camera scanning, Bluetooth support, real-time sync.',
           pathname: '/solutions/mobile-inventory-app',
@@ -340,7 +340,7 @@ export default function MobileInventoryAppPage() {
           <div className="text-center">
             <h2 className="text-base-content text-2xl font-semibold md:text-3xl">Built For Teams On The Move</h2>
             <p className="text-base-content/80 mt-4 text-lg">
-              Nook&apos;s mobile inventory app is designed for people who work away from desks.
+              StockZip&apos;s mobile inventory app is designed for people who work away from desks.
             </p>
           </div>
 
@@ -470,7 +470,7 @@ export default function MobileInventoryAppPage() {
                   Start Scanning in Under 5 Minutes
                 </h2>
                 <p className="text-base-content/80 mt-4 max-w-2xl text-lg">
-                  Import your inventory, open Nook on your phone, and start scanning. No app store downloads, no
+                  Import your inventory, open StockZip on your phone, and start scanning. No app store downloads, no
                   complex setup, no IT department required.
                 </p>
                 <ul className="mt-6 grid gap-3 sm:grid-cols-2">

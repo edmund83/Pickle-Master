@@ -32,29 +32,29 @@ export const metadata: Metadata = marketingMetadata({
 
 const faqs = [
   {
-    question: 'What barcode formats does Nook support?',
+    question: 'What barcode formats does StockZip support?',
     answer:
-      'Nook supports all common barcode formats including UPC-A, UPC-E, EAN-13, EAN-8, Code 39, Code 128, ITF, QR codes, and Data Matrix. Our scanner automatically detects the format — no configuration needed.',
+      'StockZip supports all common barcode formats including UPC-A, UPC-E, EAN-13, EAN-8, Code 39, Code 128, ITF, QR codes, and Data Matrix. Our scanner automatically detects the format — no configuration needed.',
   },
   {
     question: 'Can I use my phone camera to scan barcodes?',
     answer:
-      'Yes! The Nook mobile app uses your phone camera as a barcode scanner. Simply tap the scan button, point at any barcode or QR code, and the item appears instantly. Works on both iOS and Android devices.',
+      'Yes! The StockZip mobile app uses your phone camera as a barcode scanner. Simply tap the scan button, point at any barcode or QR code, and the item appears instantly. Works on both iOS and Android devices.',
   },
   {
     question: 'Do you support external Bluetooth scanners?',
     answer:
-      'Absolutely. Nook works with any Bluetooth barcode scanner that operates in keyboard/HID mode. Popular options include Socket Mobile, Zebra, and Honeywell scanners. Just pair your scanner and start scanning.',
+      'Absolutely. StockZip works with any Bluetooth barcode scanner that operates in keyboard/HID mode. Popular options include Socket Mobile, Zebra, and Honeywell scanners. Just pair your scanner and start scanning.',
   },
   {
     question: 'Can I scan barcodes without internet connection?',
     answer:
-      'Yes! Nook includes offline scanning mode. Scan items, update quantities, and move inventory even without internet. All changes sync automatically when you reconnect. Perfect for warehouses with spotty WiFi.',
+      'Yes! StockZip includes offline scanning mode. Scan items, update quantities, and move inventory even without internet. All changes sync automatically when you reconnect. Perfect for warehouses with spotty WiFi.',
   },
   {
     question: 'How do I create barcodes for items that do not have one?',
     answer:
-      'Nook can generate QR code labels for any item. Simply select items, click "Print Labels," and choose your label size. Print on any standard label printer or use a thermal printer for professional results.',
+      'StockZip can generate QR code labels for any item. Simply select items, click "Print Labels," and choose your label size. Print on any standard label printer or use a thermal printer for professional results.',
   },
   {
     question: 'Can multiple team members scan at the same time?',
@@ -64,12 +64,12 @@ const faqs = [
   {
     question: 'Does scanning work for inventory counts and audits?',
     answer:
-      'Nook has a dedicated Cycle Count mode designed for inventory audits. Scan items to verify counts, flag discrepancies, and generate variance reports. Makes physical inventory counts 3x faster.',
+      'StockZip has a dedicated Cycle Count mode designed for inventory audits. Scan items to verify counts, flag discrepancies, and generate variance reports. Makes physical inventory counts 3x faster.',
   },
   {
     question: 'What happens when I scan an unknown barcode?',
     answer:
-      'When you scan a barcode not in your system, Nook offers to create a new item with that barcode pre-filled. You can also configure custom actions like showing an alert or searching your supplier catalog.',
+      'When you scan a barcode not in your system, StockZip offers to create a new item with that barcode pre-filled. You can also configure custom actions like showing an alert or searching your supplier catalog.',
   },
 ]
 
@@ -86,7 +86,7 @@ export default function BarcodeScanningFeaturePage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory - Barcode Scanning',
+          name: 'StockZip Inventory - Barcode Scanning',
           description:
             'Barcode scanning inventory software with phone camera and Bluetooth scanner support. Scan to find, update, and verify inventory instantly.',
           pathname: '/features/barcode-scanning',
@@ -233,7 +233,7 @@ export default function BarcodeScanningFeaturePage() {
                 <span className="icon-[tabler--qrcode] text-primary size-10"></span>
                 <h3 className="text-base-content mt-3 text-lg font-semibold">QR & 2D Codes</h3>
                 <p className="text-base-content/80 mt-2 text-sm">
-                  QR codes, Data Matrix, and custom labels. Generate and print your own labels in Nook.
+                  QR codes, Data Matrix, and custom labels. Generate and print your own labels in StockZip.
                 </p>
               </div>
             </div>
@@ -335,7 +335,7 @@ export default function BarcodeScanningFeaturePage() {
           <div className="text-center">
             <h2 className="text-base-content text-2xl font-semibold md:text-3xl">Scanning for Every Workflow</h2>
             <p className="text-base-content/80 mx-auto mt-4 max-w-2xl text-lg">
-              One scanner, many use cases. Nook adapts to how your team actually works.
+              One scanner, many use cases. StockZip adapts to how your team actually works.
             </p>
           </div>
 
@@ -368,7 +368,7 @@ export default function BarcodeScanningFeaturePage() {
               <div className="card-body">
                 <h3 className="text-base-content text-xl font-semibold">Order Picking</h3>
                 <p className="text-base-content/80 mt-2">
-                  Scan to confirm picks and eliminate shipping errors. Nook guides pickers to the right location and
+                  Scan to confirm picks and eliminate shipping errors. StockZip guides pickers to the right location and
                   validates each item before packing.
                 </p>
                 <ul className="text-base-content/80 mt-4 space-y-2">
@@ -547,7 +547,7 @@ export default function BarcodeScanningFeaturePage() {
               Frequently Asked Questions About Barcode Scanning
             </h2>
             <p className="text-base-content/80 mx-auto mt-4 max-w-2xl text-lg">
-              Everything you need to know about barcode and QR code scanning in Nook.
+              Everything you need to know about barcode and QR code scanning in StockZip.
             </p>
           </div>
 
@@ -584,7 +584,7 @@ export default function BarcodeScanningFeaturePage() {
           <div className="text-center">
             <h2 className="text-base-content text-2xl font-semibold md:text-3xl">Start Scanning in Minutes</h2>
             <p className="text-base-content/80 mx-auto mt-4 max-w-2xl text-lg">
-              Download the Nook app, import your items, and start scanning. No hardware purchase required.
+              Download the StockZip app, import your items, and start scanning. No hardware purchase required.
             </p>
             <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
               <Link href="/signup" className="btn btn-primary btn-lg">

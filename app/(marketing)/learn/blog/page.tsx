@@ -100,7 +100,7 @@ export default function BlogPage() {
         <div className="mt-16 rounded-box bg-base-200 p-8 text-center">
           <h2 className="text-base-content text-2xl font-semibold">Put these insights into practice</h2>
           <p className="text-base-content/80 mx-auto mt-3 max-w-2xl">
-            Try Nook free and see how scan-first workflows, low-stock alerts, and real-time tracking can transform your
+            Try StockZip free and see how scan-first workflows, low-stock alerts, and real-time tracking can transform your
             inventory management.
           </p>
           <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">

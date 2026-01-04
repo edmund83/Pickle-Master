@@ -21,7 +21,7 @@ export async function sendLowStockAlert(
 
     try {
         const { data, error } = await resend.emails.send({
-            from: 'Nook Master <onboarding@resend.dev>', // Should be configured in env, but defaulting for ease
+            from: 'StockZip <onboarding@resend.dev>', // Should be configured in env, but defaulting for ease
             to: [email],
             subject: `⚠️ Low Stock Alert: ${itemName}`,
             html: `
@@ -42,7 +42,7 @@ export async function sendLowStockAlert(
                     
                     <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;" />
                     <p style="font-size: 12px; color: #6b7280;">
-                        Sent automatically by Nook Master Inventory System.
+                        Sent automatically by StockZip Inventory System.
                     </p>
                 </div>
             `

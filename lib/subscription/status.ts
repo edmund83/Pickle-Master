@@ -141,7 +141,7 @@ export function getSubscriptionState(tenant: Tenant): SubscriptionState {
   // Generate appropriate message
   let message: string | undefined
   if (accountPaused) {
-    message = 'Your account is paused. Please upgrade to continue using Nook.'
+    message = 'Your account is paused. Please upgrade to continue using StockZip.'
   } else if (inGracePeriod) {
     message = `Your trial has ended. You have ${daysRemaining} day${daysRemaining === 1 ? '' : 's'} left to upgrade before your account is paused.`
   } else if (trialActive && daysRemaining <= 3) {

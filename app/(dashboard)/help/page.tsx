@@ -39,7 +39,7 @@ const FAQ_ITEMS = [
 const QUICK_LINKS = [
   {
     title: 'Getting Started Guide',
-    description: 'Learn the basics of Nook inventory management',
+    description: 'Learn the basics of StockZip inventory management',
     icon: BookOpen,
     href: '#getting-started',
   },
@@ -124,7 +124,7 @@ export default function HelpPage() {
               </p>
               <div className="mt-4 flex flex-wrap gap-3">
                 <a
-                  href="mailto:support@nook.app"
+                  href="mailto:support@stockzip.app"
                   className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary"
                 >
                   <Mail className="h-4 w-4" />

@@ -22,7 +22,7 @@ export default function MigrationHubPage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory',
+          name: 'StockZip Inventory',
           description: 'Inventory management with barcode scanning and offline-first workflows.',
           pathname: '/migration',
         })}

@@ -26,7 +26,7 @@ const SCOPE_OPTIONS = [
     title: 'Full Inventory',
     description: 'Count all items in your inventory',
     icon: Package,
-    color: 'nook',
+    color: 'primary',
   },
   {
     id: 'folder' as const,
@@ -121,7 +121,7 @@ export function WizardStepScope({
                   'transition-all duration-200',
                   'active:scale-[0.98]',
                   isSelected
-                    ? option.color === 'nook'
+                    ? option.color === 'primary'
                       ? 'border-primary bg-primary/10'
                       : option.color === 'blue'
                       ? 'border-blue-500 bg-blue-50'
@@ -133,7 +133,7 @@ export function WizardStepScope({
                   className={cn(
                     'flex h-12 w-12 items-center justify-center rounded-xl',
                     isSelected
-                      ? option.color === 'nook'
+                      ? option.color === 'primary'
                         ? 'bg-primary text-white'
                         : option.color === 'blue'
                         ? 'bg-blue-500 text-white'
@@ -153,7 +153,7 @@ export function WizardStepScope({
                   <div
                     className={cn(
                       'flex h-6 w-6 items-center justify-center rounded-full',
-                      option.color === 'nook'
+                      option.color === 'primary'
                         ? 'bg-primary'
                         : option.color === 'blue'
                         ? 'bg-blue-500'

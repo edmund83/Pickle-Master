@@ -1,8 +1,8 @@
-# Nook - Technical Stack Documentation
+# StockZip - Technical Stack Documentation
 
 ## Overview
 
-Nook is a modern, mobile-first inventory management SaaS built with a serverless architecture optimized for multi-tenant scalability.
+StockZip is a modern, mobile-first inventory management SaaS built with a serverless architecture optimized for multi-tenant scalability.
 
 ---
 
@@ -138,7 +138,7 @@ Nook is a modern, mobile-first inventory management SaaS built with a serverless
 ## Project Structure
 
 ```
-nook-master/
+stockzip-master/
 ├── app/                    # Next.js App Router pages
 │   ├── (auth)/            # Auth routes (login, signup, etc.)
 │   ├── (dashboard)/       # Protected dashboard routes

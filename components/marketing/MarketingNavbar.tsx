@@ -7,9 +7,9 @@ export function MarketingNavbar() {
         <div className="navbar-start w-max items-center justify-between max-md:w-full">
           <Link className="text-base-content flex items-center gap-3 text-xl font-bold" href="/">
             <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary">
-              <span className="text-base font-bold text-white">N</span>
+              <span className="text-base font-bold text-white">S</span>
             </div>
-            Nook
+            StockZip
           </Link>
           <div className="md:hidden">
             <button

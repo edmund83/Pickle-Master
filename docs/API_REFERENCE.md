@@ -1,8 +1,8 @@
-# Nook - API Reference
+# StockZip - API Reference
 
 ## Overview
 
-Nook uses Next.js API routes for backend logic and Supabase for direct database access with RLS.
+StockZip uses Next.js API routes for backend logic and Supabase for direct database access with RLS.
 
 ---
 

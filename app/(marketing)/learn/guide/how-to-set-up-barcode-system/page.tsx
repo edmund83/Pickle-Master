@@ -593,10 +593,10 @@ export default function HowToSetUpBarcodeSystemPage() {
             <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <h2 className="text-base-content text-2xl font-semibold md:text-3xl">
-                  Set Up Barcode Scanning with Nook
+                  Set Up Barcode Scanning with StockZip
                 </h2>
                 <p className="text-base-content/80 mt-4 max-w-2xl text-lg">
-                  Nook includes everything you need: barcode generation, mobile scanning, label printing, and real-time
+                  StockZip includes everything you need: barcode generation, mobile scanning, label printing, and real-time
                   inventory updates. Start scanning in minutes.
                 </p>
                 <ul className="mt-6 grid gap-3 sm:grid-cols-2">

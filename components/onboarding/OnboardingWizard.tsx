@@ -384,7 +384,7 @@ export default function OnboardingWizard({ onComplete, isModal = true }: Onboard
             <h2 className="text-3xl font-bold text-neutral-900">Great Start!</h2>
             <p className="text-neutral-500">
               With your folders set up, you&apos;re ready to build your searchable inventory system.
-              The more you add, the more powerful Nook Master becomes.
+              The more you add, the more powerful StockZip becomes.
             </p>
           </div>
 

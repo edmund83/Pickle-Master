@@ -35,7 +35,7 @@ function getPageTitle(pathname: string): string {
     }
   }
 
-  return 'Nook'
+  return 'StockZip'
 }
 
 export function MobileHeader() {

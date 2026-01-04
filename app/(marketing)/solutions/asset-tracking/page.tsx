@@ -39,7 +39,7 @@ const ASSET_TRACKING_FAQS: FaqItem[] = [
   {
     question: 'Can I track assets across multiple locations?',
     answer:
-      'Yes. Nook supports unlimited locations. You can track assets at your main office, warehouse, job sites, vehicles, or any other place. See where each asset is and its current assignment status.',
+      'Yes. StockZip supports unlimited locations. You can track assets at your main office, warehouse, job sites, vehicles, or any other place. See where each asset is and its current assignment status.',
   },
   {
     question: 'What types of assets can I track?',
@@ -49,17 +49,17 @@ const ASSET_TRACKING_FAQS: FaqItem[] = [
   {
     question: 'How do I label assets that do not have barcodes?',
     answer:
-      'Generate QR code labels directly in Nook and print them on any thermal or laser label printer. Apply labels to assets, scan to add them to your system, and start tracking immediately.',
+      'Generate QR code labels directly in StockZip and print them on any thermal or laser label printer. Apply labels to assets, scan to add them to your system, and start tracking immediately.',
   },
   {
     question: 'Can I set due dates for checked-out assets?',
     answer:
-      'Yes. When checking out an asset, you can set an expected return date. Nook flags overdue items so you can follow up before losses occur.',
+      'Yes. When checking out an asset, you can set an expected return date. StockZip flags overdue items so you can follow up before losses occur.',
   },
   {
     question: 'Does asset tracking work offline?',
     answer:
-      'Yes. Nook is built offline-first. Scan and update assets even without internet — changes sync automatically when you reconnect. Essential for field work and job sites.',
+      'Yes. StockZip is built offline-first. Scan and update assets even without internet — changes sync automatically when you reconnect. Essential for field work and job sites.',
   },
   {
     question: 'Can I track maintenance and service history?',
@@ -138,7 +138,7 @@ const WORKFLOWS = [
   {
     step: '1',
     title: 'Label your assets',
-    description: 'Generate QR code labels in Nook and apply them to your equipment, tools, and devices.',
+    description: 'Generate QR code labels in StockZip and apply them to your equipment, tools, and devices.',
   },
   {
     step: '2',
@@ -169,7 +169,7 @@ export default function AssetTrackingSolutionPage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory - Asset Tracking',
+          name: 'StockZip Inventory - Asset Tracking',
           description: 'Asset tracking software with check-in/check-out, barcode scanning, and full custody chain.',
           pathname: '/solutions/asset-tracking',
         })}
@@ -240,7 +240,7 @@ export default function AssetTrackingSolutionPage() {
 
         {/* How It Works Section */}
         <div className="mt-16 rounded-box bg-base-200 p-6 sm:p-8">
-          <h2 className="text-base-content text-xl font-semibold sm:text-2xl">How asset tracking works in Nook</h2>
+          <h2 className="text-base-content text-xl font-semibold sm:text-2xl">How asset tracking works in StockZip</h2>
           <p className="text-base-content/80 mt-2 max-w-3xl">
             A simple four-step workflow that creates a complete custody chain for every asset.
           </p>
@@ -263,7 +263,7 @@ export default function AssetTrackingSolutionPage() {
         <div className="mt-16">
           <h2 className="text-base-content text-2xl font-semibold">Track any physical asset</h2>
           <p className="text-base-content/80 mt-2 max-w-3xl">
-            Nook works for any asset with a barcode or QR label. Here are the most common use cases.
+            StockZip works for any asset with a barcode or QR label. Here are the most common use cases.
           </p>
           <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {ASSET_TYPES.map((asset) => (
@@ -364,7 +364,7 @@ export default function AssetTrackingSolutionPage() {
               <div className="card-body">
                 <span className="icon-[tabler--exchange] text-primary size-8"></span>
                 <h3 className="text-base-content mt-4 text-lg font-semibold">Sortly alternative</h3>
-                <p className="text-base-content/80 mt-2">Compare Nook to Sortly for asset tracking.</p>
+                <p className="text-base-content/80 mt-2">Compare StockZip to Sortly for asset tracking.</p>
               </div>
             </Link>
           </div>

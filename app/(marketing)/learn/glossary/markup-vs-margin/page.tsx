@@ -345,9 +345,9 @@ export default function MarkupVsMarginPage() {
 
         {/* CTA Section */}
         <div className="mt-10 rounded-box bg-base-200 p-8">
-          <h2 className="text-base-content text-xl font-semibold">Track costs and margins with Nook</h2>
+          <h2 className="text-base-content text-xl font-semibold">Track costs and margins with StockZip</h2>
           <p className="text-base-content/80 mt-2">
-            Nook inventory management tracks your item costs and helps you maintain visibility into your margins. Set
+            StockZip inventory management tracks your item costs and helps you maintain visibility into your margins. Set
             cost prices, track purchase history, and understand your profitability per item.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">

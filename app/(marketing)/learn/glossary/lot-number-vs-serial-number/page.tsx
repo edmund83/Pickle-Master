@@ -198,9 +198,9 @@ export default function LotVsSerialNumberPage() {
 
         {/* CTA Section */}
         <div className="mt-10 rounded-box bg-base-200 p-8">
-          <h2 className="text-base-content text-xl font-semibold">Track lots and serials with Nook</h2>
+          <h2 className="text-base-content text-xl font-semibold">Track lots and serials with StockZip</h2>
           <p className="text-base-content/80 mt-2">
-            Nook supports both lot and serial number tracking. Scan items, record batch information, and maintain full
+            StockZip supports both lot and serial number tracking. Scan items, record batch information, and maintain full
             traceability for compliance and recalls.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">

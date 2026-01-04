@@ -19,7 +19,7 @@ Last updated: **2026-01-03**
 - [x] What users want (directional %; not survey data): `docs/Features Needed.md`
 - [x] Pain point → feature mapping: `docs/Pain Point Feature.md`
 - [x] Anti‑Sortly "switcher" pain points: `docs/Sortly PainPoint.md`
-- [x] What Nook actually has (features + benefits): `docs/Features&Benefits.md`
+- [x] What StockZip actually has (features + benefits): `docs/Features&Benefits.md`
 
 ## Non‑negotiable build + content safety conditions
 ### 1) FlyonUI MCP requirement (always)
@@ -56,7 +56,7 @@ Last updated: **2026-01-03**
 - [x] Every money page explicitly addresses top needs: simple UI, speed, mobile, scanning, alerts, multi-user, folders, search, CSV import
 
 ### Pain point → feature → benefit mapping checklist
-Use this as a requirement: each P0/P1 page must explicitly address at least **3** pain points and map them to **real** Nook features.
+Use this as a requirement: each P0/P1 page must explicitly address at least **3** pain points and map them to **real** StockZip features.
 
 - [x] High cost / tier shock → transparent pricing + no SKU cliffs messaging → "budget confidence" (ref: `docs/Market Research.md`, `docs/Sortly PainPoint.md`)
 - [x] Spreadsheet errors / lost items → stock movements + audit trail → "inventory you can trust" (ref: `docs/Features&Benefits.md`)
@@ -80,7 +80,7 @@ Before writing copy, confirm the capability exists in `docs/Features&Benefits.md
 - [x] Integrations/API only if implemented (otherwise "planned" + waitlist)
 
 ## 0) One‑time decisions (avoid rework + cannibalization)
-- [x] Confirm final brand name (replace "Nook Inventory" in copy specs) — **Confirmed: "Nook"** (used consistently across all marketing pages)
+- [x] Confirm final brand name (replace "StockZip Inventory" in copy specs) — **Confirmed: "StockZip"** (used consistently across all marketing pages)
 - [x] Confirm final marketing domain — **Confirmed: using `NEXT_PUBLIC_MARKETING_URL` env var** (see `lib/marketing/metadata.ts`)
 - [x] Confirm primary CTA: **Start Free Trial** vs **Request a Demo** — **Confirmed: "Start Free Trial"** (used on all pages with /signup link)
 - [x] Confirm which integrations are real today (Shopify/WooCommerce/QuickBooks/Xero/etc) — don't publish "integration pages" if not supported — **Confirmed: No integration pages published; integrations marked as "planned" with waitlist where mentioned**
@@ -179,7 +179,7 @@ Purpose: publish high-intent educational pages that (a) win traffic, (b) earn ba
     - [ ] Download block (Excel + Google Sheets + CSV)
     - [ ] Template preview table (image placeholder ok)
     - [ ] “How to use” (5-step checklist)
-    - [ ] “How to import into Nook” (mapping steps + screenshot placeholders)
+    - [ ] “How to import into StockZip” (mapping steps + screenshot placeholders)
     - [ ] FAQ (10) + FAQ schema
   - [ ] Internal links: `/pricing`, `/demo`, `/features/barcode-scanning`, `/solutions/small-business`
 
@@ -690,7 +690,7 @@ Data source: Competitor organic traffic analysis from SEMrush (Sortly, inFlow, F
   - [x] Template columns preview table (12 columns with examples)
   - [x] "How to use" section (4-step guide)
   - [x] Spreadsheet limitations section
-  - [x] CTA to upgrade to Nook
+  - [x] CTA to upgrade to StockZip
   - [x] Related templates section
 - [x] **Internal links**: `/learn/templates/cycle-count-sheet`, `/learn/tools/reorder-point-calculator`, `/demo`
 - [x] **Schema**: Breadcrumb

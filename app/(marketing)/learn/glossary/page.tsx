@@ -254,7 +254,7 @@ export default function GlossaryPage() {
         <div className="mt-16 rounded-box bg-base-200 p-8 text-center">
           <h2 className="text-base-content text-2xl font-semibold">Put these concepts into practice</h2>
           <p className="text-base-content/80 mx-auto mt-3 max-w-2xl">
-            Nook inventory management software helps you apply these concepts with barcode scanning, low-stock alerts,
+            StockZip inventory management software helps you apply these concepts with barcode scanning, low-stock alerts,
             and real-time tracking.
           </p>
           <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">

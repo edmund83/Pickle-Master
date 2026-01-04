@@ -20,46 +20,46 @@ import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/li
 export const metadata: Metadata = marketingMetadata({
   title: 'inFlow alternative',
   description:
-    'Switch from inFlow to Nook for simpler inventory management with offline barcode scanning, check-in/check-out workflows, and predictable pricing.',
+    'Switch from inFlow to StockZip for simpler inventory management with offline barcode scanning, check-in/check-out workflows, and predictable pricing.',
   pathname: '/compare/inflow-alternative',
 })
 
 // FAQ items following FlyonUI faq-1 template structure
 const INFLOW_FAQS: FaqItem[] = [
   {
-    question: 'How is Nook different from inFlow?',
+    question: 'How is StockZip different from inFlow?',
     answer:
-      'Nook is designed for small teams that need mobile-first scanning, offline reliability, and simple workflows without the complexity of full ERP features. We focus on doing fewer things exceptionally well.',
+      'StockZip is designed for small teams that need mobile-first scanning, offline reliability, and simple workflows without the complexity of full ERP features. We focus on doing fewer things exceptionally well.',
   },
   {
-    question: 'Does Nook work offline?',
+    question: 'Does StockZip work offline?',
     answer:
-      'Yes. Nook is built offline-first so you can scan, adjust, and check in/out items even in warehouses or jobsites without reliable internet. Changes sync automatically when you reconnect.',
+      'Yes. StockZip is built offline-first so you can scan, adjust, and check in/out items even in warehouses or jobsites without reliable internet. Changes sync automatically when you reconnect.',
   },
   {
     question: 'Can I track tools checked out to employees?',
     answer:
-      'Yes. Nook has a native check-in/check-out workflow for issuing tools and assets to staff with due dates, overdue tracking, and full accountability.',
+      'Yes. StockZip has a native check-in/check-out workflow for issuing tools and assets to staff with due dates, overdue tracking, and full accountability.',
   },
   {
-    question: 'Is Nook easier to set up than inFlow?',
+    question: 'Is StockZip easier to set up than inFlow?',
     answer:
-      'Yes. Nook focuses on simplicity — import your CSV, label top movers, and start scanning. No complex configuration, no ERP-style setup wizard, no weeks of implementation.',
+      'Yes. StockZip focuses on simplicity — import your CSV, label top movers, and start scanning. No complex configuration, no ERP-style setup wizard, no weeks of implementation.',
   },
   {
-    question: 'How does Nook pricing compare to inFlow?',
+    question: 'How does StockZip pricing compare to inFlow?',
     answer:
-      'Nook uses trust-first pricing that scales predictably. No surprise tier jumps or feature gating as your business grows. Your price stays fair as your catalog expands.',
+      'StockZip uses trust-first pricing that scales predictably. No surprise tier jumps or feature gating as your business grows. Your price stays fair as your catalog expands.',
   },
   {
     question: 'Can I migrate my data from inFlow?',
     answer:
-      'Yes. Export from inFlow as CSV, import into Nook with our guided field mapping, and run a verification count. Most teams complete the migration in under an hour.',
+      'Yes. Export from inFlow as CSV, import into StockZip with our guided field mapping, and run a verification count. Most teams complete the migration in under an hour.',
   },
   {
-    question: 'Does Nook have purchase orders and sales orders?',
+    question: 'Does StockZip have purchase orders and sales orders?',
     answer:
-      'Nook focuses on core inventory accuracy, scanning, and accountability. If you need full ERP features like POs and sales orders, inFlow may be a better fit. We do what we do exceptionally well.',
+      'StockZip focuses on core inventory accuracy, scanning, and accountability. If you need full ERP features like POs and sales orders, inFlow may be a better fit. We do what we do exceptionally well.',
   },
 ]
 
@@ -67,39 +67,39 @@ const INFLOW_FAQS: FaqItem[] = [
 const COMPARISON_ROWS = [
   {
     category: 'Complexity',
-    nook: 'Simple, staff-friendly UI focused on scanning and counts',
+    stockzip: 'Simple, staff-friendly UI focused on scanning and counts',
     inflow: 'Full-featured with ERP-like complexity',
-    nookWins: true,
+    stockzipWins: true,
   },
   {
     category: 'Offline mode',
-    nook: 'Offline-first mobile scanning with automatic sync',
+    stockzip: 'Offline-first mobile scanning with automatic sync',
     inflow: 'Desktop-focused with limited offline capability',
-    nookWins: true,
+    stockzipWins: true,
   },
   {
     category: 'Check-in / check-out',
-    nook: 'Native issue/return workflow with due dates',
+    stockzip: 'Native issue/return workflow with due dates',
     inflow: 'Requires workarounds for asset tracking',
-    nookWins: true,
+    stockzipWins: true,
   },
   {
     category: 'Mobile experience',
-    nook: 'Touch-first, camera scanning, works offline',
+    stockzip: 'Touch-first, camera scanning, works offline',
     inflow: 'Mobile app available but desktop-centric design',
-    nookWins: true,
+    stockzipWins: true,
   },
   {
     category: 'Setup time',
-    nook: 'Import CSV and start scanning in minutes',
+    stockzip: 'Import CSV and start scanning in minutes',
     inflow: 'Longer setup for full feature configuration',
-    nookWins: true,
+    stockzipWins: true,
   },
   {
     category: 'Pricing',
-    nook: 'Trust-first pricing with predictable scaling',
+    stockzip: 'Trust-first pricing with predictable scaling',
     inflow: 'Tiered pricing with feature-based gating',
-    nookWins: true,
+    stockzipWins: true,
   },
 ]
 
@@ -110,14 +110,14 @@ const KEY_DIFFERENTIATORS = [
     icon: 'icon-[tabler--sparkles]',
     title: 'Simplicity Over Complexity',
     description:
-      'Nook does fewer things, but does them exceptionally well. No ERP feature bloat. No weeks of configuration. Just fast, reliable inventory tracking that your whole team can use in minutes.',
+      'StockZip does fewer things, but does them exceptionally well. No ERP feature bloat. No weeks of configuration. Just fast, reliable inventory tracking that your whole team can use in minutes.',
   },
   {
     id: 'mobile-first',
     icon: 'icon-[tabler--device-mobile]',
     title: 'Mobile-First, Offline-First',
     description:
-      'Built for scanning on the floor, not sitting at a desk. Nook works offline, syncs when connected, and is designed from the ground up for touch-first workflows.',
+      'Built for scanning on the floor, not sitting at a desk. StockZip works offline, syncs when connected, and is designed from the ground up for touch-first workflows.',
   },
   {
     id: 'check-in-out',
@@ -141,7 +141,7 @@ export default function InFlowAlternativePage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory',
+          name: 'StockZip Inventory',
           description:
             'Simple inventory management with barcode scanning and offline reliability. An inFlow alternative for small teams.',
           pathname: '/compare/inflow-alternative',
@@ -163,7 +163,7 @@ export default function InFlowAlternativePage() {
                 <span className="from-primary to-secondary bg-gradient-to-r bg-clip-text text-transparent">simple</span>
               </h1>
               <p className="text-base-content/80 text-lg">
-                Nook gives you barcode scanning, offline reliability, and check-in/check-out workflows without the
+                StockZip gives you barcode scanning, offline reliability, and check-in/check-out workflows without the
                 complexity of a full ERP. We do fewer things, but do them exceptionally well.
               </p>
               <div className="flex flex-wrap items-center gap-4">
@@ -235,10 +235,10 @@ export default function InFlowAlternativePage() {
         <div className="mx-auto max-w-7xl">
           <div className="mb-10 text-center">
             <h2 className="text-base-content text-2xl font-semibold md:text-3xl">
-              Quick comparison: Nook vs inFlow
+              Quick comparison: StockZip vs inFlow
             </h2>
             <p className="text-base-content/80 mx-auto mt-3 max-w-2xl text-lg">
-              See how Nook compares for teams that want simplicity over ERP complexity.
+              See how StockZip compares for teams that want simplicity over ERP complexity.
             </p>
           </div>
 
@@ -250,7 +250,7 @@ export default function InFlowAlternativePage() {
                   <th className="text-base-content text-left">
                     <span className="text-primary flex items-center gap-2">
                       <span className="icon-[tabler--circle-check] size-5"></span>
-                      Nook
+                      StockZip
                     </span>
                   </th>
                   <th className="text-base-content text-left">inFlow</th>
@@ -262,10 +262,10 @@ export default function InFlowAlternativePage() {
                     <td className="text-base-content font-medium">{row.category}</td>
                     <td className="text-base-content/80">
                       <span className="flex items-start gap-2">
-                        {row.nookWins && (
+                        {row.stockzipWins && (
                           <span className="icon-[tabler--check] text-success mt-0.5 size-4 shrink-0"></span>
                         )}
-                        {row.nook}
+                        {row.stockzip}
                       </span>
                     </td>
                     <td className="text-base-content/60">{row.inflow}</td>
@@ -276,7 +276,7 @@ export default function InFlowAlternativePage() {
           </div>
 
           <p className="text-base-content/50 mt-6 text-center text-sm">
-            Nook and inFlow are trademarks of their respective owners. Comparison based on publicly available
+            StockZip and inFlow are trademarks of their respective owners. Comparison based on publicly available
             information as of January 2026.
           </p>
         </div>
@@ -286,9 +286,9 @@ export default function InFlowAlternativePage() {
       <section className="bg-base-100 px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="mb-12 text-center">
-            <h2 className="text-base-content text-2xl font-semibold md:text-3xl">Why teams choose Nook</h2>
+            <h2 className="text-base-content text-2xl font-semibold md:text-3xl">Why teams choose StockZip</h2>
             <p className="text-base-content/80 mx-auto mt-3 max-w-2xl text-lg">
-              Nook focuses on what small teams actually need: fast scanning, reliable counts, and accountability.
+              StockZip focuses on what small teams actually need: fast scanning, reliable counts, and accountability.
             </p>
           </div>
 
@@ -341,8 +341,8 @@ export default function InFlowAlternativePage() {
             {/* When you should switch */}
             <div className="card border-primary/30 bg-base-100 border shadow-none">
               <div className="card-body">
-                <h2 className="text-base-content text-xl font-semibold">When you should switch to Nook</h2>
-                <p className="text-base-content/70 mt-2">Nook is the better choice when:</p>
+                <h2 className="text-base-content text-xl font-semibold">When you should switch to StockZip</h2>
+                <p className="text-base-content/70 mt-2">StockZip is the better choice when:</p>
                 <ul className="text-base-content/80 mt-4 space-y-3">
                   <li className="flex items-start gap-3">
                     <span className="icon-[tabler--alert-triangle] text-warning mt-0.5 size-5 shrink-0"></span>
@@ -383,7 +383,7 @@ export default function InFlowAlternativePage() {
               <div className="max-w-2xl">
                 <h2 className="text-base-content text-2xl font-semibold md:text-3xl">Simplicity without sacrifice</h2>
                 <p className="text-base-content/80 mt-3 text-lg">
-                  Nook focuses on what small teams actually need: fast scanning, reliable counts, and accountability.
+                  StockZip focuses on what small teams actually need: fast scanning, reliable counts, and accountability.
                   No weeks of setup, no feature bloat. Start scanning today.
                 </p>
                 <div className="mt-6 grid gap-2 sm:grid-cols-2">
@@ -439,7 +439,7 @@ export default function InFlowAlternativePage() {
               Frequently asked questions about switching from inFlow
             </h2>
             <p className="text-base-content/80 mt-3 text-lg">
-              Common questions from teams evaluating Nook as an inFlow alternative.
+              Common questions from teams evaluating StockZip as an inFlow alternative.
             </p>
           </div>
 

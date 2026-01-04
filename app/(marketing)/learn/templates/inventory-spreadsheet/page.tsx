@@ -17,7 +17,7 @@ import { breadcrumbJsonLd } from '@/lib/marketing/jsonld'
 export const metadata: Metadata = marketingMetadata({
   title: 'Free Inventory Spreadsheet Template | Excel & Google Sheets',
   description:
-    'Download a free inventory spreadsheet template for Excel or Google Sheets. Track items, quantities, locations, and values. Ready to import into Nook.',
+    'Download a free inventory spreadsheet template for Excel or Google Sheets. Track items, quantities, locations, and values. Ready to import into StockZip.',
   pathname: '/templates/inventory-spreadsheet',
 })
 
@@ -60,7 +60,7 @@ export default function InventorySpreadsheetTemplatePage() {
         </h1>
         <p className="text-base-content/80 mt-4 text-lg">
           A simple, ready-to-use spreadsheet for tracking your inventory. Works with Excel, Google Sheets, or any
-          CSV-compatible tool. Import directly into Nook when you are ready to upgrade.
+          CSV-compatible tool. Import directly into StockZip when you are ready to upgrade.
         </p>
 
         {/* Download Section */}
@@ -195,7 +195,7 @@ export default function InventorySpreadsheetTemplatePage() {
         <div className="mt-10 rounded-box bg-base-200 p-8">
           <h2 className="text-base-content text-xl font-semibold">Ready to upgrade from spreadsheets?</h2>
           <p className="text-base-content/80 mt-2">
-            Import this spreadsheet directly into Nook and get barcode scanning, low-stock alerts, and real-time
+            Import this spreadsheet directly into StockZip and get barcode scanning, low-stock alerts, and real-time
             tracking. Keep your data, lose the manual work.
           </p>
           <ul className="text-base-content/80 mt-4 space-y-2">

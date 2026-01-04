@@ -72,42 +72,42 @@ const FAQS: FaqItem[] = [
   {
     question: 'Which inventory solution is right for my business?',
     answer:
-      'It depends on your primary workflow. Warehouses benefit from receiving and cycle count features. Ecommerce sellers need multi-location stock sync. Construction teams need tool check-in/check-out. Small businesses usually start with basic inventory tracking and grow from there. The good news: Nook includes all these capabilities in every plan, so you can use multiple solutions as your needs evolve.',
+      'It depends on your primary workflow. Warehouses benefit from receiving and cycle count features. Ecommerce sellers need multi-location stock sync. Construction teams need tool check-in/check-out. Small businesses usually start with basic inventory tracking and grow from there. The good news: StockZip includes all these capabilities in every plan, so you can use multiple solutions as your needs evolve.',
   },
   {
-    question: 'Can I use Nook for multiple use cases at once?',
+    question: 'Can I use StockZip for multiple use cases at once?',
     answer:
-      'Yes. Many customers use Nook across different workflows — for example, a contractor might use tool tracking for equipment, warehouse features for materials, and the mobile app for field crews. All features are included in every plan with no add-on fees.',
+      'Yes. Many customers use StockZip across different workflows — for example, a contractor might use tool tracking for equipment, warehouse features for materials, and the mobile app for field crews. All features are included in every plan with no add-on fees.',
   },
   {
-    question: 'Does Nook work offline for warehouse and field teams?',
+    question: 'Does StockZip work offline for warehouse and field teams?',
     answer:
-      'Yes. Nook is built offline-first specifically for environments with unreliable connectivity — warehouses with metal racking, construction jobsites, basements, and rural areas. Scan barcodes, adjust quantities, and check items in/out even without internet. Changes sync automatically when you reconnect.',
+      'Yes. StockZip is built offline-first specifically for environments with unreliable connectivity — warehouses with metal racking, construction jobsites, basements, and rural areas. Scan barcodes, adjust quantities, and check items in/out even without internet. Changes sync automatically when you reconnect.',
   },
   {
-    question: 'What barcode scanners work with Nook inventory software?',
+    question: 'What barcode scanners work with StockZip inventory software?',
     answer:
-      'Nook supports three scanning methods: (1) Phone cameras for 1D barcodes and QR codes, (2) Bluetooth barcode scanners from Socket Mobile, Zebra, and Honeywell for faster high-volume scanning, and (3) Rugged Android devices with built-in hardware scanners. Use whatever fits your workflow.',
+      'StockZip supports three scanning methods: (1) Phone cameras for 1D barcodes and QR codes, (2) Bluetooth barcode scanners from Socket Mobile, Zebra, and Honeywell for faster high-volume scanning, and (3) Rugged Android devices with built-in hardware scanners. Use whatever fits your workflow.',
   },
   {
-    question: 'How do I migrate from spreadsheets or Sortly to Nook?',
+    question: 'How do I migrate from spreadsheets or Sortly to StockZip?',
     answer:
-      'Import your existing inventory via CSV in minutes. Nook provides templates and field mapping to match your current data structure. For Sortly users, we have a dedicated migration guide that maps Sortly fields to Nook. Most teams are up and running in under 30 minutes.',
+      'Import your existing inventory via CSV in minutes. StockZip provides templates and field mapping to match your current data structure. For Sortly users, we have a dedicated migration guide that maps Sortly fields to StockZip. Most teams are up and running in under 30 minutes.',
   },
   {
-    question: 'Is there a free trial for Nook inventory software?',
+    question: 'Is there a free trial for StockZip inventory software?',
     answer:
       'Yes. Every plan includes a 14-day free trial with full access to all features. No credit card required to start. Import your inventory, test barcode scanning, and run your workflows before you commit.',
   },
   {
-    question: 'How does Nook pricing compare to other inventory software?',
+    question: 'How does StockZip pricing compare to other inventory software?',
     answer:
-      'Nook uses trust-first pricing with no surprise tier jumps or hard SKU limits. You get unlimited items on all plans. Pricing scales fairly based on team size, not inventory volume. Check our pricing page for current plans.',
+      'StockZip uses trust-first pricing with no surprise tier jumps or hard SKU limits. You get unlimited items on all plans. Pricing scales fairly based on team size, not inventory volume. Check our pricing page for current plans.',
   },
   {
     question: 'Can I track inventory across multiple locations?',
     answer:
-      'Yes. Nook supports unlimited locations with full hierarchy: warehouses, zones, aisles, racks, shelves, and bins. Track stock levels per location, transfer items between locations, and run reports by location. All plans include multi-location support.',
+      'Yes. StockZip supports unlimited locations with full hierarchy: warehouses, zones, aisles, racks, shelves, and bins. Track stock levels per location, transfer items between locations, and run reports by location. All plans include multi-location support.',
   },
 ]
 
@@ -123,7 +123,7 @@ export default function SolutionsPage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory Solutions',
+          name: 'StockZip Inventory Solutions',
           description:
             'Inventory management software for warehouses, ecommerce, construction, small business, and mobile teams.',
           pathname: '/solutions',
@@ -142,7 +142,7 @@ export default function SolutionsPage() {
               Inventory Management Software for Every Use Case
             </h1>
             <p className="text-base-content/80 mt-6 max-w-3xl text-lg md:text-xl">
-              Whether you run a warehouse, sell online, manage tools, or just need to replace spreadsheets — Nook
+              Whether you run a warehouse, sell online, manage tools, or just need to replace spreadsheets — StockZip
               adapts to how you work. Barcode scanning, offline reliability, and pricing that does not punish growth.
             </p>
             <div className="mt-8 flex flex-col gap-4 sm:flex-row">
@@ -182,7 +182,7 @@ export default function SolutionsPage() {
           <div className="text-center">
             <h2 className="text-base-content text-2xl font-semibold md:text-3xl">Find Your Inventory Solution</h2>
             <p className="text-base-content/80 mx-auto mt-4 max-w-3xl text-lg">
-              Click to explore how Nook works for your industry. Every solution includes barcode scanning, offline
+              Click to explore how StockZip works for your industry. Every solution includes barcode scanning, offline
               mode, and team accountability.
             </p>
           </div>
@@ -236,7 +236,7 @@ export default function SolutionsPage() {
       <section className="bg-base-100 py-12 md:py-16">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="text-base-content text-2xl font-semibold md:text-3xl">What Makes Nook Different</h2>
+            <h2 className="text-base-content text-2xl font-semibold md:text-3xl">What Makes StockZip Different</h2>
             <p className="text-base-content/80 mx-auto mt-4 max-w-2xl text-lg">
               Three promises we keep for every solution, every customer, every day.
             </p>
@@ -271,7 +271,7 @@ export default function SolutionsPage() {
               </div>
               <h3 className="text-base-content mt-6 text-xl font-semibold">Simplicity</h3>
               <p className="text-base-content/80 mt-3">
-                Not an ERP. Minimal setup, staff-friendly UI. Your whole team can use Nook in minutes without
+                Not an ERP. Minimal setup, staff-friendly UI. Your whole team can use StockZip in minutes without
                 training manuals.
               </p>
             </div>
@@ -297,17 +297,17 @@ export default function SolutionsPage() {
                   <span className="text-error">Spreadsheets</span>
                 </div>
                 <div className="border-b border-base-content/10 p-4 text-center font-semibold">
-                  <span className="text-success">Nook</span>
+                  <span className="text-success">StockZip</span>
                 </div>
               </div>
 
               {[
-                { feature: 'Multi-user editing', spreadsheet: 'Conflicts & overwrites', nook: 'Real-time sync' },
-                { feature: 'Mobile access', spreadsheet: 'Clunky on phones', nook: 'Touch-first design' },
-                { feature: 'Barcode scanning', spreadsheet: 'Manual entry', nook: 'Scan to update' },
-                { feature: 'Offline mode', spreadsheet: 'Requires internet', nook: 'Works anywhere' },
-                { feature: 'Audit trail', spreadsheet: 'No history', nook: 'Every change logged' },
-                { feature: 'Low stock alerts', spreadsheet: 'Manual checking', nook: 'Automatic notifications' },
+                { feature: 'Multi-user editing', spreadsheet: 'Conflicts & overwrites', stockzip: 'Real-time sync' },
+                { feature: 'Mobile access', spreadsheet: 'Clunky on phones', stockzip: 'Touch-first design' },
+                { feature: 'Barcode scanning', spreadsheet: 'Manual entry', stockzip: 'Scan to update' },
+                { feature: 'Offline mode', spreadsheet: 'Requires internet', stockzip: 'Works anywhere' },
+                { feature: 'Audit trail', spreadsheet: 'No history', stockzip: 'Every change logged' },
+                { feature: 'Low stock alerts', spreadsheet: 'Manual checking', stockzip: 'Automatic notifications' },
               ].map((row, index) => (
                 <div key={index} className="grid grid-cols-3 bg-base-100">
                   <div className="border-b border-r border-base-content/10 p-4 font-medium">{row.feature}</div>
@@ -317,7 +317,7 @@ export default function SolutionsPage() {
                   <div className="border-b border-base-content/10 p-4 text-center">
                     <span className="flex items-center justify-center gap-2">
                       <span className="icon-[tabler--check] text-success size-5"></span>
-                      <span className="text-base-content/80">{row.nook}</span>
+                      <span className="text-base-content/80">{row.stockzip}</span>
                     </span>
                   </div>
                 </div>

@@ -592,10 +592,10 @@ export default function QRCodesForInventoryPage() {
             <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <h2 className="text-base-content text-2xl font-semibold md:text-3xl">
-                  Generate QR Codes with Nook
+                  Generate QR Codes with StockZip
                 </h2>
                 <p className="text-base-content/80 mt-4 max-w-2xl text-lg">
-                  Nook generates QR codes for every item and location. Scan with any phone to view details, update
+                  StockZip generates QR codes for every item and location. Scan with any phone to view details, update
                   quantities, or log activity. No app download required.
                 </p>
                 <ul className="mt-6 grid gap-3 sm:grid-cols-2">
@@ -659,8 +659,8 @@ export default function QRCodesForInventoryPage() {
               className="card card-border shadow-none transition-colors hover:border-primary/30"
             >
               <div className="card-body">
-                <h3 className="text-base-content font-semibold">Nook Scanning Features</h3>
-                <p className="text-base-content/80 text-sm">See how Nook handles barcode and QR scanning.</p>
+                <h3 className="text-base-content font-semibold">StockZip Scanning Features</h3>
+                <p className="text-base-content/80 text-sm">See how StockZip handles barcode and QR scanning.</p>
               </div>
             </Link>
           </div>

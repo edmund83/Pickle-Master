@@ -36,12 +36,12 @@ const CONSTRUCTION_FAQS: FaqItem[] = [
   {
     question: 'How does tool tracking software assign tools to workers?',
     answer:
-      'Use check-in/check-out to assign tools to specific workers by scanning the tool barcode and selecting the assignee. Nook logs who has what, when it was issued, and when it is due back. Works offline on remote jobsites.',
+      'Use check-in/check-out to assign tools to specific workers by scanning the tool barcode and selecting the assignee. StockZip logs who has what, when it was issued, and when it is due back. Works offline on remote jobsites.',
   },
   {
     question: 'Does the tool tracking app work offline on construction sites?',
     answer:
-      'Yes. Nook is built offline-first specifically for construction inventory management. Scan barcodes, check out tools, and update inventory without internet. Everything syncs automatically when you reconnect.',
+      'Yes. StockZip is built offline-first specifically for construction inventory management. Scan barcodes, check out tools, and update inventory without internet. Everything syncs automatically when you reconnect.',
   },
   {
     question: 'Can I track tools across multiple jobsites?',
@@ -51,17 +51,17 @@ const CONSTRUCTION_FAQS: FaqItem[] = [
   {
     question: 'What happens when a tool goes missing on the jobsite?',
     answer:
-      'Run a scan-based audit of a jobsite or truck. Nook shows you what should be there vs. what you scanned, highlighting missing items instantly. The audit trail shows who last had the tool.',
+      'Run a scan-based audit of a jobsite or truck. StockZip shows you what should be there vs. what you scanned, highlighting missing items instantly. The audit trail shows who last had the tool.',
   },
   {
     question: 'Can I set due dates for tool returns with asset checkout software?',
     answer:
-      'Yes. When checking out a tool, set an expected return date. Nook flags overdue items automatically so you can follow up before they disappear. Get notifications when items are past due.',
+      'Yes. When checking out a tool, set an expected return date. StockZip flags overdue items automatically so you can follow up before they disappear. Get notifications when items are past due.',
   },
   {
     question: 'How do I label my existing tools for tracking?',
     answer:
-      'Print QR or barcode labels directly from Nook. Apply them to your tools, and you are ready to scan. We support thermal printers (Zebra, Brother) and laser printers. Labels are weather-resistant.',
+      'Print QR or barcode labels directly from StockZip. Apply them to your tools, and you are ready to scan. We support thermal printers (Zebra, Brother) and laser printers. Labels are weather-resistant.',
   },
   {
     question: 'Can I track tool maintenance and calibration schedules?',
@@ -71,7 +71,7 @@ const CONSTRUCTION_FAQS: FaqItem[] = [
   {
     question: 'What is the best construction inventory management software for small contractors?',
     answer:
-      'Nook is designed for contractors of all sizes. No per-tool fees or SKU limits. Start with a 14-day free trial, import your tool list, and see results immediately. Most teams are tracking tools within an hour.',
+      'StockZip is designed for contractors of all sizes. No per-tool fees or SKU limits. Start with a 14-day free trial, import your tool list, and see results immediately. Most teams are tracking tools within an hour.',
   },
 ]
 
@@ -201,7 +201,7 @@ export default function ConstructionToolsSolutionPage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Tool Tracking Software',
+          name: 'StockZip Tool Tracking Software',
           description:
             'Tool tracking software for construction with check-in/check-out, offline scanning, and jobsite accountability.',
           pathname: '/solutions/construction-tools',
@@ -288,7 +288,7 @@ export default function ConstructionToolsSolutionPage() {
               <div className="mt-6 space-y-4">
                 <p className="text-base-content/80">
                   <strong className="text-base-content">6:00 AM:</strong> Your crew grabs tools from the trailer. Each
-                  worker scans what they take — even without cell signal. Nook logs the asset checkout instantly.
+                  worker scans what they take — even without cell signal. StockZip logs the asset checkout instantly.
                 </p>
                 <p className="text-base-content/80">
                   <strong className="text-base-content">End of day:</strong> Tools come back. Workers scan returns. You
@@ -296,7 +296,7 @@ export default function ConstructionToolsSolutionPage() {
                 </p>
                 <p className="text-base-content/80">
                   <strong className="text-base-content">Friday:</strong> Run a quick audit. Scan everything on the
-                  truck. Nook shows three items missing — and exactly who checked them out last Tuesday.
+                  truck. StockZip shows three items missing — and exactly who checked them out last Tuesday.
                 </p>
               </div>
               <div className="mt-6">
@@ -340,7 +340,7 @@ export default function ConstructionToolsSolutionPage() {
           <div className="text-center">
             <h2 className="text-base-content text-2xl font-semibold md:text-3xl">How Tool Tracking Software Solves It</h2>
             <p className="text-base-content/80 mx-auto mt-4 max-w-3xl text-lg">
-              Every pain point has a direct solution. Here is how Nook fixes the jobsite tool problem.
+              Every pain point has a direct solution. Here is how StockZip fixes the jobsite tool problem.
             </p>
           </div>
 
@@ -378,7 +378,7 @@ export default function ConstructionToolsSolutionPage() {
               </div>
               <h3 className="text-base-content mt-6 text-xl font-semibold">Label Your Tools</h3>
               <p className="text-base-content/80 mt-3">
-                Print QR or barcode labels from Nook. Apply them to every tool you want to track. Weather-resistant
+                Print QR or barcode labels from StockZip. Apply them to every tool you want to track. Weather-resistant
                 options available.
               </p>
               {/* Step 1 Image Placeholder */}
@@ -396,7 +396,7 @@ export default function ConstructionToolsSolutionPage() {
               </div>
               <h3 className="text-base-content mt-6 text-xl font-semibold">Check Out by Scan</h3>
               <p className="text-base-content/80 mt-3">
-                When a worker takes a tool, scan it and assign it to them. Nook logs who, what, and when — even
+                When a worker takes a tool, scan it and assign it to them. StockZip logs who, what, and when — even
                 offline.
               </p>
               {/* Step 2 Image Placeholder */}
@@ -465,7 +465,7 @@ export default function ConstructionToolsSolutionPage() {
           <div className="text-center">
             <h2 className="text-base-content text-2xl font-semibold md:text-3xl">What You Can Track</h2>
             <p className="text-base-content/80 mx-auto mt-4 max-w-3xl text-lg">
-              Nook handles any asset that moves between people, places, or projects on your construction sites.
+              StockZip handles any asset that moves between people, places, or projects on your construction sites.
             </p>
           </div>
 
@@ -513,7 +513,7 @@ export default function ConstructionToolsSolutionPage() {
             <span className="icon-[tabler--building] text-primary/30 size-12"></span>
             <p className="text-base-content/60 mt-4 text-lg font-medium">Case study coming soon</p>
             <p className="text-base-content/40 mt-2">
-              We are documenting results from contractors using Nook for construction inventory management.
+              We are documenting results from contractors using StockZip for construction inventory management.
             </p>
           </div>
         </div>

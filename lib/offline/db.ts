@@ -7,12 +7,12 @@ import type {
 } from './types'
 
 /**
- * Nook Offline Database
+ * StockZip Offline Database
  *
  * Uses Dexie.js (IndexedDB wrapper) for persistent offline storage.
  * Stores cached inventory items, pending changes queue, and scan sessions.
  */
-class NookOfflineDB extends Dexie {
+class StockZipOfflineDB extends Dexie {
   // Tables
   items!: Table<OfflineItem, string>
   pendingChanges!: Table<PendingChange, string>
@@ -20,7 +20,7 @@ class NookOfflineDB extends Dexie {
   syncMetadata!: Table<SyncMetadata, string>
 
   constructor() {
-    super('NookOfflineDB')
+    super('StockZipOfflineDB')
 
     // Schema version 1
     this.version(1).stores({
@@ -37,14 +37,14 @@ class NookOfflineDB extends Dexie {
 }
 
 // Singleton database instance
-let db: NookOfflineDB | null = null
+let db: StockZipOfflineDB | null = null
 
 /**
  * Get the database instance (lazy initialization)
  */
-export function getDB(): NookOfflineDB {
+export function getDB(): StockZipOfflineDB {
   if (!db) {
-    db = new NookOfflineDB()
+    db = new StockZipOfflineDB()
   }
   return db
 }
@@ -446,5 +446,5 @@ export async function getStorageEstimate(): Promise<{
 }
 
 // Export the database class for advanced usage
-export { NookOfflineDB }
+export { StockZipOfflineDB }
 export default getDB

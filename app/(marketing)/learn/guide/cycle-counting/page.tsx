@@ -585,10 +585,10 @@ export default function CycleCountingGuidePage() {
             <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
               <div>
                 <h2 className="text-base-content text-2xl font-semibold md:text-3xl">
-                  Cycle Count with Nook
+                  Cycle Count with StockZip
                 </h2>
                 <p className="text-base-content/80 mt-4 max-w-2xl text-lg">
-                  Nook makes cycle counting simple with mobile scanning, variance tracking, and adjustment history. Know
+                  StockZip makes cycle counting simple with mobile scanning, variance tracking, and adjustment history. Know
                   your accuracy rate and identify problem areas.
                 </p>
                 <ul className="mt-6 grid gap-3 sm:grid-cols-2">

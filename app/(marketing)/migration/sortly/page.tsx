@@ -7,7 +7,7 @@
  * - FAQ: /marketing-ui/faq/faq-1 (collapsible FAQ accordion)
  *
  * Primary keyword: "migrate from Sortly"
- * Secondary keywords: "Sortly export", "switch from Sortly", "Sortly to Nook"
+ * Secondary keywords: "Sortly export", "switch from Sortly", "Sortly to StockZip"
  */
 
 import type { Metadata } from 'next'
@@ -19,9 +19,9 @@ import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/lib/marketing/jsonld'
 
 export const metadata: Metadata = marketingMetadata({
-  title: 'Migrate from Sortly | Step-by-Step Guide to Switch to Nook',
+  title: 'Migrate from Sortly | Step-by-Step Guide to Switch to StockZip',
   description:
-    'Migrate from Sortly to Nook with our step-by-step guide. Export CSV, map locations, import items, and verify with a scan-based count — usually under an hour.',
+    'Migrate from Sortly to StockZip with our step-by-step guide. Export CSV, map locations, import items, and verify with a scan-based count — usually under an hour.',
   pathname: '/migration/sortly',
 })
 
@@ -29,7 +29,7 @@ const MIGRATION_FAQS: FaqItem[] = [
   {
     question: 'How long does the Sortly migration take?',
     answer:
-      'Most teams complete the core migration in under an hour. Export from Sortly, import into Nook, spot-check a few items, and you are ready. More complex setups with custom fields or many locations may take a bit longer.',
+      'Most teams complete the core migration in under an hour. Export from Sortly, import into StockZip, spot-check a few items, and you are ready. More complex setups with custom fields or many locations may take a bit longer.',
   },
   {
     question: 'What is the fastest way to migrate safely?',
@@ -39,12 +39,12 @@ const MIGRATION_FAQS: FaqItem[] = [
   {
     question: 'Do I need barcodes already on my items?',
     answer:
-      'No. You can generate and print labels after import. If you already have barcodes or QR codes on items, keep them — Nook will scan them immediately.',
+      'No. You can generate and print labels after import. If you already have barcodes or QR codes on items, keep them — StockZip will scan them immediately.',
   },
   {
     question: 'Can you help me map fields and locations?',
     answer:
-      'Yes. Request a demo and we will help map your Sortly CSV columns, folder/location structure, and any custom fields to Nook.',
+      'Yes. Request a demo and we will help map your Sortly CSV columns, folder/location structure, and any custom fields to StockZip.',
   },
   {
     question: 'How do I prevent count mismatches after import?',
@@ -54,17 +54,17 @@ const MIGRATION_FAQS: FaqItem[] = [
   {
     question: 'What happens to my Sortly folders?',
     answer:
-      'Sortly folders map to Nook locations. You can keep the same hierarchy (Warehouse → Shelf → Bin) or restructure during migration.',
+      'Sortly folders map to StockZip locations. You can keep the same hierarchy (Warehouse → Shelf → Bin) or restructure during migration.',
   },
   {
     question: 'Can I import custom fields from Sortly?',
     answer:
-      'Yes. Nook supports custom fields. During import, map your Sortly custom columns to Nook fields. We will help you set up any new fields you need.',
+      'Yes. StockZip supports custom fields. During import, map your Sortly custom columns to StockZip fields. We will help you set up any new fields you need.',
   },
   {
     question: 'What if I have thousands of items?',
     answer:
-      'Nook handles large catalogs. Import your full CSV, then label and verify in batches. Start with high-value or fast-moving items for immediate wins.',
+      'StockZip handles large catalogs. Import your full CSV, then label and verify in batches. Start with high-value or fast-moving items for immediate wins.',
   },
 ]
 
@@ -97,7 +97,7 @@ const MIGRATION_STEPS = [
     step: '2',
     title: 'Decide your structure',
     description:
-      'Map Sortly folders to Nook locations. Keep the same hierarchy or restructure now — this is your chance to clean things up.',
+      'Map Sortly folders to StockZip locations. Keep the same hierarchy or restructure now — this is your chance to clean things up.',
   },
   {
     step: '3',
@@ -107,9 +107,9 @@ const MIGRATION_STEPS = [
   },
   {
     step: '4',
-    title: 'Import into Nook',
+    title: 'Import into StockZip',
     description:
-      'Upload your CSV. Nook maps common columns automatically. Review the preview, adjust any mappings, and confirm the import.',
+      'Upload your CSV. StockZip maps common columns automatically. Review the preview, adjust any mappings, and confirm the import.',
   },
   {
     step: '5',
@@ -132,14 +132,14 @@ const MIGRATION_STEPS = [
 ]
 
 const FIELD_MAPPINGS = [
-  { sortly: 'Folder', nook: 'Location / Folder', notes: 'Hierarchical structure supported' },
-  { sortly: 'Item name', nook: 'Name', notes: 'Direct mapping' },
-  { sortly: 'Quantity', nook: 'Quantity', notes: 'Plus full audit trail' },
-  { sortly: 'Price', nook: 'Price', notes: 'Per-item valuation' },
-  { sortly: 'Tags', nook: 'Tags', notes: 'Multi-tag support' },
-  { sortly: 'Notes', nook: 'Notes', notes: 'Preserved as-is' },
-  { sortly: 'Custom fields', nook: 'Custom fields', notes: 'Create matching fields first' },
-  { sortly: 'Photos', nook: 'Photos', notes: 'Re-upload or link' },
+  { sortly: 'Folder', stockzip: 'Location / Folder', notes: 'Hierarchical structure supported' },
+  { sortly: 'Item name', stockzip: 'Name', notes: 'Direct mapping' },
+  { sortly: 'Quantity', stockzip: 'Quantity', notes: 'Plus full audit trail' },
+  { sortly: 'Price', stockzip: 'Price', notes: 'Per-item valuation' },
+  { sortly: 'Tags', stockzip: 'Tags', notes: 'Multi-tag support' },
+  { sortly: 'Notes', stockzip: 'Notes', notes: 'Preserved as-is' },
+  { sortly: 'Custom fields', stockzip: 'Custom fields', notes: 'Create matching fields first' },
+  { sortly: 'Photos', stockzip: 'Photos', notes: 'Re-upload or link' },
 ]
 
 export default function SortlyMigrationPage() {
@@ -154,8 +154,8 @@ export default function SortlyMigrationPage() {
       />
       <JsonLd
         data={softwareApplicationJsonLd({
-          name: 'Nook Inventory',
-          description: 'Migrate from Sortly to Nook with barcode scanning, offline mode, and check-in/check-out.',
+          name: 'StockZip Inventory',
+          description: 'Migrate from Sortly to StockZip with barcode scanning, offline mode, and check-in/check-out.',
           pathname: '/migration/sortly',
         })}
       />
@@ -167,10 +167,10 @@ export default function SortlyMigrationPage() {
           <div>
             <p className="badge badge-soft badge-primary rounded-full font-medium uppercase">Migration Guide</p>
             <h1 className="text-base-content mt-4 text-3xl font-semibold md:text-4xl">
-              Migrate from Sortly to Nook
+              Migrate from Sortly to StockZip
             </h1>
             <p className="text-base-content/80 mt-3 max-w-3xl text-lg">
-              A step-by-step guide to move from Sortly to Nook — without breaking your counts, losing data, or
+              A step-by-step guide to move from Sortly to StockZip — without breaking your counts, losing data, or
               slowing your team down. Most migrations take under an hour.
             </p>
           </div>
@@ -223,14 +223,14 @@ export default function SortlyMigrationPage() {
         <div className="mt-16 rounded-box bg-base-200 p-6 sm:p-8">
           <h2 className="text-base-content text-xl font-semibold sm:text-2xl">Field mapping reference</h2>
           <p className="text-base-content/80 mt-2 max-w-3xl">
-            Here is how Sortly fields map to Nook. Most columns map automatically during import.
+            Here is how Sortly fields map to StockZip. Most columns map automatically during import.
           </p>
           <div className="mt-6 overflow-x-auto">
             <table className="table">
               <thead>
                 <tr>
                   <th className="text-base-content">Sortly field</th>
-                  <th className="text-base-content">Nook field</th>
+                  <th className="text-base-content">StockZip field</th>
                   <th className="text-base-content">Notes</th>
                 </tr>
               </thead>
@@ -238,7 +238,7 @@ export default function SortlyMigrationPage() {
                 {FIELD_MAPPINGS.map((row) => (
                   <tr key={row.sortly}>
                     <td className="text-base-content font-medium">{row.sortly}</td>
-                    <td className="text-base-content/80">{row.nook}</td>
+                    <td className="text-base-content/80">{row.stockzip}</td>
                     <td className="text-base-content/60 text-sm">{row.notes}</td>
                   </tr>
                 ))}
@@ -267,7 +267,7 @@ export default function SortlyMigrationPage() {
                 </li>
                 <li className="flex gap-2">
                   <span className="icon-[tabler--circle-check] text-success size-5 shrink-0"></span>
-                  <span>Keep Sortly active until your team is confident in Nook — no need to rush</span>
+                  <span>Keep Sortly active until your team is confident in StockZip — no need to rush</span>
                 </li>
               </ul>
             </div>
@@ -341,9 +341,9 @@ export default function SortlyMigrationPage() {
             <Link href="/compare/sortly-alternative" className="card card-border shadow-none hover:border-primary/30 transition-colors">
               <div className="card-body">
                 <span className="icon-[tabler--vs] text-primary size-8"></span>
-                <h3 className="text-base-content mt-4 text-lg font-semibold">Sortly vs Nook</h3>
+                <h3 className="text-base-content mt-4 text-lg font-semibold">Sortly vs StockZip</h3>
                 <p className="text-base-content/80 mt-2">
-                  See why teams switch from Sortly to Nook.
+                  See why teams switch from Sortly to StockZip.
                 </p>
               </div>
             </Link>

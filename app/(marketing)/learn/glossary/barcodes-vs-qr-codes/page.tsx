@@ -279,9 +279,9 @@ export default function BarcodesVsQrCodesPage() {
 
         {/* CTA Section */}
         <div className="mt-10 rounded-box bg-base-200 p-8">
-          <h2 className="text-base-content text-xl font-semibold">Scan both with Nook</h2>
+          <h2 className="text-base-content text-xl font-semibold">Scan both with StockZip</h2>
           <p className="text-base-content/80 mt-2">
-            Nook supports both barcode and QR code scanning using your phone camera or Bluetooth scanner. Look up
+            StockZip supports both barcode and QR code scanning using your phone camera or Bluetooth scanner. Look up
             items, adjust quantities, and track movements instantly.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">

@@ -159,9 +159,9 @@ export default function ReorderPointCalculatorPage() {
 
         {/* CTA Section */}
         <div className="mt-10 rounded-box bg-base-200 p-8">
-          <h2 className="text-base-content text-xl font-semibold">Automate reorder alerts with Nook</h2>
+          <h2 className="text-base-content text-xl font-semibold">Automate reorder alerts with StockZip</h2>
           <p className="text-base-content/80 mt-2">
-            Set reorder points per SKU in Nook and get automatic alerts when stock drops below the threshold. No more
+            Set reorder points per SKU in StockZip and get automatic alerts when stock drops below the threshold. No more
             spreadsheets, no more manual checks.
           </p>
           <ul className="text-base-content/80 mt-4 space-y-2">

@@ -29,7 +29,7 @@ const ARTICLE_FAQS: FaqItem[] = [
   {
     question: 'What is the best inventory management platform for small ecommerce businesses?',
     answer:
-      'For small ecommerce businesses, look for platforms that offer easy setup, barcode scanning, low-stock alerts, and predictable pricing. Avoid enterprise tools with features you will never use. Nook, Sortly, and inFlow are popular choices for small sellers.',
+      'For small ecommerce businesses, look for platforms that offer easy setup, barcode scanning, low-stock alerts, and predictable pricing. Avoid enterprise tools with features you will never use. StockZip, Sortly, and inFlow are popular choices for small sellers.',
   },
   {
     question: 'How much does ecommerce inventory software cost in 2025?',
@@ -55,7 +55,7 @@ const ARTICLE_FAQS: FaqItem[] = [
 
 const PLATFORMS = [
   {
-    name: 'Nook Inventory',
+    name: 'StockZip Inventory',
     focus: 'Scan-first simplicity',
     bestFor: 'Small teams, warehouse + ecommerce hybrid',
     strengths: ['Offline mode', 'Check-in/check-out', 'Predictable pricing', 'Fast barcode scanning'],
@@ -302,7 +302,7 @@ export default function EcommerceInventoryPlatforms2025Page() {
                 <span className="icon-[tabler--user] text-primary size-8"></span>
                 <h3 className="text-base-content mt-4 text-lg font-semibold">Solo seller</h3>
                 <p className="text-base-content/80 mt-2 text-sm">
-                  Start with a free tier to validate your workflow. Nook or Sortly work well for under 500 items.
+                  Start with a free tier to validate your workflow. StockZip or Sortly work well for under 500 items.
                   Prioritize mobile scanning and easy CSV import.
                 </p>
               </div>
@@ -312,7 +312,7 @@ export default function EcommerceInventoryPlatforms2025Page() {
                 <span className="icon-[tabler--users] text-primary size-8"></span>
                 <h3 className="text-base-content mt-4 text-lg font-semibold">Small team (2-10)</h3>
                 <p className="text-base-content/80 mt-2 text-sm">
-                  Need multi-user access and role permissions. Nook, inFlow, or Sortly Team plans. Watch for per-user
+                  Need multi-user access and role permissions. StockZip, inFlow, or Sortly Team plans. Watch for per-user
                   pricing that scales poorly.
                 </p>
               </div>
@@ -334,9 +334,9 @@ export default function EcommerceInventoryPlatforms2025Page() {
         <section className="rounded-box bg-base-200 mb-12 p-8">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
             <div>
-              <h2 className="text-base-content text-2xl font-semibold">Try Nook for your ecommerce inventory</h2>
+              <h2 className="text-base-content text-2xl font-semibold">Try StockZip for your ecommerce inventory</h2>
               <p className="text-base-content/80 mt-2 max-w-2xl">
-                Nook is built for ecommerce teams who want accurate counts without enterprise complexity. Start with a
+                StockZip is built for ecommerce teams who want accurate counts without enterprise complexity. Start with a
                 14-day free trial — no credit card required.
               </p>
             </div>
@@ -363,7 +363,7 @@ export default function EcommerceInventoryPlatforms2025Page() {
               <div className="card-body">
                 <span className="icon-[tabler--shopping-cart] text-primary size-6"></span>
                 <h3 className="text-base-content mt-2 font-semibold">Ecommerce inventory</h3>
-                <p className="text-base-content/70 mt-1 text-sm">How Nook helps online sellers.</p>
+                <p className="text-base-content/70 mt-1 text-sm">How StockZip helps online sellers.</p>
               </div>
             </Link>
             <Link

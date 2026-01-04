@@ -134,7 +134,7 @@ export const useStockCountStore = create<StockCountState>()(
       reset: () => set(initialState),
     }),
     {
-      name: 'nook-stock-count-state',
+      name: 'stockzip-stock-count-state',
       storage: createJSONStorage(() => localStorage),
       partialize: (state) => ({
         // Persist the active session and pending counts

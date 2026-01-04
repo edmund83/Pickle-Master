@@ -81,12 +81,12 @@ export function PrimarySidebar({ isExpanded = false, onToggle }: PrimarySidebarP
           {isExpanded ? (
             <>
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/20">
-                <span className="text-xl font-bold text-white">N</span>
+                <span className="text-xl font-bold text-white">S</span>
               </div>
-              <span className="text-lg font-bold text-white">Nook</span>
+              <span className="text-lg font-bold text-white">StockZip</span>
             </>
           ) : (
-            <span className="text-xl font-bold text-white">N</span>
+            <span className="text-xl font-bold text-white">S</span>
           )}
         </Link>
       </div>
