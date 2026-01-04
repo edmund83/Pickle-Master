@@ -1,7 +1,68 @@
 @import "tailwindcss";
-@plugin "flyonui" {
-  themes: light --default, dark --prefersdark;
+
+/* Custom StockZip theme - Primary Blue #0EA5FF, Accent Yellow #FFC83D */
+@plugin "flyonui/theme" {
+  name: "stockzip";
+  default: true;
+  color-scheme: light;
+
+  /* Surfaces */
+  --color-base-100: oklch(100% 0 0);
+  --color-base-200: oklch(98.42% 0.0034 247.86);
+  --color-base-300: oklch(92.88% 0.0126 255.51);
+  --color-base-content: oklch(20.77% 0.0398 265.75);
+
+  /* Brand - Primary Blue #0EA5FF */
+  --color-primary: oklch(69.67% 0.1712 244.61);
+  --color-primary-content: oklch(100% 0 0);
+
+  /* Secondary - Darker Blue #0B8EDB */
+  --color-secondary: oklch(62.33% 0.1517 244.17);
+  --color-secondary-content: oklch(100% 0 0);
+
+  /* Accent - Yellow #FFC83D */
+  --color-accent: oklch(85.94% 0.1583 85.79);
+  --color-accent-content: oklch(21.01% 0.0318 264.66);
+
+  /* Neutral - Dark slate #0F172A */
+  --color-neutral: oklch(20.77% 0.0398 265.75);
+  --color-neutral-content: oklch(100% 0 0);
+
+  /* Status colors */
+  /* Info - Light Blue #7DD3FC */
+  --color-info: oklch(84.19% 0.0964 221.83);
+  --color-info-content: oklch(25% 0.05 221.83);
+
+  --color-success: oklch(72.27% 0.1920 149.58);
+  --color-success-content: oklch(26.64% 0.0628 152.93);
+
+  --color-warning: oklch(76.86% 0.1647 70.08);
+  --color-warning-content: oklch(27.91% 0.0742 45.64);
+
+  --color-error: oklch(63.68% 0.2078 25.33);
+  --color-error-content: oklch(100% 0 0);
+
+  /* Border Radius */
+  --radius-selector: 0.25rem;
+  --radius-field: 0.375rem;
+  --radius-box: 0.5rem;
+
+  /* Base Sizes */
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+
+  /* Border Size */
+  --border: 1px;
+
+  /* Effects */
+  --depth: 0;
+  --noise: 0;
 }
+
+@plugin "flyonui" {
+  themes: stockzip --default, dark --prefersdark;
+}
+
 @plugin "@iconify/tailwind4";
 @import "../node_modules/flyonui/variants.css";
 
