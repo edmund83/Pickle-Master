@@ -18,31 +18,44 @@ import {
   ChevronRight,
   PackageOpen,
   ArrowRightLeft,
+  Sparkles,
+  Home,
+  Activity,
+  BarChart3,
 } from 'lucide-react'
+import { NavSubmenu, SubmenuItem } from '@/components/layout/nav-submenu'
+import { useGlobalSearch } from '@/contexts/GlobalSearchContext'
+import { useZoe } from '@/contexts/ZoeContext'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { NotificationBell } from '@/components/notifications/NotificationBell'
-import { NavSubmenu, type SubmenuItem } from './nav-submenu'
 
-const navigation = [
+// Home - Main views
+const homeItems: SubmenuItem[] = [
   { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
   { name: 'Inventory', href: '/inventory', icon: Package },
-  { name: 'Search', href: '/search', icon: Search },
-  { name: 'Reminders', href: '/reminders', icon: Bell },
-  { name: 'Tags', href: '/tags', icon: Tags },
-  { name: 'Reports', href: '/reports', icon: FileText },
 ]
 
-const taskSubmenuItems: SubmenuItem[] = [
+// Activity - Daily warehouse tasks
+const activityItems: SubmenuItem[] = [
   { name: 'Receiving', href: '/tasks/inbound', icon: PackageOpen },
   { name: 'Orders Out', href: '/tasks/fulfillment', icon: ClipboardList },
   { name: 'Adjustments', href: '/tasks/inventory-operations', icon: ArrowRightLeft },
 ]
 
-const bottomNavigation = [
+// Insights - Reports & Organization
+const insightsItems: SubmenuItem[] = [
+  { name: 'Reports', href: '/reports', icon: FileText },
+  { name: 'Tags', href: '/tags', icon: Tags },
+  { name: 'Reminders', href: '/reminders', icon: Bell },
+]
+
+// System (bottom)
+const systemNav = [
   { name: 'Settings', href: '/settings', icon: Settings },
   { name: 'Help', href: '/help', icon: HelpCircle },
 ]
+
 
 interface PrimarySidebarProps {
   isExpanded?: boolean
@@ -52,6 +65,8 @@ interface PrimarySidebarProps {
 export function PrimarySidebar({ isExpanded = false, onToggle }: PrimarySidebarProps) {
   const pathname = usePathname()
   const router = useRouter()
+  const { openSearch } = useGlobalSearch()
+  const { openZoe } = useZoe()
 
   const handleLogout = async () => {
     const supabase = createClient()
@@ -91,68 +106,82 @@ export function PrimarySidebar({ isExpanded = false, onToggle }: PrimarySidebarP
         </Link>
       </div>
 
-      {/* Main Navigation */}
-      <nav className={cn('flex flex-1 flex-col gap-1 py-4', isExpanded ? 'px-3' : 'items-center px-2')}>
-        {navigation.slice(0, 5).map((item) => {
-          const isActive = pathname.startsWith(item.href)
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={cn(
-                'flex items-center rounded-xl transition-colors',
-                isExpanded ? 'h-10 gap-3 px-3' : 'h-10 w-10 justify-center',
-                isActive
-                  ? 'bg-white text-primary'
-                  : 'text-white/70 hover:bg-white/10 hover:text-white'
-              )}
-              title={!isExpanded ? item.name : undefined}
-            >
-              <item.icon className="h-5 w-5 shrink-0" />
-              {isExpanded && (
-                <span className="text-sm font-medium">{item.name}</span>
-              )}
-            </Link>
-          )
-        })}
+      {/* Search & Zoe AI Buttons */}
+      <div className={cn('flex flex-col gap-1 py-2', isExpanded ? 'px-3' : 'items-center px-2')}>
+        {/* Search Button */}
+        <button
+          onClick={openSearch}
+          className={cn(
+            'flex items-center rounded-xl transition-colors',
+            isExpanded ? 'h-10 gap-3 px-3' : 'h-10 w-10 justify-center',
+            'text-white hover:bg-white/10'
+          )}
+          title={!isExpanded ? 'Search (⌘K)' : undefined}
+        >
+          <Search className="h-5 w-5 shrink-0" />
+          {isExpanded && (
+            <span className="flex-1 text-sm font-medium text-left">Search</span>
+          )}
+          {isExpanded && (
+            <kbd className="flex items-center gap-0.5 px-1.5 py-0.5 text-xs font-medium text-white/50 bg-white/10 rounded">
+              <span className="text-[10px]">⌘</span>K
+            </kbd>
+          )}
+        </button>
 
-        {/* Tasks with submenu */}
+        {/* Zoe AI Button */}
+        <button
+          onClick={openZoe}
+          className={cn(
+            'flex items-center rounded-xl transition-colors',
+            isExpanded ? 'h-10 gap-3 px-3' : 'h-10 w-10 justify-center',
+            'text-white hover:bg-white/10'
+          )}
+          title={!isExpanded ? 'Ask Zoe AI' : undefined}
+        >
+          <Sparkles className="h-5 w-5 shrink-0" />
+          {isExpanded && (
+            <span className="text-sm font-medium">Ask Zoe</span>
+          )}
+        </button>
+      </div>
+
+      {/* Main Navigation */}
+      <nav className={cn('flex flex-1 flex-col gap-1', isExpanded ? 'px-3' : 'items-center px-2')}>
+        {/* Home Section */}
         <NavSubmenu
-          icon={ClipboardList}
-          label="Tasks"
-          items={taskSubmenuItems}
+          icon={Home}
+          label="Home"
+          items={homeItems}
           sidebarExpanded={isExpanded}
-          storageKey="tasks-submenu-expanded"
+          storageKey="nav-home-expanded"
         />
 
-        {/* Reports */}
-        {navigation.slice(5).map((item) => {
-          const isActive = pathname.startsWith(item.href)
-          return (
-            <Link
-              key={item.name}
-              href={item.href}
-              className={cn(
-                'flex items-center rounded-xl transition-colors',
-                isExpanded ? 'h-10 gap-3 px-3' : 'h-10 w-10 justify-center',
-                isActive
-                  ? 'bg-white text-primary'
-                  : 'text-white/70 hover:bg-white/10 hover:text-white'
-              )}
-              title={!isExpanded ? item.name : undefined}
-            >
-              <item.icon className="h-5 w-5 shrink-0" />
-              {isExpanded && (
-                <span className="text-sm font-medium">{item.name}</span>
-              )}
-            </Link>
-          )
-        })}
+        {/* Activity Section */}
+        <NavSubmenu
+          icon={Activity}
+          label="Activity"
+          items={activityItems}
+          sidebarExpanded={isExpanded}
+          storageKey="nav-activity-expanded"
+        />
+
+        {/* Insights Section */}
+        <NavSubmenu
+          icon={BarChart3}
+          label="Insights"
+          items={insightsItems}
+          sidebarExpanded={isExpanded}
+          storageKey="nav-insights-expanded"
+        />
+
+        {/* Spacer to push system nav to bottom */}
+        <div className="flex-1" />
       </nav>
 
-      {/* Bottom Navigation */}
+      {/* System Navigation (Bottom) */}
       <div className={cn('flex flex-col gap-1 py-4', isExpanded ? 'px-3' : 'items-center px-2')}>
-        {bottomNavigation.map((item) => {
+        {systemNav.map((item) => {
           const isActive = pathname.startsWith(item.href)
           return (
             <Link
@@ -163,7 +192,7 @@ export function PrimarySidebar({ isExpanded = false, onToggle }: PrimarySidebarP
                 isExpanded ? 'h-10 gap-3 px-3' : 'h-10 w-10 justify-center',
                 isActive
                   ? 'bg-white text-primary'
-                  : 'text-white/70 hover:bg-white/10 hover:text-white'
+                  : 'text-white hover:bg-white/10'
               )}
               title={!isExpanded ? item.name : undefined}
             >
@@ -182,7 +211,7 @@ export function PrimarySidebar({ isExpanded = false, onToggle }: PrimarySidebarP
         <button
           onClick={handleLogout}
           className={cn(
-            'flex items-center rounded-xl text-white/70 transition-colors hover:bg-white/10 hover:text-white',
+            'flex items-center rounded-xl text-white transition-colors hover:bg-white/10',
             isExpanded ? 'h-10 gap-3 px-3' : 'h-10 w-10 justify-center'
           )}
           title={!isExpanded ? 'Logout' : undefined}
@@ -198,7 +227,7 @@ export function PrimarySidebar({ isExpanded = false, onToggle }: PrimarySidebarP
           <button
             onClick={onToggle}
             className={cn(
-              'mt-2 flex items-center rounded-xl text-white/70 transition-colors hover:bg-white/10 hover:text-white',
+              'mt-2 flex items-center rounded-xl text-white transition-colors hover:bg-white/10',
               isExpanded ? 'h-10 gap-3 px-3' : 'h-10 w-10 justify-center'
             )}
             title={isExpanded ? 'Collapse sidebar' : 'Expand sidebar'}

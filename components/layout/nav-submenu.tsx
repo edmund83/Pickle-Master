@@ -87,7 +87,7 @@ export function NavSubmenu({
             'flex h-10 w-10 items-center justify-center rounded-xl transition-colors',
             isActive
               ? 'bg-white text-primary'
-              : 'text-white/70 hover:bg-white/10 hover:text-white'
+              : 'text-white hover:bg-white/10'
           )}
           title={label}
         >
@@ -117,7 +117,7 @@ export function NavSubmenu({
                       'flex items-center gap-2 px-3 py-2 text-sm transition-colors',
                       isItemActive
                         ? 'bg-white/20 text-white'
-                        : 'text-white/70 hover:bg-white/10 hover:text-white'
+                        : 'text-white hover:bg-white/10'
                     )}
                   >
                     {ItemIcon && <ItemIcon className="h-4 w-4" />}
@@ -142,7 +142,7 @@ export function NavSubmenu({
           'flex h-10 w-full items-center justify-between rounded-xl px-3 transition-colors',
           isActive
             ? 'bg-white text-primary'
-            : 'text-white/70 hover:bg-white/10 hover:text-white'
+            : 'text-white hover:bg-white/10'
         )}
       >
         <div className="flex items-center gap-3">
@@ -176,7 +176,7 @@ export function NavSubmenu({
                   'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors',
                   isItemActive
                     ? 'bg-white/20 text-white font-medium'
-                    : 'text-white/60 hover:bg-white/10 hover:text-white'
+                    : 'text-white hover:bg-white/10'
                 )}
               >
                 {ItemIcon && <ItemIcon className="h-4 w-4" />}
