@@ -323,7 +323,7 @@ function SignupForm() {
 
             <button
               type="submit"
-              className="btn btn-lg btn-primary btn-gradient btn-block"
+              className="btn btn-lg btn-primary btn-block"
               disabled={loading || oauthLoading !== null}
             >
               {loading ? (

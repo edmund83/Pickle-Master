@@ -258,7 +258,7 @@ export default function GlossaryPage() {
             and real-time tracking.
           </p>
           <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
-            <Link href="/signup" className="btn btn-primary btn-gradient btn-lg">
+            <Link href="/signup" className="btn btn-primary btn-lg">
               Start Free Trial
               <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
             </Link>

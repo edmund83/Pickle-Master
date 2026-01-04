@@ -269,7 +269,7 @@ export default function EconomicOrderQuantityPage() {
             smart reorder points. Track stock levels, get low-stock alerts, and maintain accurate counts.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <Link href="/signup" className="btn btn-primary btn-gradient">
+            <Link href="/signup" className="btn btn-primary">
               Start Free Trial
               <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
             </Link>

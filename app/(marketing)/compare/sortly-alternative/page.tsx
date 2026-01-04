@@ -118,7 +118,7 @@ export default function SortlyAlternativePage() {
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Link href="/signup" className="btn btn-primary btn-gradient btn-lg">
+            <Link href="/signup" className="btn btn-primary btn-lg">
               Start Free Trial
               <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
             </Link>
@@ -201,7 +201,7 @@ export default function SortlyAlternativePage() {
                 </li>
               </ul>
               <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                <Link href="/demo" className="btn btn-primary btn-gradient">
+                <Link href="/demo" className="btn btn-primary">
                   Watch demo
                 </Link>
                 <Link href="/pricing" className="btn btn-outline btn-secondary">
@@ -219,7 +219,7 @@ export default function SortlyAlternativePage() {
             cycle count. It takes minutes — and it&apos;s usually enough to feel the difference.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <Link href="/migration/sortly" className="btn btn-primary btn-gradient btn-lg">
+            <Link href="/migration/sortly" className="btn btn-primary btn-lg">
               Follow the migration guide
               <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
             </Link>

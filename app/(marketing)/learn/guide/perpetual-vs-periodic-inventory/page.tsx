@@ -153,7 +153,7 @@ export default function PerpetualVsPeriodicInventoryPage() {
             trustworthy.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <Link href="/demo" className="btn btn-primary btn-gradient btn-lg">
+            <Link href="/demo" className="btn btn-primary btn-lg">
               Watch demo
             </Link>
             <Link href="/features/barcode-scanning" className="btn btn-outline btn-secondary btn-lg">

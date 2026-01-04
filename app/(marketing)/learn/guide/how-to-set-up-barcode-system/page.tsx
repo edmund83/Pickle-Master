@@ -619,7 +619,7 @@ export default function HowToSetUpBarcodeSystemPage() {
                 </ul>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-                <Link href="/features/barcode-scanning" className="btn btn-primary btn-gradient btn-lg">
+                <Link href="/features/barcode-scanning" className="btn btn-primary btn-lg">
                   Learn About Scanning
                   <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
                 </Link>

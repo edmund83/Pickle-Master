@@ -41,11 +41,11 @@ export function TestimonialGrid() {
             <div key={t.title} className="card card-border shadow-none">
               <div className="card-body gap-5">
                 <div className="flex gap-1">
-                  <span className="icon-[tabler--star-filled] text-warning size-6 shrink-0"></span>
-                  <span className="icon-[tabler--star-filled] text-warning size-6 shrink-0"></span>
-                  <span className="icon-[tabler--star-filled] text-warning size-6 shrink-0"></span>
-                  <span className="icon-[tabler--star-filled] text-warning size-6 shrink-0"></span>
-                  <span className="icon-[tabler--star-filled] text-warning size-6 shrink-0"></span>
+                  <span className="icon-[tabler--star-filled] text-accent size-6 shrink-0"></span>
+                  <span className="icon-[tabler--star-filled] text-accent size-6 shrink-0"></span>
+                  <span className="icon-[tabler--star-filled] text-accent size-6 shrink-0"></span>
+                  <span className="icon-[tabler--star-filled] text-accent size-6 shrink-0"></span>
+                  <span className="icon-[tabler--star-filled] text-accent size-6 shrink-0"></span>
                 </div>
                 <p className="text-base-content/80">&ldquo;{t.quote}&rdquo;</p>
                 <div>

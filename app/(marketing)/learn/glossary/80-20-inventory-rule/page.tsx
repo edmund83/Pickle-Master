@@ -224,7 +224,7 @@ export default function EightyTwentyRulePage() {
             your attention on the items that drive your business.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <Link href="/signup" className="btn btn-primary btn-gradient">
+            <Link href="/signup" className="btn btn-primary">
               Start Free Trial
               <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
             </Link>

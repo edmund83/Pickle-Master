@@ -93,7 +93,7 @@ export default function CycleCountSheetPage() {
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
               <button
-                className="btn btn-primary btn-gradient"
+                className="btn btn-primary"
                 disabled
                 title="Coming soon"
               >
@@ -262,7 +262,7 @@ export default function CycleCountSheetPage() {
             </li>
           </ul>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <Link href="/signup" className="btn btn-primary btn-gradient">
+            <Link href="/signup" className="btn btn-primary">
               Start Free Trial
               <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
             </Link>

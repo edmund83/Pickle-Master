@@ -100,7 +100,7 @@ export default function MobileInventoryAppPage() {
               inventory app that syncs automatically when you&apos;re back online.
             </p>
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-              <Link href="/signup" className="btn btn-primary btn-gradient btn-lg">
+              <Link href="/signup" className="btn btn-primary btn-lg">
                 Start Free Trial
                 <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
               </Link>
@@ -493,7 +493,7 @@ export default function MobileInventoryAppPage() {
                 </ul>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-                <Link href="/signup" className="btn btn-primary btn-gradient btn-lg">
+                <Link href="/signup" className="btn btn-primary btn-lg">
                   Start Free Trial
                   <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
                 </Link>

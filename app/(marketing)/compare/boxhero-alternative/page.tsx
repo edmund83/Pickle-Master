@@ -169,7 +169,7 @@ export default function BoxHeroAlternativePage() {
                 trust-first pricing that scales with your business. No surprise tier jumps. No internet dependency.
               </p>
               <div className="flex flex-wrap items-center gap-4">
-                <Link href="/signup" className="btn btn-primary btn-gradient btn-lg">
+                <Link href="/signup" className="btn btn-primary btn-lg">
                   Start Free Trial
                   <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
                 </Link>
@@ -364,7 +364,7 @@ export default function BoxHeroAlternativePage() {
                   </li>
                 </ul>
                 <div className="mt-6 flex flex-wrap gap-3">
-                  <Link href="/demo" className="btn btn-primary btn-gradient">
+                  <Link href="/demo" className="btn btn-primary">
                     Watch demo
                   </Link>
                   <Link href="/pricing" className="btn btn-outline btn-secondary">
@@ -422,7 +422,7 @@ export default function BoxHeroAlternativePage() {
                 </div>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-                <Link href="/signup" className="btn btn-primary btn-gradient btn-lg">
+                <Link href="/signup" className="btn btn-primary btn-lg">
                   Start Free Trial
                   <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
                 </Link>
@@ -463,7 +463,7 @@ export default function BoxHeroAlternativePage() {
           <div className="mt-10 text-center">
             <p className="text-base-content/70">Have more questions?</p>
             <div className="mt-4 flex flex-wrap justify-center gap-3">
-              <Link href="/demo" className="btn btn-primary btn-gradient">
+              <Link href="/demo" className="btn btn-primary">
                 Watch demo
               </Link>
               <Link href="/pricing" className="btn btn-outline btn-secondary">
@@ -485,7 +485,7 @@ export default function BoxHeroAlternativePage() {
             grows with you.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <Link href="/signup" className="btn btn-primary btn-gradient btn-lg">
+            <Link href="/signup" className="btn btn-primary btn-lg">
               Start Free Trial
               <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
             </Link>

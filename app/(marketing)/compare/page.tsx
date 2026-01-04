@@ -106,7 +106,7 @@ export default function CompareHubPage() {
             Watch the 90-second demo or start a free trial and scan your first items today.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <Link href="/demo" className="btn btn-primary btn-gradient btn-lg">
+            <Link href="/demo" className="btn btn-primary btn-lg">
               Watch demo
               <span className="icon-[tabler--player-play] size-5"></span>
             </Link>

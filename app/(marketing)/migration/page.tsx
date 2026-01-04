@@ -72,7 +72,7 @@ export default function MigrationHubPage() {
             data and verify accuracy.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <Link href="/demo" className="btn btn-primary btn-gradient btn-lg">
+            <Link href="/demo" className="btn btn-primary btn-lg">
               Request a demo
             </Link>
             <Link href="/pricing" className="btn btn-outline btn-secondary btn-lg">
