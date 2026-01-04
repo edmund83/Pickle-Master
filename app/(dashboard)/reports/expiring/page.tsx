@@ -117,36 +117,36 @@ export default async function ExpiringItemsPage() {
         <div className="mb-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           <div className="rounded-xl border border-neutral-200 bg-white p-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-50 text-red-600">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-100 text-neutral-600">
                 <AlertTriangle className="h-6 w-6" />
               </div>
               <div>
                 <p className="text-sm text-neutral-500">Expired</p>
-                <p className="text-2xl font-semibold text-red-600">{summary.expired_count}</p>
+                <p className="text-2xl font-semibold text-neutral-900">{summary.expired_count}</p>
               </div>
             </div>
           </div>
 
           <div className="rounded-xl border border-neutral-200 bg-white p-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-orange-50 text-orange-600">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-100 text-neutral-600">
                 <Clock className="h-6 w-6" />
               </div>
               <div>
                 <p className="text-sm text-neutral-500">Expiring (7 days)</p>
-                <p className="text-2xl font-semibold text-orange-600">{summary.expiring_7_days}</p>
+                <p className="text-2xl font-semibold text-neutral-900">{summary.expiring_7_days}</p>
               </div>
             </div>
           </div>
 
           <div className="rounded-xl border border-neutral-200 bg-white p-6">
             <div className="flex items-center gap-4">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-yellow-50 text-yellow-600">
+              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-100 text-neutral-600">
                 <Calendar className="h-6 w-6" />
               </div>
               <div>
                 <p className="text-sm text-neutral-500">Expiring (30 days)</p>
-                <p className="text-2xl font-semibold text-yellow-600">{summary.expiring_30_days}</p>
+                <p className="text-2xl font-semibold text-neutral-900">{summary.expiring_30_days}</p>
               </div>
             </div>
           </div>

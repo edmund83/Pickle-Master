@@ -8,8 +8,8 @@ const categories = [
     title: 'Inbound',
     description: 'Purchase orders and receiving stock from suppliers',
     icon: PackageOpen,
-    color: 'text-green-500',
-    bgColor: 'bg-green-50',
+    color: 'text-neutral-600',
+    bgColor: 'bg-neutral-100',
     tasks: ['Purchase Orders', 'Receives'],
   },
   {
@@ -17,8 +17,8 @@ const categories = [
     title: 'Fulfillment',
     description: 'Pick lists for order processing and shipping',
     icon: ClipboardList,
-    color: 'text-blue-500',
-    bgColor: 'bg-blue-50',
+    color: 'text-neutral-600',
+    bgColor: 'bg-neutral-100',
     tasks: ['Pick Lists'],
   },
   {
@@ -26,8 +26,8 @@ const categories = [
     title: 'Inventory Operations',
     description: 'Asset tracking, transfers, moves, and stock counts',
     icon: ArrowRightLeft,
-    color: 'text-purple-500',
-    bgColor: 'bg-purple-50',
+    color: 'text-neutral-600',
+    bgColor: 'bg-neutral-100',
     tasks: ['Check-In/Out', 'Transfers', 'Moves', 'Stock Count'],
   },
 ]

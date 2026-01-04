@@ -8,8 +8,8 @@ const tasks = [
     title: 'Pick Lists',
     description: 'Create and manage picking lists for orders',
     icon: ClipboardList,
-    color: 'text-blue-500',
-    bgColor: 'bg-blue-50',
+    color: 'text-neutral-600',
+    bgColor: 'bg-neutral-100',
   },
 ]
 

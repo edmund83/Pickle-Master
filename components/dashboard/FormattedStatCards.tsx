@@ -24,19 +24,19 @@ export function FormattedStatCards({ stats }: FormattedStatCardsProps) {
         title="Total Items"
         value={stats?.totalItems || 0}
         icon={Package}
-        color="blue"
+        color="neutral"
       />
       <StatCard
         title="Total Value"
         value={formatCurrency(stats?.totalValue || 0)}
         icon={TrendingUp}
-        color="green"
+        color="neutral"
       />
       <StatCard
         title="Potential Profit"
         value={formatCurrency(stats?.totalProfit || 0)}
         icon={Percent}
-        color="purple"
+        color="neutral"
       />
       <StatCard
         title="Low Stock"
@@ -63,22 +63,18 @@ function StatCard({
   title: string
   value: string | number
   icon: React.ElementType
-  color: 'blue' | 'green' | 'yellow' | 'red' | 'purple'
+  color: 'neutral' | 'yellow' | 'red'
 }) {
   const colorClasses = {
-    blue: 'bg-blue-50 text-blue-600',
-    green: 'bg-green-50 text-green-600',
-    yellow: 'bg-yellow-50 text-yellow-600',
+    neutral: 'bg-neutral-100 text-neutral-600',
+    yellow: 'bg-amber-50 text-amber-600',
     red: 'bg-red-50 text-red-600',
-    purple: 'bg-purple-50 text-purple-600',
   }
 
   const borderColors = {
-    blue: 'border-blue-200',
-    green: 'border-green-200',
-    yellow: 'border-yellow-200',
+    neutral: 'border-neutral-200',
+    yellow: 'border-amber-200',
     red: 'border-red-200',
-    purple: 'border-purple-200',
   }
 
   return (
