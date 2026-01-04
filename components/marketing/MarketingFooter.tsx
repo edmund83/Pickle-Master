@@ -23,12 +23,11 @@ export function MarketingFooter() {
               <div>
                 <h4 className="text-base-content text-lg font-medium">Subscribe to Newsletter</h4>
                 <div className="join mt-4 w-full lg:max-w-sm">
-                  <label className="join-item input w-full">
-                    <span className="icon-[tabler--mail] text-base-content/80 size-5"></span>
-                    <span className="sr-only">Email address</span>
-                    <input type="text" placeholder="Email" />
+                  <label className="join-item input flex items-center gap-2 w-full">
+                    <span className="icon-[tabler--mail] text-base-content/50 size-5 shrink-0"></span>
+                    <input type="text" className="grow bg-transparent outline-none" placeholder="Email" />
                   </label>
-                  <button className="btn btn-primary join-item">Subscribe</button>
+                  <button className="btn btn-primary join-item border-0">Subscribe</button>
                 </div>
                 <span className="text-base-content/80 mt-2 text-sm">No spam. Unsubscribe anytime.</span>
               </div>
