@@ -18,53 +18,84 @@ interface Feature {
 
 const FEATURES: Feature[] = [
   {
-    category: 'Organizing',
-    categoryIcon: 'icon-[tabler--layout-grid]',
-    title: 'Organize and automate your inventory at the touch of a button.',
-    bullets: [
-      { icon: 'icon-[tabler--upload]', text: 'Easily upload your existing inventory list into StockZip.' },
-      { icon: 'icon-[tabler--folder]', text: 'Organize inventory folders by location, type, and more.' },
-      { icon: 'icon-[tabler--checkbox]', text: 'Add critical item details with custom fields.' },
-    ],
-    imageAlt: 'StockZip inventory organization interface',
-  },
-  {
-    category: 'Managing',
-    categoryIcon: 'icon-[tabler--box]',
-    title: 'Track and manage your entire inventory with one easy app.',
-    bullets: [
-      { icon: 'icon-[tabler--scan]', text: 'Speed up inventory counts with in-app barcode and QR code scanner.' },
-      { icon: 'icon-[tabler--photo]', text: 'Upload high-resolution photos to visually track each item.' },
-      { icon: 'icon-[tabler--bell]', text: "Get alerted when you're running low on stock." },
-    ],
-    imageAlt: 'StockZip inventory management dashboard',
-  },
-  {
-    category: 'Reporting',
-    categoryIcon: 'icon-[tabler--chart-bar]',
-    title: 'Get real-time reporting insights.',
-    bullets: [
-      { icon: 'icon-[tabler--file-analytics]', text: 'Get in-depth data on items, folders, and user histories.' },
-      { icon: 'icon-[tabler--file-export]', text: 'Easily export custom PDF or CSV reports.' },
-      { icon: 'icon-[tabler--clipboard-check]', text: 'Perfect for audits, budgeting, and forecasting.' },
-    ],
-    imageAlt: 'StockZip reporting and analytics view',
-  },
-  {
-    category: 'Synchronization',
-    categoryIcon: 'icon-[tabler--refresh]',
-    title: 'Automatically sync your inventory across all devices, all teams.',
+    category: 'Speed',
+    categoryIcon: 'icon-[tabler--rocket]',
+    title: 'Add items in seconds. Find anything instantly.',
     bullets: [
       {
-        icon: 'icon-[tabler--devices]',
-        text: 'Use StockZip on mobile, desktop, or tablet, thanks to automatic, cloud-based syncing.',
+        icon: 'icon-[tabler--file-import]',
+        text: 'Upload your spreadsheet and start tracking in under 5 minutes. No data entry marathon.',
       },
       {
-        icon: 'icon-[tabler--users]',
-        text: 'You and your team can update inventory in real time from any location.',
+        icon: 'icon-[tabler--search]',
+        text: 'Type a few letters to find any item across all locations. Smart search understands what you mean.',
+      },
+      {
+        icon: 'icon-[tabler--device-mobile]',
+        text: 'If your team can use a smartphone, they can use StockZip. No training required.',
       },
     ],
-    imageAlt: 'StockZip multi-device synchronization',
+    imageAlt: 'StockZip fast item search and bulk import interface',
+  },
+  {
+    category: 'Scanning',
+    categoryIcon: 'icon-[tabler--barcode]',
+    title: 'Scan barcodes. Update stock. Done.',
+    bullets: [
+      {
+        icon: 'icon-[tabler--scan]',
+        text: 'Use your phone camera, Bluetooth scanner, or rugged warehouse device. Any scanner works.',
+      },
+      {
+        icon: 'icon-[tabler--wifi-off]',
+        text: 'Count inventory with no signal. Real offline mode syncs everything when you reconnect.',
+      },
+      {
+        icon: 'icon-[tabler--bell-ringing]',
+        text: 'Get notified before you run out. Set custom low-stock thresholds per item or location.',
+      },
+    ],
+    imageAlt: 'StockZip barcode scanning and offline inventory tracking',
+  },
+  {
+    category: 'Accountability',
+    categoryIcon: 'icon-[tabler--clipboard-check]',
+    title: 'Know who has what. Always.',
+    bullets: [
+      {
+        icon: 'icon-[tabler--arrow-autofit-content]',
+        text: 'Check-in and check-out tools, equipment, and assets with due dates. End the "who took it?" mystery.',
+      },
+      {
+        icon: 'icon-[tabler--history]',
+        text: 'Every stock change is logged—who, when, and why. Full audit trail for compliance.',
+      },
+      {
+        icon: 'icon-[tabler--file-export]',
+        text: 'Download CSV or PDF reports for audits, insurance, or budgeting in one click.',
+      },
+    ],
+    imageAlt: 'StockZip check-in check-out and audit trail features',
+  },
+  {
+    category: 'Team Sync',
+    categoryIcon: 'icon-[tabler--users-group]',
+    title: 'Your whole team, one source of truth.',
+    bullets: [
+      {
+        icon: 'icon-[tabler--refresh]',
+        text: 'When someone updates stock in the field, everyone sees it instantly. No version conflicts.',
+      },
+      {
+        icon: 'icon-[tabler--map-pin]',
+        text: 'Warehouse, van, job site, store—track inventory wherever it lives with multi-location support.',
+      },
+      {
+        icon: 'icon-[tabler--currency-dollar]',
+        text: 'Add unlimited team members. No per-seat surprises as you grow. Predictable pricing.',
+      },
+    ],
+    imageAlt: 'StockZip real-time team collaboration and multi-location tracking',
   },
 ]
 
