@@ -3,7 +3,7 @@
 import { useState, useMemo, useCallback, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Plus, Filter, Package, ScanLine, Upload, CheckSquare, Square, X, Edit3, Download, Image as ImageIcon } from 'lucide-react'
+import { Plus, Filter, Package, ScanLine, CheckSquare, Square, X, Edit3, Image as ImageIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import {
@@ -20,7 +20,8 @@ import { InventoryTable } from './inventory-table'
 import { ViewToggle } from './view-toggle'
 import { WarehouseSelector } from './warehouse-selector'
 import { Breadcrumbs } from './breadcrumbs'
-import { FolderSummaryStats } from './folder-summary-stats'
+import { ToolbarOverflowMenu } from './toolbar-overflow-menu'
+import { InventoryStatsPills } from './inventory-stats-pills'
 import { BulkEditModal } from './bulk-edit-modal'
 import { createClient } from '@/lib/supabase/client'
 import { useFormatting } from '@/hooks/useFormatting'
@@ -330,26 +331,9 @@ export function InventoryDesktopView({ items, folders, view }: InventoryDesktopV
     <>
       {/* Main Content */}
       <div className="flex flex-1 flex-col overflow-hidden">
-        {/* Breadcrumbs */}
-        <div className="border-b border-neutral-100 bg-white px-6 py-2">
-          <Breadcrumbs
-            folders={folders}
-            currentFolderId={selectedFolderId}
-            onNavigate={navigateToFolder}
-          />
-        </div>
-
-        {/* Summary Stats Bar */}
-        <FolderSummaryStats
-          folderCount={summaryStats.folderCount}
-          itemCount={summaryStats.itemCount}
-          totalQuantity={summaryStats.totalQuantity}
-          totalValue={summaryStats.totalValue}
-        />
-
-        {/* Header - Selection Mode or Normal */}
+        {/* Selection Mode Header */}
         {isSelectionMode ? (
-          <div className="flex items-center justify-between border-b border-neutral-200 bg-primary/10 px-6 py-4">
+          <div className="flex items-center justify-between border-b border-neutral-200 bg-primary/10 px-6 py-3">
             <div className="flex items-center gap-4">
               <Button
                 variant="ghost"
@@ -389,124 +373,129 @@ export function InventoryDesktopView({ items, folders, view }: InventoryDesktopV
             </div>
           </div>
         ) : (
-          <div className="flex items-center justify-between border-b border-neutral-200 bg-white px-6 py-4">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <SearchInput placeholder="Search items..." className="w-64" />
+          <>
+            {/* ROW 1: Breadcrumb + Inline Stats + Hero CTAs */}
+            <div className="flex items-center justify-between border-b border-neutral-200 bg-white px-6 py-3">
+              {/* Left: Breadcrumb + Stats */}
+              <div className="flex items-center gap-4">
+                <Breadcrumbs
+                  folders={folders}
+                  currentFolderId={selectedFolderId}
+                  onNavigate={navigateToFolder}
+                />
+                <div className="h-4 w-px bg-neutral-200" />
+                <InventoryStatsPills
+                  folderCount={summaryStats.folderCount}
+                  itemCount={summaryStats.itemCount}
+                  totalQuantity={summaryStats.totalQuantity}
+                  totalValue={summaryStats.totalValue}
+                />
               </div>
-              <ViewToggle />
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <Filter className="mr-2 h-4 w-4" />
-                    Filter
-                    {activeFilterCount > 0 && (
-                      <span className="ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-white">
-                        {activeFilterCount}
-                      </span>
-                    )}
+
+              {/* Right: Hero CTAs */}
+              <div className="flex items-center gap-2">
+                <Link href="/scan">
+                  <Button variant="outline">
+                    <ScanLine className="mr-2 h-4 w-4" />
+                    Scan
                   </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-56">
-                  <DropdownMenuLabel>Status</DropdownMenuLabel>
-                  <DropdownMenuCheckboxItem
-                    checked={filters.status.includes('in_stock')}
-                    onCheckedChange={() => toggleStatusFilter('in_stock')}
-                  >
-                    <span className="mr-2 h-2 w-2 rounded-full bg-green-500" />
-                    In Stock
-                  </DropdownMenuCheckboxItem>
-                  <DropdownMenuCheckboxItem
-                    checked={filters.status.includes('low_stock')}
-                    onCheckedChange={() => toggleStatusFilter('low_stock')}
-                  >
-                    <span className="mr-2 h-2 w-2 rounded-full bg-yellow-500" />
-                    Low Stock
-                  </DropdownMenuCheckboxItem>
-                  <DropdownMenuCheckboxItem
-                    checked={filters.status.includes('out_of_stock')}
-                    onCheckedChange={() => toggleStatusFilter('out_of_stock')}
-                  >
-                    <span className="mr-2 h-2 w-2 rounded-full bg-red-500" />
-                    Out of Stock
-                  </DropdownMenuCheckboxItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuLabel>Images</DropdownMenuLabel>
-                  <DropdownMenuCheckboxItem
-                    checked={filters.hasImages === true}
-                    onCheckedChange={() => toggleHasImagesFilter(true)}
-                  >
-                    <ImageIcon className="mr-2 h-4 w-4" />
-                    Has Images
-                  </DropdownMenuCheckboxItem>
-                  <DropdownMenuCheckboxItem
-                    checked={filters.hasImages === false}
-                    onCheckedChange={() => toggleHasImagesFilter(false)}
-                  >
-                    <Package className="mr-2 h-4 w-4" />
-                    No Images
-                  </DropdownMenuCheckboxItem>
-                  {activeFilterCount > 0 && (
-                    <>
-                      <DropdownMenuSeparator />
-                      <button
-                        onClick={clearFilters}
-                        className="w-full px-2 py-1.5 text-sm text-red-600 hover:bg-neutral-100 text-left"
-                      >
-                        Clear all filters
-                      </button>
-                    </>
-                  )}
-                </DropdownMenuContent>
-              </DropdownMenu>
-              <div className="w-56">
+                </Link>
+                <Link href="/inventory/new">
+                  <Button>
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Item
+                  </Button>
+                </Link>
+              </div>
+            </div>
+
+            {/* ROW 2: Search + Filters + Overflow Menu */}
+            <div className="flex items-center justify-between border-b border-neutral-200 bg-white px-6 py-2">
+              {/* Left: Search + Dropdowns */}
+              <div className="flex items-center gap-2">
+                <SearchInput placeholder="Search items..." className="w-56" />
                 <WarehouseSelector
                   warehouses={warehouses}
                   selectedWarehouseId={selectedFolderId}
                   onWarehouseChange={navigateToFolder}
                   itemCounts={warehouseCounts}
                 />
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" size="sm">
+                      <Filter className="mr-2 h-4 w-4" />
+                      Filter
+                      {activeFilterCount > 0 && (
+                        <span className="ml-2 flex h-5 w-5 items-center justify-center rounded-full bg-primary text-xs text-white">
+                          {activeFilterCount}
+                        </span>
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-56">
+                    <DropdownMenuLabel>Status</DropdownMenuLabel>
+                    <DropdownMenuCheckboxItem
+                      checked={filters.status.includes('in_stock')}
+                      onCheckedChange={() => toggleStatusFilter('in_stock')}
+                    >
+                      <span className="mr-2 h-2 w-2 rounded-full bg-green-500" />
+                      In Stock
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      checked={filters.status.includes('low_stock')}
+                      onCheckedChange={() => toggleStatusFilter('low_stock')}
+                    >
+                      <span className="mr-2 h-2 w-2 rounded-full bg-yellow-500" />
+                      Low Stock
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      checked={filters.status.includes('out_of_stock')}
+                      onCheckedChange={() => toggleStatusFilter('out_of_stock')}
+                    >
+                      <span className="mr-2 h-2 w-2 rounded-full bg-red-500" />
+                      Out of Stock
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuLabel>Images</DropdownMenuLabel>
+                    <DropdownMenuCheckboxItem
+                      checked={filters.hasImages === true}
+                      onCheckedChange={() => toggleHasImagesFilter(true)}
+                    >
+                      <ImageIcon className="mr-2 h-4 w-4" />
+                      Has Images
+                    </DropdownMenuCheckboxItem>
+                    <DropdownMenuCheckboxItem
+                      checked={filters.hasImages === false}
+                      onCheckedChange={() => toggleHasImagesFilter(false)}
+                    >
+                      <Package className="mr-2 h-4 w-4" />
+                      No Images
+                    </DropdownMenuCheckboxItem>
+                    {activeFilterCount > 0 && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <button
+                          onClick={clearFilters}
+                          className="w-full px-2 py-1.5 text-sm text-red-600 hover:bg-neutral-100 text-left"
+                        >
+                          Clear all filters
+                        </button>
+                      </>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                <ViewToggle />
               </div>
+
+              {/* Right: Overflow Menu */}
+              <ToolbarOverflowMenu
+                onSelect={() => setIsSelectionMode(true)}
+                onExport={handleExportCSV}
+                itemCount={filteredItems.length}
+                isExportDisabled={filteredItems.length === 0}
+              />
             </div>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsSelectionMode(true)}
-                disabled={filteredItems.length === 0}
-              >
-                <CheckSquare className="mr-2 h-4 w-4" />
-                Select
-              </Button>
-              <Link href="/settings/bulk-import">
-                <Button variant="outline" size="sm">
-                  <Upload className="mr-2 h-4 w-4" />
-                  Import
-                </Button>
-              </Link>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleExportCSV}
-                disabled={filteredItems.length === 0}
-              >
-                <Download className="mr-2 h-4 w-4" />
-                Export
-              </Button>
-              <Link href="/scan">
-                <Button variant="outline" size="sm">
-                  <ScanLine className="mr-2 h-4 w-4" />
-                  Scan
-                </Button>
-              </Link>
-              <Link href="/inventory/new">
-                <Button size="sm">
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add Item
-                </Button>
-              </Link>
-            </div>
-          </div>
+          </>
         )}
 
         {/* Items Grid/Table */}

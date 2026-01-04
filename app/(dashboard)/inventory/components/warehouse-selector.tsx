@@ -32,47 +32,29 @@ export function WarehouseSelector({
       <DropdownMenuTrigger>
         <div
           className={cn(
-            'flex items-center justify-between gap-2',
-            'w-full',
-            'h-12 px-4',
-            'rounded-xl',
+            'flex items-center gap-2',
+            'h-10 px-3',
+            'rounded-lg',
             'bg-white',
             'border border-neutral-200',
             'text-left',
             'transition-all duration-200',
-            'hover:border-neutral-300 hover:shadow-sm',
-            'active:scale-[0.99]',
+            'hover:border-neutral-300 hover:bg-neutral-50',
             'focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary',
             'cursor-pointer'
           )}
         >
-          <div className="flex items-center gap-3 min-w-0">
-            <div
-              className={cn(
-                'flex items-center justify-center',
-                'w-8 h-8 rounded-lg',
-                displayColor ? '' : 'bg-primary/20'
-              )}
-              style={displayColor ? { backgroundColor: `${displayColor}20` } : undefined}
-            >
-              <MapPin
-                className="h-4 w-4"
-                style={displayColor ? { color: displayColor } : undefined}
-              />
-            </div>
-            <div className="flex flex-col min-w-0">
-              <span className="text-xs text-neutral-500 font-medium">Location</span>
-              <span className="text-sm font-semibold text-neutral-900 truncate">
-                {displayName}
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-neutral-400 tabular-nums">
-              {itemCounts.get(selectedWarehouseId) ?? 0}
-            </span>
-            <ChevronDown className="h-4 w-4 text-neutral-400" />
-          </div>
+          <MapPin
+            className="h-4 w-4 flex-shrink-0"
+            style={displayColor ? { color: displayColor } : { color: '#0EA5FF' }}
+          />
+          <span className="text-sm font-medium text-neutral-700 truncate max-w-[120px]">
+            {displayName}
+          </span>
+          <span className="text-xs text-neutral-400 tabular-nums">
+            {itemCounts.get(selectedWarehouseId) ?? 0}
+          </span>
+          <ChevronDown className="h-3.5 w-3.5 text-neutral-400 flex-shrink-0" />
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-[calc(100vw-2rem)] max-w-sm">
