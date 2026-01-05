@@ -2,6 +2,7 @@
 
 import { Package, FolderOpen, ListChecks, User, Calendar, FileText, ClipboardCheck } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useFormatting } from '@/hooks/useFormatting'
 import type { StockCountWizardData } from './StockCountWizard'
 
 interface Folder {
@@ -38,6 +39,7 @@ const scopeConfig = {
 }
 
 export function WizardStepReview({ data, folders }: WizardStepReviewProps) {
+  const { formatDate } = useFormatting()
   const scope = scopeConfig[data.scopeType]
   const ScopeIcon = scope.icon
 
@@ -137,12 +139,7 @@ export function WizardStepReview({ data, folders }: WizardStepReviewProps) {
             </p>
             <p className="font-medium text-neutral-900">
               {data.dueDate
-                ? new Date(data.dueDate).toLocaleDateString('en-US', {
-                    weekday: 'long',
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric',
-                  })
+                ? formatDate(data.dueDate)
                 : 'No due date'}
             </p>
           </div>

@@ -16,6 +16,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
+import { useFormatting } from '@/hooks/useFormatting'
 
 interface Lot {
   id: string
@@ -48,6 +49,7 @@ export function LotTrackingSection({ itemId, onTotalChange }: LotTrackingSection
   const [error, setError] = useState<string | null>(null)
   const [showAddForm, setShowAddForm] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const { formatShortDate } = useFormatting()
 
   // Add lot form state
   const [newLot, setNewLot] = useState({
@@ -224,7 +226,7 @@ export function LotTrackingSection({ itemId, onTotalChange }: LotTrackingSection
                   </div>
                   {lot.expiry_date && (
                     <div className={cn('text-xs', style.text)}>
-                      Exp: {new Date(lot.expiry_date).toLocaleDateString()}
+                      Exp: {formatShortDate(lot.expiry_date)}
                       {lot.days_until_expiry !== null && lot.days_until_expiry > 0 && (
                         <span className="text-neutral-400 ml-1">({lot.days_until_expiry}d)</span>
                       )}

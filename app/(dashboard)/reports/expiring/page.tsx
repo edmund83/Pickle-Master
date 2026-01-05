@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { AlertTriangle, Calendar, Package, Clock, DollarSign } from 'lucide-react'
 import Link from 'next/link'
+import { formatCurrency as formatCurrencyFn, formatDate as formatDateFn, TenantSettings, DEFAULT_TENANT_SETTINGS } from '@/lib/formatting'
 
 interface ExpiringLot {
   lot_id: string
@@ -45,9 +46,27 @@ async function getExpiringItems() {
     return {
       expiringLots: [],
       expiredLots: [],
-      summary: { expired_count: 0, expiring_7_days: 0, expiring_30_days: 0, total_value_at_risk: 0 }
+      summary: { expired_count: 0, expiring_7_days: 0, expiring_30_days: 0, total_value_at_risk: 0 },
+      tenantSettings: DEFAULT_TENANT_SETTINGS
     }
   }
+
+  // Get tenant settings for formatting
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: tenant } = await (supabase as any)
+    .from('tenants')
+    .select('settings')
+    .eq('id', profile.tenant_id)
+    .single()
+
+  const tenantSettings: TenantSettings = tenant?.settings ? {
+    currency: tenant.settings.currency || DEFAULT_TENANT_SETTINGS.currency,
+    timezone: tenant.settings.timezone || DEFAULT_TENANT_SETTINGS.timezone,
+    date_format: tenant.settings.date_format || DEFAULT_TENANT_SETTINGS.date_format,
+    time_format: tenant.settings.time_format || DEFAULT_TENANT_SETTINGS.time_format,
+    decimal_precision: tenant.settings.decimal_precision || DEFAULT_TENANT_SETTINGS.decimal_precision,
+    country: tenant.settings.country || DEFAULT_TENANT_SETTINGS.country,
+  } : DEFAULT_TENANT_SETTINGS
 
   // Use the proper RPC functions that query the lots table
   // Get all lots expiring within 30 days (includes expired ones)
@@ -72,17 +91,9 @@ async function getExpiringItems() {
   const expiredLots = allLots.filter(lot => lot.urgency === 'expired')
   const expiringLots = allLots.filter(lot => lot.urgency !== 'expired')
 
-  return { expiringLots, expiredLots, summary }
+  return { expiringLots, expiredLots, summary, tenantSettings }
 }
 
-function formatCurrency(value: number): string {
-  return new Intl.NumberFormat('en-MY', {
-    style: 'currency',
-    currency: 'MYR',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  }).format(value)
-}
 
 function getUrgencyBadge(urgency: string): { bg: string; text: string; label: string } {
   switch (urgency) {
@@ -98,7 +109,7 @@ function getUrgencyBadge(urgency: string): { bg: string; text: string; label: st
 }
 
 export default async function ExpiringItemsPage() {
-  const { expiringLots, expiredLots, summary } = await getExpiringItems()
+  const { expiringLots, expiredLots, summary, tenantSettings } = await getExpiringItems()
 
   const totalAtRisk = expiredLots.length + expiringLots.length
 
@@ -158,7 +169,7 @@ export default async function ExpiringItemsPage() {
               </div>
               <div>
                 <p className="text-sm text-neutral-500">Value at Risk</p>
-                <p className="text-2xl font-semibold text-neutral-900">{formatCurrency(summary.total_value_at_risk)}</p>
+                <p className="text-2xl font-semibold text-neutral-900">{formatCurrencyFn(summary.total_value_at_risk, tenantSettings)}</p>
               </div>
             </div>
           </div>
@@ -175,7 +186,7 @@ export default async function ExpiringItemsPage() {
             </div>
             <ul className="divide-y divide-neutral-200">
               {expiredLots.map((lot) => (
-                <LotRow key={lot.lot_id} lot={lot} />
+                <LotRow key={lot.lot_id} lot={lot} tenantSettings={tenantSettings} />
               ))}
             </ul>
           </div>
@@ -192,7 +203,7 @@ export default async function ExpiringItemsPage() {
             </div>
             <ul className="divide-y divide-neutral-200">
               {expiringLots.map((lot) => (
-                <LotRow key={lot.lot_id} lot={lot} />
+                <LotRow key={lot.lot_id} lot={lot} tenantSettings={tenantSettings} />
               ))}
             </ul>
           </div>
@@ -219,9 +230,8 @@ export default async function ExpiringItemsPage() {
   )
 }
 
-function LotRow({ lot }: { lot: ExpiringLot }) {
+function LotRow({ lot, tenantSettings }: { lot: ExpiringLot; tenantSettings: TenantSettings }) {
   const badge = getUrgencyBadge(lot.urgency)
-  const expiryDate = new Date(lot.expiry_date)
 
   return (
     <li className="flex items-center justify-between px-6 py-4">
@@ -273,7 +283,7 @@ function LotRow({ lot }: { lot: ExpiringLot }) {
         </div>
         <p className={`mt-1 font-medium ${lot.urgency === 'expired' ? 'text-red-600' : 'text-yellow-600'}`}>
           {lot.urgency === 'expired'
-            ? `Expired ${expiryDate.toLocaleDateString()}`
+            ? `Expired ${formatDateFn(lot.expiry_date, tenantSettings)}`
             : `${lot.days_until_expiry} day${lot.days_until_expiry !== 1 ? 's' : ''} left`
           }
         </p>

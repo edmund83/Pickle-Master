@@ -14,7 +14,7 @@ import { SerialTrackingSection } from '@/components/serials/SerialTrackingSectio
 import { createClient } from '@/lib/supabase/client'
 import { useOptionalInventoryContext } from '../../components/inventory-context'
 import type { InventoryItem, ItemTrackingMode } from '@/types/database.types'
-import { getCurrencySymbol } from '@/lib/formatting'
+import { getCurrencySymbol, formatCurrency as formatCurrencyFn, formatNumber as formatNumberFn, DEFAULT_TENANT_SETTINGS } from '@/lib/formatting'
 
 interface FeaturesEnabled {
   multi_location?: boolean
@@ -535,7 +535,7 @@ export default function EditItemPage() {
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-neutral-600">Margin</span>
                     <span className="font-medium text-primary">
-                      {(((formData.price - formData.cost_price) / formData.cost_price) * 100).toFixed(1)}% / {getCurrencySymbol(formData.currency)} {(formData.price - formData.cost_price).toFixed(2)}
+                      {formatNumberFn(((formData.price - formData.cost_price) / formData.cost_price) * 100, { ...DEFAULT_TENANT_SETTINGS, currency: formData.currency })}% / {formatCurrencyFn(formData.price - formData.cost_price, { ...DEFAULT_TENANT_SETTINGS, currency: formData.currency })}
                     </span>
                   </div>
                 </div>
