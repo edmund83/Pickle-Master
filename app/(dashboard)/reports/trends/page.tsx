@@ -1,7 +1,36 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { TrendingUp, TrendingDown, Minus, Package, ArrowUpRight, ArrowDownRight } from 'lucide-react'
-import type { InventoryItem, ActivityLog } from '@/types/database.types'
+import { TrendingDown, Minus, Package, ArrowUpRight, ArrowDownRight } from 'lucide-react'
+
+// RPC response types
+interface ActivityByDay {
+  activity_date: string
+  activity_count: number
+}
+
+interface ActionBreakdown {
+  action_type: string
+  action_count: number
+  percentage: number
+}
+
+interface MostActiveItem {
+  entity_id: string
+  entity_name: string
+  activity_count: number
+}
+
+interface WeeklyComparison {
+  this_week_count: number
+  last_week_count: number
+  change_percent: number
+}
+
+interface InventoryStatusCounts {
+  total: number
+  lowStock: number
+  outOfStock: number
+}
 
 async function getTrendsData() {
   const supabase = await createClient()
@@ -17,98 +46,100 @@ async function getTrendsData() {
     .single()
 
   if (!profile?.tenant_id) {
-    return { items: [], activities: [], trends: [] }
+    return {
+      inventoryCounts: { total: 0, lowStock: 0, outOfStock: 0 },
+      activityByDay: [],
+      actionBreakdown: [],
+      mostActiveItems: [],
+      weeklyComparison: { this_week_count: 0, last_week_count: 0, change_percent: 0 },
+    }
   }
 
-  // Get current inventory
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: items } = await (supabase as any)
-    .from('inventory_items')
-    .select('id, name, sku, quantity, status, updated_at')
-    .eq('tenant_id', profile.tenant_id)
-    .is('deleted_at', null)
+  const tenantId = profile.tenant_id
 
-  // Get activity logs for the last 30 days
-  const thirtyDaysAgo = new Date()
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+  // Execute all queries in parallel for better performance
+  const [
+    inventoryResult,
+    activityByDayResult,
+    actionBreakdownResult,
+    mostActiveItemsResult,
+    weeklyComparisonResult,
+  ] = await Promise.all([
+    // Get inventory status counts (only id and status needed)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase as any)
+      .from('inventory_items')
+      .select('id, status')
+      .eq('tenant_id', tenantId)
+      .is('deleted_at', null),
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: activities } = await (supabase as any)
-    .from('activity_logs')
-    .select('*')
-    .eq('tenant_id', profile.tenant_id)
-    .gte('created_at', thirtyDaysAgo.toISOString())
-    .order('created_at', { ascending: true })
+    // Get activity by day for last 7 days via RPC
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase as any).rpc('get_activity_by_day', {
+      p_tenant_id: tenantId,
+      p_days: 7,
+    }),
+
+    // Get action breakdown for last 30 days via RPC
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase as any).rpc('get_action_breakdown', {
+      p_tenant_id: tenantId,
+      p_days: 30,
+    }),
+
+    // Get most active items for last 30 days via RPC
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase as any).rpc('get_most_active_items', {
+      p_tenant_id: tenantId,
+      p_days: 30,
+      p_limit: 5,
+    }),
+
+    // Get weekly comparison via RPC
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (supabase as any).rpc('get_weekly_comparison', {
+      p_tenant_id: tenantId,
+    }),
+  ])
+
+  // Process inventory counts
+  const items = (inventoryResult.data || []) as { id: string; status: string }[]
+  const inventoryCounts: InventoryStatusCounts = {
+    total: items.length,
+    lowStock: items.filter(i => i.status === 'low_stock').length,
+    outOfStock: items.filter(i => i.status === 'out_of_stock').length,
+  }
+
+  // Get RPC results (already aggregated in SQL)
+  const activityByDay = (activityByDayResult.data || []) as ActivityByDay[]
+  const actionBreakdown = (actionBreakdownResult.data || []) as ActionBreakdown[]
+  const mostActiveItems = (mostActiveItemsResult.data || []) as MostActiveItem[]
+  const weeklyComparisonData = (weeklyComparisonResult.data || []) as WeeklyComparison[]
 
   return {
-    items: (items || []) as Pick<InventoryItem, 'id' | 'name' | 'sku' | 'quantity' | 'status' | 'updated_at'>[],
-    activities: (activities || []) as ActivityLog[],
+    inventoryCounts,
+    activityByDay,
+    actionBreakdown,
+    mostActiveItems,
+    weeklyComparison: weeklyComparisonData[0] || {
+      this_week_count: 0,
+      last_week_count: 0,
+      change_percent: 0,
+    },
   }
 }
 
 export default async function TrendsPage() {
-  const { items, activities } = await getTrendsData()
+  const {
+    inventoryCounts,
+    activityByDay,
+    actionBreakdown,
+    mostActiveItems,
+    weeklyComparison,
+  } = await getTrendsData()
 
-  // Calculate trends
-  const totalItems = items.length
-  const lowStockItems = items.filter(i => i.status === 'low_stock').length
-  const outOfStockItems = items.filter(i => i.status === 'out_of_stock').length
-
-  // Activity by day (last 7 days)
-  const last7Days = Array.from({ length: 7 }, (_, i) => {
-    const date = new Date()
-    date.setDate(date.getDate() - (6 - i))
-    return date.toISOString().split('T')[0]
-  })
-
-  const activityByDay = last7Days.map(day => ({
-    date: day,
-    count: activities.filter(a => a.created_at?.split('T')[0] === day).length,
-  }))
-
-  // Action type breakdown
-  const actionCounts = activities.reduce((acc, a) => {
-    acc[a.action_type] = (acc[a.action_type] || 0) + 1
-    return acc
-  }, {} as Record<string, number>)
-
-  // Most active items (by activity count)
-  const itemActivityCounts = activities
-    .filter(a => a.entity_type === 'item' && a.entity_id)
-    .reduce((acc, a) => {
-      acc[a.entity_id!] = {
-        count: (acc[a.entity_id!]?.count || 0) + 1,
-        name: a.entity_name || 'Unknown',
-      }
-      return acc
-    }, {} as Record<string, { count: number; name: string }>)
-
-  const mostActiveItems = Object.entries(itemActivityCounts)
-    .sort(([, a], [, b]) => b.count - a.count)
-    .slice(0, 5)
-
-  // Calculate week-over-week change
-  const thisWeekActivities = activities.filter(a => {
-    if (!a.created_at) return false
-    const date = new Date(a.created_at)
-    const weekAgo = new Date()
-    weekAgo.setDate(weekAgo.getDate() - 7)
-    return date >= weekAgo
-  }).length
-
-  const lastWeekActivities = activities.filter(a => {
-    if (!a.created_at) return false
-    const date = new Date(a.created_at)
-    const weekAgo = new Date()
-    weekAgo.setDate(weekAgo.getDate() - 7)
-    const twoWeeksAgo = new Date()
-    twoWeeksAgo.setDate(twoWeeksAgo.getDate() - 14)
-    return date >= twoWeeksAgo && date < weekAgo
-  }).length
-
-  const weekChange = lastWeekActivities > 0
-    ? ((thisWeekActivities - lastWeekActivities) / lastWeekActivities) * 100
-    : 0
+  // All aggregation is now done in SQL via RPC functions
+  // No JS processing of activity logs needed
 
   return (
     <div className="flex-1 overflow-y-auto">
@@ -127,7 +158,7 @@ export default async function TrendsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-neutral-500">Total Items</p>
-                <p className="text-2xl font-semibold text-neutral-900">{totalItems}</p>
+                <p className="text-2xl font-semibold text-neutral-900">{inventoryCounts.total}</p>
               </div>
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
                 <Package className="h-6 w-6" />
@@ -139,19 +170,19 @@ export default async function TrendsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-neutral-500">Weekly Activity</p>
-                <p className="text-2xl font-semibold text-neutral-900">{thisWeekActivities}</p>
+                <p className="text-2xl font-semibold text-neutral-900">{weeklyComparison.this_week_count}</p>
               </div>
               <div className={`flex items-center gap-1 text-sm font-medium ${
-                weekChange > 0 ? 'text-green-600' : weekChange < 0 ? 'text-red-600' : 'text-neutral-600'
+                weeklyComparison.change_percent > 0 ? 'text-green-600' : weeklyComparison.change_percent < 0 ? 'text-red-600' : 'text-neutral-600'
               }`}>
-                {weekChange > 0 ? (
+                {weeklyComparison.change_percent > 0 ? (
                   <ArrowUpRight className="h-4 w-4" />
-                ) : weekChange < 0 ? (
+                ) : weeklyComparison.change_percent < 0 ? (
                   <ArrowDownRight className="h-4 w-4" />
                 ) : (
                   <Minus className="h-4 w-4" />
                 )}
-                {Math.abs(weekChange).toFixed(0)}%
+                {Math.abs(weeklyComparison.change_percent).toFixed(0)}%
               </div>
             </div>
           </div>
@@ -160,7 +191,7 @@ export default async function TrendsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-neutral-500">Low Stock</p>
-                <p className="text-2xl font-semibold text-yellow-600">{lowStockItems}</p>
+                <p className="text-2xl font-semibold text-yellow-600">{inventoryCounts.lowStock}</p>
               </div>
               <TrendingDown className="h-6 w-6 text-yellow-500" />
             </div>
@@ -170,7 +201,7 @@ export default async function TrendsPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-neutral-500">Out of Stock</p>
-                <p className="text-2xl font-semibold text-red-600">{outOfStockItems}</p>
+                <p className="text-2xl font-semibold text-red-600">{inventoryCounts.outOfStock}</p>
               </div>
               <TrendingDown className="h-6 w-6 text-red-500" />
             </div>
@@ -184,27 +215,33 @@ export default async function TrendsPage() {
               <h2 className="text-lg font-semibold text-neutral-900">Activity Last 7 Days</h2>
             </div>
             <div className="p-6">
-              <div className="flex items-end justify-between gap-2 h-40">
-                {activityByDay.map((day, index) => {
-                  const maxCount = Math.max(...activityByDay.map(d => d.count), 1)
-                  const height = (day.count / maxCount) * 100
+              {activityByDay.length > 0 ? (
+                <div className="flex items-end justify-between gap-2 h-40">
+                  {activityByDay.map((day) => {
+                    const maxCount = Math.max(...activityByDay.map(d => d.activity_count), 1)
+                    const height = (day.activity_count / maxCount) * 100
 
-                  return (
-                    <div key={day.date} className="flex flex-1 flex-col items-center gap-2">
-                      <div className="relative w-full flex justify-center">
-                        <div
-                          className="w-8 rounded-t-lg bg-primary"
-                          style={{ height: `${Math.max(height, 4)}px` }}
-                        />
+                    return (
+                      <div key={day.activity_date} className="flex flex-1 flex-col items-center gap-2">
+                        <div className="relative w-full flex justify-center">
+                          <div
+                            className="w-8 rounded-t-lg bg-primary"
+                            style={{ height: `${Math.max(height, 4)}px` }}
+                          />
+                        </div>
+                        <span className="text-xs text-neutral-500">
+                          {new Date(day.activity_date).toLocaleDateString('en-US', { weekday: 'short' })}
+                        </span>
+                        <span className="text-xs font-medium text-neutral-700">{day.activity_count}</span>
                       </div>
-                      <span className="text-xs text-neutral-500">
-                        {new Date(day.date).toLocaleDateString('en-US', { weekday: 'short' })}
-                      </span>
-                      <span className="text-xs font-medium text-neutral-700">{day.count}</span>
-                    </div>
-                  )
-                })}
-              </div>
+                    )
+                  })}
+                </div>
+              ) : (
+                <div className="py-8 text-center text-neutral-500">
+                  No activity in the selected period
+                </div>
+              )}
             </div>
           </div>
 
@@ -214,29 +251,22 @@ export default async function TrendsPage() {
               <h2 className="text-lg font-semibold text-neutral-900">Action Breakdown</h2>
             </div>
             <div className="p-6">
-              {Object.entries(actionCounts).length > 0 ? (
+              {actionBreakdown.length > 0 ? (
                 <div className="space-y-4">
-                  {Object.entries(actionCounts)
-                    .sort(([, a], [, b]) => b - a)
-                    .map(([action, count]) => {
-                      const total = Object.values(actionCounts).reduce((a, b) => a + b, 0)
-                      const percentage = (count / total) * 100
-
-                      return (
-                        <div key={action}>
-                          <div className="flex items-center justify-between text-sm">
-                            <span className="capitalize text-neutral-700">{action.replace('_', ' ')}</span>
-                            <span className="font-medium text-neutral-900">{count}</span>
-                          </div>
-                          <div className="mt-1 h-2 overflow-hidden rounded-full bg-neutral-100">
-                            <div
-                              className="h-full bg-primary"
-                              style={{ width: `${percentage}%` }}
-                            />
-                          </div>
-                        </div>
-                      )
-                    })}
+                  {actionBreakdown.map((action) => (
+                    <div key={action.action_type}>
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="capitalize text-neutral-700">{action.action_type.replace('_', ' ')}</span>
+                        <span className="font-medium text-neutral-900">{action.action_count}</span>
+                      </div>
+                      <div className="mt-1 h-2 overflow-hidden rounded-full bg-neutral-100">
+                        <div
+                          className="h-full bg-primary"
+                          style={{ width: `${action.percentage}%` }}
+                        />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <div className="py-8 text-center text-neutral-500">
@@ -253,16 +283,16 @@ export default async function TrendsPage() {
             </div>
             {mostActiveItems.length > 0 ? (
               <ul className="divide-y divide-neutral-200">
-                {mostActiveItems.map(([id, data], index) => (
-                  <li key={id} className="flex items-center justify-between px-6 py-4">
+                {mostActiveItems.map((item, index) => (
+                  <li key={item.entity_id} className="flex items-center justify-between px-6 py-4">
                     <div className="flex items-center gap-3">
                       <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-sm font-medium text-primary">
                         {index + 1}
                       </span>
-                      <span className="font-medium text-neutral-900">{data.name}</span>
+                      <span className="font-medium text-neutral-900">{item.entity_name}</span>
                     </div>
                     <span className="text-sm text-neutral-500">
-                      {data.count} action{data.count !== 1 ? 's' : ''}
+                      {item.activity_count} action{item.activity_count !== 1 ? 's' : ''}
                     </span>
                   </li>
                 ))}

@@ -1,12 +1,19 @@
 'use client'
 
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
+import { useAuthStore } from '@/lib/stores/auth-store'
 import Link from 'next/link'
 import { Bell, Check, AlertTriangle, Package, Users, Settings, X, Calendar, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useFormatting } from '@/hooks/useFormatting'
 import type { Notification } from '@/types/database.types'
+
+// Polling interval: 60 seconds (increased from 30s to reduce API load)
+const POLL_INTERVAL_MS = 60000
+
+// Explicit columns to select (avoid select('*'))
+const NOTIFICATION_COLUMNS = 'id, title, message, notification_type, entity_id, created_at'
 
 const NOTIFICATION_ICONS: Record<string, React.ElementType> = {
   low_stock: AlertTriangle,
@@ -42,16 +49,96 @@ export function NotificationBell({ className, variant = 'default', isExpanded = 
   const [isOpen, setIsOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const { formatShortDate } = useFormatting()
 
-  // Load notifications on mount
+  // Get userId from auth store (no need to call auth.getUser() every time)
+  const userId = useAuthStore((state) => state.userId)
+  const fetchAuthIfNeeded = useAuthStore((state) => state.fetchAuthIfNeeded)
+
+  // Load notifications - optimized to use cached userId and denormalized count
+  const loadNotifications = useCallback(async () => {
+    const supabase = createClient()
+
+    try {
+      // Use cached userId from store, or fetch if needed
+      let currentUserId = userId
+      if (!currentUserId) {
+        const authResult = await fetchAuthIfNeeded()
+        currentUserId = authResult?.userId ?? null
+      }
+
+      if (!currentUserId) return
+
+      // Fetch unread_notification_count from profile (single row, no count: exact needed)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data: profile } = await (supabase as any)
+        .from('profiles')
+        .select('unread_notification_count')
+        .eq('id', currentUserId)
+        .single()
+
+      // Get recent unread notifications with explicit columns (limit 5 for dropdown)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const { data } = await (supabase as any)
+        .from('notifications')
+        .select(NOTIFICATION_COLUMNS)
+        .eq('user_id', currentUserId)
+        .eq('is_read', false)
+        .order('created_at', { ascending: false })
+        .limit(5)
+
+      setNotifications((data || []) as Notification[])
+      setUnreadCount(profile?.unread_notification_count ?? 0)
+    } finally {
+      setLoading(false)
+    }
+  }, [userId, fetchAuthIfNeeded])
+
+  // Load notifications on mount and set up polling with visibility API
   useEffect(() => {
     loadNotifications()
 
-    // Poll for new notifications every 30 seconds
-    const interval = setInterval(loadNotifications, 30000)
-    return () => clearInterval(interval)
-  }, [])
+    // Set up polling only when tab is visible
+    const startPolling = () => {
+      if (intervalRef.current) return // Already polling
+      intervalRef.current = setInterval(() => {
+        if (document.visibilityState === 'visible') {
+          loadNotifications()
+        }
+      }, POLL_INTERVAL_MS)
+    }
+
+    const stopPolling = () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current)
+        intervalRef.current = null
+      }
+    }
+
+    // Handle visibility changes
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        // Immediately fetch when tab becomes visible
+        loadNotifications()
+        startPolling()
+      } else {
+        stopPolling()
+      }
+    }
+
+    // Start polling if visible
+    if (document.visibilityState === 'visible') {
+      startPolling()
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+
+    return () => {
+      stopPolling()
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+    }
+  }, [loadNotifications])
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -65,33 +152,13 @@ export function NotificationBell({ className, variant = 'default', isExpanded = 
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  async function loadNotifications() {
-    const supabase = createClient()
-
-    try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-
-      // Get recent unread notifications (limit 5 for dropdown)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data, count } = await (supabase as any)
-        .from('notifications')
-        .select('*', { count: 'exact' })
-        .eq('user_id', user.id)
-        .eq('is_read', false)
-        .order('created_at', { ascending: false })
-        .limit(5)
-
-      setNotifications((data || []) as Notification[])
-      setUnreadCount(count || 0)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   async function markAsRead(id: string, e: React.MouseEvent) {
     e.preventDefault()
     e.stopPropagation()
+
+    // Optimistic update
+    setNotifications(notifications.filter(n => n.id !== id))
+    setUnreadCount(prev => Math.max(0, prev - 1))
 
     const supabase = createClient()
 
@@ -100,26 +167,30 @@ export function NotificationBell({ className, variant = 'default', isExpanded = 
       .from('notifications')
       .update({ is_read: true })
       .eq('id', id)
-
-    setNotifications(notifications.filter(n => n.id !== id))
-    setUnreadCount(prev => Math.max(0, prev - 1))
   }
 
   async function markAllAsRead() {
+    // Use cached userId
+    let currentUserId = userId
+    if (!currentUserId) {
+      const authResult = await fetchAuthIfNeeded()
+      currentUserId = authResult?.userId ?? null
+    }
+    if (!currentUserId) return
+
+    // Optimistic update
+    setNotifications([])
+    setUnreadCount(0)
+    setIsOpen(false)
+
     const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await (supabase as any)
       .from('notifications')
       .update({ is_read: true })
-      .eq('user_id', user.id)
+      .eq('user_id', currentUserId)
       .eq('is_read', false)
-
-    setNotifications([])
-    setUnreadCount(0)
-    setIsOpen(false)
   }
 
   function formatTimeAgo(dateString: string): string {
