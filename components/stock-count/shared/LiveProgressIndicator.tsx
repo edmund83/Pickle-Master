@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { Users, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useFormatting } from '@/hooks/useFormatting'
 import { TeamMemberAvatar, TeamMemberAvatarGroup } from './TeamMemberAvatar'
 
 interface TeamMemberProgress {
@@ -31,6 +32,7 @@ export function LiveProgressIndicator({
 }: LiveProgressIndicatorProps) {
   const [lastRefresh, setLastRefresh] = useState(new Date())
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const { formatTime } = useFormatting()
 
   const percent = totalItems > 0 ? Math.round((countedItems / totalItems) * 100) : 0
 
@@ -177,7 +179,7 @@ export function LiveProgressIndicator({
 
       {/* Last Updated */}
       <p className="text-xs text-neutral-400 mt-3 text-center">
-        Last updated: {lastRefresh.toLocaleTimeString()}
+        Last updated: {formatTime(lastRefresh)}
       </p>
     </div>
   )

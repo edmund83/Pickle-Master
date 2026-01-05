@@ -125,7 +125,7 @@ export default function BillingPage() {
   const [usage, setUsage] = useState<UsageStats>({ items: 0, users: 0, folders: 0 })
   const [loading, setLoading] = useState(true)
   const [userEmail, setUserEmail] = useState<string>('')
-  const { formatCurrency } = useFormatting()
+  const { formatCurrency, formatDate } = useFormatting()
 
   useEffect(() => {
     loadBillingData()
@@ -243,7 +243,7 @@ export default function BillingPage() {
                 Trial Period: {trialDaysLeft} day{trialDaysLeft === 1 ? '' : 's'} remaining
               </p>
               <p className={`text-sm ${trialDaysLeft <= 3 ? 'text-yellow-600' : 'text-primary/80'}`}>
-                Your trial will end on {new Date(subscription?.trial_ends_at || '').toLocaleDateString()}
+                Your trial will end on {formatDate(subscription?.trial_ends_at)}
               </p>
             </div>
             <a href="#upgrade" className="btn btn-primary">

@@ -18,7 +18,7 @@ export default function NewItemPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [images, setImages] = useState<string[]>([])
-  const { currencySymbol } = useFormatting()
+  const { currencySymbol, formatCurrency, formatNumber } = useFormatting()
 
   const [formData, setFormData] = useState({
     name: '',
@@ -326,7 +326,7 @@ export default function NewItemPage() {
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-neutral-600">Margin</span>
                     <span className="font-medium text-primary">
-                      {(((formData.price - formData.cost_price) / formData.cost_price) * 100).toFixed(1)}% / {currencySymbol} {(formData.price - formData.cost_price).toFixed(2)}
+                      {formatNumber(((formData.price - formData.cost_price) / formData.cost_price) * 100)}% / {formatCurrency(formData.price - formData.cost_price)}
                     </span>
                   </div>
                 </div>

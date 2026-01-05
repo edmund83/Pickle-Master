@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import Link from 'next/link'
 import { Bell, Check, AlertTriangle, Package, Users, Settings, X, Calendar, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useFormatting } from '@/hooks/useFormatting'
 import type { Notification } from '@/types/database.types'
 
 const NOTIFICATION_ICONS: Record<string, React.ElementType> = {
@@ -41,6 +42,7 @@ export function NotificationBell({ className, variant = 'default', isExpanded = 
   const [isOpen, setIsOpen] = useState(false)
   const [loading, setLoading] = useState(true)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const { formatShortDate } = useFormatting()
 
   // Load notifications on mount
   useEffect(() => {
@@ -132,7 +134,7 @@ export function NotificationBell({ className, variant = 'default', isExpanded = 
     if (diffMins < 60) return `${diffMins}m ago`
     if (diffHours < 24) return `${diffHours}h ago`
     if (diffDays < 7) return `${diffDays}d ago`
-    return date.toLocaleDateString()
+    return formatShortDate(date)
   }
 
   // Sidebar variant - shows icon with optional label when expanded

@@ -15,6 +15,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { useFormatting } from '@/hooks/useFormatting'
 
 interface Lot {
   id: string
@@ -65,6 +66,7 @@ export function LotsPanel({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showDepleted, setShowDepleted] = useState(false)
+  const { formatShortDate } = useFormatting()
 
   useEffect(() => {
     if (trackingMode === 'lot_expiry') {
@@ -218,7 +220,7 @@ export function LotsPanel({
                     {lot.expiry_date && (
                       <span className="flex items-center gap-1">
                         <Calendar className="h-3 w-3" />
-                        Exp: {new Date(lot.expiry_date).toLocaleDateString()}
+                        Exp: {formatShortDate(lot.expiry_date)}
                         {lot.days_until_expiry !== null && lot.days_until_expiry > 0 && (
                           <span className="text-neutral-400">({lot.days_until_expiry}d)</span>
                         )}

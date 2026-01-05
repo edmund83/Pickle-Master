@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { User, Calendar, ChevronDown, Check, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
+import { useFormatting } from '@/hooks/useFormatting'
 import type { StockCountWizardData } from './StockCountWizard'
 
 interface TeamMember {
@@ -24,6 +25,7 @@ export function WizardStepAssign({
   teamMembers,
 }: WizardStepAssignProps) {
   const [showTeamDropdown, setShowTeamDropdown] = useState(false)
+  const { formatDate } = useFormatting()
 
   function handleTeamMemberSelect(member: TeamMember | null) {
     if (member) {
@@ -237,7 +239,7 @@ export function WizardStepAssign({
           )}
           {data.dueDate && (
             <p className="text-sm text-primary">
-              Due: <strong>{new Date(data.dueDate).toLocaleDateString()}</strong>
+              Due: <strong>{formatDate(data.dueDate)}</strong>
             </p>
           )}
         </div>

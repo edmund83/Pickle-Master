@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { RefreshCw, ChevronRight } from 'lucide-react'
+import { useFormatting } from '@/hooks/useFormatting'
 import type { ActivityLog } from '@/types/database.types'
 
 interface RecentActivityProps {
@@ -9,8 +10,10 @@ interface RecentActivityProps {
 }
 
 export function RecentActivity({ activities }: RecentActivityProps) {
+  const { formatTime: formatTimeHook } = useFormatting()
+
   // Format relative time
-  const formatTime = (dateString: string | null) => {
+  const formatRelativeTime = (dateString: string | null) => {
     if (!dateString) return ''
     const date = new Date(dateString)
     const now = new Date()
@@ -23,11 +26,7 @@ export function RecentActivity({ activities }: RecentActivityProps) {
     } else if (diffHours < 24) {
       return `${diffHours}h ago`
     } else {
-      return date.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: false,
-      })
+      return formatTimeHook(date)
     }
   }
 
@@ -93,7 +92,7 @@ export function RecentActivity({ activities }: RecentActivityProps) {
                   <span className="font-medium">{activity.entity_name || 'item'}</span>
                 </p>
                 <p className="text-xs text-primary mt-0.5">
-                  {formatTime(activity.created_at)}
+                  {formatRelativeTime(activity.created_at)}
                 </p>
               </div>
 

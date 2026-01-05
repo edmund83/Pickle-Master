@@ -15,6 +15,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
+import { useFormatting } from '@/hooks/useFormatting'
 
 interface FEFOSuggestion {
   lot_id: string
@@ -45,6 +46,7 @@ export function FEFOPanel({
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [hasSearched, setHasSearched] = useState(false)
+  const { formatShortDate } = useFormatting()
 
   // Don't show if not lot-tracked
   if (trackingMode !== 'lot_expiry') {
@@ -193,7 +195,7 @@ export function FEFOPanel({
                       {suggestion.expiry_date && (
                         <span className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
-                          Exp: {new Date(suggestion.expiry_date).toLocaleDateString()}
+                          Exp: {formatShortDate(suggestion.expiry_date)}
                         </span>
                       )}
                       {suggestion.location_name && (

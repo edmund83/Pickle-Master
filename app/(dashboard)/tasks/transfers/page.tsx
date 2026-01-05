@@ -21,6 +21,7 @@ import {
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { useFormatting } from '@/hooks/useFormatting'
 
 interface PendingTransfer {
   id: string
@@ -88,6 +89,7 @@ export default function TransfersDashboardPage() {
   const [loading, setLoading] = useState(true)
   const [executing, setExecuting] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const { formatShortDate } = useFormatting()
 
   useEffect(() => {
     loadData()
@@ -209,7 +211,7 @@ export default function TransfersDashboardPage() {
     if (diffMins < 60) return `${diffMins}m ago`
     if (diffHours < 24) return `${diffHours}h ago`
     if (diffDays < 7) return `${diffDays}d ago`
-    return date.toLocaleDateString()
+    return formatShortDate(date)
   }
 
   return (
