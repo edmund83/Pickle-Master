@@ -1,6 +1,38 @@
 import { vi } from 'vitest'
 import type { InventoryItem, Folder, ActivityLog } from '@/types/database.types'
 
+// RPC Response types for trends aggregation functions
+export interface ActivityByDayResult {
+  activity_date: string
+  activity_count: number
+}
+
+export interface ActionBreakdownResult {
+  action_type: string
+  action_count: number
+  percentage: number
+}
+
+export interface MostActiveItemResult {
+  entity_id: string
+  entity_name: string
+  activity_count: number
+}
+
+export interface WeeklyComparisonResult {
+  this_week_count: number
+  last_week_count: number
+  change_percent: number
+}
+
+// Types for RPC function parameters
+export interface TrendsRpcData {
+  get_activity_by_day?: ActivityByDayResult[]
+  get_action_breakdown?: ActionBreakdownResult[]
+  get_most_active_items?: MostActiveItemResult[]
+  get_weekly_comparison?: WeeklyComparisonResult[]
+}
+
 interface MockQueryBuilder {
   select: ReturnType<typeof vi.fn>
   eq: ReturnType<typeof vi.fn>
@@ -180,4 +212,111 @@ export function filterActivityLogs(
   }
 
   return filtered
+}
+
+// ============================================
+// RPC Mock Data Generators for Trends Page
+// ============================================
+
+/**
+ * Generate mock activity by day data for the last N days
+ */
+export function generateActivityByDayData(days: number = 7): ActivityByDayResult[] {
+  const result: ActivityByDayResult[] = []
+  const today = new Date()
+
+  for (let i = days - 1; i >= 0; i--) {
+    const date = new Date(today)
+    date.setDate(date.getDate() - i)
+    result.push({
+      activity_date: date.toISOString().split('T')[0],
+      activity_count: Math.floor(Math.random() * 50) + 5,
+    })
+  }
+
+  return result
+}
+
+/**
+ * Generate mock action breakdown data
+ */
+export function generateActionBreakdownData(): ActionBreakdownResult[] {
+  const actions = [
+    { action_type: 'stock_adjusted', count: 45 },
+    { action_type: 'item_created', count: 25 },
+    { action_type: 'item_updated', count: 20 },
+    { action_type: 'item_moved', count: 10 },
+  ]
+
+  const total = actions.reduce((sum, a) => sum + a.count, 0)
+
+  return actions.map(a => ({
+    action_type: a.action_type,
+    action_count: a.count,
+    percentage: Math.round((a.count / total) * 1000) / 10,
+  }))
+}
+
+/**
+ * Generate mock most active items data
+ */
+export function generateMostActiveItemsData(limit: number = 5): MostActiveItemResult[] {
+  const items = [
+    { name: 'Widget A', count: 42 },
+    { name: 'Gadget Pro', count: 35 },
+    { name: 'Component X', count: 28 },
+    { name: 'Part Z-100', count: 22 },
+    { name: 'Assembly Kit', count: 18 },
+  ]
+
+  return items.slice(0, limit).map((item, index) => ({
+    entity_id: `item-${index + 1}`,
+    entity_name: item.name,
+    activity_count: item.count,
+  }))
+}
+
+/**
+ * Generate mock weekly comparison data
+ */
+export function generateWeeklyComparisonData(): WeeklyComparisonResult[] {
+  const thisWeek = Math.floor(Math.random() * 100) + 50
+  const lastWeek = Math.floor(Math.random() * 100) + 50
+  const changePercent = lastWeek > 0
+    ? Math.round(((thisWeek - lastWeek) / lastWeek) * 1000) / 10
+    : 0
+
+  return [{
+    this_week_count: thisWeek,
+    last_week_count: lastWeek,
+    change_percent: changePercent,
+  }]
+}
+
+/**
+ * Generate a complete set of mock RPC data for trends page
+ */
+export function generateTrendsRpcData(): TrendsRpcData {
+  return {
+    get_activity_by_day: generateActivityByDayData(7),
+    get_action_breakdown: generateActionBreakdownData(),
+    get_most_active_items: generateMostActiveItemsData(5),
+    get_weekly_comparison: generateWeeklyComparisonData(),
+  }
+}
+
+/**
+ * Create empty trends RPC data (for testing empty states)
+ */
+export function generateEmptyTrendsRpcData(): TrendsRpcData {
+  return {
+    get_activity_by_day: [],
+    get_action_breakdown: [],
+    get_most_active_items: [],
+    get_weekly_comparison: [{
+      this_week_count: 0,
+      last_week_count: 0,
+      change_percent: 0,
+    }],
+  }
 }

@@ -7,11 +7,15 @@ import { Search, Package, Clock, ArrowRight, Loader2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useGlobalSearch } from '@/contexts/GlobalSearchContext'
 import { createClient } from '@/lib/supabase/client'
+import { useAuthStore } from '@/lib/stores/auth-store'
 import type { InventoryItem } from '@/types/database.types'
 
 const RECENT_SEARCHES_KEY = 'stockzip-recent-searches'
 const MAX_RECENT_SEARCHES = 5
 const MAX_RESULTS = 8
+
+// Explicit columns to select (avoid select('*'))
+const SEARCH_COLUMNS = 'id, name, sku, quantity, unit, image_urls, status'
 
 interface RecentSearch {
   query: string
@@ -30,6 +34,10 @@ export function GlobalSearchModal() {
   const [loading, setLoading] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(-1)
   const [mounted, setMounted] = useState(false)
+
+  // Get tenantId from auth store (cached, no API call needed)
+  const tenantId = useAuthStore((state) => state.tenantId)
+  const fetchAuthIfNeeded = useAuthStore((state) => state.fetchAuthIfNeeded)
 
   // Handle client-side mounting for portal
   useEffect(() => {
@@ -85,7 +93,7 @@ export function GlobalSearchModal() {
     })
   }, [])
 
-  // Search function
+  // Search function - optimized to use cached tenantId
   const performSearch = useCallback(async (searchQuery: string) => {
     if (!searchQuery.trim()) {
       setResults([])
@@ -96,23 +104,24 @@ export function GlobalSearchModal() {
     const supabase = createClient()
 
     try {
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
+      // Use cached tenantId from store, or fetch if needed (one-time)
+      let currentTenantId = tenantId
+      if (!currentTenantId) {
+        const authResult = await fetchAuthIfNeeded()
+        currentTenantId = authResult?.tenantId ?? null
+      }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data: profile } = await (supabase as any)
-        .from('profiles')
-        .select('tenant_id')
-        .eq('id', user.id)
-        .single()
+      if (!currentTenantId) {
+        setResults([])
+        return
+      }
 
-      if (!profile?.tenant_id) return
-
+      // Single Supabase call with explicit columns (no auth.getUser, no profile query)
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: items } = await (supabase as any)
         .from('inventory_items')
-        .select('*')
-        .eq('tenant_id', profile.tenant_id)
+        .select(SEARCH_COLUMNS)
+        .eq('tenant_id', currentTenantId)
         .is('deleted_at', null)
         .or(`name.ilike.%${searchQuery}%,sku.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`)
         .order('updated_at', { ascending: false })
@@ -125,7 +134,7 @@ export function GlobalSearchModal() {
     } finally {
       setLoading(false)
     }
-  }, [])
+  }, [tenantId, fetchAuthIfNeeded])
 
   // Debounced search
   useEffect(() => {
