@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { SettingsSection } from '@/components/settings'
 import {
   Plus,
   Pencil,
@@ -25,6 +26,8 @@ import {
   Phone,
   DollarSign,
   Percent,
+  AlertCircle,
+  Sparkles,
 } from 'lucide-react'
 import type { CustomFieldDefinition, Folder } from '@/types/database.types'
 import { FolderIcon } from 'lucide-react'
@@ -87,8 +90,17 @@ export default function CustomFieldsPage() {
   const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState<FormData>(defaultFormData)
   const [saving, setSaving] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const [optionInput, setOptionInput] = useState('')
+  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+
+  // Auto-dismiss success messages
+  useEffect(() => {
+    if (message?.type === 'success') {
+      const timer = setTimeout(() => setMessage(null), 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [message])
 
   const loadFields = useCallback(async () => {
     setLoading(true)
@@ -152,12 +164,12 @@ export default function CustomFieldsPage() {
     if (!formData.name.trim() || !tenantId) return
 
     if (fields.length >= MAX_CUSTOM_FIELDS) {
-      setError(`Maximum of ${MAX_CUSTOM_FIELDS} custom fields allowed`)
+      setMessage({ type: 'error', text: `Maximum of ${MAX_CUSTOM_FIELDS} custom fields allowed` })
       return
     }
 
     setSaving(true)
-    setError(null)
+    setMessage(null)
 
     try {
       const supabase = createClient()
@@ -198,9 +210,10 @@ export default function CustomFieldsPage() {
       setShowForm(false)
       setFormData(defaultFormData)
       setOptionInput('')
+      setMessage({ type: 'success', text: 'Custom field created successfully' })
       loadFields()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create field')
+      setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to create field' })
     } finally {
       setSaving(false)
     }
@@ -210,7 +223,7 @@ export default function CustomFieldsPage() {
     if (!formData.name.trim() || !tenantId) return
 
     setSaving(true)
-    setError(null)
+    setMessage(null)
 
     try {
       const supabase = createClient()
@@ -250,17 +263,16 @@ export default function CustomFieldsPage() {
       setEditingId(null)
       setFormData(defaultFormData)
       setOptionInput('')
+      setMessage({ type: 'success', text: 'Custom field updated successfully' })
       loadFields()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update field')
+      setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to update field' })
     } finally {
       setSaving(false)
     }
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this custom field? This will remove the field from all items.')) return
-
     const supabase = createClient()
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -270,7 +282,11 @@ export default function CustomFieldsPage() {
       .eq('id', id)
 
     if (!deleteError) {
+      setDeleteConfirm(null)
+      setMessage({ type: 'success', text: 'Custom field deleted' })
       loadFields()
+    } else {
+      setMessage({ type: 'error', text: 'Failed to delete field' })
     }
   }
 
@@ -283,12 +299,12 @@ export default function CustomFieldsPage() {
     if (!tenantId) return
 
     if (fields.length >= MAX_CUSTOM_FIELDS) {
-      setError(`Maximum of ${MAX_CUSTOM_FIELDS} custom fields allowed`)
+      setMessage({ type: 'error', text: `Maximum of ${MAX_CUSTOM_FIELDS} custom fields allowed` })
       return
     }
 
     setSaving(true)
-    setError(null)
+    setMessage(null)
 
     try {
       const supabase = createClient()
@@ -311,9 +327,10 @@ export default function CustomFieldsPage() {
 
       if (insertError) throw insertError
 
+      setMessage({ type: 'success', text: `Added "${suggested.name}" field` })
       loadFields()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to add field')
+      setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to add field' })
     } finally {
       setSaving(false)
     }
@@ -335,7 +352,7 @@ export default function CustomFieldsPage() {
     setEditingId(null)
     setFormData(defaultFormData)
     setOptionInput('')
-    setError(null)
+    setMessage(null)
   }
 
   const addOption = () => {
@@ -362,209 +379,254 @@ export default function CustomFieldsPage() {
 
   const needsOptions = formData.field_type === 'select' || formData.field_type === 'multi_select'
 
+  if (loading) {
+    return (
+      <div className="p-6">
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 w-48 bg-neutral-200 rounded" />
+          <div className="h-4 w-64 bg-neutral-200 rounded" />
+          <div className="h-32 bg-neutral-200 rounded-2xl" />
+          <div className="h-64 bg-neutral-200 rounded-2xl" />
+        </div>
+      </div>
+    )
+  }
+
+  const availableSuggestions = SUGGESTED_FIELDS.filter(
+    s => !fields.some(f => f.name.toLowerCase() === s.name.toLowerCase())
+  )
+  const remainingSlots = MAX_CUSTOM_FIELDS - fields.length
+
   return (
     <div className="p-6">
-      {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold text-neutral-900">Custom Fields</h1>
-            <span className={`rounded-full px-2.5 py-0.5 text-sm font-medium ${
-              fields.length >= MAX_CUSTOM_FIELDS
-                ? 'bg-red-100 text-red-700'
-                : 'bg-neutral-100 text-neutral-600'
-            }`}>
-              {fields.length}/{MAX_CUSTOM_FIELDS}
-            </span>
-          </div>
-          <p className="text-neutral-500">
-            Define custom fields to capture additional data for your inventory items
-          </p>
+      {/* Page Header */}
+      <div className="mb-8">
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-semibold text-neutral-900">Custom Fields</h1>
+          <span className={`rounded-full px-2.5 py-0.5 text-sm font-medium ${
+            fields.length >= MAX_CUSTOM_FIELDS
+              ? 'bg-red-100 text-red-700'
+              : 'bg-neutral-100 text-neutral-600'
+          }`}>
+            {fields.length}/{MAX_CUSTOM_FIELDS}
+          </span>
         </div>
-        <Button
-          onClick={() => {
-            setShowForm(true)
-            setEditingId(null)
-            setFormData(defaultFormData)
-            setOptionInput('')
-          }}
-          disabled={showForm || fields.length >= MAX_CUSTOM_FIELDS}
-        >
-          <Plus className="mr-2 h-4 w-4" />
-          New Field
-        </Button>
+        <p className="mt-1 text-neutral-500">
+          Define custom fields to capture additional data for your inventory items
+        </p>
       </div>
 
-      {/* Error Message */}
-      {error && (
-        <div className="mb-6 rounded-lg bg-red-50 p-4 text-sm text-red-600">
-          {error}
+      {/* Global Message */}
+      {message && (
+        <div
+          className={`mb-6 flex items-center gap-3 rounded-lg p-4 ${
+            message.type === 'success'
+              ? 'bg-green-50 text-green-700'
+              : 'bg-red-50 text-red-700'
+          }`}
+        >
+          {message.type === 'success' ? (
+            <Check className="h-5 w-5" />
+          ) : (
+            <AlertCircle className="h-5 w-5" />
+          )}
+          <p className="text-sm font-medium">{message.text}</p>
         </div>
       )}
 
-      {/* Create Form */}
-      {showForm && (
-        <div className="mb-6 rounded-xl border border-neutral-200 bg-white p-6">
-          <h3 className="mb-4 text-lg font-medium text-neutral-900">Create New Field</h3>
-          <FieldForm
-            formData={formData}
-            setFormData={setFormData}
-            optionInput={optionInput}
-            setOptionInput={setOptionInput}
-            addOption={addOption}
-            removeOption={removeOption}
-            needsOptions={needsOptions}
-            saving={saving}
-            onSave={handleCreate}
-            onCancel={() => {
-              setShowForm(false)
-              setFormData(defaultFormData)
-              setOptionInput('')
-              setError(null)
-            }}
-            folders={folders}
-          />
-        </div>
-      )}
-
-      {/* Quick Add */}
-      {(() => {
-        const availableSuggestions = SUGGESTED_FIELDS.filter(
-          s => !fields.some(f => f.name.toLowerCase() === s.name.toLowerCase())
-        )
-        const remainingSlots = MAX_CUSTOM_FIELDS - fields.length
-        // Hide Quick Add if at limit or no suggestions available
-        if (availableSuggestions.length === 0 || remainingSlots <= 0) return null
-        return (
-          <div className="mb-6">
-            <div className="mb-3 flex items-center justify-between">
-              <p className="text-xs font-medium uppercase tracking-wider text-neutral-500">
-                Quick Add
-              </p>
-              {remainingSlots < 5 && (
-                <p className="text-xs text-amber-600">
-                  {remainingSlots} slot{remainingSlots !== 1 ? 's' : ''} remaining
-                </p>
-              )}
-            </div>
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-              {availableSuggestions.map((suggested) => {
+      <div className="mx-auto max-w-3xl space-y-6">
+        {/* Quick Add Section */}
+        {availableSuggestions.length > 0 && remainingSlots > 0 && (
+          <SettingsSection
+            title="Quick Add"
+            description={remainingSlots < 5 ? `${remainingSlots} slot${remainingSlots !== 1 ? 's' : ''} remaining` : 'Common fields you can add with one click'}
+            icon={Sparkles}
+          >
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {availableSuggestions.slice(0, 6).map((suggested) => {
                 const Icon = suggested.icon
                 return (
                   <button
                     key={suggested.name}
                     onClick={() => handleAddSuggested(suggested)}
                     disabled={saving || remainingSlots <= 0}
-                    className="flex items-center gap-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-left transition-all hover:border-primary hover:bg-primary/10 disabled:cursor-not-allowed disabled:opacity-50"
+                    className="flex items-center gap-3 rounded-lg border border-neutral-200 bg-white px-4 py-3 text-left transition-all hover:border-primary hover:bg-primary/5 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <Icon className="h-4 w-4 flex-shrink-0 text-neutral-400" />
+                    <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-neutral-100">
+                      <Icon className="h-4 w-4 text-neutral-500" />
+                    </div>
                     <span className="text-sm font-medium text-neutral-700">{suggested.name}</span>
                   </button>
                 )
               })}
             </div>
-          </div>
-        )
-      })()}
+          </SettingsSection>
+        )}
 
-      {/* Fields List */}
-      {loading ? (
-        <div className="flex items-center justify-center py-16">
-          <Loader2 className="h-8 w-8 animate-spin text-neutral-400" />
-        </div>
-      ) : fields.length > 0 ? (
-        <div className="rounded-xl border border-neutral-200 bg-white">
-          <ul className="divide-y divide-neutral-200">
-            {fields.map((field) => {
-              const Icon = getFieldIcon(field.field_type)
-              const isEditing = editingId === field.id
+        {/* Custom Fields Section */}
+        <SettingsSection
+          title="Your Custom Fields"
+          description="Fields that appear when adding or editing items"
+          icon={Database}
+          headerAction={
+            !showForm && (
+              <Button
+                size="sm"
+                onClick={() => {
+                  setShowForm(true)
+                  setEditingId(null)
+                  setFormData(defaultFormData)
+                  setOptionInput('')
+                }}
+                disabled={fields.length >= MAX_CUSTOM_FIELDS}
+              >
+                <Plus className="mr-2 h-4 w-4" />
+                New Field
+              </Button>
+            )
+          }
+        >
+          {/* Create Form */}
+          {showForm && (
+            <div className="mb-6 rounded-lg border border-primary/20 bg-primary/5 p-4">
+              <h4 className="mb-4 text-sm font-medium text-neutral-900">Create New Field</h4>
+              <FieldForm
+                formData={formData}
+                setFormData={setFormData}
+                optionInput={optionInput}
+                setOptionInput={setOptionInput}
+                addOption={addOption}
+                removeOption={removeOption}
+                needsOptions={needsOptions}
+                saving={saving}
+                onSave={handleCreate}
+                onCancel={() => {
+                  setShowForm(false)
+                  setFormData(defaultFormData)
+                  setOptionInput('')
+                  setMessage(null)
+                }}
+                folders={folders}
+              />
+            </div>
+          )}
 
-              return (
-                <li key={field.id} className="px-6 py-4">
-                  {isEditing ? (
-                    <FieldForm
-                      formData={formData}
-                      setFormData={setFormData}
-                      optionInput={optionInput}
-                      setOptionInput={setOptionInput}
-                      addOption={addOption}
-                      removeOption={removeOption}
-                      needsOptions={needsOptions}
-                      saving={saving}
-                      onSave={() => handleUpdate(field.id)}
-                      onCancel={cancelEdit}
-                      folders={folders}
-                    />
-                  ) : (
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-4">
-                        <GripVertical className="h-4 w-4 text-neutral-300 cursor-grab" />
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-neutral-100">
-                          <Icon className="h-5 w-5 text-neutral-500" />
+          {/* Fields List */}
+          {fields.length > 0 ? (
+            <div className="divide-y divide-neutral-100 rounded-lg border border-neutral-200">
+              {fields.map((field) => {
+                const Icon = getFieldIcon(field.field_type)
+                const isEditing = editingId === field.id
+
+                return (
+                  <div key={field.id} className="p-4">
+                    {isEditing ? (
+                      <FieldForm
+                        formData={formData}
+                        setFormData={setFormData}
+                        optionInput={optionInput}
+                        setOptionInput={setOptionInput}
+                        addOption={addOption}
+                        removeOption={removeOption}
+                        needsOptions={needsOptions}
+                        saving={saving}
+                        onSave={() => handleUpdate(field.id)}
+                        onCancel={cancelEdit}
+                        folders={folders}
+                      />
+                    ) : (
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                          <GripVertical className="h-4 w-4 text-neutral-300 cursor-grab" />
+                          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-neutral-100">
+                            <Icon className="h-5 w-5 text-neutral-500" />
+                          </div>
+                          <div className="min-w-0">
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium text-neutral-900">{field.name}</span>
+                              {field.required && (
+                                <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
+                                  Required
+                                </span>
+                              )}
+                            </div>
+                            <p className="text-sm text-neutral-500">
+                              {FIELD_TYPES.find(t => t.value === field.field_type)?.label || field.field_type}
+                              {Array.isArray(field.options) && field.options.length > 0 && (
+                                <span className="ml-2 text-neutral-400">
+                                  ({field.options.length} options)
+                                </span>
+                              )}
+                            </p>
+                            {/* Folder chips */}
+                            <div className="mt-1 flex items-center gap-1 text-xs text-neutral-400">
+                              <FolderIcon className="h-3 w-3" />
+                              {fieldFolders[field.id]?.length > 0 ? (
+                                <span>
+                                  {fieldFolders[field.id]
+                                    .map(fid => folders.find(f => f.id === fid)?.name)
+                                    .filter(Boolean)
+                                    .join(', ')}
+                                </span>
+                              ) : (
+                                <span>All folders</span>
+                              )}
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <span className="font-medium text-neutral-900">{field.name}</span>
-                            {field.required && (
-                              <span className="rounded-full bg-red-100 px-2 py-0.5 text-xs font-medium text-red-700">
-                                Required
-                              </span>
-                            )}
-                          </div>
-                          <p className="text-sm text-neutral-500">
-                            {FIELD_TYPES.find(t => t.value === field.field_type)?.label || field.field_type}
-                            {Array.isArray(field.options) && field.options.length > 0 && (
-                              <span className="ml-2 text-neutral-400">
-                                ({field.options.length} options)
-                              </span>
-                            )}
-                          </p>
-                          {/* Folder chips */}
-                          <div className="mt-1 flex items-center gap-1 text-xs text-neutral-400">
-                            <FolderIcon className="h-3 w-3" />
-                            {fieldFolders[field.id]?.length > 0 ? (
-                              <span>
-                                {fieldFolders[field.id]
-                                  .map(fid => folders.find(f => f.id === fid)?.name)
-                                  .filter(Boolean)
-                                  .join(', ')}
-                              </span>
-                            ) : (
-                              <span>All folders</span>
-                            )}
-                          </div>
+                        <div className="flex items-center gap-2">
+                          {deleteConfirm === field.id ? (
+                            <>
+                              <span className="text-sm text-red-600 mr-2">Delete?</span>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => handleDelete(field.id)}
+                              >
+                                Yes
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setDeleteConfirm(null)}
+                              >
+                                No
+                              </Button>
+                            </>
+                          ) : (
+                            <>
+                              <Button variant="ghost" size="sm" onClick={() => startEdit(field)}>
+                                <Pencil className="h-4 w-4" />
+                              </Button>
+                              <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm(field.id)}>
+                                <Trash2 className="h-4 w-4 text-red-500" />
+                              </Button>
+                            </>
+                          )}
                         </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="sm" onClick={() => startEdit(field)}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="sm" onClick={() => handleDelete(field.id)}>
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </li>
-              )
-            })}
-          </ul>
-        </div>
-      ) : (
-        <div className="flex flex-col items-center justify-center py-16">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-neutral-100">
-            <Database className="h-8 w-8 text-neutral-400" />
-          </div>
-          <h3 className="mt-4 text-lg font-medium text-neutral-900">No custom fields yet</h3>
-          <p className="mt-1 text-neutral-500">
-            Create custom fields to capture additional item data
-          </p>
-          <Button className="mt-4" onClick={() => setShowForm(true)}>
-            <Plus className="mr-2 h-4 w-4" />
-            Create your first field
-          </Button>
-        </div>
-      )}
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <div className="rounded-lg border border-dashed border-neutral-300 py-12 text-center">
+              <Database className="mx-auto h-12 w-12 text-neutral-300" />
+              <p className="mt-4 font-medium text-neutral-600">No custom fields yet</p>
+              <p className="mt-1 text-sm text-neutral-400">
+                Create custom fields to capture additional item data
+              </p>
+              {!showForm && (
+                <Button className="mt-4" onClick={() => setShowForm(true)}>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create your first field
+                </Button>
+              )}
+            </div>
+          )}
+        </SettingsSection>
+      </div>
     </div>
   )
 }
@@ -601,7 +663,7 @@ function FieldForm({
       <div className="grid gap-4 sm:grid-cols-2">
         {/* Field Name */}
         <div>
-          <label className="mb-1 block text-sm font-medium text-neutral-700">
+          <label className="mb-1.5 block text-sm font-medium text-neutral-700">
             Field Name
           </label>
           <Input
@@ -614,7 +676,7 @@ function FieldForm({
 
         {/* Field Type */}
         <div>
-          <label className="mb-1 block text-sm font-medium text-neutral-700">
+          <label className="mb-1.5 block text-sm font-medium text-neutral-700">
             Field Type
           </label>
           <select
@@ -638,7 +700,7 @@ function FieldForm({
       {/* Options (for select/multi_select) */}
       {needsOptions && (
         <div>
-          <label className="mb-1 block text-sm font-medium text-neutral-700">
+          <label className="mb-1.5 block text-sm font-medium text-neutral-700">
             Options
           </label>
           <div className="flex gap-2">
@@ -696,7 +758,7 @@ function FieldForm({
       {/* Folder Selection */}
       {folders.length > 0 && (
         <div>
-          <label className="mb-1 block text-sm font-medium text-neutral-700">
+          <label className="mb-1.5 block text-sm font-medium text-neutral-700">
             Applies to Folders
           </label>
           <p className="mb-2 text-xs text-neutral-500">
@@ -740,7 +802,7 @@ function FieldForm({
       )}
 
       {/* Actions */}
-      <div className="flex justify-end gap-2 pt-2">
+      <div className="flex gap-2 pt-2">
         <Button variant="outline" onClick={onCancel} disabled={saving}>
           Cancel
         </Button>

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { SettingsSection, SettingsToggle } from '@/components/settings'
 import {
   Save,
   Zap,
@@ -12,6 +12,11 @@ import {
   Calendar,
   Truck,
   Check,
+  AlertCircle,
+  Sparkles,
+  BarChart3,
+  ScanLine,
+  ShoppingCart,
 } from 'lucide-react'
 import type { Tenant } from '@/types/database.types'
 
@@ -37,6 +42,14 @@ export default function FeaturesSettingsPage() {
   useEffect(() => {
     loadTenant()
   }, [])
+
+  // Auto-dismiss success messages
+  useEffect(() => {
+    if (message?.type === 'success') {
+      const timer = setTimeout(() => setMessage(null), 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [message])
 
   async function loadTenant() {
     try {
@@ -107,10 +120,8 @@ export default function FeaturesSettingsPage() {
       if (error) throw error
       if (!data) throw new Error('Failed to update settings. You may not have permission.')
 
-      // Update local tenant state with data from server
       setTenant(data as Tenant)
-
-      setMessage({ type: 'success', text: 'Feature settings updated' })
+      setMessage({ type: 'success', text: 'Feature settings updated successfully' })
     } catch (err) {
       setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to update' })
     } finally {
@@ -125,12 +136,17 @@ export default function FeaturesSettingsPage() {
     }))
   }
 
+  // Count enabled features
+  const enabledCount = Object.values(features).filter(Boolean).length
+
   if (loading) {
     return (
       <div className="p-6">
-        <div className="animate-pulse space-y-4">
+        <div className="animate-pulse space-y-6">
           <div className="h-8 w-48 bg-neutral-200 rounded" />
-          <div className="h-64 bg-neutral-200 rounded-xl" />
+          <div className="h-4 w-64 bg-neutral-200 rounded" />
+          <div className="h-64 bg-neutral-200 rounded-2xl" />
+          <div className="h-48 bg-neutral-200 rounded-2xl" />
         </div>
       </div>
     )
@@ -138,80 +154,109 @@ export default function FeaturesSettingsPage() {
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-neutral-900">Features</h1>
-        <p className="text-neutral-500">Enable advanced features for your business needs</p>
+      {/* Page Header */}
+      <div className="mb-8">
+        <div className="flex items-center gap-3">
+          <h1 className="text-2xl font-semibold text-neutral-900">Features</h1>
+          {enabledCount > 0 && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-medium text-primary">
+              <Check className="h-3 w-3" />
+              {enabledCount} enabled
+            </span>
+          )}
+        </div>
+        <p className="mt-1 text-neutral-500">
+          Enable advanced capabilities for your inventory management
+        </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="max-w-2xl space-y-6">
-        {message && (
-          <div
-            className={`rounded-lg p-4 text-sm ${
-              message.type === 'success'
-                ? 'bg-green-50 text-green-600'
-                : 'bg-red-50 text-red-600'
-            }`}
-          >
-            {message.text}
-          </div>
-        )}
+      {/* Global Message */}
+      {message && (
+        <div
+          className={`mb-6 flex items-center gap-3 rounded-lg p-4 ${
+            message.type === 'success'
+              ? 'bg-green-50 text-green-700'
+              : 'bg-red-50 text-red-700'
+          }`}
+        >
+          {message.type === 'success' ? (
+            <Check className="h-5 w-5" />
+          ) : (
+            <AlertCircle className="h-5 w-5" />
+          )}
+          <p className="text-sm font-medium">{message.text}</p>
+        </div>
+      )}
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Zap className="h-5 w-5" />
-              Feature Toggles
-            </CardTitle>
-            <CardDescription>
-              Enable only the features your business needs. Disabled features won&apos;t appear in the UI.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* Multi-Location Inventory */}
-            <FeatureToggle
+      <form onSubmit={handleSubmit} className="mx-auto max-w-3xl space-y-6">
+        {/* Available Features */}
+        <SettingsSection
+          title="Available Features"
+          description="Toggle features on or off based on your business needs. Disabled features won't appear in the interface."
+          icon={Zap}
+        >
+          <div className="space-y-3">
+            <SettingsToggle
               icon={MapPin}
-              title="Multi-Location Inventory"
+              label="Multi-Location Inventory"
               description="Track inventory across multiple warehouses, vans, stores, or job sites. Transfer stock between locations."
-              enabled={features.multi_location}
-              onToggle={() => toggleFeature('multi_location')}
+              checked={features.multi_location}
+              onChange={() => toggleFeature('multi_location')}
             />
 
-            {/* Shipping Dimensions */}
-            <FeatureToggle
+            <SettingsToggle
               icon={Truck}
-              title="Shipping Dimensions"
+              label="Shipping Dimensions"
               description="Add weight and dimensions (length, width, height) to items for shipping calculations."
-              enabled={features.shipping_dimensions}
-              onToggle={() => toggleFeature('shipping_dimensions')}
+              checked={features.shipping_dimensions}
+              onChange={() => toggleFeature('shipping_dimensions')}
             />
 
-            {/* Lot/Expiry Tracking */}
-            <FeatureToggle
+            <SettingsToggle
               icon={Calendar}
-              title="Lot & Expiry Tracking"
-              description="Track items by lot number, batch code, and expiry date. Get FEFO (First Expired First Out) picking suggestions."
-              enabled={features.lot_tracking}
-              onToggle={() => toggleFeature('lot_tracking')}
+              label="Lot & Expiry Tracking"
+              description="Track items by lot number, batch code, and expiry date. Get FEFO (First Expired First Out) suggestions."
+              checked={features.lot_tracking}
+              onChange={() => toggleFeature('lot_tracking')}
             />
-          </CardContent>
-        </Card>
+          </div>
+        </SettingsSection>
 
         {/* Coming Soon */}
-        <Card className="opacity-60">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-neutral-500">
-              <Package className="h-5 w-5" />
-              Coming Soon
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3 text-sm text-neutral-500">
-            <p>• Purchase Orders & Receiving</p>
-            <p>• Barcode Scanning with Camera</p>
-            <p>• Low Stock Alerts & Auto-Reorder</p>
-            <p>• AI-Powered Inventory Insights</p>
-          </CardContent>
-        </Card>
+        <SettingsSection
+          title="Coming Soon"
+          description="Features we're working on for future releases"
+          icon={Sparkles}
+          className="opacity-75"
+        >
+          <div className="space-y-3">
+            <ComingSoonFeature
+              icon={ShoppingCart}
+              label="Purchase Orders & Receiving"
+              description="Create purchase orders, track deliveries, and automatically update inventory on receipt."
+            />
 
+            <ComingSoonFeature
+              icon={ScanLine}
+              label="Barcode Scanning with Camera"
+              description="Use your phone or tablet camera to scan barcodes and quickly find or add items."
+            />
+
+            <ComingSoonFeature
+              icon={BarChart3}
+              label="Low Stock Alerts & Auto-Reorder"
+              description="Get notified when stock runs low and automatically generate purchase orders."
+            />
+
+            <ComingSoonFeature
+              icon={Package}
+              label="AI-Powered Inventory Insights"
+              description="Get smart recommendations for reorder timing, demand forecasting, and optimization."
+            />
+          </div>
+        </SettingsSection>
+
+        {/* Save Button */}
         <div className="flex justify-end">
           <Button type="submit" loading={saving}>
             <Save className="mr-2 h-4 w-4" />
@@ -223,57 +268,26 @@ export default function FeaturesSettingsPage() {
   )
 }
 
-interface FeatureToggleProps {
+interface ComingSoonFeatureProps {
   icon: React.ComponentType<{ className?: string }>
-  title: string
+  label: string
   description: string
-  enabled: boolean
-  onToggle: () => void
 }
 
-function FeatureToggle({ icon: Icon, title, description, enabled, onToggle }: FeatureToggleProps) {
+function ComingSoonFeature({ icon: Icon, label, description }: ComingSoonFeatureProps) {
   return (
-    <div
-      className={`flex items-start gap-4 rounded-lg border p-4 transition-colors cursor-pointer ${
-        enabled
-          ? 'border-primary/30 bg-primary/10/50'
-          : 'border-neutral-200 bg-white hover:bg-neutral-50'
-      }`}
-      onClick={onToggle}
-    >
-      <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${
-        enabled ? 'bg-primary/20 text-primary' : 'bg-neutral-100 text-neutral-500'
-      }`}>
-        <Icon className="h-5 w-5" />
+    <div className="flex items-start gap-4 rounded-lg border border-neutral-200 border-dashed bg-neutral-50/50 p-4">
+      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neutral-100 text-neutral-400">
+        <Icon className="h-4 w-4" />
       </div>
-      <div className="flex-1 min-w-0">
+      <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <h3 className={`font-medium ${enabled ? 'text-primary' : 'text-neutral-900'}`}>
-            {title}
-          </h3>
-          {enabled && (
-            <span className="inline-flex items-center gap-1 rounded-full bg-primary/20 px-2 py-0.5 text-xs font-medium text-primary">
-              <Check className="h-3 w-3" />
-              Enabled
-            </span>
-          )}
+          <p className="font-medium text-neutral-500">{label}</p>
+          <span className="inline-flex items-center rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-500">
+            Coming Soon
+          </span>
         </div>
-        <p className="mt-1 text-sm text-neutral-500">{description}</p>
-      </div>
-      <div
-        className="relative inline-flex cursor-pointer items-center shrink-0"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <input
-          type="checkbox"
-          checked={enabled}
-          onChange={onToggle}
-          className="peer sr-only"
-        />
-        <div
-          onClick={onToggle}
-          className="peer h-6 w-11 rounded-full bg-neutral-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:border after:border-neutral-300 after:bg-white after:transition-all after:content-[''] peer-checked:bg-primary peer-checked:after:translate-x-full peer-checked:after:border-white peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary peer-focus:ring-offset-2"
-        ></div>
+        <p className="mt-0.5 text-sm text-neutral-400">{description}</p>
       </div>
     </div>
   )
