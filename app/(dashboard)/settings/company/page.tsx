@@ -5,8 +5,8 @@ import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Save, Building2, Settings, Upload, X } from 'lucide-react'
+import { Save, Building2, Globe, Upload, X, Check, AlertCircle, Camera } from 'lucide-react'
+import { SettingsSection } from '@/components/settings'
 import type { Tenant } from '@/types/database.types'
 import { updateTenantSettings } from '@/app/actions/tenant-settings'
 import type { TenantSettings } from '@/lib/formatting'
@@ -271,6 +271,14 @@ export default function CompanySettingsPage() {
     loadTenant()
   }, [])
 
+  // Auto-dismiss success messages
+  useEffect(() => {
+    if (message?.type === 'success') {
+      const timer = setTimeout(() => setMessage(null), 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [message])
+
   async function loadTenant() {
     try {
       const supabase = createClient()
@@ -436,7 +444,7 @@ export default function CompanySettingsPage() {
           decimal_precision: formData.decimal_precision,
         },
       })
-      setMessage({ type: 'success', text: 'Company settings updated' })
+      setMessage({ type: 'success', text: 'Company settings updated successfully' })
     } catch (err) {
       setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to update' })
     } finally {
@@ -447,9 +455,11 @@ export default function CompanySettingsPage() {
   if (loading) {
     return (
       <div className="p-6">
-        <div className="animate-pulse space-y-4">
+        <div className="animate-pulse space-y-6">
           <div className="h-8 w-48 bg-neutral-200 rounded" />
-          <div className="h-64 bg-neutral-200 rounded-xl" />
+          <div className="h-4 w-64 bg-neutral-200 rounded" />
+          <div className="h-64 bg-neutral-200 rounded-2xl" />
+          <div className="h-48 bg-neutral-200 rounded-2xl" />
         </div>
       </div>
     )
@@ -457,68 +467,67 @@ export default function CompanySettingsPage() {
 
   return (
     <div className="p-6">
-      <div className="mb-6">
-        <h1 className="text-2xl font-semibold text-neutral-900">Company Settings</h1>
-        <p className="text-neutral-500">Configure your company details and preferences</p>
+      {/* Page Header */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold text-neutral-900">Company</h1>
+        <p className="mt-1 text-neutral-500">Configure your company details and regional preferences</p>
       </div>
 
-      <div className="max-w-3xl space-y-6">
-        {message && (
-          <div
-            className={`rounded-lg p-4 text-sm ${
-              message.type === 'success'
-                ? 'bg-green-50 text-green-600'
-                : 'bg-red-50 text-red-600'
-            }`}
-          >
-            {message.text}
-          </div>
-        )}
+      {/* Global Message */}
+      {message && (
+        <div
+          className={`mb-6 flex items-center gap-3 rounded-lg p-4 ${
+            message.type === 'success'
+              ? 'bg-green-50 text-green-700'
+              : 'bg-red-50 text-red-700'
+          }`}
+        >
+          {message.type === 'success' ? (
+            <Check className="h-5 w-5" />
+          ) : (
+            <AlertCircle className="h-5 w-5" />
+          )}
+          <p className="text-sm font-medium">{message.text}</p>
+        </div>
+      )}
 
-        {/* Company Details Card */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Building2 className="h-5 w-5" />
-              Company Details
-            </CardTitle>
-            <CardDescription>
-              Your company information visible to team members
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Logo Upload */}
-            <div>
-              <label className="mb-2 block text-sm font-medium text-neutral-700">
-                Company Logo
-              </label>
-              <div className="flex items-center gap-4">
-                {formData.logo_url ? (
-                  <div className="relative">
-                    <div className="h-20 w-20 rounded-lg border border-neutral-200 overflow-hidden bg-white">
-                      <Image
-                        src={formData.logo_url}
-                        alt="Company logo"
-                        width={80}
-                        height={80}
-                        className="h-full w-full object-contain"
-                      />
+      <form onSubmit={handleSubmit}>
+        <div className="mx-auto max-w-3xl space-y-6">
+          {/* Company Details */}
+          <SettingsSection
+            title="Company Details"
+            description="Your company information visible to team members"
+            icon={Building2}
+          >
+            <div className="space-y-6">
+              {/* Logo Upload */}
+              <div className="flex items-start gap-6">
+                <div className="relative">
+                  {formData.logo_url ? (
+                    <div className="relative">
+                      <div className="h-24 w-24 rounded-2xl border border-neutral-200 overflow-hidden bg-white shadow-sm">
+                        <Image
+                          src={formData.logo_url}
+                          alt="Company logo"
+                          width={96}
+                          height={96}
+                          className="h-full w-full object-contain"
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        onClick={handleRemoveLogo}
+                        disabled={uploadingLogo}
+                        className="absolute -right-2 -top-2 flex h-6 w-6 items-center justify-center rounded-full bg-red-500 text-white shadow-sm hover:bg-red-600 disabled:opacity-50"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </button>
                     </div>
-                    <button
-                      type="button"
-                      onClick={handleRemoveLogo}
-                      disabled={uploadingLogo}
-                      className="absolute -right-2 -top-2 rounded-full bg-red-500 p-1 text-white hover:bg-red-600 disabled:opacity-50"
-                    >
-                      <X className="h-3 w-3" />
-                    </button>
-                  </div>
-                ) : (
-                  <div className="flex h-20 w-20 items-center justify-center rounded-lg border-2 border-dashed border-neutral-300 bg-neutral-50">
-                    <Building2 className="h-8 w-8 text-neutral-400" />
-                  </div>
-                )}
-                <div>
+                  ) : (
+                    <div className="flex h-24 w-24 items-center justify-center rounded-2xl border-2 border-dashed border-neutral-300 bg-neutral-50">
+                      <Building2 className="h-10 w-10 text-neutral-400" />
+                    </div>
+                  )}
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -527,62 +536,70 @@ export default function CompanySettingsPage() {
                     className="hidden"
                     id="logo-upload"
                   />
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={uploadingLogo}
+                    className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-primary text-white shadow-sm hover:bg-primary/90 disabled:opacity-50"
+                  >
+                    <Camera className="h-4 w-4" />
+                  </button>
+                </div>
+                <div className="flex-1">
+                  <h4 className="font-medium text-neutral-900">Company Logo</h4>
+                  <p className="mt-1 text-sm text-neutral-500">
+                    Upload your company logo. PNG or JPG, max 2MB.
+                  </p>
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
+                    className="mt-3"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploadingLogo}
                   >
                     <Upload className="mr-2 h-4 w-4" />
                     {uploadingLogo ? 'Uploading...' : 'Upload Logo'}
                   </Button>
-                  <p className="mt-1 text-xs text-neutral-500">
-                    PNG, JPG up to 2MB
-                  </p>
+                </div>
+              </div>
+
+              {/* Company Name & Subscription */}
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                    Company Name
+                  </label>
+                  <Input
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    placeholder="Enter company name"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                    Subscription Plan
+                  </label>
+                  <div className="flex h-10 items-center rounded-lg border border-neutral-200 bg-neutral-50 px-3">
+                    <span className="capitalize text-neutral-600">
+                      {tenant?.subscription_tier || 'free'}
+                    </span>
+                    <span className="ml-auto rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                      Active
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
+          </SettingsSection>
 
-            {/* Company Name */}
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-                Company Name
-              </label>
-              <Input
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Enter company name"
-              />
-            </div>
-
-            {/* Subscription (read-only) */}
-            <div>
-              <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-                Subscription
-              </label>
-              <Input
-                value={tenant?.subscription_tier || 'free'}
-                disabled
-                className="bg-neutral-50 capitalize"
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* General Settings Card */}
-        <form onSubmit={handleSubmit}>
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Settings className="h-5 w-5" />
-                General Settings
-              </CardTitle>
-              <CardDescription>
-                Regional and display preferences
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
+          {/* Regional Settings */}
+          <SettingsSection
+            title="Regional Settings"
+            description="Configure location, timezone, and formatting preferences"
+            icon={Globe}
+          >
+            <div className="space-y-4">
               {/* Row 1: Country & Timezone */}
               <div className="grid gap-4 sm:grid-cols-2">
                 <div>
@@ -592,7 +609,7 @@ export default function CompanySettingsPage() {
                   <select
                     value={formData.country}
                     onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                    className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="flex h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm ring-offset-white focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   >
                     {COUNTRIES.map((country) => (
                       <option key={country.value} value={country.value}>
@@ -609,7 +626,7 @@ export default function CompanySettingsPage() {
                   <select
                     value={formData.timezone}
                     onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
-                    className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="flex h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm ring-offset-white focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   >
                     {TIMEZONES.map((tz) => (
                       <option key={tz.value} value={tz.value}>
@@ -629,7 +646,7 @@ export default function CompanySettingsPage() {
                   <select
                     value={formData.date_format}
                     onChange={(e) => setFormData({ ...formData, date_format: e.target.value })}
-                    className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="flex h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm ring-offset-white focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   >
                     {DATE_FORMATS.map((format) => (
                       <option key={format.value} value={format.value}>
@@ -646,7 +663,7 @@ export default function CompanySettingsPage() {
                   <select
                     value={formData.time_format}
                     onChange={(e) => setFormData({ ...formData, time_format: e.target.value })}
-                    className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="flex h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm ring-offset-white focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   >
                     {TIME_FORMATS.map((format) => (
                       <option key={format.value} value={format.value}>
@@ -666,7 +683,7 @@ export default function CompanySettingsPage() {
                   <select
                     value={formData.currency}
                     onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-                    className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="flex h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm ring-offset-white focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   >
                     {CURRENCIES.map((currency) => (
                       <option key={currency.value} value={currency.value}>
@@ -683,7 +700,7 @@ export default function CompanySettingsPage() {
                   <select
                     value={formData.decimal_precision}
                     onChange={(e) => setFormData({ ...formData, decimal_precision: e.target.value })}
-                    className="h-10 w-full rounded-lg border border-neutral-300 px-3 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                    className="flex h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm ring-offset-white focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
                   >
                     {DECIMAL_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>
@@ -693,17 +710,17 @@ export default function CompanySettingsPage() {
                   </select>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
 
-          <div className="mt-6 flex justify-end">
-            <Button type="submit" loading={saving}>
-              <Save className="mr-2 h-4 w-4" />
-              Save Changes
-            </Button>
-          </div>
-        </form>
-      </div>
+            <div className="mt-6 flex justify-end border-t border-neutral-100 pt-4">
+              <Button type="submit" loading={saving}>
+                <Save className="mr-2 h-4 w-4" />
+                Save Changes
+              </Button>
+            </div>
+          </SettingsSection>
+        </div>
+      </form>
     </div>
   )
 }

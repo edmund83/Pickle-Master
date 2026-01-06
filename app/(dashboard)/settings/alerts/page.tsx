@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { Bell, AlertTriangle, Package, Mail, Check, Loader2, Plus, Trash2 } from 'lucide-react'
+import { Bell, AlertTriangle, Package, Mail, Check, Plus, Trash2, AlertCircle, Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { SettingsSection, SettingsToggle } from '@/components/settings'
 import type { Alert } from '@/types/database.types'
 
 interface AlertPreferences {
@@ -28,12 +29,19 @@ export default function AlertsSettingsPage() {
     threshold: 10,
   })
   const [tenantId, setTenantId] = useState<string | null>(null)
-  const [success, setSuccess] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
   useEffect(() => {
     loadAlertsAndPreferences()
   }, [])
+
+  // Auto-dismiss success messages
+  useEffect(() => {
+    if (message?.type === 'success') {
+      const timer = setTimeout(() => setMessage(null), 3000)
+      return () => clearTimeout(timer)
+    }
+  }, [message])
 
   async function loadAlertsAndPreferences() {
     setLoading(true)
@@ -53,7 +61,6 @@ export default function AlertsSettingsPage() {
       if (!profile?.tenant_id) return
       setTenantId(profile.tenant_id)
 
-      // Load tenant settings for alert preferences
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: tenant } = await (supabase as any)
         .from('tenants')
@@ -87,10 +94,10 @@ export default function AlertsSettingsPage() {
     if (!tenantId) return
 
     setSaving(true)
+    setMessage(null)
     const supabase = createClient()
 
     try {
-      // First get current settings to merge with
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: tenant } = await (supabase as any)
         .from('tenants')
@@ -99,14 +106,11 @@ export default function AlertsSettingsPage() {
         .single()
 
       const currentSettings = tenant?.settings || {}
-
-      // Merge alert_preferences into settings
       const updatedSettings = {
         ...currentSettings,
         alert_preferences: preferences,
       }
 
-      // Update tenant settings
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { error } = await (supabase as any)
         .from('tenants')
@@ -115,10 +119,9 @@ export default function AlertsSettingsPage() {
 
       if (error) throw error
 
-      setSuccess(true)
-      setTimeout(() => setSuccess(false), 3000)
+      setMessage({ type: 'success', text: 'Alert preferences saved successfully' })
     } catch (err) {
-      console.error('Error saving preferences:', err)
+      setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to save preferences' })
     } finally {
       setSaving(false)
     }
@@ -128,7 +131,7 @@ export default function AlertsSettingsPage() {
     if (!newAlert.name.trim() || !tenantId) return
 
     setSaving(true)
-    setError(null)
+    setMessage(null)
     const supabase = createClient()
 
     try {
@@ -137,7 +140,7 @@ export default function AlertsSettingsPage() {
         .from('alerts')
         .insert({
           tenant_id: tenantId,
-          target_id: newAlert.name.trim(), // Store alert name in target_id
+          target_id: newAlert.name.trim(),
           target_type: 'custom',
           alert_type: 'low_stock',
           threshold: newAlert.threshold,
@@ -148,9 +151,10 @@ export default function AlertsSettingsPage() {
 
       setNewAlert({ name: '', threshold: 10 })
       setShowNewAlert(false)
+      setMessage({ type: 'success', text: 'Alert created successfully' })
       loadAlertsAndPreferences()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create alert')
+      setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to create alert' })
     } finally {
       setSaving(false)
     }
@@ -180,134 +184,139 @@ export default function AlertsSettingsPage() {
       .eq('id', id)
 
     setAlerts(alerts.filter(a => a.id !== id))
+    setMessage({ type: 'success', text: 'Alert deleted' })
+  }
+
+  if (loading) {
+    return (
+      <div className="p-6">
+        <div className="animate-pulse space-y-6">
+          <div className="h-8 w-48 bg-neutral-200 rounded" />
+          <div className="h-4 w-64 bg-neutral-200 rounded" />
+          <div className="h-64 bg-neutral-200 rounded-2xl" />
+          <div className="h-48 bg-neutral-200 rounded-2xl" />
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="flex-1 overflow-y-auto">
-      {/* Header */}
-      <div className="border-b border-neutral-200 bg-white px-8 py-6">
-        <h1 className="text-2xl font-semibold text-neutral-900">Alert Settings</h1>
-        <p className="mt-1 text-neutral-500">
-          Configure notifications and low stock alerts
-        </p>
+    <div className="p-6">
+      {/* Page Header */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold text-neutral-900">Alerts</h1>
+        <p className="mt-1 text-neutral-500">Configure notifications and low stock alerts</p>
       </div>
 
-      {/* Success Message */}
-      {success && (
-        <div className="mx-8 mt-4 flex items-center gap-2 rounded-lg bg-green-50 p-4 text-green-700">
-          <Check className="h-5 w-5" />
-          Settings saved successfully!
+      {/* Global Message */}
+      {message && (
+        <div
+          className={`mb-6 flex items-center gap-3 rounded-lg p-4 ${
+            message.type === 'success'
+              ? 'bg-green-50 text-green-700'
+              : 'bg-red-50 text-red-700'
+          }`}
+        >
+          {message.type === 'success' ? (
+            <Check className="h-5 w-5" />
+          ) : (
+            <AlertCircle className="h-5 w-5" />
+          )}
+          <p className="text-sm font-medium">{message.text}</p>
         </div>
       )}
 
-      {/* Error Message */}
-      {error && (
-        <div className="mx-8 mt-4 rounded-lg bg-red-50 p-4 text-red-700">
-          {error}
-        </div>
-      )}
-
-      <div className="p-8">
+      <div className="mx-auto max-w-3xl space-y-6">
         {/* Notification Preferences */}
-        <div className="mb-8 rounded-xl border border-neutral-200 bg-white">
-          <div className="border-b border-neutral-200 px-6 py-4">
-            <h2 className="text-lg font-semibold text-neutral-900">Notification Preferences</h2>
-          </div>
-          <div className="p-6 space-y-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600">
-                  <Mail className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="font-medium text-neutral-900">Email Notifications</p>
-                  <p className="text-sm text-neutral-500">Receive alerts via email</p>
-                </div>
-              </div>
-              <label className="relative inline-flex cursor-pointer items-center">
-                <input
-                  type="checkbox"
-                  checked={preferences.emailNotifications}
-                  onChange={(e) => setPreferences({ ...preferences, emailNotifications: e.target.checked })}
-                  className="peer sr-only"
-                />
-                <div className="peer h-6 w-11 rounded-full bg-neutral-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-primary peer-checked:after:translate-x-full"></div>
-              </label>
-            </div>
+        <SettingsSection
+          title="Notification Preferences"
+          description="Configure how and when you receive inventory alerts"
+          icon={Bell}
+        >
+          <div className="space-y-3">
+            <SettingsToggle
+              icon={Mail}
+              label="Email Notifications"
+              description="Receive alert notifications via email"
+              checked={preferences.emailNotifications}
+              onChange={(checked) => setPreferences({ ...preferences, emailNotifications: checked })}
+            />
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-red-50 text-red-600">
-                  <AlertTriangle className="h-5 w-5" />
-                </div>
-                <div>
-                  <p className="font-medium text-neutral-900">Out of Stock Alerts</p>
-                  <p className="text-sm text-neutral-500">Get notified when items reach zero quantity</p>
-                </div>
-              </div>
-              <label className="relative inline-flex cursor-pointer items-center">
-                <input
-                  type="checkbox"
-                  checked={preferences.outOfStockAlerts}
-                  onChange={(e) => setPreferences({ ...preferences, outOfStockAlerts: e.target.checked })}
-                  className="peer sr-only"
-                />
-                <div className="peer h-6 w-11 rounded-full bg-neutral-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-primary peer-checked:after:translate-x-full"></div>
-              </label>
-            </div>
+            <SettingsToggle
+              icon={AlertTriangle}
+              label="Out of Stock Alerts"
+              description="Get notified when items reach zero quantity"
+              checked={preferences.outOfStockAlerts}
+              onChange={(checked) => setPreferences({ ...preferences, outOfStockAlerts: checked })}
+            />
 
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-yellow-50 text-yellow-600">
-                  <Package className="h-5 w-5" />
+            {/* Low Stock Threshold */}
+            <div className="flex items-center justify-between gap-4 rounded-lg border border-neutral-200 bg-white p-4">
+              <div className="flex items-start gap-3">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neutral-100 text-neutral-600">
+                  <Package className="h-4 w-4" />
                 </div>
-                <div>
+                <div className="min-w-0">
                   <p className="font-medium text-neutral-900">Default Low Stock Threshold</p>
-                  <p className="text-sm text-neutral-500">Items below this quantity trigger alerts</p>
+                  <p className="mt-0.5 text-sm text-neutral-500">
+                    Items below this quantity trigger alerts
+                  </p>
                 </div>
               </div>
-              <Input
-                type="number"
-                value={preferences.lowStockThreshold}
-                onChange={(e) => setPreferences({ ...preferences, lowStockThreshold: parseInt(e.target.value) || 0 })}
-                className="w-24 text-center"
-                min={1}
-              />
-            </div>
-
-            <div className="pt-4 border-t border-neutral-200">
-              <Button onClick={savePreferences} disabled={saving}>
-                {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}
-                Save Preferences
-              </Button>
+              <div className="flex items-center gap-2">
+                <Input
+                  type="number"
+                  value={preferences.lowStockThreshold}
+                  onChange={(e) => setPreferences({ ...preferences, lowStockThreshold: parseInt(e.target.value) || 0 })}
+                  className="w-20 text-center"
+                  min={1}
+                />
+                <span className="text-sm text-neutral-500">units</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        {/* Custom Alerts */}
-        <div className="rounded-xl border border-neutral-200 bg-white">
-          <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4">
-            <h2 className="text-lg font-semibold text-neutral-900">Custom Alerts</h2>
-            <Button size="sm" onClick={() => setShowNewAlert(true)}>
-              <Plus className="mr-2 h-4 w-4" />
-              New Alert
+          <div className="mt-6 flex justify-end border-t border-neutral-100 pt-4">
+            <Button onClick={savePreferences} loading={saving}>
+              <Save className="mr-2 h-4 w-4" />
+              Save Preferences
             </Button>
           </div>
+        </SettingsSection>
 
+        {/* Custom Alerts */}
+        <SettingsSection
+          title="Custom Alerts"
+          description="Create specific alerts for individual items or categories"
+          icon={AlertTriangle}
+          headerAction={
+            !showNewAlert && (
+              <Button size="sm" onClick={() => setShowNewAlert(true)}>
+                <Plus className="mr-2 h-4 w-4" />
+                New Alert
+              </Button>
+            )
+          }
+        >
           {/* New Alert Form */}
           {showNewAlert && (
-            <div className="border-b border-neutral-200 bg-neutral-50 p-6">
-              <div className="flex items-end gap-4">
+            <div className="mb-4 rounded-lg border border-primary/20 bg-primary/5 p-4">
+              <h4 className="mb-3 text-sm font-medium text-neutral-900">Create New Alert</h4>
+              <div className="flex items-end gap-3">
                 <div className="flex-1">
-                  <label className="mb-1 block text-sm font-medium text-neutral-700">Alert Name</label>
+                  <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                    Alert Name
+                  </label>
                   <Input
                     value={newAlert.name}
                     onChange={(e) => setNewAlert({ ...newAlert, name: e.target.value })}
                     placeholder="e.g., Critical stock for Product A"
                   />
                 </div>
-                <div className="w-32">
-                  <label className="mb-1 block text-sm font-medium text-neutral-700">Threshold</label>
+                <div className="w-28">
+                  <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                    Threshold
+                  </label>
                   <Input
                     type="number"
                     value={newAlert.threshold}
@@ -328,55 +337,86 @@ export default function AlertsSettingsPage() {
           )}
 
           {/* Alerts List */}
-          {loading ? (
-            <div className="flex items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-neutral-400" />
-            </div>
-          ) : alerts.length > 0 ? (
-            <ul className="divide-y divide-neutral-200">
+          {alerts.length > 0 ? (
+            <div className="divide-y divide-neutral-100 rounded-lg border border-neutral-200">
               {alerts.map((alert) => (
-                <li key={alert.id} className="flex items-center justify-between px-6 py-4">
+                <div
+                  key={alert.id}
+                  className={`flex items-center justify-between p-4 ${
+                    alert.is_active ? '' : 'bg-neutral-50'
+                  }`}
+                >
                   <div className="flex items-center gap-4">
-                    <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
-                      alert.is_active ? 'bg-primary/10 text-primary' : 'bg-neutral-100 text-neutral-400'
-                    }`}>
+                    <div
+                      className={`flex h-10 w-10 items-center justify-center rounded-lg ${
+                        alert.is_active
+                          ? 'bg-primary/10 text-primary'
+                          : 'bg-neutral-100 text-neutral-400'
+                      }`}
+                    >
                       <Bell className="h-5 w-5" />
                     </div>
                     <div>
-                      <p className={`font-medium ${alert.is_active ? 'text-neutral-900' : 'text-neutral-500'}`}>
-                        {alert.target_type === 'custom' ? alert.target_id : `${alert.alert_type?.replace('_', ' ') || 'Alert'} - ${alert.target_type}`}
+                      <p
+                        className={`font-medium ${
+                          alert.is_active ? 'text-neutral-900' : 'text-neutral-500'
+                        }`}
+                      >
+                        {alert.target_type === 'custom'
+                          ? alert.target_id
+                          : `${alert.alert_type?.replace('_', ' ') || 'Alert'} - ${alert.target_type}`}
                       </p>
                       <p className="text-sm text-neutral-500">
                         Threshold: {alert.threshold ?? 'N/A'} units
-                        {alert.target_type !== 'custom' && ` • Target: ${alert.target_id?.slice(0, 8) || 'Global'}`}
+                        {alert.target_type !== 'custom' &&
+                          ` • Target: ${alert.target_id?.slice(0, 8) || 'Global'}`}
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
-                    <label className="relative inline-flex cursor-pointer items-center">
-                      <input
-                        type="checkbox"
-                        checked={alert.is_active ?? false}
-                        onChange={() => toggleAlert(alert.id, alert.is_active ?? false)}
-                        className="peer sr-only"
+                    {/* Toggle Switch */}
+                    <button
+                      type="button"
+                      role="switch"
+                      aria-checked={alert.is_active ?? false}
+                      onClick={() => toggleAlert(alert.id, alert.is_active ?? false)}
+                      className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors ${
+                        alert.is_active ? 'bg-primary' : 'bg-neutral-200'
+                      }`}
+                    >
+                      <span
+                        className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition-transform ${
+                          alert.is_active ? 'translate-x-5' : 'translate-x-0.5'
+                        }`}
                       />
-                      <div className="peer h-6 w-11 rounded-full bg-neutral-200 after:absolute after:left-[2px] after:top-[2px] after:h-5 after:w-5 after:rounded-full after:bg-white after:transition-all peer-checked:bg-primary peer-checked:after:translate-x-full"></div>
-                    </label>
-                    <Button variant="ghost" size="sm" onClick={() => deleteAlert(alert.id)}>
+                    </button>
+                    <Button variant="ghost" size="icon" onClick={() => deleteAlert(alert.id)}>
                       <Trash2 className="h-4 w-4 text-red-500" />
                     </Button>
                   </div>
-                </li>
+                </div>
               ))}
-            </ul>
+            </div>
           ) : (
-            <div className="px-6 py-12 text-center">
+            <div className="rounded-lg border border-dashed border-neutral-300 py-12 text-center">
               <Bell className="mx-auto h-12 w-12 text-neutral-300" />
-              <p className="mt-4 text-neutral-500">No custom alerts configured</p>
-              <p className="text-sm text-neutral-400">Create alerts to get notified about specific items</p>
+              <p className="mt-4 font-medium text-neutral-600">No custom alerts</p>
+              <p className="mt-1 text-sm text-neutral-400">
+                Create alerts to get notified about specific items
+              </p>
+              {!showNewAlert && (
+                <Button
+                  variant="outline"
+                  className="mt-4"
+                  onClick={() => setShowNewAlert(true)}
+                >
+                  <Plus className="mr-2 h-4 w-4" />
+                  Create your first alert
+                </Button>
+              )}
             </div>
           )}
-        </div>
+        </SettingsSection>
       </div>
     </div>
   )

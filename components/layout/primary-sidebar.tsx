@@ -8,7 +8,6 @@ import {
   Package,
   Search,
   Bell,
-  Tags,
   FileText,
   ClipboardList,
   Settings,
@@ -19,7 +18,6 @@ import {
   PackageOpen,
   ArrowRightLeft,
   Sparkles,
-  Home,
   Activity,
   BarChart3,
 } from 'lucide-react'
@@ -30,23 +28,16 @@ import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
 import { NotificationBell } from '@/components/notifications/NotificationBell'
 
-// Home - Main views
-const homeItems: SubmenuItem[] = [
-  { name: 'Dashboard', href: '/dashboard', icon: LayoutDashboard },
-  { name: 'Inventory', href: '/inventory', icon: Package },
-]
-
-// Activity - Daily warehouse tasks
-const activityItems: SubmenuItem[] = [
-  { name: 'Receiving', href: '/tasks/inbound', icon: PackageOpen },
-  { name: 'Orders Out', href: '/tasks/fulfillment', icon: ClipboardList },
+// Task - Daily warehouse tasks
+const taskItems: SubmenuItem[] = [
+  { name: 'Stock In', href: '/tasks/inbound', icon: PackageOpen },
+  { name: 'Stock Out', href: '/tasks/fulfillment', icon: ClipboardList },
   { name: 'Adjustments', href: '/tasks/inventory-operations', icon: ArrowRightLeft },
 ]
 
 // Insights - Reports & Organization
 const insightsItems: SubmenuItem[] = [
   { name: 'Reports', href: '/reports', icon: FileText },
-  { name: 'Tags', href: '/tags', icon: Tags },
   { name: 'Reminders', href: '/reminders', icon: Bell },
 ]
 
@@ -146,24 +137,52 @@ export function PrimarySidebar({ isExpanded = false, onToggle }: PrimarySidebarP
         </button>
       </div>
 
+      {/* Divider */}
+      <div className={cn('py-2', isExpanded ? 'px-3' : 'px-2')}>
+        <div className="h-px bg-white/20" />
+      </div>
+
       {/* Main Navigation */}
       <nav className={cn('flex flex-1 flex-col gap-1', isExpanded ? 'px-3' : 'items-center px-2')}>
-        {/* Home Section */}
-        <NavSubmenu
-          icon={Home}
-          label="Home"
-          items={homeItems}
-          sidebarExpanded={isExpanded}
-          storageKey="nav-home-expanded"
-        />
+        {/* Home */}
+        <Link
+          href="/dashboard"
+          className={cn(
+            'flex items-center rounded-xl transition-colors',
+            isExpanded ? 'h-10 gap-3 px-3' : 'h-10 w-10 justify-center',
+            pathname === '/dashboard'
+              ? 'bg-white text-primary'
+              : 'text-white hover:bg-white/10'
+          )}
+          title={!isExpanded ? 'Home' : undefined}
+        >
+          <LayoutDashboard className="h-5 w-5 shrink-0" />
+          {isExpanded && <span className="text-sm font-medium">Home</span>}
+        </Link>
 
-        {/* Activity Section */}
+        {/* Inventory */}
+        <Link
+          href="/inventory"
+          className={cn(
+            'flex items-center rounded-xl transition-colors',
+            isExpanded ? 'h-10 gap-3 px-3' : 'h-10 w-10 justify-center',
+            pathname.startsWith('/inventory')
+              ? 'bg-white text-primary'
+              : 'text-white hover:bg-white/10'
+          )}
+          title={!isExpanded ? 'Inventory' : undefined}
+        >
+          <Package className="h-5 w-5 shrink-0" />
+          {isExpanded && <span className="text-sm font-medium">Inventory</span>}
+        </Link>
+
+        {/* Task Section */}
         <NavSubmenu
           icon={Activity}
-          label="Activity"
-          items={activityItems}
+          label="Task"
+          items={taskItems}
           sidebarExpanded={isExpanded}
-          storageKey="nav-activity-expanded"
+          storageKey="nav-task-expanded"
         />
 
         {/* Insights Section */}
