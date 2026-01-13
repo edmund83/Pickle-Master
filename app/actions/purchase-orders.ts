@@ -22,6 +22,7 @@ export interface CreateVendorInput {
     state?: string | null
     postal_code?: string | null
     country?: string | null
+    payment_terms?: string | null
     notes?: string | null
 }
 
@@ -140,6 +141,7 @@ export async function createVendor(input: CreateVendorInput): Promise<PurchaseOr
             state: input.state || null,
             postal_code: input.postal_code || null,
             country: input.country || null,
+            payment_terms: input.payment_terms || null,
             notes: input.notes || null
         })
         .select('id')

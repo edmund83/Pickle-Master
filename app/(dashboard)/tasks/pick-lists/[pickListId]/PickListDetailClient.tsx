@@ -16,16 +16,19 @@ import {
   Check,
   Ban,
   Trash2,
-  Search,
   X,
   Info,
   Minus,
   Plus,
-  Barcode,
-  MoreVertical
+  Camera,
+  MoreVertical,
+  Zap,
+  FileText,
+  AlertCircle
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { FormattedShortDate, FormattedDateTime } from '@/components/formatting/FormattedDate'
 import {
   pickItem,
@@ -83,6 +86,12 @@ interface PickListWithItems {
     picked_quantity: number
     picked_at: string | null
     notes: string | null
+    locations: Array<{
+      location_id: string
+      location_name: string
+      location_type: 'warehouse' | 'van' | 'store' | 'job_site'
+      quantity: number
+    }>
   }>
   assigned_to_name: string | null
   created_by_name: string | null
@@ -125,9 +134,9 @@ const statusColors: Record<string, string> = {
 }
 
 const itemOutcomeOptions = [
-  { value: 'decrement', label: 'Decrement Stock' },
-  { value: 'checkout', label: 'Checkout' },
-  { value: 'transfer', label: 'Transfer' },
+  { value: 'decrement', label: 'Remove from inventory' },
+  { value: 'checkout', label: 'Lend out (return later)' },
+  { value: 'transfer', label: 'Move to another location' },
 ]
 
 export function PickListDetailClient({ data, teamMembers, currentUserId }: PickListDetailClientProps) {
@@ -152,11 +161,13 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
   // Menu state
   const [showMoreMenu, setShowMoreMenu] = useState(false)
 
+  // Partial pick state - track quantity to pick for each item
+  const [pickQuantities, setPickQuantities] = useState<Record<string, number>>({})
+
   // Search state
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
   const [isSearching, setIsSearching] = useState(false)
-  const [showLowStock, setShowLowStock] = useState(false)
   const [isScannerOpen, setIsScannerOpen] = useState(false)
 
   const pickList = data.pick_list
@@ -311,11 +322,32 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
     }
   }
 
-  async function handlePickItem(itemId: string, requestedQty: number) {
+  // Get the pick quantity for an item (defaults to remaining quantity)
+  function getPickQuantity(itemId: string, requested: number, alreadyPicked: number) {
+    if (pickQuantities[itemId] !== undefined) {
+      return pickQuantities[itemId]
+    }
+    return Math.max(0, requested - alreadyPicked)
+  }
+
+  // Update pick quantity for an item
+  function updatePickQuantity(itemId: string, quantity: number, maxQuantity: number) {
+    const clampedQty = Math.max(1, Math.min(quantity, maxQuantity))
+    setPickQuantities(prev => ({ ...prev, [itemId]: clampedQty }))
+  }
+
+  async function handlePickItem(itemId: string, quantity: number) {
+    if (quantity < 1) return
     setPickingItemId(itemId)
     try {
-      const result = await pickItem(itemId, requestedQty)
+      const result = await pickItem(itemId, quantity)
       if (result.success) {
+        // Clear the pick quantity state for this item
+        setPickQuantities(prev => {
+          const next = { ...prev }
+          delete next[itemId]
+          return next
+        })
         router.refresh()
       }
     } catch (err) {
@@ -387,11 +419,17 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
     }
   }
 
-  // Draft Mode UI
+  // Computed values for draft mode
+  const hasNotesData = Boolean(notes)
+  const missingFields: string[] = []
+  if (!assignedTo) missingFields.push('Assign To')
+  if (!itemOutcome) missingFields.push('What happens to stock')
+
+  // Draft Mode UI - Two Column Layout
   if (isDraft) {
     return (
       <div className="flex-1 overflow-y-auto bg-neutral-50">
-        {/* Header */}
+        {/* Header - Streamlined */}
         <div className="border-b border-neutral-200 bg-white px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -399,7 +437,12 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
                 Pick Lists
               </Link>
               <span className="text-neutral-300">/</span>
-              <span className="text-sm text-neutral-500">Last Updated: <FormattedDateTime date={pickList.updated_at || pickList.created_at} /></span>
+              <h1 className="text-xl font-semibold text-neutral-900">
+                {pickList.display_id || pickList.pick_list_number || pickList.name || `PL-${pickList.id.slice(0, 8).toUpperCase()}`}
+              </h1>
+              <span className={`rounded-full px-3 py-1 text-sm font-medium ${statusColors[pickList.status]}`}>
+                {statusLabels[pickList.status]}
+              </span>
             </div>
             <div className="flex items-center gap-2">
               {/* More menu with Delete option */}
@@ -447,389 +490,391 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
               </Button>
             </div>
           </div>
-
-          <div className="mt-4 flex items-center gap-4">
-            <h1 className="text-2xl font-semibold text-neutral-900">
-              {/* Prefer display_id (new format: PL-ACM01-00001), fallback to pick_list_number */}
-              {pickList.display_id || pickList.pick_list_number || pickList.name || `PL-${pickList.id.slice(0, 8).toUpperCase()}`}
-            </h1>
-            <span className={`rounded-full px-3 py-1 text-sm font-medium ${statusColors[pickList.status]}`}>
-              {statusLabels[pickList.status]}
-            </span>
-            {!isValid && (
-              <div className="flex items-center gap-1.5 text-sm text-neutral-500">
-                <Info className="h-4 w-4" />
-                Fill out required fields before proceeding.
-              </div>
-            )}
-          </div>
-
-          <div className="mt-2 text-sm text-neutral-500">
-            <span>Created By: <strong>{data.created_by_name || 'Unknown'}</strong></span>
-            <span className="mx-3">·</span>
-            <span>Date Created: <FormattedDateTime date={pickList.created_at} /></span>
-          </div>
         </div>
 
-        {/* Form Fields Row */}
-        <div className="border-b border-neutral-200 bg-white px-6 py-4">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {/* Assign To */}
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">
-                Assign To <span className="text-red-500">*</span>
-                <Info className="inline h-3.5 w-3.5 ml-1 text-neutral-400" />
-              </label>
-              <select
-                value={assignedTo}
-                onChange={(e) => {
-                  setAssignedTo(e.target.value)
-                  saveField('assigned_to', e.target.value)
-                }}
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
-              >
-                <option value="">Assign To*</option>
-                {teamMembers.map((member) => (
-                  <option key={member.id} value={member.id}>
-                    {member.full_name || member.email}
-                  </option>
-                ))}
-              </select>
-            </div>
+        {/* Two Column Layout */}
+        <div className="p-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Main Content Area - Items (2/3 width on desktop) */}
+            <div className="lg:col-span-2 space-y-4">
+              {/* Ship To Card - Prominent at top */}
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between pb-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <MapPin className="h-4 w-4" />
+                    Ship To
+                  </CardTitle>
+                  <Button variant="outline" size="sm">
+                    Select Address
+                  </Button>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="col-span-2">
+                      <input
+                        type="text"
+                        value={shipToName}
+                        onChange={(e) => setShipToName(e.target.value)}
+                        onBlur={() => saveField('ship_to', shipToName)}
+                        placeholder="Recipient name"
+                        className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                      />
+                    </div>
+                    <div className="col-span-2">
+                      <input
+                        type="text"
+                        value={shipToAddress1}
+                        onChange={(e) => setShipToAddress1(e.target.value)}
+                        onBlur={() => saveField('ship_to', shipToAddress1)}
+                        placeholder="Street address"
+                        className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                      />
+                    </div>
+                    <input
+                      type="text"
+                      value={shipToCity}
+                      onChange={(e) => setShipToCity(e.target.value)}
+                      onBlur={() => saveField('ship_to', shipToCity)}
+                      placeholder="City"
+                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                    />
+                    <input
+                      type="text"
+                      value={shipToState}
+                      onChange={(e) => setShipToState(e.target.value)}
+                      onBlur={() => saveField('ship_to', shipToState)}
+                      placeholder="State"
+                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                    />
+                    <input
+                      type="text"
+                      value={shipToPostalCode}
+                      onChange={(e) => setShipToPostalCode(e.target.value)}
+                      onBlur={() => saveField('ship_to', shipToPostalCode)}
+                      placeholder="Postal code"
+                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                    />
+                    <select
+                      value={shipToCountry}
+                      onChange={(e) => {
+                        setShipToCountry(e.target.value)
+                        saveField('ship_to', e.target.value)
+                      }}
+                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                    >
+                      <option value="">Country</option>
+                      <option value="Malaysia">Malaysia</option>
+                      <option value="Singapore">Singapore</option>
+                      <option value="Indonesia">Indonesia</option>
+                      <option value="Thailand">Thailand</option>
+                      <option value="Philippines">Philippines</option>
+                      <option value="Vietnam">Vietnam</option>
+                      <option value="United States">United States</option>
+                      <option value="United Kingdom">United Kingdom</option>
+                      <option value="Australia">Australia</option>
+                    </select>
+                  </div>
+                </CardContent>
+              </Card>
 
-            {/* Due Date */}
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">
-                Due Date
-              </label>
-              <input
-                type="date"
-                value={dueDate}
-                onChange={(e) => {
-                  setDueDate(e.target.value)
-                  saveField('due_date', e.target.value)
-                }}
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
-              />
-            </div>
-
-            {/* Item Outcome */}
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">
-                Item Outcome when Picked <span className="text-red-500">*</span>
-                <Info className="inline h-3.5 w-3.5 ml-1 text-neutral-400" />
-              </label>
-              <select
-                value={itemOutcome}
-                onChange={(e) => {
-                  setItemOutcome(e.target.value)
-                  saveField('item_outcome', e.target.value)
-                }}
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
-              >
-                {itemOutcomeOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Items Section */}
-        <div className="border-b border-neutral-200 bg-white">
-          <div className="px-6 py-3 border-b border-neutral-100">
-            <div className="flex items-center justify-between text-xs font-medium text-neutral-500 uppercase tracking-wider">
-              <span>Item Description</span>
-              <span>Pick Quantity</span>
-            </div>
-          </div>
-
-          {/* Search */}
-          <div className="px-6 py-4 bg-neutral-50">
-            <div className="flex items-center gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search to add items to the pick list"
-                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-neutral-200 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
-                />
-                {isSearching && (
-                  <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-neutral-400" />
+              {/* Summary Stats Bar */}
+              <div className="flex flex-wrap items-center gap-3 p-4 bg-white rounded-xl border border-neutral-200">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-neutral-100 rounded-full">
+                  <Package className="h-4 w-4 text-neutral-500" />
+                  <span className="text-sm font-medium">{items.length} item{items.length !== 1 ? 's' : ''}</span>
+                </div>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-neutral-100 rounded-full">
+                  <span className="text-sm font-medium">{totalRequested} units to pick</span>
+                </div>
+                {!isValid && (
+                  <div className="flex items-center gap-1.5 px-3 py-1.5 bg-amber-50 text-amber-700 rounded-full">
+                    <AlertCircle className="h-4 w-4" />
+                    <span className="text-sm font-medium">Missing: {missingFields.join(', ')}</span>
+                  </div>
                 )}
               </div>
-              <button
-                onClick={() => setIsScannerOpen(true)}
-                className="p-2.5 rounded-lg border border-neutral-200 bg-white text-neutral-500 hover:text-neutral-700 hover:bg-neutral-50"
-                title="Scan barcode"
-              >
-                <Barcode className="h-5 w-5" />
-              </button>
-            </div>
 
-            {/* Search Results */}
-            {searchResults.length > 0 && (
-              <div className="mt-2 bg-white rounded-lg border border-neutral-200 shadow-lg max-h-60 overflow-y-auto">
-                {searchResults.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => handleAddItem(item)}
-                    disabled={actionLoading === 'add-item'}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 text-left border-b border-neutral-100 last:border-0"
-                  >
-                    {item.image_urls?.[0] ? (
-                      <Image
-                        src={item.image_urls[0]}
-                        alt={item.name}
-                        width={32}
-                        height={32}
-                        className="h-8 w-8 rounded object-cover"
-                      />
-                    ) : (
-                      <div className="h-8 w-8 rounded bg-neutral-100 flex items-center justify-center">
-                        <Package className="h-4 w-4 text-neutral-400" />
-                      </div>
-                    )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-neutral-900 truncate">{item.name}</p>
-                      {item.sku && <p className="text-xs text-neutral-500">SKU: {item.sku}</p>}
-                    </div>
-                    <span className="text-xs text-neutral-500">{item.quantity} {item.unit || 'units'}</span>
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* Low stock toggle */}
-            <label className="mt-3 flex items-center gap-2 text-sm text-neutral-600 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={showLowStock}
-                onChange={(e) => setShowLowStock(e.target.checked)}
-                className="rounded border-neutral-300 text-primary focus:ring-primary"
-              />
-              Only show low-stock items
-            </label>
-          </div>
-
-          {/* Items List */}
-          <div className="divide-y divide-neutral-100">
-            {items.map((item) => (
-              <div key={item.id} className="flex items-center justify-between px-6 py-4">
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => handleRemoveItem(item.id)}
-                    disabled={actionLoading === `remove-${item.id}`}
-                    className="text-neutral-400 hover:text-red-500"
-                  >
-                    {actionLoading === `remove-${item.id}` ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <X className="h-4 w-4" />
-                    )}
-                  </button>
-                  {item.item_image ? (
-                    <Image
-                      src={item.item_image}
-                      alt={item.item_name}
-                      width={40}
-                      height={40}
-                      className="h-10 w-10 rounded-lg object-cover"
-                    />
-                  ) : (
-                    <div className="h-10 w-10 rounded-lg bg-neutral-100 flex items-center justify-center">
-                      <Package className="h-5 w-5 text-neutral-400" />
-                    </div>
-                  )}
-                  <div>
-                    <p className="font-medium text-neutral-900">{item.item_name}</p>
-                    {item.item_sku && <p className="text-xs text-neutral-500">SKU: {item.item_sku}</p>}
+              {/* Items Section */}
+              <div className="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+                <div className="px-4 py-3 border-b border-neutral-100">
+                  <div className="flex items-center justify-between text-xs font-medium text-neutral-500 uppercase tracking-wider">
+                    <span>Items to Pick</span>
+                    <span>Qty</span>
                   </div>
                 </div>
 
-                {/* Quantity controls */}
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => handleUpdateQuantity(item.id, item.requested_quantity - 1)}
-                    disabled={item.requested_quantity <= 1 || actionLoading === `qty-${item.id}`}
-                    className="h-8 w-8 rounded-lg border border-neutral-200 flex items-center justify-center text-neutral-600 hover:bg-neutral-50 disabled:opacity-50"
-                  >
-                    <Minus className="h-4 w-4" />
-                  </button>
-                  <span className="w-12 text-center font-medium">{item.requested_quantity}</span>
-                  <button
-                    onClick={() => handleUpdateQuantity(item.id, item.requested_quantity + 1)}
-                    disabled={actionLoading === `qty-${item.id}`}
-                    className="h-8 w-8 rounded-lg border border-neutral-200 flex items-center justify-center text-neutral-600 hover:bg-neutral-50"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
+                {/* Smart Search Input */}
+                <div className="px-4 py-4 bg-neutral-50 border-b border-neutral-100">
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                      <Zap className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500" />
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Type name, SKU, or paste barcode"
+                        className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-neutral-200 bg-white text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                      />
+                      {isSearching ? (
+                        <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-neutral-400" />
+                      ) : searchQuery && (
+                        <button
+                          onClick={() => setSearchQuery('')}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full bg-neutral-200 hover:bg-neutral-300 flex items-center justify-center transition-colors"
+                        >
+                          <X className="h-3 w-3 text-neutral-600" />
+                        </button>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => setIsScannerOpen(true)}
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white hover:bg-primary/90 transition-colors shadow-sm"
+                      title="Open camera to scan"
+                    >
+                      <Camera className="h-5 w-5" />
+                      <span className="text-sm font-medium hidden sm:inline">Scan</span>
+                    </button>
+                  </div>
+
+                  {/* Search Results */}
+                  {searchResults.length > 0 && (
+                    <div className="mt-2 bg-white rounded-lg border border-neutral-200 shadow-lg max-h-60 overflow-y-auto">
+                      {searchResults.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => handleAddItem(item)}
+                          disabled={actionLoading === 'add-item'}
+                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 text-left border-b border-neutral-100 last:border-0"
+                        >
+                          {item.image_urls?.[0] ? (
+                            <Image
+                              src={item.image_urls[0]}
+                              alt={item.name}
+                              width={32}
+                              height={32}
+                              className="h-8 w-8 rounded object-cover"
+                            />
+                          ) : (
+                            <div className="h-8 w-8 rounded bg-neutral-100 flex items-center justify-center">
+                              <Package className="h-4 w-4 text-neutral-400" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-neutral-900 truncate">{item.name}</p>
+                            {item.sku && <p className="text-xs text-neutral-500">SKU: {item.sku}</p>}
+                          </div>
+                          <span className="text-xs text-neutral-500">{item.quantity} {item.unit || 'units'}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                </div>
+
+                {/* Items List */}
+                <div className="divide-y divide-neutral-100">
+                  {items.map((item) => (
+                    <div key={item.id} className="flex items-center justify-between px-4 py-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <button
+                          onClick={() => handleRemoveItem(item.id)}
+                          disabled={actionLoading === `remove-${item.id}`}
+                          className="text-neutral-400 hover:text-red-500 flex-shrink-0"
+                        >
+                          {actionLoading === `remove-${item.id}` ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <X className="h-4 w-4" />
+                          )}
+                        </button>
+                        {item.item_image ? (
+                          <Image
+                            src={item.item_image}
+                            alt={item.item_name}
+                            width={40}
+                            height={40}
+                            className="h-10 w-10 rounded-lg object-cover flex-shrink-0"
+                          />
+                        ) : (
+                          <div className="h-10 w-10 rounded-lg bg-neutral-100 flex items-center justify-center flex-shrink-0">
+                            <Package className="h-5 w-5 text-neutral-400" />
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="font-medium text-neutral-900 truncate">{item.item_name}</p>
+                          {item.item_sku && <p className="text-xs text-neutral-500 truncate">SKU: {item.item_sku}</p>}
+                          {/* Location badge */}
+                          {item.locations && item.locations.length > 0 && (
+                            <div className="flex items-center gap-1 mt-0.5">
+                              <MapPin className="h-3 w-3 text-primary" />
+                              <span className="text-xs text-primary font-medium truncate">
+                                {item.locations[0].location_name}
+                              </span>
+                              {item.locations.length > 1 && (
+                                <span className="text-xs text-neutral-400">
+                                  +{item.locations.length - 1}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Quantity controls */}
+                      <div className="flex items-center gap-1 flex-shrink-0">
+                        <button
+                          onClick={() => handleUpdateQuantity(item.id, item.requested_quantity - 1)}
+                          disabled={item.requested_quantity <= 1 || actionLoading === `qty-${item.id}`}
+                          className="h-8 w-8 rounded-lg border border-neutral-200 flex items-center justify-center text-neutral-600 hover:bg-neutral-50 disabled:opacity-50"
+                        >
+                          <Minus className="h-4 w-4" />
+                        </button>
+                        <span className="w-10 text-center font-medium">{item.requested_quantity}</span>
+                        <button
+                          onClick={() => handleUpdateQuantity(item.id, item.requested_quantity + 1)}
+                          disabled={actionLoading === `qty-${item.id}`}
+                          className="h-8 w-8 rounded-lg border border-neutral-200 flex items-center justify-center text-neutral-600 hover:bg-neutral-50"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {items.length === 0 && (
+                    <div className="px-6 py-12 text-center">
+                      <Package className="h-12 w-12 mx-auto text-neutral-300 mb-3" />
+                      <p className="text-neutral-500">No items added yet</p>
+                      <p className="text-sm text-neutral-400 mt-1">Search above to add items to pick</p>
+                    </div>
+                  )}
                 </div>
               </div>
-            ))}
+            </div>
 
-            {items.length === 0 && (
-              <div className="px-6 py-8 text-center text-neutral-500">
-                No items added yet. Search above to add items.
-              </div>
-            )}
-          </div>
+            {/* Sidebar - Pick Options & Optional Details (1/3 width on desktop) */}
+            <div className="space-y-4">
+              {/* Required Pick Options Card - Emphasized */}
+              <Card className={`border-2 shadow-md ${!isValid ? 'border-amber-200 bg-gradient-to-br from-white to-amber-50/30' : 'border-primary/10 bg-gradient-to-br from-white to-primary/5'}`}>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Info className="h-4 w-4" />
+                    Pick Options
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Assign To */}
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                      Assign To <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={assignedTo}
+                      onChange={(e) => {
+                        setAssignedTo(e.target.value)
+                        saveField('assigned_to', e.target.value)
+                      }}
+                      className={`w-full rounded-lg border px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary ${!assignedTo ? 'border-amber-300' : 'border-neutral-200'}`}
+                    >
+                      <option value="">Select team member...</option>
+                      {teamMembers.map((member) => (
+                        <option key={member.id} value={member.id}>
+                          {member.full_name || member.email}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-          {/* Summary row */}
-          {items.length > 0 && (
-            <div className="px-6 py-3 bg-neutral-50 border-t border-neutral-200">
-              <div className="flex items-center justify-end">
-                <span className="text-sm font-medium text-neutral-600">
-                  {items.length} item{items.length !== 1 ? 's' : ''} to pick
-                </span>
+                  {/* What happens to stock? */}
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                      What happens to stock? <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={itemOutcome}
+                      onChange={(e) => {
+                        setItemOutcome(e.target.value)
+                        saveField('item_outcome', e.target.value)
+                      }}
+                      className="w-full rounded-lg border border-neutral-200 px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                    >
+                      {itemOutcomeOptions.map((opt) => (
+                        <option key={opt.value} value={opt.value}>
+                          {opt.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Due Date */}
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                      Due Date
+                    </label>
+                    <input
+                      type="date"
+                      value={dueDate}
+                      onChange={(e) => {
+                        setDueDate(e.target.value)
+                        saveField('due_date', e.target.value)
+                      }}
+                      className="w-full rounded-lg border border-neutral-200 px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Optional: Notes - Collapsible */}
+              <CollapsibleSection
+                title="Notes"
+                icon={FileText}
+                hasContent={hasNotesData}
+                defaultExpanded={false}
+              >
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  onBlur={() => saveField('notes', notes)}
+                  placeholder="Leave a note here for your team"
+                  rows={3}
+                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm resize-none"
+                />
+              </CollapsibleSection>
+
+              {/* Metadata */}
+              <div className="text-xs text-neutral-500 space-y-1 px-1">
+                <p>Created by: {data.created_by_name || 'Unknown'}</p>
+                <p>Last updated: <FormattedShortDate date={pickList.updated_at || pickList.created_at} /></p>
               </div>
             </div>
-          )}
+          </div>
         </div>
 
-        {/* Ship To Section */}
-        <Card className="mx-6 mt-6">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <MapPin className="h-5 w-5" />
-              Ship To
-            </CardTitle>
-            <Button variant="outline" size="sm">
-              Select Address
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="md:col-span-2">
-                <label className="block text-xs font-medium text-neutral-500 mb-1">Name</label>
-                <input
-                  type="text"
-                  value={shipToName}
-                  onChange={(e) => setShipToName(e.target.value)}
-                  onBlur={() => saveField('ship_to', shipToName)}
-                  placeholder="Enter name"
-                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-neutral-500 mb-1">Address Line 1</label>
-                <input
-                  type="text"
-                  value={shipToAddress1}
-                  onChange={(e) => setShipToAddress1(e.target.value)}
-                  onBlur={() => saveField('ship_to', shipToAddress1)}
-                  placeholder="Street address"
-                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-neutral-500 mb-1">Address Line 2</label>
-                <input
-                  type="text"
-                  value={shipToAddress2}
-                  onChange={(e) => setShipToAddress2(e.target.value)}
-                  onBlur={() => saveField('ship_to', shipToAddress2)}
-                  placeholder="Apt, suite, unit (optional)"
-                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-neutral-500 mb-1">City</label>
-                <input
-                  type="text"
-                  value={shipToCity}
-                  onChange={(e) => setShipToCity(e.target.value)}
-                  onBlur={() => saveField('ship_to', shipToCity)}
-                  placeholder="Enter city"
-                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-neutral-500 mb-1">State / Province</label>
-                <input
-                  type="text"
-                  value={shipToState}
-                  onChange={(e) => setShipToState(e.target.value)}
-                  onBlur={() => saveField('ship_to', shipToState)}
-                  placeholder="Enter state or province"
-                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-neutral-500 mb-1">Postal Code</label>
-                <input
-                  type="text"
-                  value={shipToPostalCode}
-                  onChange={(e) => setShipToPostalCode(e.target.value)}
-                  onBlur={() => saveField('ship_to', shipToPostalCode)}
-                  placeholder="Enter postal code"
-                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-neutral-500 mb-1">Country</label>
-                <select
-                  value={shipToCountry}
-                  onChange={(e) => {
-                    setShipToCountry(e.target.value)
-                    saveField('ship_to', e.target.value)
-                  }}
-                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                >
-                  <option value="">Select country</option>
-                  <option value="Malaysia">Malaysia</option>
-                  <option value="Singapore">Singapore</option>
-                  <option value="Indonesia">Indonesia</option>
-                  <option value="Thailand">Thailand</option>
-                  <option value="Philippines">Philippines</option>
-                  <option value="Vietnam">Vietnam</option>
-                  <option value="United States">United States</option>
-                  <option value="United Kingdom">United Kingdom</option>
-                  <option value="Australia">Australia</option>
-                </select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Notes Section */}
-        <Card className="mx-6 mt-6 mb-6">
-          <CardHeader>
-            <CardTitle>Notes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              onBlur={() => saveField('notes', notes)}
-              placeholder="Leave a note here for your team"
-              rows={4}
-              className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm resize-none"
-            />
-          </CardContent>
-        </Card>
-
-        {/* Footer Actions */}
+        {/* Footer Actions - Enhanced */}
         <div className="sticky bottom-0 border-t border-neutral-200 bg-white px-6 py-4">
-          <div className="flex items-center justify-end gap-4">
-            <div className="text-right">
-              <p className="text-xs text-neutral-500">{items.length} item{items.length !== 1 ? 's' : ''}</p>
+          <div className="flex items-center justify-between gap-4">
+            <div className="text-sm text-neutral-600">
+              <span className="font-medium">{items.length}</span> item{items.length !== 1 ? 's' : ''} · <span className="font-medium">{totalRequested}</span> units
             </div>
-            <Button
-              onClick={handleStartPicking}
-              disabled={actionLoading !== null || !isValid || items.length === 0}
-            >
-              {actionLoading === 'start' ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Play className="mr-2 h-4 w-4" />
+            <div className="flex items-center gap-3">
+              {!isValid && (
+                <span className="text-sm text-amber-600 hidden sm:block">
+                  Complete required fields to continue
+                </span>
               )}
-              Start Picking
-            </Button>
+              <Button
+                onClick={handleStartPicking}
+                disabled={actionLoading !== null || !isValid || items.length === 0}
+                size="lg"
+              >
+                {actionLoading === 'start' ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Play className="mr-2 h-4 w-4" />
+                )}
+                Start Picking
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -895,14 +940,14 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
               </Button>
               <Button
                 onClick={handleComplete}
-                disabled={actionLoading !== null || !allPicked}
+                disabled={actionLoading !== null || totalPicked === 0}
               >
                 {actionLoading === 'complete' ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
                   <Check className="mr-2 h-4 w-4" />
                 )}
-                Complete
+                {allPicked ? 'Complete' : 'Complete Partial'}
               </Button>
             </>
           )}
@@ -910,6 +955,29 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
       </div>
 
       <div className="p-6 space-y-6">
+        {/* Progress Bar */}
+        {pickList.status === 'in_progress' && (
+          <div className="bg-white rounded-xl border border-neutral-200 p-4">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-neutral-700">Pick Progress</span>
+              <span className="text-sm font-medium text-neutral-900">
+                {totalPicked}/{totalRequested} units ({totalRequested > 0 ? Math.round((totalPicked / totalRequested) * 100) : 0}%)
+              </span>
+            </div>
+            <div className="h-3 bg-neutral-100 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all duration-300 ${allPicked ? 'bg-green-500' : 'bg-primary'}`}
+                style={{ width: `${totalRequested > 0 ? Math.min(100, (totalPicked / totalRequested) * 100) : 0}%` }}
+              />
+            </div>
+            {!allPicked && totalPicked > 0 && (
+              <p className="text-xs text-amber-600 mt-2">
+                {totalRequested - totalPicked} units remaining - you can complete with partial picks
+              </p>
+            )}
+          </div>
+        )}
+
         {/* Info Cards Row */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           <Card>
@@ -932,7 +1000,7 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
 
           <Card>
             <CardContent className="pt-6">
-              <p className="text-sm font-medium text-neutral-500">Item Outcome</p>
+              <p className="text-sm font-medium text-neutral-500">What happens to stock</p>
               <p className="text-base font-semibold text-neutral-900">
                 {itemOutcomeOptions.find(o => o.value === pickList.item_outcome)?.label || pickList.item_outcome}
               </p>
@@ -992,6 +1060,20 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
                                 {item.item_sku && (
                                   <p className="text-xs text-neutral-500">SKU: {item.item_sku}</p>
                                 )}
+                                {/* Location badge for picking */}
+                                {item.locations && item.locations.length > 0 && (
+                                  <div className="flex items-center gap-1 mt-0.5">
+                                    <MapPin className="h-3 w-3 text-primary" />
+                                    <span className="text-xs text-primary font-medium">
+                                      {item.locations[0].location_name}
+                                    </span>
+                                    {item.locations.length > 1 && (
+                                      <span className="text-xs text-neutral-400">
+                                        +{item.locations.length - 1} more
+                                      </span>
+                                    )}
+                                  </div>
+                                )}
                               </div>
                             </div>
                           </td>
@@ -1021,20 +1103,60 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
                           {isEditable && (
                             <td className="px-4 py-3 text-right">
                               {!isPicked && (
-                                <Button
-                                  size="sm"
-                                  onClick={() => handlePickItem(item.id, item.requested_quantity)}
-                                  disabled={pickingItemId === item.id}
-                                >
-                                  {pickingItemId === item.id ? (
-                                    <Loader2 className="h-4 w-4 animate-spin" />
-                                  ) : (
-                                    <>
-                                      <Check className="mr-1 h-4 w-4" />
-                                      Pick
-                                    </>
-                                  )}
-                                </Button>
+                                <div className="flex items-center justify-end gap-2">
+                                  {/* Quantity input for partial picking */}
+                                  <div className="flex items-center gap-1">
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const current = getPickQuantity(item.id, item.requested_quantity, item.picked_quantity)
+                                        const remaining = item.requested_quantity - item.picked_quantity
+                                        updatePickQuantity(item.id, current - 1, remaining)
+                                      }}
+                                      disabled={pickingItemId === item.id || getPickQuantity(item.id, item.requested_quantity, item.picked_quantity) <= 1}
+                                      className="h-7 w-7 rounded border border-neutral-200 flex items-center justify-center text-neutral-600 hover:bg-neutral-50 disabled:opacity-50"
+                                    >
+                                      <Minus className="h-3 w-3" />
+                                    </button>
+                                    <input
+                                      type="number"
+                                      min={1}
+                                      max={item.requested_quantity - item.picked_quantity}
+                                      value={getPickQuantity(item.id, item.requested_quantity, item.picked_quantity)}
+                                      onChange={(e) => {
+                                        const remaining = item.requested_quantity - item.picked_quantity
+                                        updatePickQuantity(item.id, parseInt(e.target.value) || 1, remaining)
+                                      }}
+                                      className="w-14 h-7 text-center text-sm border border-neutral-200 rounded focus:border-primary focus:ring-1 focus:ring-primary"
+                                    />
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        const current = getPickQuantity(item.id, item.requested_quantity, item.picked_quantity)
+                                        const remaining = item.requested_quantity - item.picked_quantity
+                                        updatePickQuantity(item.id, current + 1, remaining)
+                                      }}
+                                      disabled={pickingItemId === item.id || getPickQuantity(item.id, item.requested_quantity, item.picked_quantity) >= (item.requested_quantity - item.picked_quantity)}
+                                      className="h-7 w-7 rounded border border-neutral-200 flex items-center justify-center text-neutral-600 hover:bg-neutral-50 disabled:opacity-50"
+                                    >
+                                      <Plus className="h-3 w-3" />
+                                    </button>
+                                  </div>
+                                  <Button
+                                    size="sm"
+                                    onClick={() => handlePickItem(item.id, getPickQuantity(item.id, item.requested_quantity, item.picked_quantity))}
+                                    disabled={pickingItemId === item.id}
+                                  >
+                                    {pickingItemId === item.id ? (
+                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                    ) : (
+                                      <>
+                                        <Check className="mr-1 h-4 w-4" />
+                                        Pick
+                                      </>
+                                    )}
+                                  </Button>
+                                </div>
                               )}
                             </td>
                           )}

@@ -24,14 +24,16 @@ import {
   Minus,
   MapPin,
   FileText,
-  Barcode,
-  Search,
+  Camera,
   X,
   Info,
-  MoreVertical
+  MoreVertical,
+  Zap,
+  CreditCard
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { FormattedShortDate, FormattedDateTime } from '@/components/formatting/FormattedDate'
 import { useFormatting } from '@/hooks/useFormatting'
 import {
@@ -41,13 +43,15 @@ import {
   addPurchaseOrderItem,
   removePurchaseOrderItem,
   updatePurchaseOrderItem,
-  searchInventoryItemsForPO
+  searchInventoryItemsForPO,
+  createVendor
 } from '@/app/actions/purchase-orders'
 import { createReceive } from '@/app/actions/receives'
 import type { PurchaseOrderWithDetails, TeamMember, Vendor } from './page'
 import { BarcodeScanner } from '@/components/scanner/BarcodeScanner'
 import type { ScanResult } from '@/lib/scanner/useBarcodeScanner'
 import { ChatterPanel } from '@/components/chatter'
+import { VendorFormDialog, type VendorFormData } from '@/components/settings/vendors/VendorFormDialog'
 
 interface PurchaseOrderDetailClientProps {
   purchaseOrder: PurchaseOrderWithDetails
@@ -90,6 +94,7 @@ export function PurchaseOrderDetailClient({
   const [vendorName, setVendorName] = useState(purchaseOrder.vendor?.name || '')
   const [vendorEmail, setVendorEmail] = useState(purchaseOrder.vendor?.email || '')
   const [vendorPhone, setVendorPhone] = useState(purchaseOrder.vendor?.phone || '')
+  const [vendorPaymentTerms, setVendorPaymentTerms] = useState(purchaseOrder.vendor?.payment_terms || '')
 
   // Ship To fields
   const [shipToName, setShipToName] = useState(purchaseOrder.ship_to_name || '')
@@ -115,6 +120,12 @@ export function PurchaseOrderDetailClient({
   // Menu state
   const [showMoreMenu, setShowMoreMenu] = useState(false)
 
+  // Vendor search state
+  const [vendorSearchQuery, setVendorSearchQuery] = useState('')
+  const [showVendorDropdown, setShowVendorDropdown] = useState(false)
+  const [showVendorForm, setShowVendorForm] = useState(false)
+  const [savingVendor, setSavingVendor] = useState(false)
+
   // Search state
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<Array<{
@@ -133,6 +144,14 @@ export function PurchaseOrderDetailClient({
   const status = purchaseOrder.status || 'draft'
   const isDraft = status === 'draft'
   const canReceive = ['submitted', 'confirmed', 'partial'].includes(status)
+
+  // Filter vendors based on search query
+  const filteredVendors = vendorSearchQuery.trim()
+    ? vendors.filter(v =>
+        v.name.toLowerCase().includes(vendorSearchQuery.toLowerCase()) ||
+        (v.email && v.email.toLowerCase().includes(vendorSearchQuery.toLowerCase()))
+      )
+    : vendors
 
   // Calculate totals
   const subtotal = purchaseOrder.items.reduce(
@@ -229,7 +248,42 @@ export function PurchaseOrderDetailClient({
       setVendorName(vendor.name)
       setVendorEmail(vendor.email || '')
       setVendorPhone(vendor.phone || '')
+      setVendorPaymentTerms(vendor.payment_terms || '')
       await saveField('vendor', vendor.id)
+    }
+  }
+
+  async function handleCreateVendor(data: VendorFormData) {
+    setSavingVendor(true)
+    try {
+      const result = await createVendor({
+        name: data.name,
+        contact_name: data.contact_name || null,
+        email: data.email || null,
+        phone: data.phone || null,
+        address_line1: data.address_line1 || null,
+        city: data.city || null,
+        country: data.country || null,
+        payment_terms: data.payment_terms || null,
+        notes: data.notes || null
+      })
+
+      if (result.success && result.vendor_id) {
+        // Set the new vendor as selected
+        setVendorId(result.vendor_id)
+        setVendorName(data.name)
+        setVendorEmail(data.email || '')
+        setVendorPhone(data.phone || '')
+        setVendorPaymentTerms(data.payment_terms || '')
+        setVendorSearchQuery('')
+        setShowVendorForm(false)
+        await saveField('vendor', result.vendor_id)
+        router.refresh() // Refresh to get updated vendors list
+      } else {
+        throw new Error(result.error || 'Failed to create vendor')
+      }
+    } finally {
+      setSavingVendor(false)
     }
   }
 
@@ -392,21 +446,35 @@ export function PurchaseOrderDetailClient({
     }
   }
 
-  // Draft Mode UI - Single column form layout matching Pick List
+  // Validation for draft mode
+  const isValid = vendorId && purchaseOrder.items.length > 0
+  const missingFields: string[] = []
+  if (!vendorId) missingFields.push('Vendor')
+
+  // Draft Mode UI - Two Column Layout (matching Pick List)
   if (isDraft) {
     return (
       <div className="flex-1 overflow-y-auto bg-neutral-50">
-        {/* Header */}
+        {/* Header - Streamlined */}
         <div className="border-b border-neutral-200 bg-white px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Link href="/tasks/purchase-orders" className="text-sm text-neutral-500 hover:text-neutral-700">
-                Purchase Orders
+              <Link href="/tasks/purchase-orders" className="text-neutral-500 hover:text-neutral-700">
+                <ArrowLeft className="h-5 w-5" />
               </Link>
-              <span className="text-neutral-300">/</span>
-              <span className="text-sm text-neutral-500">
-                Last Updated: <FormattedDateTime date={purchaseOrder.updated_at || purchaseOrder.created_at || new Date().toISOString()} />
-              </span>
+              <div>
+                <div className="flex items-center gap-3">
+                  <h1 className="text-xl font-semibold text-neutral-900">
+                    {purchaseOrder.display_id || orderNumber || 'New Purchase Order'}
+                  </h1>
+                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusConfig[status]?.bgColor} ${statusConfig[status]?.color}`}>
+                    {statusConfig[status]?.label || status}
+                  </span>
+                </div>
+                <p className="text-sm text-neutral-500 mt-0.5">
+                  {purchaseOrder.items.length} item{purchaseOrder.items.length !== 1 ? 's' : ''} · {formatCurrency(subtotal)}
+                </p>
+              </div>
             </div>
             <div className="flex items-center gap-2">
               {/* More menu with Delete option */}
@@ -445,36 +513,7 @@ export function PurchaseOrderDetailClient({
                   </>
                 )}
               </div>
-              <Button
-                variant="outline"
-                onClick={handleCancel}
-                disabled={actionLoading !== null}
-              >
-                Cancel
-              </Button>
             </div>
-          </div>
-
-          <div className="mt-4 flex items-center gap-4">
-            <input
-              type="text"
-              value={orderNumber}
-              onChange={(e) => setOrderNumber(e.target.value)}
-              onBlur={() => saveField('order_number')}
-              className="text-2xl font-semibold text-neutral-900 bg-transparent border-b-2 border-dashed border-neutral-200 focus:border-primary outline-none px-2 py-1"
-              placeholder="PO Number"
-            />
-            <span className={`rounded-full px-3 py-1 text-sm font-medium ${statusConfig[status]?.bgColor} ${statusConfig[status]?.color}`}>
-              {statusConfig[status]?.label || status}
-            </span>
-          </div>
-
-          <div className="mt-2 flex items-center gap-4 text-sm text-neutral-500">
-            <span>Order Total: <strong className="text-neutral-900">{formatCurrency(subtotal)}</strong></span>
-            <span>·</span>
-            <span>Created By: <strong>{createdByName || 'Unknown'}</strong></span>
-            <span>·</span>
-            <span>Date Created: <FormattedDateTime date={purchaseOrder.created_at || new Date().toISOString()} /></span>
           </div>
         </div>
 
@@ -489,561 +528,573 @@ export function PurchaseOrderDetailClient({
           </div>
         )}
 
-        {/* Dates Row */}
-        <div className="border-b border-neutral-200 bg-white px-6 py-4">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            {/* Submitted By */}
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">
-                Submitted By
-                <Info className="inline h-3.5 w-3.5 ml-1 text-neutral-400" />
-              </label>
-              <select
-                value={submittedBy}
-                onChange={(e) => setSubmittedBy(e.target.value)}
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
-              >
-                <option value="">Select...</option>
-                {teamMembers.map((member) => (
-                  <option key={member.id} value={member.id}>
-                    {member.full_name || member.email}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Date Expected */}
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">
-                Date Expected
-              </label>
-              <input
-                type="date"
-                value={expectedDate}
-                onChange={(e) => {
-                  setExpectedDate(e.target.value)
-                  saveField('expected_date', e.target.value)
-                }}
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
-              />
-            </div>
-
-            {/* Approved By */}
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">
-                Approved By
-                <Info className="inline h-3.5 w-3.5 ml-1 text-neutral-400" />
-              </label>
-              <select
-                value={approvedBy}
-                onChange={(e) => setApprovedBy(e.target.value)}
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
-              >
-                <option value="">Select...</option>
-                {teamMembers.map((member) => (
-                  <option key={member.id} value={member.id}>
-                    {member.full_name || member.email}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-        </div>
-
-        {/* Items Section */}
-        <div className="border-b border-neutral-200 bg-white">
-          <div className="px-6 py-3 border-b border-neutral-100">
-            <div className="grid grid-cols-6 gap-4 text-xs font-medium text-neutral-500 uppercase tracking-wider">
-              <span className="col-span-2">Line Item</span>
-              <span>Part #</span>
-              <span className="text-center">Order Qty</span>
-              <span className="text-right">Unit Rate</span>
-              <span className="text-right">Amount</span>
-            </div>
-          </div>
-
-          {/* Items List */}
-          <div className="divide-y divide-neutral-100">
-            {purchaseOrder.items.map((item) => (
-              <div key={item.id} className="grid grid-cols-6 gap-4 items-center px-6 py-4">
-                <div className="col-span-2 flex items-center gap-3">
-                  <button
-                    onClick={() => handleRemoveItem(item.id)}
-                    disabled={actionLoading === `remove-${item.id}`}
-                    className="text-neutral-400 hover:text-red-500"
-                  >
-                    {actionLoading === `remove-${item.id}` ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <X className="h-4 w-4" />
-                    )}
-                  </button>
-                  {item.inventory_item?.image_urls?.[0] ? (
-                    <Image
-                      src={item.inventory_item.image_urls[0]}
-                      alt={item.item_name}
-                      width={40}
-                      height={40}
-                      className="h-10 w-10 rounded-lg object-cover"
-                    />
+        {/* Two Column Layout */}
+        <div className="p-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            {/* Left Column - Vendor + Items (2/3 width on desktop) */}
+            <div className="lg:col-span-2 space-y-4">
+              {/* Vendor Card - First and prominent */}
+              <Card className={`border-2 shadow-md ${!vendorId ? 'border-amber-200 bg-gradient-to-br from-white to-amber-50/30' : 'border-primary/10 bg-gradient-to-br from-white to-primary/5'}`}>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Building2 className="h-4 w-4" />
+                    Vendor <span className="text-red-500">*</span>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {vendorId ? (
+                    // Selected vendor display
+                    <div className="flex items-center justify-between p-3 rounded-lg border border-neutral-200 bg-neutral-50">
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                          <Building2 className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-neutral-900">{vendorName}</p>
+                          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-neutral-500">
+                            {vendorEmail && (
+                              <span className="flex items-center gap-1">
+                                <Mail className="h-3 w-3" />
+                                {vendorEmail}
+                              </span>
+                            )}
+                            {vendorPhone && (
+                              <span className="flex items-center gap-1">
+                                <Phone className="h-3 w-3" />
+                                {vendorPhone}
+                              </span>
+                            )}
+                            {vendorPaymentTerms && (
+                              <span className="flex items-center gap-1 text-primary font-medium">
+                                <CreditCard className="h-3 w-3" />
+                                {vendorPaymentTerms}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setVendorId('')
+                          setVendorName('')
+                          setVendorEmail('')
+                          setVendorPhone('')
+                          setVendorPaymentTerms('')
+                          setVendorSearchQuery('')
+                          saveField('vendor', '')
+                        }}
+                        className="p-1.5 text-neutral-400 hover:text-neutral-600 hover:bg-neutral-200 rounded-lg transition-colors"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
                   ) : (
-                    <div className="h-10 w-10 rounded-lg bg-neutral-100 flex items-center justify-center">
-                      <Package className="h-5 w-5 text-neutral-400" />
+                    // Searchable vendor selector
+                    <div className="relative">
+                      <div className="relative">
+                        <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+                        <input
+                          type="text"
+                          value={vendorSearchQuery}
+                          onChange={(e) => {
+                            setVendorSearchQuery(e.target.value)
+                            setShowVendorDropdown(e.target.value.trim().length > 0)
+                          }}
+                          placeholder="Type to search vendors..."
+                          className={`w-full pl-10 pr-4 py-2.5 rounded-lg border text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all ${!vendorId ? 'border-amber-300' : 'border-neutral-200'}`}
+                        />
+                      </div>
+
+                      {/* Vendor Dropdown - only show when typing */}
+                      {showVendorDropdown && vendorSearchQuery.trim() && (
+                        <>
+                          <div
+                            className="fixed inset-0 z-10"
+                            onClick={() => setShowVendorDropdown(false)}
+                          />
+                          <div className="absolute top-full left-0 right-0 mt-1 z-20 bg-white rounded-lg border border-neutral-200 shadow-lg max-h-72 overflow-y-auto">
+                            {filteredVendors.length > 0 && (
+                              <>
+                                {filteredVendors.slice(0, 10).map((vendor) => (
+                                  <button
+                                    key={vendor.id}
+                                    type="button"
+                                    onClick={() => {
+                                      handleVendorSelect(vendor.id)
+                                      setShowVendorDropdown(false)
+                                      setVendorSearchQuery('')
+                                    }}
+                                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 text-left border-b border-neutral-100"
+                                  >
+                                    <div className="h-8 w-8 rounded-lg bg-neutral-100 flex items-center justify-center flex-shrink-0">
+                                      <Building2 className="h-4 w-4 text-neutral-400" />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <p className="font-medium text-neutral-900 truncate">{vendor.name}</p>
+                                      {vendor.email && (
+                                        <p className="text-xs text-neutral-500 truncate">{vendor.email}</p>
+                                      )}
+                                    </div>
+                                  </button>
+                                ))}
+                                {filteredVendors.length > 10 && (
+                                  <div className="px-4 py-2 text-xs text-neutral-500 bg-neutral-50 border-t border-neutral-100">
+                                    +{filteredVendors.length - 10} more results. Type more to narrow down.
+                                  </div>
+                                )}
+                              </>
+                            )}
+                            {/* Create new vendor option */}
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setShowVendorDropdown(false)
+                                setShowVendorForm(true)
+                              }}
+                              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-primary/5 text-left border-t border-neutral-200 bg-neutral-50"
+                            >
+                              <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                                <Plus className="h-4 w-4 text-primary" />
+                              </div>
+                              <div className="min-w-0 flex-1">
+                                <p className="font-medium text-primary">Create new vendor</p>
+                                <p className="text-xs text-neutral-500">
+                                  {filteredVendors.length === 0
+                                    ? `Add "${vendorSearchQuery}" as a new vendor`
+                                    : "Can't find what you're looking for?"}
+                                </p>
+                              </div>
+                            </button>
+                          </div>
+                        </>
+                      )}
                     </div>
                   )}
-                  <div>
-                    <p className="font-medium text-neutral-900">{item.item_name}</p>
-                    {item.sku && <p className="text-xs text-neutral-500">SKU: {item.sku}</p>}
-                  </div>
-                </div>
+                </CardContent>
+              </Card>
 
-                <div className="text-neutral-600">
-                  {item.part_number || '-'}
-                </div>
-
-                {/* Quantity controls */}
-                <div className="flex items-center justify-center gap-1">
-                  <button
-                    onClick={() => handleUpdateItemQuantity(item.id, item.ordered_quantity - 1)}
-                    disabled={item.ordered_quantity <= 1 || actionLoading === `qty-${item.id}`}
-                    className="h-8 w-8 rounded-lg border border-neutral-200 flex items-center justify-center text-neutral-600 hover:bg-neutral-50 disabled:opacity-50"
-                  >
-                    <Minus className="h-4 w-4" />
-                  </button>
-                  <span className="w-10 text-center font-medium">{item.ordered_quantity}</span>
-                  <button
-                    onClick={() => handleUpdateItemQuantity(item.id, item.ordered_quantity + 1)}
-                    disabled={actionLoading === `qty-${item.id}`}
-                    className="h-8 w-8 rounded-lg border border-neutral-200 flex items-center justify-center text-neutral-600 hover:bg-neutral-50"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </button>
-                </div>
-
-                <div className="text-right text-neutral-700">
-                  {formatCurrency(item.unit_price)}
-                </div>
-
-                <div className="text-right font-medium text-neutral-900">
-                  {formatCurrency(item.ordered_quantity * item.unit_price)}
-                </div>
-              </div>
-            ))}
-
-            {purchaseOrder.items.length === 0 && (
-              <div className="px-6 py-8 text-center text-neutral-500">
-                No items added yet. Search below to add items.
-              </div>
-            )}
-          </div>
-
-          {/* Subtotal row */}
-          {purchaseOrder.items.length > 0 && (
-            <div className="grid grid-cols-6 gap-4 items-center px-6 py-3 bg-neutral-50 border-t border-neutral-200">
-              <div className="col-span-4 text-right text-sm font-medium text-neutral-600">
-                Subtotal ({purchaseOrder.items.length} item{purchaseOrder.items.length !== 1 ? 's' : ''}):
-              </div>
-              <div className="col-span-2 text-right text-lg font-semibold text-neutral-900">
-                {formatCurrency(subtotal)}
-              </div>
-            </div>
-          )}
-
-          {/* Search to add items */}
-          <div className="px-6 py-4 bg-neutral-50 border-t border-neutral-100">
-            <div className="flex items-center gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search to add items to the purchase order"
-                  className="w-full pl-10 pr-4 py-2 rounded-lg border border-neutral-200 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
-                />
-                {isSearching && (
-                  <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-neutral-400" />
-                )}
-              </div>
-              <button
-                onClick={() => setIsScannerOpen(true)}
-                className="p-2.5 rounded-lg border border-neutral-200 bg-white text-neutral-500 hover:text-neutral-700 hover:bg-neutral-50"
-                title="Scan barcode"
-              >
-                <Barcode className="h-5 w-5" />
-              </button>
-            </div>
-
-            {/* Search Results */}
-            {searchResults.length > 0 && (
-              <div className="mt-2 bg-white rounded-lg border border-neutral-200 shadow-lg max-h-60 overflow-y-auto">
-                {searchResults.map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => handleAddItem(item)}
-                    disabled={actionLoading === 'add-item'}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 text-left border-b border-neutral-100 last:border-0"
-                  >
-                    {item.image_urls?.[0] ? (
-                      <Image
-                        src={item.image_urls[0]}
-                        alt={item.name}
-                        width={32}
-                        height={32}
-                        className="h-8 w-8 rounded object-cover"
+              {/* Items Card */}
+              <Card>
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Package className="h-4 w-4" />
+                    Order Items
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Smart Search Input */}
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                      <Zap className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500" />
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search items to add..."
+                        className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-neutral-200 bg-white text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
                       />
-                    ) : (
-                      <div className="h-8 w-8 rounded bg-neutral-100 flex items-center justify-center">
-                        <Package className="h-4 w-4 text-neutral-400" />
+                      {isSearching ? (
+                        <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-neutral-400" />
+                      ) : searchQuery && (
+                        <button
+                          onClick={() => setSearchQuery('')}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full bg-neutral-200 hover:bg-neutral-300 flex items-center justify-center transition-colors"
+                        >
+                          <X className="h-3 w-3 text-neutral-600" />
+                        </button>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => setIsScannerOpen(true)}
+                      className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white hover:bg-primary/90 transition-colors shadow-sm"
+                      title="Scan barcode"
+                    >
+                      <Camera className="h-5 w-5" />
+                    </button>
+                  </div>
+
+                  {/* Search Results Dropdown */}
+                  {searchResults.length > 0 && (
+                    <div className="bg-white rounded-lg border border-neutral-200 shadow-lg max-h-48 overflow-y-auto">
+                      {searchResults.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => handleAddItem(item)}
+                          disabled={actionLoading === 'add-item'}
+                          className="w-full flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 text-left border-b border-neutral-100 last:border-0"
+                        >
+                          {item.image_urls?.[0] ? (
+                            <Image
+                              src={item.image_urls[0]}
+                              alt={item.name}
+                              width={32}
+                              height={32}
+                              className="h-8 w-8 rounded object-cover"
+                            />
+                          ) : (
+                            <div className="h-8 w-8 rounded bg-neutral-100 flex items-center justify-center">
+                              <Package className="h-4 w-4 text-neutral-400" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-neutral-900 truncate">{item.name}</p>
+                            {item.sku && <p className="text-xs text-neutral-500">SKU: {item.sku}</p>}
+                          </div>
+                          <span className="text-xs text-neutral-500">{item.quantity} {item.unit || 'units'}</span>
+                          <Plus className="h-4 w-4 text-primary" />
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Low stock toggle */}
+                  <label className="flex items-center gap-2 text-sm text-neutral-600 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={showLowStock}
+                      onChange={(e) => setShowLowStock(e.target.checked)}
+                      className="rounded border-neutral-300 text-primary focus:ring-primary"
+                    />
+                    Only show low-stock items
+                  </label>
+
+                  {/* Items List */}
+                  <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                    {purchaseOrder.items.map((item) => (
+                      <div
+                        key={item.id}
+                        className="flex items-center gap-3 p-3 rounded-xl border border-neutral-200 bg-white hover:border-neutral-300 transition-colors"
+                      >
+                        {item.inventory_item?.image_urls?.[0] ? (
+                          <Image
+                            src={item.inventory_item.image_urls[0]}
+                            alt={item.item_name}
+                            width={40}
+                            height={40}
+                            className="h-10 w-10 rounded-lg object-cover flex-shrink-0"
+                          />
+                        ) : (
+                          <div className="h-10 w-10 rounded-lg bg-neutral-100 flex items-center justify-center flex-shrink-0">
+                            <Package className="h-5 w-5 text-neutral-400" />
+                          </div>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium text-neutral-900 truncate">{item.item_name}</p>
+                          {item.sku && <p className="text-xs text-neutral-500 truncate">SKU: {item.sku}</p>}
+                          <p className="text-xs text-neutral-500">{formatCurrency(item.unit_price)} each</p>
+                        </div>
+
+                        {/* Quantity controls */}
+                        <div className="flex items-center gap-1 flex-shrink-0">
+                          <button
+                            onClick={() => handleUpdateItemQuantity(item.id, item.ordered_quantity - 1)}
+                            disabled={item.ordered_quantity <= 1 || actionLoading === `qty-${item.id}`}
+                            className="h-8 w-8 rounded-lg border border-neutral-200 flex items-center justify-center text-neutral-600 hover:bg-neutral-50 disabled:opacity-50"
+                          >
+                            <Minus className="h-4 w-4" />
+                          </button>
+                          <span className="w-10 text-center font-medium">{item.ordered_quantity}</span>
+                          <button
+                            onClick={() => handleUpdateItemQuantity(item.id, item.ordered_quantity + 1)}
+                            disabled={actionLoading === `qty-${item.id}`}
+                            className="h-8 w-8 rounded-lg border border-neutral-200 flex items-center justify-center text-neutral-600 hover:bg-neutral-50"
+                          >
+                            <Plus className="h-4 w-4" />
+                          </button>
+                        </div>
+
+                        {/* Amount and Remove */}
+                        <div className="text-right flex-shrink-0">
+                          <p className="font-medium text-neutral-900">{formatCurrency(item.ordered_quantity * item.unit_price)}</p>
+                        </div>
+                        <button
+                          onClick={() => handleRemoveItem(item.id)}
+                          disabled={actionLoading === `remove-${item.id}`}
+                          className="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                          {actionLoading === `remove-${item.id}` ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
+                        </button>
+                      </div>
+                    ))}
+
+                    {purchaseOrder.items.length === 0 && (
+                      <div className="text-center py-8">
+                        <p className="text-neutral-500">No items added yet</p>
+                        <p className="text-sm text-neutral-400 mt-1">Search above to add items to order</p>
                       </div>
                     )}
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-neutral-900 truncate">{item.name}</p>
-                      {item.sku && <p className="text-xs text-neutral-500">SKU: {item.sku}</p>}
+                  </div>
+
+                  {/* Subtotal */}
+                  {purchaseOrder.items.length > 0 && (
+                    <div className="flex items-center justify-between pt-3 border-t border-neutral-200">
+                      <span className="text-sm font-medium text-neutral-600">
+                        Subtotal ({purchaseOrder.items.length} item{purchaseOrder.items.length !== 1 ? 's' : ''})
+                      </span>
+                      <span className="text-lg font-semibold text-neutral-900">{formatCurrency(subtotal)}</span>
                     </div>
-                    <span className="text-xs text-neutral-500">{item.quantity} {item.unit || 'units'}</span>
-                    <Plus className="h-4 w-4 text-primary" />
-                  </button>
-                ))}
-              </div>
-            )}
-
-            {/* Low stock toggle */}
-            <label className="mt-3 flex items-center gap-2 text-sm text-neutral-600 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={showLowStock}
-                onChange={(e) => setShowLowStock(e.target.checked)}
-                className="rounded border-neutral-300 text-primary focus:ring-primary"
-              />
-              Only show low-stock items
-            </label>
-          </div>
-        </div>
-
-        {/* Vendor Section */}
-        <Card className="mx-6 mt-6">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <Building2 className="h-5 w-5" />
-              Vendor
-            </CardTitle>
-            <select
-              value={vendorId}
-              onChange={(e) => handleVendorSelect(e.target.value)}
-              className="rounded-lg border border-neutral-200 px-3 py-1.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
-            >
-              <option value="">Select Vendor</option>
-              {vendors.map((vendor) => (
-                <option key={vendor.id} value={vendor.id}>
-                  {vendor.name}
-                </option>
-              ))}
-            </select>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="md:col-span-2">
-                <input
-                  type="text"
-                  value={vendorName}
-                  onChange={(e) => setVendorName(e.target.value)}
-                  placeholder="Name"
-                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                  disabled
-                />
-              </div>
-              <input
-                type="email"
-                value={vendorEmail}
-                onChange={(e) => setVendorEmail(e.target.value)}
-                placeholder="Email"
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                disabled
-              />
-              <input
-                type="tel"
-                value={vendorPhone}
-                onChange={(e) => setVendorPhone(e.target.value)}
-                placeholder="Phone Number"
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                disabled
-              />
+                  )}
+                </CardContent>
+              </Card>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Ship To Section */}
-        <Card className="mx-6 mt-6">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <MapPin className="h-5 w-5" />
-              Ship To
-            </CardTitle>
-            <Button variant="outline" size="sm">
-              Select Address
-            </Button>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="md:col-span-2">
-                <label className="block text-xs font-medium text-neutral-500 mb-1">Name</label>
-                <input
-                  type="text"
-                  value={shipToName}
-                  onChange={(e) => setShipToName(e.target.value)}
-                  onBlur={() => saveField('ship_to')}
-                  placeholder="Enter name"
-                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-neutral-500 mb-1">Address Line 1</label>
-                <input
-                  type="text"
-                  value={shipToAddress1}
-                  onChange={(e) => setShipToAddress1(e.target.value)}
-                  onBlur={() => saveField('ship_to')}
-                  placeholder="Street address"
-                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-neutral-500 mb-1">Address Line 2</label>
-                <input
-                  type="text"
-                  value={shipToAddress2}
-                  onChange={(e) => setShipToAddress2(e.target.value)}
-                  onBlur={() => saveField('ship_to')}
-                  placeholder="Apt, suite, unit (optional)"
-                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-neutral-500 mb-1">City</label>
-                <input
-                  type="text"
-                  value={shipToCity}
-                  onChange={(e) => setShipToCity(e.target.value)}
-                  onBlur={() => saveField('ship_to')}
-                  placeholder="Enter city"
-                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-neutral-500 mb-1">State / Province</label>
-                <input
-                  type="text"
-                  value={shipToState}
-                  onChange={(e) => setShipToState(e.target.value)}
-                  onBlur={() => saveField('ship_to')}
-                  placeholder="Enter state or province"
-                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-neutral-500 mb-1">Postal Code</label>
-                <input
-                  type="text"
-                  value={shipToPostalCode}
-                  onChange={(e) => setShipToPostalCode(e.target.value)}
-                  onBlur={() => saveField('ship_to')}
-                  placeholder="Enter postal code"
-                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-neutral-500 mb-1">Country</label>
-                <select
-                  value={shipToCountry}
-                  onChange={(e) => {
-                    setShipToCountry(e.target.value)
-                    saveField('ship_to')
-                  }}
-                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                >
-                  <option value="">Select country</option>
-                  <option value="Malaysia">Malaysia</option>
-                  <option value="Singapore">Singapore</option>
-                  <option value="Indonesia">Indonesia</option>
-                  <option value="Thailand">Thailand</option>
-                  <option value="Philippines">Philippines</option>
-                  <option value="Vietnam">Vietnam</option>
-                  <option value="United States">United States</option>
-                  <option value="United Kingdom">United Kingdom</option>
-                  <option value="Australia">Australia</option>
-                </select>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Bill To Section */}
-        <Card className="mx-6 mt-6">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              Bill To
-            </CardTitle>
-            <div className="flex items-center gap-3">
-              <label className="flex items-center gap-2 text-sm text-neutral-600 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={sameAsShipTo}
-                  onChange={(e) => handleSameAsShipTo(e.target.checked)}
-                  className="rounded border-neutral-300 text-primary focus:ring-primary"
-                />
-                Same as Ship To
-              </label>
-              <Button variant="outline" size="sm">
-                Select Address
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {sameAsShipTo ? (
-              <div className="rounded-lg bg-neutral-50 border border-neutral-200 px-4 py-3 text-sm text-neutral-600">
-                <p className="font-medium text-neutral-700">{billToName || 'No name provided'}</p>
-                {billToAddress1 && <p>{billToAddress1}</p>}
-                {billToAddress2 && <p>{billToAddress2}</p>}
-                <p>
-                  {[billToCity, billToState, billToPostalCode].filter(Boolean).join(', ')}
-                </p>
-                {billToCountry && <p>{billToCountry}</p>}
-                {!billToName && !billToAddress1 && (
-                  <p className="text-neutral-400 italic">Fill in Ship To address first</p>
-                )}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div className="md:col-span-2">
-                  <label className="block text-xs font-medium text-neutral-500 mb-1">Name</label>
-                  <input
-                    type="text"
-                    value={billToName}
-                    onChange={(e) => setBillToName(e.target.value)}
-                    onBlur={() => saveField('bill_to')}
-                    placeholder="Enter name"
-                    className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                  />
+            {/* Right Column - Addresses & Options (1/3 width on desktop) */}
+            <div className="space-y-4">
+              {/* Validation Alert */}
+              {!isValid && missingFields.length > 0 && (
+                <div className="flex items-start gap-2 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3">
+                  <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-medium text-amber-800">Required to submit:</p>
+                    <p className="text-sm text-amber-700">{missingFields.join(', ')}</p>
+                    {purchaseOrder.items.length === 0 && (
+                      <p className="text-sm text-amber-700">At least 1 item</p>
+                    )}
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-neutral-500 mb-1">Address Line 1</label>
+              )}
+
+              {/* Ship To Section */}
+              <CollapsibleSection
+                title="Ship To"
+                icon={MapPin}
+                defaultExpanded={Boolean(shipToName || shipToAddress1)}
+                hasContent={Boolean(shipToName || shipToAddress1)}
+              >
+                <div className="grid grid-cols-1 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-500 mb-1">Name</label>
+                    <input
+                      type="text"
+                      value={shipToName}
+                      onChange={(e) => setShipToName(e.target.value)}
+                      onBlur={() => saveField('ship_to')}
+                      placeholder="Enter name"
+                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-500 mb-1">Address</label>
+                    <input
+                      type="text"
+                      value={shipToAddress1}
+                      onChange={(e) => setShipToAddress1(e.target.value)}
+                      onBlur={() => saveField('ship_to')}
+                      placeholder="Street address"
+                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                    />
+                  </div>
                   <input
                     type="text"
-                    value={billToAddress1}
-                    onChange={(e) => setBillToAddress1(e.target.value)}
-                    onBlur={() => saveField('bill_to')}
-                    placeholder="Street address"
-                    className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-neutral-500 mb-1">Address Line 2</label>
-                  <input
-                    type="text"
-                    value={billToAddress2}
-                    onChange={(e) => setBillToAddress2(e.target.value)}
-                    onBlur={() => saveField('bill_to')}
+                    value={shipToAddress2}
+                    onChange={(e) => setShipToAddress2(e.target.value)}
+                    onBlur={() => saveField('ship_to')}
                     placeholder="Apt, suite, unit (optional)"
                     className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
                   />
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      value={shipToCity}
+                      onChange={(e) => setShipToCity(e.target.value)}
+                      onBlur={() => saveField('ship_to')}
+                      placeholder="City"
+                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                    />
+                    <input
+                      type="text"
+                      value={shipToState}
+                      onChange={(e) => setShipToState(e.target.value)}
+                      onBlur={() => saveField('ship_to')}
+                      placeholder="State"
+                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      value={shipToPostalCode}
+                      onChange={(e) => setShipToPostalCode(e.target.value)}
+                      onBlur={() => saveField('ship_to')}
+                      placeholder="Postal Code"
+                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                    />
+                    <select
+                      value={shipToCountry}
+                      onChange={(e) => {
+                        setShipToCountry(e.target.value)
+                        saveField('ship_to')
+                      }}
+                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                    >
+                      <option value="">Country</option>
+                      <option value="Malaysia">Malaysia</option>
+                      <option value="Singapore">Singapore</option>
+                      <option value="Indonesia">Indonesia</option>
+                      <option value="Thailand">Thailand</option>
+                      <option value="Philippines">Philippines</option>
+                      <option value="Vietnam">Vietnam</option>
+                      <option value="United States">United States</option>
+                      <option value="United Kingdom">United Kingdom</option>
+                      <option value="Australia">Australia</option>
+                    </select>
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-xs font-medium text-neutral-500 mb-1">City</label>
-                  <input
-                    type="text"
-                    value={billToCity}
-                    onChange={(e) => setBillToCity(e.target.value)}
-                    onBlur={() => saveField('bill_to')}
-                    placeholder="Enter city"
-                    className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-neutral-500 mb-1">State / Province</label>
-                  <input
-                    type="text"
-                    value={billToState}
-                    onChange={(e) => setBillToState(e.target.value)}
-                    onBlur={() => saveField('bill_to')}
-                    placeholder="Enter state or province"
-                    className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-neutral-500 mb-1">Postal Code</label>
-                  <input
-                    type="text"
-                    value={billToPostalCode}
-                    onChange={(e) => setBillToPostalCode(e.target.value)}
-                    onBlur={() => saveField('bill_to')}
-                    placeholder="Enter postal code"
-                    className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-neutral-500 mb-1">Country</label>
-                  <select
-                    value={billToCountry}
-                    onChange={(e) => {
-                      setBillToCountry(e.target.value)
-                      saveField('bill_to')
-                    }}
-                    className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                  >
-                    <option value="">Select country</option>
-                    <option value="Malaysia">Malaysia</option>
-                    <option value="Singapore">Singapore</option>
-                    <option value="Indonesia">Indonesia</option>
-                    <option value="Thailand">Thailand</option>
-                    <option value="Philippines">Philippines</option>
-                    <option value="Vietnam">Vietnam</option>
-                    <option value="United States">United States</option>
-                    <option value="United Kingdom">United Kingdom</option>
-                    <option value="Australia">Australia</option>
-                  </select>
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
+              </CollapsibleSection>
 
-        {/* Notes Section */}
-        <Card className="mx-6 mt-6">
-          <CardHeader>
-            <CardTitle>Notes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              onBlur={() => saveField('notes')}
-              placeholder="Write a message to the vendor..."
-              rows={4}
-              className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm resize-none"
-            />
-          </CardContent>
-        </Card>
+              {/* Bill To Section */}
+              <CollapsibleSection
+                title="Bill To"
+                icon={FileText}
+                defaultExpanded={false}
+                hasContent={Boolean(billToName || billToAddress1)}
+              >
+                <div className="space-y-3">
+                  <label className="flex items-center gap-2 text-sm text-neutral-600 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={sameAsShipTo}
+                      onChange={(e) => handleSameAsShipTo(e.target.checked)}
+                      className="rounded border-neutral-300 text-primary focus:ring-primary"
+                    />
+                    Same as Ship To
+                  </label>
+
+                  {sameAsShipTo ? (
+                    <div className="rounded-lg bg-neutral-50 border border-neutral-200 px-3 py-2 text-sm text-neutral-600">
+                      <p className="font-medium text-neutral-700">{billToName || 'No name provided'}</p>
+                      {billToAddress1 && <p>{billToAddress1}</p>}
+                      {[billToCity, billToState, billToPostalCode].filter(Boolean).length > 0 && (
+                        <p>{[billToCity, billToState, billToPostalCode].filter(Boolean).join(', ')}</p>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <input
+                        type="text"
+                        value={billToName}
+                        onChange={(e) => setBillToName(e.target.value)}
+                        onBlur={() => saveField('bill_to')}
+                        placeholder="Name"
+                        className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                      />
+                      <input
+                        type="text"
+                        value={billToAddress1}
+                        onChange={(e) => setBillToAddress1(e.target.value)}
+                        onBlur={() => saveField('bill_to')}
+                        placeholder="Address"
+                        className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                      />
+                      <div className="grid grid-cols-2 gap-2">
+                        <input
+                          type="text"
+                          value={billToCity}
+                          onChange={(e) => setBillToCity(e.target.value)}
+                          onBlur={() => saveField('bill_to')}
+                          placeholder="City"
+                          className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                        />
+                        <input
+                          type="text"
+                          value={billToPostalCode}
+                          onChange={(e) => setBillToPostalCode(e.target.value)}
+                          onBlur={() => saveField('bill_to')}
+                          placeholder="Postal Code"
+                          className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                        />
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </CollapsibleSection>
+
+              {/* Expected Date */}
+              <Card>
+                <CardContent className="py-4">
+                  <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                    <Calendar className="h-4 w-4 inline mr-1.5" />
+                    Expected Date
+                  </label>
+                  <input
+                    type="date"
+                    value={expectedDate}
+                    onChange={(e) => {
+                      setExpectedDate(e.target.value)
+                      saveField('expected_date', e.target.value)
+                    }}
+                    className="w-full rounded-lg border border-neutral-200 px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                  />
+                </CardContent>
+              </Card>
+
+              {/* Notes Section */}
+              <CollapsibleSection
+                title="Notes"
+                icon={FileText}
+                defaultExpanded={Boolean(notes)}
+                hasContent={Boolean(notes)}
+              >
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  onBlur={() => saveField('notes')}
+                  placeholder="Message to vendor..."
+                  rows={3}
+                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm resize-none"
+                />
+              </CollapsibleSection>
+
+              {/* Metadata */}
+              <div className="text-xs text-neutral-500 space-y-1 px-1">
+                <p>Created by: {createdByName || 'Unknown'}</p>
+                <p>Last updated: <FormattedShortDate date={purchaseOrder.updated_at || purchaseOrder.created_at || new Date().toISOString()} /></p>
+              </div>
+            </div>
+          </div>
+        </div>
 
         {/* Footer Actions */}
         <div className="sticky bottom-0 border-t border-neutral-200 bg-white px-6 py-4">
-          <div className="flex items-center justify-end gap-4">
-            <div className="text-right">
-              <p className="text-xs text-neutral-500">{purchaseOrder.items.length} item{purchaseOrder.items.length !== 1 ? 's' : ''}</p>
-              <p className="text-lg font-semibold text-neutral-900">{formatCurrency(subtotal)}</p>
-            </div>
-            <Button
-              onClick={() => handleStatusChange('submitted')}
-              disabled={actionLoading !== null || purchaseOrder.items.length === 0}
-            >
-              {actionLoading === 'status' ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          <div className="flex items-center justify-between gap-4">
+            {/* Left side - validation status */}
+            <div className="flex items-center gap-3">
+              {isValid ? (
+                <div className="flex items-center gap-1.5 text-green-600">
+                  <CheckCircle className="h-4 w-4" />
+                  <span className="text-sm font-medium">Ready to submit</span>
+                </div>
               ) : (
-                <Send className="mr-2 h-4 w-4" />
+                <div className="flex items-center gap-1.5 text-amber-600">
+                  <AlertTriangle className="h-4 w-4" />
+                  <span className="text-sm">Complete required fields</span>
+                </div>
               )}
-              Submit Order
-            </Button>
+            </div>
+
+            {/* Right side - actions */}
+            <div className="flex items-center gap-3">
+              <div className="text-right">
+                <p className="text-xs text-neutral-500">{purchaseOrder.items.length} item{purchaseOrder.items.length !== 1 ? 's' : ''}</p>
+                <p className="text-lg font-semibold text-neutral-900">{formatCurrency(subtotal)}</p>
+              </div>
+              <Button
+                onClick={() => handleStatusChange('submitted')}
+                disabled={actionLoading !== null || !isValid}
+              >
+                {actionLoading === 'status' ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="mr-2 h-4 w-4" />
+                )}
+                Submit Order
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -1057,6 +1108,14 @@ export function PurchaseOrderDetailClient({
             />
           </div>
         )}
+
+        {/* Vendor Form Dialog */}
+        <VendorFormDialog
+          isOpen={showVendorForm}
+          onClose={() => setShowVendorForm(false)}
+          onSave={handleCreateVendor}
+          saving={savingVendor}
+        />
       </div>
     )
   }

@@ -3,22 +3,17 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { SettingsSection } from '@/components/settings'
 import {
+  VendorsDataTable,
+  VendorFormDialog,
+  type VendorFormData,
+} from '@/components/settings/vendors'
+import {
   Plus,
-  Pencil,
-  Trash2,
-  X,
   Check,
-  Loader2,
   Truck,
-  Mail,
-  Phone,
-  MapPin,
-  User,
   AlertCircle,
-  Building2,
 } from 'lucide-react'
 import type { Vendor } from '@/types/database.types'
 
@@ -26,21 +21,15 @@ export default function VendorsSettingsPage() {
   const [vendors, setVendors] = useState<Vendor[]>([])
   const [loading, setLoading] = useState(true)
   const [tenantId, setTenantId] = useState<string | null>(null)
-  const [showForm, setShowForm] = useState(false)
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [formData, setFormData] = useState({
-    name: '',
-    contact_name: '',
-    email: '',
-    phone: '',
-    address_line1: '',
-    city: '',
-    country: '',
-    notes: '',
-  })
-  const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
-  const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null)
+
+  // Dialog states
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [editingVendor, setEditingVendor] = useState<Vendor | null>(null)
+  const [saving, setSaving] = useState(false)
+
+  // Delete confirmation state
+  const [deleteConfirmVendor, setDeleteConfirmVendor] = useState<Vendor | null>(null)
 
   // Auto-dismiss success messages
   useEffect(() => {
@@ -85,21 +74,21 @@ export default function VendorsSettingsPage() {
     loadVendors()
   }, [loadVendors])
 
-  function resetForm() {
-    setFormData({
-      name: '',
-      contact_name: '',
-      email: '',
-      phone: '',
-      address_line1: '',
-      city: '',
-      country: '',
-      notes: '',
-    })
+  // Open dialog for creating new vendor
+  function handleAddVendor() {
+    setEditingVendor(null)
+    setDialogOpen(true)
   }
 
-  async function handleCreate() {
-    if (!formData.name.trim() || !tenantId) return
+  // Open dialog for editing existing vendor
+  function handleEditVendor(vendor: Vendor) {
+    setEditingVendor(vendor)
+    setDialogOpen(true)
+  }
+
+  // Handle save from dialog (create or update)
+  async function handleSaveVendor(formData: VendorFormData) {
+    if (!tenantId) return
 
     setSaving(true)
     setMessage(null)
@@ -107,83 +96,81 @@ export default function VendorsSettingsPage() {
     try {
       const supabase = createClient()
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: insertError } = await (supabase as any)
-        .from('vendors')
-        .insert({
-          tenant_id: tenantId,
-          name: formData.name.trim(),
-          contact_name: formData.contact_name || null,
-          email: formData.email || null,
-          phone: formData.phone || null,
-          address_line1: formData.address_line1 || null,
-          city: formData.city || null,
-          country: formData.country || null,
-          notes: formData.notes || null,
-        })
+      if (editingVendor) {
+        // Update existing vendor
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: updateError } = await (supabase as any)
+          .from('vendors')
+          .update({
+            name: formData.name.trim(),
+            contact_name: formData.contact_name || null,
+            email: formData.email || null,
+            phone: formData.phone || null,
+            address_line1: formData.address_line1 || null,
+            city: formData.city || null,
+            country: formData.country || null,
+            notes: formData.notes || null,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', editingVendor.id)
 
-      if (insertError) throw insertError
+        if (updateError) throw updateError
 
-      setShowForm(false)
-      resetForm()
-      setMessage({ type: 'success', text: 'Vendor added successfully' })
+        setMessage({ type: 'success', text: 'Vendor updated successfully' })
+      } else {
+        // Create new vendor
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: insertError } = await (supabase as any)
+          .from('vendors')
+          .insert({
+            tenant_id: tenantId,
+            name: formData.name.trim(),
+            contact_name: formData.contact_name || null,
+            email: formData.email || null,
+            phone: formData.phone || null,
+            address_line1: formData.address_line1 || null,
+            city: formData.city || null,
+            country: formData.country || null,
+            notes: formData.notes || null,
+          })
+
+        if (insertError) throw insertError
+
+        setMessage({ type: 'success', text: 'Vendor added successfully' })
+      }
+
+      setDialogOpen(false)
+      setEditingVendor(null)
       loadVendors()
     } catch (err) {
-      setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to create vendor' })
+      setMessage({
+        type: 'error',
+        text: err instanceof Error ? err.message : 'Failed to save vendor',
+      })
+      throw err // Re-throw so dialog knows there was an error
     } finally {
       setSaving(false)
     }
   }
 
-  async function handleUpdate(id: string) {
-    if (!formData.name.trim()) return
-
-    setSaving(true)
-    setMessage(null)
-
-    try {
-      const supabase = createClient()
-
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { error: updateError } = await (supabase as any)
-        .from('vendors')
-        .update({
-          name: formData.name.trim(),
-          contact_name: formData.contact_name || null,
-          email: formData.email || null,
-          phone: formData.phone || null,
-          address_line1: formData.address_line1 || null,
-          city: formData.city || null,
-          country: formData.country || null,
-          notes: formData.notes || null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq('id', id)
-
-      if (updateError) throw updateError
-
-      setEditingId(null)
-      resetForm()
-      setMessage({ type: 'success', text: 'Vendor updated successfully' })
-      loadVendors()
-    } catch (err) {
-      setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to update vendor' })
-    } finally {
-      setSaving(false)
-    }
+  // Handle single delete
+  function handleDeleteVendor(vendor: Vendor) {
+    setDeleteConfirmVendor(vendor)
   }
 
-  async function handleDelete(id: string) {
+  async function confirmDelete() {
+    if (!deleteConfirmVendor) return
+
     const supabase = createClient()
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error: deleteError } = await (supabase as any)
       .from('vendors')
       .delete()
-      .eq('id', id)
+      .eq('id', deleteConfirmVendor.id)
 
     if (!deleteError) {
-      setDeleteConfirm(null)
+      setDeleteConfirmVendor(null)
       setMessage({ type: 'success', text: 'Vendor deleted' })
       loadVendors()
     } else {
@@ -191,25 +178,26 @@ export default function VendorsSettingsPage() {
     }
   }
 
-  function startEdit(vendor: Vendor) {
-    setEditingId(vendor.id)
-    setFormData({
-      name: vendor.name,
-      contact_name: vendor.contact_name || '',
-      email: vendor.email || '',
-      phone: vendor.phone || '',
-      address_line1: vendor.address_line1 || '',
-      city: vendor.city || '',
-      country: vendor.country || '',
-      notes: vendor.notes || '',
-    })
-    setShowForm(false)
-  }
+  // Handle bulk delete
+  async function handleBulkDelete(vendorsToDelete: Vendor[]) {
+    const supabase = createClient()
+    const ids = vendorsToDelete.map((v) => v.id)
 
-  function cancelEdit() {
-    setEditingId(null)
-    resetForm()
-    setMessage(null)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: deleteError } = await (supabase as any)
+      .from('vendors')
+      .delete()
+      .in('id', ids)
+
+    if (!deleteError) {
+      setMessage({
+        type: 'success',
+        text: `${vendorsToDelete.length} vendor${vendorsToDelete.length !== 1 ? 's' : ''} deleted`,
+      })
+      loadVendors()
+    } else {
+      setMessage({ type: 'error', text: 'Failed to delete vendors' })
+    }
   }
 
   if (loading) {
@@ -227,11 +215,17 @@ export default function VendorsSettingsPage() {
   return (
     <div className="p-6">
       {/* Page Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-semibold text-neutral-900">Vendors</h1>
-        <p className="mt-1 text-neutral-500">
-          Manage your suppliers and vendors for purchase orders
-        </p>
+      <div className="mb-8 flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold text-neutral-900">Vendors</h1>
+          <p className="mt-1 text-neutral-500">
+            Manage your suppliers and vendors for purchase orders
+          </p>
+        </div>
+        <Button onClick={handleAddVendor}>
+          <Plus className="mr-2 h-4 w-4" />
+          Add Vendor
+        </Button>
       </div>
 
       {/* Global Message */}
@@ -252,139 +246,20 @@ export default function VendorsSettingsPage() {
         </div>
       )}
 
-      <div className="mx-auto max-w-3xl space-y-6">
+      <div className="mx-auto max-w-5xl space-y-6">
         <SettingsSection
           title="Your Vendors"
           description={`${vendors.length} vendor${vendors.length !== 1 ? 's' : ''} configured`}
           icon={Truck}
-          headerAction={
-            !showForm && (
-              <Button
-                size="sm"
-                onClick={() => {
-                  setShowForm(true)
-                  setEditingId(null)
-                  resetForm()
-                }}
-              >
-                <Plus className="mr-2 h-4 w-4" />
-                New Vendor
-              </Button>
-            )
-          }
         >
-          {/* Create Form */}
-          {showForm && (
-            <div className="mb-6 rounded-lg border border-primary/20 bg-primary/5 p-4">
-              <h4 className="mb-4 text-sm font-medium text-neutral-900">Add New Vendor</h4>
-              <VendorForm
-                formData={formData}
-                setFormData={setFormData}
-                saving={saving}
-                onSave={handleCreate}
-                onCancel={() => {
-                  setShowForm(false)
-                  resetForm()
-                  setMessage(null)
-                }}
-              />
-            </div>
-          )}
-
-          {/* Vendors List */}
           {vendors.length > 0 ? (
-            <div className="divide-y divide-neutral-100 rounded-lg border border-neutral-200">
-              {vendors.map((vendor) => {
-                const isEditing = editingId === vendor.id
-
-                return (
-                  <div key={vendor.id} className="p-4">
-                    {isEditing ? (
-                      <VendorForm
-                        formData={formData}
-                        setFormData={setFormData}
-                        saving={saving}
-                        onSave={() => handleUpdate(vendor.id)}
-                        onCancel={cancelEdit}
-                        isEdit
-                      />
-                    ) : (
-                      <div className="flex items-start justify-between">
-                        <div className="flex items-start gap-4">
-                          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-100 text-blue-600">
-                            <Building2 className="h-5 w-5" />
-                          </div>
-                          <div className="min-w-0">
-                            <h4 className="font-medium text-neutral-900">{vendor.name}</h4>
-                            <div className="mt-1 flex flex-wrap gap-4 text-sm text-neutral-500">
-                              {vendor.contact_name && (
-                                <span className="flex items-center gap-1">
-                                  <User className="h-3.5 w-3.5" />
-                                  {vendor.contact_name}
-                                </span>
-                              )}
-                              {vendor.email && (
-                                <span className="flex items-center gap-1">
-                                  <Mail className="h-3.5 w-3.5" />
-                                  {vendor.email}
-                                </span>
-                              )}
-                              {vendor.phone && (
-                                <span className="flex items-center gap-1">
-                                  <Phone className="h-3.5 w-3.5" />
-                                  {vendor.phone}
-                                </span>
-                              )}
-                              {vendor.city && (
-                                <span className="flex items-center gap-1">
-                                  <MapPin className="h-3.5 w-3.5" />
-                                  {vendor.city}
-                                </span>
-                              )}
-                            </div>
-                            {vendor.notes && (
-                              <p className="mt-1 text-sm text-neutral-400 truncate max-w-md">
-                                {vendor.notes}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {deleteConfirm === vendor.id ? (
-                            <>
-                              <span className="text-sm text-red-600 mr-2">Delete?</span>
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => handleDelete(vendor.id)}
-                              >
-                                Yes
-                              </Button>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setDeleteConfirm(null)}
-                              >
-                                No
-                              </Button>
-                            </>
-                          ) : (
-                            <>
-                              <Button variant="ghost" size="sm" onClick={() => startEdit(vendor)}>
-                                <Pencil className="h-4 w-4" />
-                              </Button>
-                              <Button variant="ghost" size="sm" onClick={() => setDeleteConfirm(vendor.id)}>
-                                <Trash2 className="h-4 w-4 text-red-500" />
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
+            <VendorsDataTable
+              vendors={vendors}
+              onEdit={handleEditVendor}
+              onDelete={handleDeleteVendor}
+              onBulkDelete={handleBulkDelete}
+              enableSelection
+            />
           ) : (
             <div className="rounded-lg border border-dashed border-neutral-300 py-12 text-center">
               <Truck className="mx-auto h-12 w-12 text-neutral-300" />
@@ -392,136 +267,50 @@ export default function VendorsSettingsPage() {
               <p className="mt-1 text-sm text-neutral-400">
                 Add vendors to manage your suppliers and create purchase orders
               </p>
-              {!showForm && (
-                <Button className="mt-4" onClick={() => setShowForm(true)}>
-                  <Plus className="mr-2 h-4 w-4" />
-                  Add your first vendor
-                </Button>
-              )}
+              <Button className="mt-4" onClick={handleAddVendor}>
+                <Plus className="mr-2 h-4 w-4" />
+                Add your first vendor
+              </Button>
             </div>
           )}
         </SettingsSection>
       </div>
-    </div>
-  )
-}
 
-interface VendorFormProps {
-  formData: {
-    name: string
-    contact_name: string
-    email: string
-    phone: string
-    address_line1: string
-    city: string
-    country: string
-    notes: string
-  }
-  setFormData: React.Dispatch<React.SetStateAction<VendorFormProps['formData']>>
-  saving: boolean
-  onSave: () => void
-  onCancel: () => void
-  isEdit?: boolean
-}
+      {/* Add/Edit Dialog */}
+      <VendorFormDialog
+        isOpen={dialogOpen}
+        onClose={() => {
+          setDialogOpen(false)
+          setEditingVendor(null)
+        }}
+        onSave={handleSaveVendor}
+        vendor={editingVendor}
+        saving={saving}
+      />
 
-function VendorForm({
-  formData,
-  setFormData,
-  saving,
-  onSave,
-  onCancel,
-  isEdit,
-}: VendorFormProps) {
-  return (
-    <div className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-            Company Name *
-          </label>
-          <Input
-            value={formData.name}
-            onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-            placeholder="Acme Supplies Inc."
-            autoFocus
+      {/* Delete Confirmation Dialog */}
+      {deleteConfirmVendor && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setDeleteConfirmVendor(null)}
           />
+          <div className="relative w-full max-w-sm rounded-xl bg-white p-6 shadow-xl mx-4">
+            <h3 className="text-lg font-semibold text-neutral-900">Delete Vendor</h3>
+            <p className="mt-2 text-sm text-neutral-600">
+              Are you sure you want to delete <strong>{deleteConfirmVendor.name}</strong>? This action cannot be undone.
+            </p>
+            <div className="mt-6 flex justify-end gap-3">
+              <Button variant="outline" onClick={() => setDeleteConfirmVendor(null)}>
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={confirmDelete}>
+                Delete
+              </Button>
+            </div>
+          </div>
         </div>
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-            Contact Person
-          </label>
-          <Input
-            value={formData.contact_name}
-            onChange={(e) => setFormData(prev => ({ ...prev, contact_name: e.target.value }))}
-            placeholder="John Doe"
-          />
-        </div>
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-            Email
-          </label>
-          <Input
-            type="email"
-            value={formData.email}
-            onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-            placeholder="contact@acme.com"
-          />
-        </div>
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-            Phone
-          </label>
-          <Input
-            value={formData.phone}
-            onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
-            placeholder="+60 12-345 6789"
-          />
-        </div>
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-            Address
-          </label>
-          <Input
-            value={formData.address_line1}
-            onChange={(e) => setFormData(prev => ({ ...prev, address_line1: e.target.value }))}
-            placeholder="123 Main Street"
-          />
-        </div>
-        <div>
-          <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-            City
-          </label>
-          <Input
-            value={formData.city}
-            onChange={(e) => setFormData(prev => ({ ...prev, city: e.target.value }))}
-            placeholder="Kuala Lumpur"
-          />
-        </div>
-        <div className="sm:col-span-2">
-          <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-            Notes
-          </label>
-          <Input
-            value={formData.notes}
-            onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
-            placeholder="Any additional information about this vendor..."
-          />
-        </div>
-      </div>
-      <div className="flex gap-2 pt-2">
-        <Button variant="outline" onClick={onCancel} disabled={saving}>
-          <X className="mr-2 h-4 w-4" />
-          Cancel
-        </Button>
-        <Button onClick={onSave} disabled={saving || !formData.name.trim()}>
-          {saving ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Check className="mr-2 h-4 w-4" />
-          )}
-          {isEdit ? 'Save Changes' : 'Add Vendor'}
-        </Button>
-      </div>
+      )}
     </div>
   )
 }

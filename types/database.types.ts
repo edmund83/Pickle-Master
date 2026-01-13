@@ -1198,6 +1198,8 @@ export type Database = {
           price: number | null
           qr_code: string | null
           quantity: number
+          reorder_point: number | null
+          reorder_quantity: number | null
           search_vector: unknown
           serial_number: string | null
           sku: string | null
@@ -1237,6 +1239,8 @@ export type Database = {
           price?: number | null
           qr_code?: string | null
           quantity?: number
+          reorder_point?: number | null
+          reorder_quantity?: number | null
           search_vector?: unknown
           serial_number?: string | null
           sku?: string | null
@@ -1276,6 +1280,8 @@ export type Database = {
           price?: number | null
           qr_code?: string | null
           quantity?: number
+          reorder_point?: number | null
+          reorder_quantity?: number | null
           search_vector?: unknown
           serial_number?: string | null
           sku?: string | null
@@ -1496,6 +1502,99 @@ export type Database = {
             columns: ["tag_id"]
             isOneToOne: false
             referencedRelation: "tags"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      item_vendors: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_preferred: boolean | null
+          item_id: string
+          last_ordered_at: string | null
+          last_unit_cost: number | null
+          lead_time_days: number | null
+          min_order_qty: number | null
+          notes: string | null
+          pack_size: number | null
+          priority: number | null
+          tenant_id: string
+          unit_cost: number | null
+          updated_at: string | null
+          vendor_id: string
+          vendor_sku: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_preferred?: boolean | null
+          item_id: string
+          last_ordered_at?: string | null
+          last_unit_cost?: number | null
+          lead_time_days?: number | null
+          min_order_qty?: number | null
+          notes?: string | null
+          pack_size?: number | null
+          priority?: number | null
+          tenant_id: string
+          unit_cost?: number | null
+          updated_at?: string | null
+          vendor_id: string
+          vendor_sku?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_preferred?: boolean | null
+          item_id?: string
+          last_ordered_at?: string | null
+          last_unit_cost?: number | null
+          lead_time_days?: number | null
+          min_order_qty?: number | null
+          notes?: string | null
+          pack_size?: number | null
+          priority?: number | null
+          tenant_id?: string
+          unit_cost?: number | null
+          updated_at?: string | null
+          vendor_id?: string
+          vendor_sku?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "item_vendors_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "item_vendors_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "items_with_tags"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "item_vendors_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "item_vendors_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "item_vendors_vendor_id_fkey"
+            columns: ["vendor_id"]
+            isOneToOne: false
+            referencedRelation: "vendors"
             referencedColumns: ["id"]
           },
         ]
@@ -3013,8 +3112,10 @@ export type Database = {
           primary_color: string | null
           settings: Json | null
           slug: string
+          stripe_customer_id: string | null
           subscription_status: string | null
           subscription_tier: string | null
+          trial_ends_at: string | null
           updated_at: string | null
         }
         Insert: {
@@ -3028,8 +3129,10 @@ export type Database = {
           primary_color?: string | null
           settings?: Json | null
           slug: string
+          stripe_customer_id?: string | null
           subscription_status?: string | null
           subscription_tier?: string | null
+          trial_ends_at?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -3043,8 +3146,10 @@ export type Database = {
           primary_color?: string | null
           settings?: Json | null
           slug?: string
+          stripe_customer_id?: string | null
           subscription_status?: string | null
           subscription_tier?: string | null
+          trial_ends_at?: string | null
           updated_at?: string | null
         }
         Relationships: []
@@ -3061,6 +3166,7 @@ export type Database = {
           id: string
           name: string
           notes: string | null
+          payment_terms: string | null
           phone: string | null
           postal_code: string | null
           state: string | null
@@ -3078,6 +3184,7 @@ export type Database = {
           id?: string
           name: string
           notes?: string | null
+          payment_terms?: string | null
           phone?: string | null
           postal_code?: string | null
           state?: string | null
@@ -3095,6 +3202,7 @@ export type Database = {
           id?: string
           name?: string
           notes?: string | null
+          payment_terms?: string | null
           phone?: string | null
           postal_code?: string | null
           state?: string | null
@@ -3463,6 +3571,10 @@ export type Database = {
         }
         Returns: Json
       }
+      create_po_from_suggestions: {
+        Args: { p_item_suggestions: Json; p_vendor_id: string }
+        Returns: Json
+      }
       create_purchase_order_v2: {
         Args: {
           p_bill_to_address1?: string
@@ -3709,6 +3821,17 @@ export type Database = {
         Returns: Json
       }
       get_item_details: { Args: { p_item_id: string }; Returns: Json }
+      get_item_locations: {
+        Args: { p_item_id: string }
+        Returns: {
+          location_id: string
+          location_name: string
+          location_type: Database["public"]["Enums"]["location_type"]
+          min_quantity: number
+          quantity: number
+          status: string
+        }[]
+      }
       get_item_reminders: { Args: { p_item_id: string }; Returns: Json }
       get_item_serials: {
         Args: { p_include_unavailable?: boolean; p_item_id: string }
@@ -3722,6 +3845,7 @@ export type Database = {
           name: string
         }[]
       }
+      get_item_vendors: { Args: { p_item_id: string }; Returns: Json }
       get_items_by_tag: {
         Args: { p_tag_id: string }
         Returns: {
@@ -3813,6 +3937,12 @@ export type Database = {
         }[]
       }
       get_reminder_stats: { Args: never; Returns: Json }
+      get_reorder_suggestions: {
+        Args: { p_include_without_vendor?: boolean }
+        Returns: Json
+      }
+      get_reorder_suggestions_by_vendor: { Args: never; Returns: Json }
+      get_reorder_suggestions_count: { Args: never; Returns: number }
       get_status_distribution: {
         Args: never
         Returns: {
@@ -3844,8 +3974,10 @@ export type Database = {
         }[]
       }
       get_tenant_org_code: { Args: never; Returns: Json }
+      get_trial_days_remaining: { Args: { tenant_id: string }; Returns: number }
       get_unread_mentions_count: { Args: never; Returns: number }
       get_user_tenant_id: { Args: never; Returns: string }
+      is_account_paused: { Args: { tenant_id: string }; Returns: boolean }
       is_admin_feature_enabled: {
         Args: { p_flag_name: string }
         Returns: boolean
@@ -3858,6 +3990,22 @@ export type Database = {
           p_entity_type: Database["public"]["Enums"]["chatter_entity_type"]
         }
         Returns: boolean
+      }
+      is_in_grace_period: { Args: { tenant_id: string }; Returns: boolean }
+      is_trial_active: { Args: { tenant_id: string }; Returns: boolean }
+      link_item_to_vendor: {
+        Args: {
+          p_is_preferred?: boolean
+          p_item_id: string
+          p_lead_time_days?: number
+          p_min_order_qty?: number
+          p_notes?: string
+          p_pack_size?: number
+          p_unit_cost?: number
+          p_vendor_id: string
+          p_vendor_sku?: string
+        }
+        Returns: Json
       }
       log_activity: {
         Args: {

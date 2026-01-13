@@ -11,6 +11,64 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Added
 
+#### Auto-Reorder Suggestions Feature
+- **Reorder Suggestions Page** (`/tasks/reorder-suggestions`) - Identifies items below their reorder point and groups them by vendor
+- **Item-Vendor Linking** (Migration: `00055_auto_reorder_suggestions.sql`):
+  - New `item_vendors` table to link items to their suppliers with pricing, lead times, and preferred vendor flags
+  - New columns on `inventory_items`: `reorder_point` and `reorder_quantity`
+- **Smart Reorder Logic**:
+  - Detects items at or below reorder point (or min_quantity if not set)
+  - Calculates suggested order quantities automatically
+  - Urgency levels: Critical (out of stock), Urgent (below min), Reorder (below reorder point)
+- **Grouped by Vendor View**:
+  - Items grouped by preferred vendor for batch PO creation
+  - Shows estimated total per vendor
+  - One-click "Create PO" button per vendor group
+- **One-Click PO Creation**:
+  - Creates draft purchase orders directly from suggestions
+  - Pre-populates vendor SKU and unit cost from item-vendor relationship
+  - Calculates order totals automatically
+- **Dashboard Stats**:
+  - Total items needing reorder
+  - Critical/Urgent counts
+  - Estimated total value
+- **Navigation**: Added "Reorder" link under Tasks in sidebar
+- **RPC Functions**:
+  - `get_reorder_suggestions()` - Returns items below reorder point with vendor info
+  - `get_reorder_suggestions_by_vendor()` - Groups suggestions by vendor
+  - `create_po_from_suggestions()` - Creates draft PO from suggestion items
+  - `link_item_to_vendor()` - Creates/updates item-vendor relationships
+  - `get_item_vendors()` - Returns all vendors for a specific item
+  - `get_reorder_suggestions_count()` - Returns count for sidebar badge
+
+### Changed
+
+#### Partial Picking Support
+- **Quantity Input**: Pick any quantity (1 to remaining) per item instead of all-or-nothing
+- **Progress Bar**: Visual progress indicator showing picked/total units with percentage
+- **Partial Completion**: Can complete pick lists with partial picks (shows "Complete Partial" button)
+- **Smart Defaults**: Quantity input defaults to remaining quantity for each item
+- **Real-World Flexibility**: Handles common scenario where full quantity isn't available
+
+#### Location-Aware Pick Lists
+- **Item Location Data**: Pick list items now display warehouse location for each item (Migration: `00053_pick_list_locations.sql`)
+- **Updated RPC**: `get_pick_list_with_items` returns location data (location name, type, quantity) for each item
+- **UI Enhancement**: Location badge with MapPin icon shows primary location on each item row
+- **Multiple Locations**: Items in multiple locations show "+N more" indicator
+- **Picker Efficiency**: Pickers can now see exactly where to find each item in the warehouse
+
+#### Pick List Draft Mode Layout Redesign
+- **Two-Column Layout** on desktop (lg+): Main content area (2/3) for Ship To + items, sidebar (1/3) for settings
+- **Ship To Card at Top**: Prominent card in main content area with compact 2-column address form (destination-first workflow)
+- **Summary Stats Bar**: Shows item count, total units, and validation status at a glance
+- **Required Settings Card**: Emphasized sidebar card with Assign To, Item Outcome, and Due Date fields
+- **Collapsible Notes**: Notes section collapsed by default in sidebar, auto-expands if has content
+- **Enhanced Footer**: Shows validation hints when required fields are missing
+- **Streamlined Header**: Cleaner header with title and status on single line
+- **New Component**: `CollapsibleSection` (`components/ui/collapsible-section.tsx`) for reusable expand/collapse UI
+
+### Added
+
 #### Tasks Section (New Unified Workflow Interface)
 - **Tasks Hub** (`/tasks`) - New centralized task management interface replacing `/workflows`
 - **Consolidated Navigation** with sub-menu categories:
@@ -325,6 +383,7 @@ Based on a comprehensive security audit, the following vulnerabilities were iden
 | `00045_receives.sql` | Goods receiving (GRN) tables |
 | `00046_create_receive_with_items.sql` | Pre-populate receive items RPC |
 | `00047_receive_item_serials.sql` | Serial tracking for receives |
+| `00048_create_get_item_locations_function.sql` | RPC function for item location stock |
 
 ---
 
