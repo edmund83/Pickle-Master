@@ -20,6 +20,7 @@ import {
   Sparkles,
   Activity,
   BarChart3,
+  ShoppingCart,
 } from 'lucide-react'
 import { NavSubmenu, SubmenuItem } from '@/components/layout/nav-submenu'
 import { useGlobalSearch } from '@/contexts/GlobalSearchContext'
@@ -33,6 +34,7 @@ const taskItems: SubmenuItem[] = [
   { name: 'Stock In', href: '/tasks/inbound', icon: PackageOpen },
   { name: 'Stock Out', href: '/tasks/fulfillment', icon: ClipboardList },
   { name: 'Adjustments', href: '/tasks/inventory-operations', icon: ArrowRightLeft },
+  { name: 'Reorder', href: '/tasks/reorder-suggestions', icon: ShoppingCart },
 ]
 
 // Insights - Reports & Organization
@@ -170,10 +172,10 @@ export function PrimarySidebar({ isExpanded = false, onToggle }: PrimarySidebarP
               ? 'bg-white text-primary'
               : 'text-white hover:bg-white/10'
           )}
-          title={!isExpanded ? 'Inventory' : undefined}
+          title={!isExpanded ? 'My Inventory' : undefined}
         >
           <Package className="h-5 w-5 shrink-0" />
-          {isExpanded && <span className="text-sm font-medium">Inventory</span>}
+          {isExpanded && <span className="text-sm font-medium">My Inventory</span>}
         </Link>
 
         {/* Task Section */}

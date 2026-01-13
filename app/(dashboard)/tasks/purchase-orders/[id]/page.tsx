@@ -20,6 +20,7 @@ export interface Vendor {
   state: string | null
   postal_code: string | null
   country: string | null
+  payment_terms: string | null
 }
 
 export interface PurchaseOrderWithDetails {
@@ -66,6 +67,7 @@ export interface PurchaseOrderWithDetails {
     contact_name: string | null
     email: string | null
     phone: string | null
+    payment_terms: string | null
   } | null
   items: Array<{
     id: string
@@ -100,7 +102,7 @@ async function getPurchaseOrderWithDetails(id: string): Promise<PurchaseOrderWit
     .from('purchase_orders')
     .select(`
       *,
-      vendors(id, name, contact_name, email, phone),
+      vendors(id, name, contact_name, email, phone, payment_terms),
       purchase_order_items(
         *,
         inventory_items(id, name, sku, quantity, unit, image_urls)
@@ -170,7 +172,7 @@ async function getVendorsList(): Promise<Vendor[]> {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data } = await (supabase as any)
     .from('vendors')
-    .select('id, name, contact_name, email, phone, address_line1, address_line2, city, state, postal_code, country')
+    .select('id, name, contact_name, email, phone, address_line1, address_line2, city, state, postal_code, country, payment_terms')
     .eq('tenant_id', profile.tenant_id)
     .order('name')
 

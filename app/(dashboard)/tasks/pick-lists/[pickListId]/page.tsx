@@ -42,6 +42,12 @@ interface PickListWithItems {
     picked_quantity: number
     picked_at: string | null
     notes: string | null
+    locations: Array<{
+      location_id: string
+      location_name: string
+      location_type: 'warehouse' | 'van' | 'store' | 'job_site'
+      quantity: number
+    }>
   }>
   assigned_to_name: string | null
   created_by_name: string | null
