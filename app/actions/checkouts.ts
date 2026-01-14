@@ -2,11 +2,46 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import {
+    getAuthContext,
+    requireWritePermission,
+    verifyTenantOwnership,
+    verifyRelatedTenantOwnership,
+    validateInput,
+    quantitySchema,
+    optionalStringSchema,
+    optionalDateStringSchema,
+} from '@/lib/auth/server-auth'
+import { z } from 'zod'
 
 export type CheckoutResult = {
     success: boolean
     error?: string
 }
+
+// Validation schemas
+const checkoutItemSchema = z.object({
+    itemId: z.string().uuid(),
+    quantity: quantitySchema,
+    assigneeName: z.string().min(1).max(255),
+    notes: z.string().max(2000).optional(),
+    dueDate: optionalDateStringSchema,
+})
+
+const returnConditionSchema = z.enum(['good', 'damaged', 'needs_repair', 'lost'])
+
+const returnItemSchema = z.object({
+    checkoutId: z.string().uuid(),
+    notes: z.string().max(2000).optional(),
+    condition: returnConditionSchema,
+})
+
+const assigneeTypeSchema = z.enum(['person', 'job', 'location'])
+
+const serialReturnSchema = z.object({
+    serial_id: z.string().uuid(),
+    condition: returnConditionSchema,
+})
 
 export async function checkoutItem(
     itemId: string,
@@ -15,81 +50,111 @@ export async function checkoutItem(
     notes?: string,
     dueDate?: string
 ): Promise<CheckoutResult> {
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
+
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // 3. Validate input
+    const validation = validateInput(checkoutItemSchema, { itemId, quantity, assigneeName, notes, dueDate })
+    if (!validation.success) return { success: false, error: validation.error }
+    const validatedInput = validation.data
+
+    // 4. Verify item belongs to user's tenant
+    const itemCheck = await verifyRelatedTenantOwnership(
+        'inventory_items',
+        validatedInput.itemId,
+        context.tenantId,
+        'Inventory item'
+    )
+    if (!itemCheck.success) return { success: false, error: itemCheck.error }
+
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) return { success: false, error: 'Unauthorized' }
-
-    // 1. Get current item to check stock
+    // 5. Get current item to check stock (with tenant filter)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: item, error: fetchError } = await (supabase as any)
         .from('inventory_items')
         .select('*')
-        .eq('id', itemId)
+        .eq('id', validatedInput.itemId)
+        .eq('tenant_id', context.tenantId)
         .is('deleted_at', null)
         .single()
 
     if (fetchError || !item) return { success: false, error: 'Item not found' }
 
-    if (item.quantity < quantity) {
+    if (item.quantity < validatedInput.quantity) {
         return { success: false, error: `Insufficient stock. Available: ${item.quantity}` }
     }
 
-    // 2. Create Checkout Record
+    // 6. Create Checkout Record
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error: checkoutError } = await (supabase as any)
         .from('checkouts')
         .insert({
-            tenant_id: item.tenant_id,
-            item_id: itemId,
-            quantity: quantity,
-            assignee_type: 'person', // Default to person for simplicity
-            assignee_name: assigneeName,
+            tenant_id: context.tenantId,
+            item_id: validatedInput.itemId,
+            quantity: validatedInput.quantity,
+            assignee_type: 'person',
+            assignee_name: validatedInput.assigneeName,
             status: 'checked_out',
             checked_out_at: new Date().toISOString(),
-            checked_out_by: user.id,
-            due_date: dueDate || null,
-            notes: notes || null
+            checked_out_by: context.userId,
+            due_date: validatedInput.dueDate || null,
+            notes: validatedInput.notes || null
         })
 
     if (checkoutError) return { success: false, error: checkoutError.message }
 
-    // 3. Decrement Inventory (Assumption: Checkout removes from available stock)
-    const newQuantity = item.quantity - quantity
+    // 7. Decrement Inventory
+    const newQuantity = item.quantity - validatedInput.quantity
     let status = item.status
     if (newQuantity <= 0) status = 'out_of_stock'
     else if (item.min_quantity && newQuantity <= item.min_quantity) status = 'low_stock'
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await (supabase as any)
+    const { error: updateError } = await (supabase as any)
         .from('inventory_items')
         .update({
             quantity: newQuantity,
             status: status,
             updated_at: new Date().toISOString(),
-            last_modified_by: user.id
+            last_modified_by: context.userId
         })
-        .eq('id', itemId)
+        .eq('id', validatedInput.itemId)
+        .eq('tenant_id', context.tenantId)
 
-    // 4. Log Activity (fire-and-forget, don't block on failure)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (supabase as any).from('activity_logs').insert({
-        tenant_id: item.tenant_id,
-        user_id: user.id,
-        user_name: user.email,
-        action_type: 'checkout',
-        entity_type: 'item',
-        entity_id: itemId,
-        entity_name: item.name,
-        quantity_before: item.quantity,
-        quantity_after: newQuantity,
-        quantity_delta: -quantity,
-        changes: { assignee: assigneeName, notes: notes }
-    }).then(({ error }: { error: Error | null }) => {
-        if (error) console.error('Activity log error:', error.message)
-    })
+    if (updateError) {
+        console.error('Failed to update inventory after checkout:', updateError)
+        // Note: Checkout record was created but inventory update failed
+        // In production, this should be a transaction
+    }
 
-    revalidatePath(`/inventory/${itemId}`)
+    // 8. Log Activity (awaited for reliability)
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase as any).from('activity_logs').insert({
+            tenant_id: context.tenantId,
+            user_id: context.userId,
+            user_name: context.fullName,
+            action_type: 'checkout',
+            entity_type: 'item',
+            entity_id: validatedInput.itemId,
+            entity_name: item.name,
+            quantity_before: item.quantity,
+            quantity_after: newQuantity,
+            quantity_delta: -validatedInput.quantity,
+            changes: { assignee: validatedInput.assigneeName, notes: validatedInput.notes }
+        })
+    } catch (logError) {
+        console.error('Activity log error:', logError)
+    }
+
+    revalidatePath(`/inventory/${validatedInput.itemId}`)
     return { success: true }
 }
 
@@ -98,47 +163,53 @@ export async function returnItem(
     notes?: string,
     condition: 'good' | 'damaged' | 'needs_repair' | 'lost' = 'good'
 ): Promise<CheckoutResult> {
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
+
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // 3. Validate input
+    const validation = validateInput(returnItemSchema, { checkoutId, notes, condition })
+    if (!validation.success) return { success: false, error: validation.error }
+    const validatedInput = validation.data
+
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) return { success: false, error: 'Unauthorized' }
-
-    // 1. Get Checkout Record
+    // 4. Get Checkout Record with tenant verification
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: checkout, error: fetchError } = await (supabase as any)
         .from('checkouts')
         .select('*, inventory_items(name, quantity, min_quantity, status)')
-        .eq('id', checkoutId)
+        .eq('id', validatedInput.checkoutId)
+        .eq('tenant_id', context.tenantId)
         .single()
 
     if (fetchError || !checkout) return { success: false, error: 'Checkout not found' }
     if (checkout.status === 'returned') return { success: false, error: 'Already returned' }
 
-    // 2. Update Checkout Record
+    // 5. Update Checkout Record
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error: updateError } = await (supabase as any)
         .from('checkouts')
         .update({
             status: 'returned',
             returned_at: new Date().toISOString(),
-            returned_by: user.id,
-            return_condition: condition,
-            return_notes: notes || null
+            returned_by: context.userId,
+            return_condition: validatedInput.condition,
+            return_notes: validatedInput.notes || null
         })
-        .eq('id', checkoutId)
+        .eq('id', validatedInput.checkoutId)
+        .eq('tenant_id', context.tenantId)
 
     if (updateError) return { success: false, error: updateError.message }
 
-    // 3. Increment Inventory (unless lost)
-    // If 'lost', we might NOT increment quantity, or we increment and then strict decrement?
-    // User logic: "Returned" usually means it's back in stock. If it's damanged/lost, the user might want to manually adjust.
-    // Let's assume for now "Return" = Put back on shelf. 
-    // If it is 'lost', we should probably NOT add it back? 
-    // Let's stick to: Return adds it back. If it's broken, user can adjust stock manually or we handle it later.
-    // ACTUALLY: If condition is 'lost', we strictly shouldn't add it back.
-
+    // 6. Increment Inventory (unless lost)
     let quantityDelta = 0
-    if (condition !== 'lost') {
+    if (validatedInput.condition !== 'lost') {
         quantityDelta = checkout.quantity
         const item = checkout.inventory_items
         const newQuantity = (item.quantity || 0) + quantityDelta
@@ -148,32 +219,39 @@ export async function returnItem(
         else if (item.min_quantity && newQuantity <= item.min_quantity) status = 'low_stock'
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supabase as any)
+        const { error: invUpdateError } = await (supabase as any)
             .from('inventory_items')
             .update({
                 quantity: newQuantity,
                 status: status,
                 updated_at: new Date().toISOString(),
-                last_modified_by: user.id
+                last_modified_by: context.userId
             })
             .eq('id', checkout.item_id)
+            .eq('tenant_id', context.tenantId)
+
+        if (invUpdateError) {
+            console.error('Failed to update inventory after return:', invUpdateError)
+        }
     }
 
-    // 4. Log Activity (fire-and-forget, don't block on failure)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (supabase as any).from('activity_logs').insert({
-        tenant_id: checkout.tenant_id,
-        user_id: user.id,
-        user_name: user.email,
-        action_type: 'check_in',
-        entity_type: 'item',
-        entity_id: checkout.item_id,
-        entity_name: checkout.inventory_items?.name || 'Item',
-        quantity_delta: quantityDelta,
-        changes: { checkout_id: checkoutId, condition, notes }
-    }).then(({ error }: { error: Error | null }) => {
-        if (error) console.error('Activity log error:', error.message)
-    })
+    // 7. Log Activity (awaited for reliability)
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase as any).from('activity_logs').insert({
+            tenant_id: context.tenantId,
+            user_id: context.userId,
+            user_name: context.fullName,
+            action_type: 'check_in',
+            entity_type: 'item',
+            entity_id: checkout.item_id,
+            entity_name: checkout.inventory_items?.name || 'Item',
+            quantity_delta: quantityDelta,
+            changes: { checkout_id: validatedInput.checkoutId, condition: validatedInput.condition, notes: validatedInput.notes }
+        })
+    } catch (logError) {
+        console.error('Activity log error:', logError)
+    }
 
     revalidatePath(`/inventory/${checkout.item_id}`)
     return { success: true }
@@ -192,25 +270,67 @@ export async function checkoutWithSerials(
     dueDate?: string,
     notes?: string
 ): Promise<CheckoutResult> {
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
+
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // 3. Validate input
+    const inputSchema = z.object({
+        itemId: z.string().uuid(),
+        serialIds: z.array(z.string().uuid()).min(1, 'No serial numbers selected').max(1000),
+        assigneeType: assigneeTypeSchema,
+        assigneeId: z.string().uuid().optional(),
+        assigneeName: z.string().max(255).optional(),
+        dueDate: optionalDateStringSchema,
+        notes: z.string().max(2000).optional(),
+    })
+
+    const validation = validateInput(inputSchema, { itemId, serialIds, assigneeType, assigneeId, assigneeName, dueDate, notes })
+    if (!validation.success) return { success: false, error: validation.error }
+    const validatedInput = validation.data
+
+    // 4. Verify item belongs to user's tenant
+    const itemCheck = await verifyRelatedTenantOwnership(
+        'inventory_items',
+        validatedInput.itemId,
+        context.tenantId,
+        'Inventory item'
+    )
+    if (!itemCheck.success) return { success: false, error: itemCheck.error }
+
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) return { success: false, error: 'Unauthorized' }
+    // 5. Verify all serial IDs belong to the item and tenant
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: serials, error: serialFetchError } = await (supabase as any)
+        .from('item_serials')
+        .select('id, item_id')
+        .in('id', validatedInput.serialIds)
+        .eq('item_id', validatedInput.itemId)
 
-    if (serialIds.length === 0) {
-        return { success: false, error: 'No serial numbers selected' }
+    if (serialFetchError) {
+        return { success: false, error: 'Failed to verify serial numbers' }
     }
 
-    // Call the RPC function that handles everything atomically
+    if (!serials || serials.length !== validatedInput.serialIds.length) {
+        return { success: false, error: 'One or more serial numbers not found or do not belong to this item' }
+    }
+
+    // 6. Call the RPC function that handles everything atomically
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase as any).rpc('checkout_with_serials', {
-        p_item_id: itemId,
-        p_serial_ids: serialIds,
-        p_assignee_type: assigneeType,
-        p_assignee_id: assigneeId || null,
-        p_assignee_name: assigneeName || null,
-        p_due_date: dueDate || null,
-        p_notes: notes || null
+        p_item_id: validatedInput.itemId,
+        p_serial_ids: validatedInput.serialIds,
+        p_assignee_type: validatedInput.assigneeType,
+        p_assignee_id: validatedInput.assigneeId || null,
+        p_assignee_name: validatedInput.assigneeName || null,
+        p_due_date: validatedInput.dueDate || null,
+        p_notes: validatedInput.notes || null
     })
 
     if (error) {
@@ -222,7 +342,7 @@ export async function checkoutWithSerials(
         return { success: false, error: data.error || 'Checkout failed' }
     }
 
-    revalidatePath(`/inventory/${itemId}`)
+    revalidatePath(`/inventory/${validatedInput.itemId}`)
     return { success: true }
 }
 
@@ -235,25 +355,50 @@ export async function returnCheckoutSerials(
     serialReturns: Array<{ serial_id: string; condition: 'good' | 'damaged' | 'needs_repair' | 'lost' }>,
     notes?: string
 ): Promise<CheckoutResult> {
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
+
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // 3. Validate input
+    const inputSchema = z.object({
+        checkoutId: z.string().uuid(),
+        serialReturns: z.array(serialReturnSchema).min(1).max(1000),
+        notes: z.string().max(2000).optional(),
+    })
+
+    const validation = validateInput(inputSchema, { checkoutId, serialReturns, notes })
+    if (!validation.success) return { success: false, error: validation.error }
+    const validatedInput = validation.data
+
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) return { success: false, error: 'Unauthorized' }
-
-    // Get checkout to find item_id for revalidation
+    // 4. Verify checkout belongs to user's tenant
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: checkout } = await (supabase as any)
+    const { data: checkout, error: fetchError } = await (supabase as any)
         .from('checkouts')
-        .select('item_id')
-        .eq('id', checkoutId)
+        .select('item_id, tenant_id')
+        .eq('id', validatedInput.checkoutId)
         .single()
 
-    // Call the RPC function
+    if (fetchError || !checkout) {
+        return { success: false, error: 'Checkout not found' }
+    }
+
+    if (checkout.tenant_id !== context.tenantId) {
+        return { success: false, error: 'Unauthorized: Access denied' }
+    }
+
+    // 5. Call the RPC function
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase as any).rpc('return_checkout_serials', {
-        p_checkout_id: checkoutId,
-        p_serial_returns: JSON.stringify(serialReturns),
-        p_notes: notes || null
+        p_checkout_id: validatedInput.checkoutId,
+        p_serial_returns: JSON.stringify(validatedInput.serialReturns),
+        p_notes: validatedInput.notes || null
     })
 
     if (error) {
@@ -275,11 +420,36 @@ export async function returnCheckoutSerials(
  * Get serials linked to a checkout (for return modal)
  */
 export async function getCheckoutSerials(checkoutId: string) {
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error, serials: [] }
+    const { context } = authResult
+
+    // 2. Validate checkoutId
+    const idValidation = z.string().uuid().safeParse(checkoutId)
+    if (!idValidation.success) {
+        return { success: false, error: 'Invalid checkout ID', serials: [] }
+    }
+
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) return { success: false, error: 'Unauthorized', serials: [] }
+    // 3. Verify checkout belongs to user's tenant
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: checkout, error: fetchError } = await (supabase as any)
+        .from('checkouts')
+        .select('tenant_id')
+        .eq('id', checkoutId)
+        .single()
 
+    if (fetchError || !checkout) {
+        return { success: false, error: 'Checkout not found', serials: [] }
+    }
+
+    if (checkout.tenant_id !== context.tenantId) {
+        return { success: false, error: 'Unauthorized: Access denied', serials: [] }
+    }
+
+    // 4. Get serials
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase as any).rpc('get_checkout_serials', {
         p_checkout_id: checkoutId

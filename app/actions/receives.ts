@@ -2,6 +2,19 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import {
+    getAuthContext,
+    requireWritePermission,
+    requireAdminPermission,
+    verifyTenantOwnership,
+    verifyRelatedTenantOwnership,
+    validateInput,
+    optionalStringSchema,
+    optionalUuidSchema,
+    quantitySchema,
+    optionalDateStringSchema,
+} from '@/lib/auth/server-auth'
+import { z } from 'zod'
 
 export type ReceiveResult = {
     success: boolean
@@ -12,6 +25,52 @@ export type ReceiveResult = {
     lots_created?: number
     po_fully_received?: boolean
 }
+
+// Validation schemas
+const conditionSchema = z.enum(['good', 'damaged', 'rejected'])
+
+const createReceiveSchema = z.object({
+    purchase_order_id: z.string().uuid(),
+    delivery_note_number: optionalStringSchema,
+    carrier: optionalStringSchema,
+    tracking_number: optionalStringSchema,
+    default_location_id: optionalUuidSchema,
+    notes: z.string().max(2000).nullable().optional(),
+})
+
+const addReceiveItemSchema = z.object({
+    purchase_order_item_id: z.string().uuid(),
+    quantity_received: quantitySchema,
+    lot_number: optionalStringSchema,
+    batch_code: optionalStringSchema,
+    expiry_date: optionalDateStringSchema,
+    manufactured_date: optionalDateStringSchema,
+    location_id: optionalUuidSchema,
+    condition: conditionSchema.default('good'),
+    notes: z.string().max(2000).nullable().optional(),
+})
+
+const updateReceiveItemSchema = z.object({
+    quantity_received: quantitySchema.optional(),
+    lot_number: optionalStringSchema,
+    batch_code: optionalStringSchema,
+    expiry_date: optionalDateStringSchema,
+    manufactured_date: optionalDateStringSchema,
+    location_id: optionalUuidSchema,
+    condition: conditionSchema.optional(),
+    notes: z.string().max(2000).nullable().optional(),
+}).partial()
+
+const updateReceiveSchema = z.object({
+    delivery_note_number: optionalStringSchema,
+    carrier: optionalStringSchema,
+    tracking_number: optionalStringSchema,
+    default_location_id: optionalUuidSchema,
+    received_date: optionalDateStringSchema,
+    notes: z.string().max(2000).nullable().optional(),
+}).partial()
+
+const serialNumberSchema = z.string().min(1).max(255)
 
 export interface CreateReceiveInput {
     purchase_order_id: string
@@ -127,20 +186,51 @@ export interface ReceiveSummary {
 
 // Create a new receive from a PO with pre-populated items
 export async function createReceive(input: CreateReceiveInput): Promise<ReceiveResult> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
 
-    if (!user) return { success: false, error: 'Unauthorized' }
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // 3. Validate input
+    const validation = validateInput(createReceiveSchema, input)
+    if (!validation.success) return { success: false, error: validation.error }
+    const validatedInput = validation.data
+
+    // 4. Verify PO belongs to user's tenant
+    const poCheck = await verifyRelatedTenantOwnership(
+        'purchase_orders',
+        validatedInput.purchase_order_id,
+        context.tenantId,
+        'Purchase order'
+    )
+    if (!poCheck.success) return { success: false, error: poCheck.error }
+
+    // 5. If location_id is provided, verify it belongs to the tenant
+    if (validatedInput.default_location_id) {
+        const locationCheck = await verifyRelatedTenantOwnership(
+            'locations',
+            validatedInput.default_location_id,
+            context.tenantId,
+            'Location'
+        )
+        if (!locationCheck.success) return { success: false, error: locationCheck.error }
+    }
+
+    const supabase = await createClient()
 
     // Use the RPC function that pre-populates items from PO
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase as any).rpc('create_receive_with_items', {
-        p_purchase_order_id: input.purchase_order_id,
-        p_delivery_note_number: input.delivery_note_number || null,
-        p_carrier: input.carrier || null,
-        p_tracking_number: input.tracking_number || null,
-        p_default_location_id: input.default_location_id || null,
-        p_notes: input.notes || null
+        p_purchase_order_id: validatedInput.purchase_order_id,
+        p_delivery_note_number: validatedInput.delivery_note_number || null,
+        p_carrier: validatedInput.carrier || null,
+        p_tracking_number: validatedInput.tracking_number || null,
+        p_default_location_id: validatedInput.default_location_id || null,
+        p_notes: validatedInput.notes || null
     })
 
     if (error) {
@@ -153,7 +243,7 @@ export async function createReceive(input: CreateReceiveInput): Promise<ReceiveR
     }
 
     revalidatePath('/tasks/receives')
-    revalidatePath(`/tasks/purchase-orders/${input.purchase_order_id}`)
+    revalidatePath(`/tasks/purchase-orders/${validatedInput.purchase_order_id}`)
     return {
         success: true,
         receive_id: data?.id,
@@ -164,10 +254,20 @@ export async function createReceive(input: CreateReceiveInput): Promise<ReceiveR
 
 // Get a single receive with all details
 export async function getReceive(receiveId: string): Promise<ReceiveWithDetails | null> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return null
+    const { context } = authResult
 
-    if (!user) return null
+    // 2. Validate receiveId
+    const idValidation = z.string().uuid().safeParse(receiveId)
+    if (!idValidation.success) return null
+
+    // 3. Verify receive belongs to user's tenant
+    const ownershipResult = await verifyTenantOwnership('receives', receiveId, context.tenantId)
+    if (!ownershipResult.success) return null
+
+    const supabase = await createClient()
 
     // Use the RPC function to get receive with items
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -205,10 +305,25 @@ export async function getReceive(receiveId: string): Promise<ReceiveWithDetails 
 
 // Get all receives for a PO
 export async function getPOReceives(purchaseOrderId: string): Promise<ReceiveSummary[]> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return []
+    const { context } = authResult
 
-    if (!user) return []
+    // 2. Validate purchaseOrderId
+    const idValidation = z.string().uuid().safeParse(purchaseOrderId)
+    if (!idValidation.success) return []
+
+    // 3. Verify PO belongs to user's tenant
+    const poCheck = await verifyRelatedTenantOwnership(
+        'purchase_orders',
+        purchaseOrderId,
+        context.tenantId,
+        'Purchase order'
+    )
+    if (!poCheck.success) return []
+
+    const supabase = await createClient()
 
     // Use the RPC function
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -229,22 +344,14 @@ export async function getReceives(options?: {
     status?: 'draft' | 'completed' | 'cancelled'
     limit?: number
 }) {
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return []
+    const { context } = authResult
+
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) return []
-
-    // Get user's tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: profile } = await (supabase as any)
-        .from('profiles')
-        .select('tenant_id')
-        .eq('id', user.id)
-        .single()
-
-    if (!profile?.tenant_id) return []
-
-    // Build query
+    // Build query with tenant filter
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let query = (supabase as any)
         .from('receives')
@@ -261,14 +368,17 @@ export async function getReceives(options?: {
             purchase_orders(id, display_id, order_number, vendors(name)),
             profiles!receives_received_by_fkey(full_name)
         `)
-        .eq('tenant_id', profile.tenant_id)
+        .eq('tenant_id', context.tenantId)
         .order('created_at', { ascending: false })
 
     if (options?.status) {
-        query = query.eq('status', options.status)
+        const statusValidation = z.enum(['draft', 'completed', 'cancelled']).safeParse(options.status)
+        if (statusValidation.success) {
+            query = query.eq('status', statusValidation.data)
+        }
     }
 
-    if (options?.limit) {
+    if (options?.limit && options.limit > 0 && options.limit <= 100) {
         query = query.limit(options.limit)
     }
 
@@ -282,24 +392,54 @@ export async function addReceiveItem(
     receiveId: string,
     input: AddReceiveItemInput
 ): Promise<ReceiveResult> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
 
-    if (!user) return { success: false, error: 'Unauthorized' }
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // 3. Validate receiveId
+    const idValidation = z.string().uuid().safeParse(receiveId)
+    if (!idValidation.success) return { success: false, error: 'Invalid receive ID' }
+
+    // 4. Validate input
+    const validation = validateInput(addReceiveItemSchema, input)
+    if (!validation.success) return { success: false, error: validation.error }
+    const validatedInput = validation.data
+
+    // 5. Verify receive belongs to user's tenant
+    const ownershipResult = await verifyTenantOwnership('receives', receiveId, context.tenantId)
+    if (!ownershipResult.success) return { success: false, error: ownershipResult.error }
+
+    // 6. If location_id is provided, verify it belongs to the tenant
+    if (validatedInput.location_id) {
+        const locationCheck = await verifyRelatedTenantOwnership(
+            'locations',
+            validatedInput.location_id,
+            context.tenantId,
+            'Location'
+        )
+        if (!locationCheck.success) return { success: false, error: locationCheck.error }
+    }
+
+    const supabase = await createClient()
 
     // Use the RPC function
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase as any).rpc('add_receive_item', {
         p_receive_id: receiveId,
-        p_purchase_order_item_id: input.purchase_order_item_id,
-        p_quantity_received: input.quantity_received,
-        p_lot_number: input.lot_number || null,
-        p_batch_code: input.batch_code || null,
-        p_expiry_date: input.expiry_date || null,
-        p_manufactured_date: input.manufactured_date || null,
-        p_location_id: input.location_id || null,
-        p_condition: input.condition || 'good',
-        p_notes: input.notes || null
+        p_purchase_order_item_id: validatedInput.purchase_order_item_id,
+        p_quantity_received: validatedInput.quantity_received,
+        p_lot_number: validatedInput.lot_number || null,
+        p_batch_code: validatedInput.batch_code || null,
+        p_expiry_date: validatedInput.expiry_date || null,
+        p_manufactured_date: validatedInput.manufactured_date || null,
+        p_location_id: validatedInput.location_id || null,
+        p_condition: validatedInput.condition || 'good',
+        p_notes: validatedInput.notes || null
     })
 
     if (error) {
@@ -320,23 +460,65 @@ export async function updateReceiveItem(
     receiveItemId: string,
     updates: UpdateReceiveItemInput
 ): Promise<ReceiveResult> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
 
-    if (!user) return { success: false, error: 'Unauthorized' }
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // 3. Validate receiveItemId
+    const idValidation = z.string().uuid().safeParse(receiveItemId)
+    if (!idValidation.success) return { success: false, error: 'Invalid receive item ID' }
+
+    // 4. Validate input
+    const validation = validateInput(updateReceiveItemSchema, updates)
+    if (!validation.success) return { success: false, error: validation.error }
+    const validatedUpdates = validation.data
+
+    const supabase = await createClient()
+
+    // 5. Verify receive item belongs to user's tenant (via the parent receive)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: receiveItem, error: fetchError } = await (supabase as any)
+        .from('receive_items')
+        .select('receive_id, receives!inner(tenant_id)')
+        .eq('id', receiveItemId)
+        .single()
+
+    if (fetchError || !receiveItem) {
+        return { success: false, error: 'Receive item not found' }
+    }
+
+    if (receiveItem.receives?.tenant_id !== context.tenantId) {
+        return { success: false, error: 'Unauthorized: Access denied' }
+    }
+
+    // 6. If location_id is provided, verify it belongs to the tenant
+    if (validatedUpdates.location_id) {
+        const locationCheck = await verifyRelatedTenantOwnership(
+            'locations',
+            validatedUpdates.location_id,
+            context.tenantId,
+            'Location'
+        )
+        if (!locationCheck.success) return { success: false, error: locationCheck.error }
+    }
 
     // Use the RPC function
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase as any).rpc('update_receive_item', {
         p_receive_item_id: receiveItemId,
-        p_quantity_received: updates.quantity_received || null,
-        p_lot_number: updates.lot_number,
-        p_batch_code: updates.batch_code,
-        p_expiry_date: updates.expiry_date,
-        p_manufactured_date: updates.manufactured_date,
-        p_location_id: updates.location_id,
-        p_condition: updates.condition,
-        p_notes: updates.notes
+        p_quantity_received: validatedUpdates.quantity_received || null,
+        p_lot_number: validatedUpdates.lot_number,
+        p_batch_code: validatedUpdates.batch_code,
+        p_expiry_date: validatedUpdates.expiry_date,
+        p_manufactured_date: validatedUpdates.manufactured_date,
+        p_location_id: validatedUpdates.location_id,
+        p_condition: validatedUpdates.condition,
+        p_notes: validatedUpdates.notes
     })
 
     if (error) {
@@ -354,10 +536,36 @@ export async function updateReceiveItem(
 
 // Remove receive item
 export async function removeReceiveItem(receiveItemId: string): Promise<ReceiveResult> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
 
-    if (!user) return { success: false, error: 'Unauthorized' }
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // 3. Validate receiveItemId
+    const idValidation = z.string().uuid().safeParse(receiveItemId)
+    if (!idValidation.success) return { success: false, error: 'Invalid receive item ID' }
+
+    const supabase = await createClient()
+
+    // 4. Verify receive item belongs to user's tenant
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: receiveItem, error: fetchError } = await (supabase as any)
+        .from('receive_items')
+        .select('receive_id, receives!inner(tenant_id)')
+        .eq('id', receiveItemId)
+        .single()
+
+    if (fetchError || !receiveItem) {
+        return { success: false, error: 'Receive item not found' }
+    }
+
+    if (receiveItem.receives?.tenant_id !== context.tenantId) {
+        return { success: false, error: 'Unauthorized: Access denied' }
+    }
 
     // Use the RPC function
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -380,10 +588,24 @@ export async function removeReceiveItem(receiveItemId: string): Promise<ReceiveR
 
 // Complete receive - updates inventory
 export async function completeReceive(receiveId: string): Promise<ReceiveResult> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
 
-    if (!user) return { success: false, error: 'Unauthorized' }
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // 3. Validate receiveId
+    const idValidation = z.string().uuid().safeParse(receiveId)
+    if (!idValidation.success) return { success: false, error: 'Invalid receive ID' }
+
+    // 4. Verify receive belongs to user's tenant
+    const ownershipResult = await verifyTenantOwnership('receives', receiveId, context.tenantId)
+    if (!ownershipResult.success) return { success: false, error: ownershipResult.error }
+
+    const supabase = await createClient()
 
     // Use the RPC function
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -412,10 +634,24 @@ export async function completeReceive(receiveId: string): Promise<ReceiveResult>
 
 // Cancel receive
 export async function cancelReceive(receiveId: string): Promise<ReceiveResult> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
 
-    if (!user) return { success: false, error: 'Unauthorized' }
+    // 2. Check admin permission for cancel operations
+    const permResult = requireAdminPermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // 3. Validate receiveId
+    const idValidation = z.string().uuid().safeParse(receiveId)
+    if (!idValidation.success) return { success: false, error: 'Invalid receive ID' }
+
+    // 4. Verify receive belongs to user's tenant
+    const ownershipResult = await verifyTenantOwnership('receives', receiveId, context.tenantId)
+    if (!ownershipResult.success) return { success: false, error: ownershipResult.error }
+
+    const supabase = await createClient()
 
     // Use the RPC function
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -441,21 +677,55 @@ export async function updateReceive(
     receiveId: string,
     updates: UpdateReceiveInput
 ): Promise<ReceiveResult> {
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
+
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // 3. Validate receiveId
+    const idValidation = z.string().uuid().safeParse(receiveId)
+    if (!idValidation.success) return { success: false, error: 'Invalid receive ID' }
+
+    // 4. Validate input
+    const validation = validateInput(updateReceiveSchema, updates)
+    if (!validation.success) return { success: false, error: validation.error }
+    const validatedUpdates = validation.data
+
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) return { success: false, error: 'Unauthorized' }
-
-    // Check if receive is in draft status
+    // 5. Check if receive exists, belongs to tenant, and is in draft status
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: receive } = await (supabase as any)
+    const { data: receive, error: fetchError } = await (supabase as any)
         .from('receives')
-        .select('status')
+        .select('status, tenant_id')
         .eq('id', receiveId)
         .single()
 
-    if (receive?.status !== 'draft') {
+    if (fetchError || !receive) {
+        return { success: false, error: 'Receive not found' }
+    }
+
+    if (receive.tenant_id !== context.tenantId) {
+        return { success: false, error: 'Unauthorized: Access denied' }
+    }
+
+    if (receive.status !== 'draft') {
         return { success: false, error: 'Can only update draft receives' }
+    }
+
+    // 6. If location_id is provided, verify it belongs to the tenant
+    if (validatedUpdates.default_location_id) {
+        const locationCheck = await verifyRelatedTenantOwnership(
+            'locations',
+            validatedUpdates.default_location_id,
+            context.tenantId,
+            'Location'
+        )
+        if (!locationCheck.success) return { success: false, error: locationCheck.error }
     }
 
     // Update the receive
@@ -463,15 +733,16 @@ export async function updateReceive(
     const { error } = await (supabase as any)
         .from('receives')
         .update({
-            delivery_note_number: updates.delivery_note_number,
-            carrier: updates.carrier,
-            tracking_number: updates.tracking_number,
-            default_location_id: updates.default_location_id,
-            received_date: updates.received_date,
-            notes: updates.notes,
+            delivery_note_number: validatedUpdates.delivery_note_number,
+            carrier: validatedUpdates.carrier,
+            tracking_number: validatedUpdates.tracking_number,
+            default_location_id: validatedUpdates.default_location_id,
+            received_date: validatedUpdates.received_date,
+            notes: validatedUpdates.notes,
             updated_at: new Date().toISOString()
         })
         .eq('id', receiveId)
+        .eq('tenant_id', context.tenantId) // Double-check tenant
 
     if (error) {
         console.error('Update receive error:', error)
@@ -484,27 +755,19 @@ export async function updateReceive(
 
 // Get locations for dropdown
 export async function getLocations() {
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return []
+    const { context } = authResult
+
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) return []
-
-    // Get user's tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: profile } = await (supabase as any)
-        .from('profiles')
-        .select('tenant_id')
-        .eq('id', user.id)
-        .single()
-
-    if (!profile?.tenant_id) return []
-
-    // Get locations
+    // Get locations with tenant filter
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data } = await (supabase as any)
         .from('locations')
         .select('id, name, type')
-        .eq('tenant_id', profile.tenant_id)
+        .eq('tenant_id', context.tenantId)
         .eq('is_active', true)
         .order('name')
 
@@ -513,20 +776,12 @@ export async function getLocations() {
 
 // Get pending POs for receiving (for receives list page)
 export async function getPendingPurchaseOrders() {
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return []
+    const { context } = authResult
+
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) return []
-
-    // Get user's tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: profile } = await (supabase as any)
-        .from('profiles')
-        .select('tenant_id')
-        .eq('id', user.id)
-        .single()
-
-    if (!profile?.tenant_id) return []
 
     // Get POs that can be received (submitted, confirmed, or partial)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -547,7 +802,7 @@ export async function getPendingPurchaseOrders() {
                 received_quantity
             )
         `)
-        .eq('tenant_id', profile.tenant_id)
+        .eq('tenant_id', context.tenantId)
         .in('status', ['submitted', 'confirmed', 'partial'])
         .order('expected_date', { ascending: true, nullsFirst: false })
 
@@ -563,10 +818,43 @@ export async function addReceiveItemSerial(
     receiveItemId: string,
     serialNumber: string
 ): Promise<{ success: boolean; error?: string; serial?: ReceiveItemSerial }> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
 
-    if (!user) return { success: false, error: 'Unauthorized' }
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // 3. Validate inputs
+    const idValidation = z.string().uuid().safeParse(receiveItemId)
+    if (!idValidation.success) return { success: false, error: 'Invalid receive item ID' }
+
+    const serialValidation = serialNumberSchema.safeParse(serialNumber)
+    if (!serialValidation.success) return { success: false, error: 'Invalid serial number' }
+
+    const supabase = await createClient()
+
+    // 4. Verify receive item belongs to user's tenant
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: receiveItem, error: fetchError } = await (supabase as any)
+        .from('receive_items')
+        .select('receive_id, receives!inner(tenant_id, status)')
+        .eq('id', receiveItemId)
+        .single()
+
+    if (fetchError || !receiveItem) {
+        return { success: false, error: 'Receive item not found' }
+    }
+
+    if (receiveItem.receives?.tenant_id !== context.tenantId) {
+        return { success: false, error: 'Unauthorized: Access denied' }
+    }
+
+    if (receiveItem.receives?.status !== 'draft') {
+        return { success: false, error: 'Can only add serials to draft receives' }
+    }
 
     // Insert the serial number
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -574,7 +862,7 @@ export async function addReceiveItemSerial(
         .from('receive_item_serials')
         .insert({
             receive_item_id: receiveItemId,
-            serial_number: serialNumber.trim()
+            serial_number: serialValidation.data.trim()
         })
         .select()
         .single()
@@ -595,10 +883,40 @@ export async function addReceiveItemSerial(
 export async function removeReceiveItemSerial(
     serialId: string
 ): Promise<{ success: boolean; error?: string }> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
 
-    if (!user) return { success: false, error: 'Unauthorized' }
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // 3. Validate serialId
+    const idValidation = z.string().uuid().safeParse(serialId)
+    if (!idValidation.success) return { success: false, error: 'Invalid serial ID' }
+
+    const supabase = await createClient()
+
+    // 4. Verify serial belongs to user's tenant (via receive_items -> receives)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: serial, error: fetchError } = await (supabase as any)
+        .from('receive_item_serials')
+        .select('id, receive_items!inner(receives!inner(tenant_id, status))')
+        .eq('id', serialId)
+        .single()
+
+    if (fetchError || !serial) {
+        return { success: false, error: 'Serial not found' }
+    }
+
+    if (serial.receive_items?.receives?.tenant_id !== context.tenantId) {
+        return { success: false, error: 'Unauthorized: Access denied' }
+    }
+
+    if (serial.receive_items?.receives?.status !== 'draft') {
+        return { success: false, error: 'Can only remove serials from draft receives' }
+    }
 
     // Delete the serial number
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -621,18 +939,57 @@ export async function bulkAddReceiveItemSerials(
     receiveItemId: string,
     serialNumbers: string[]
 ): Promise<{ success: boolean; error?: string; added: number; duplicates: string[] }> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error, added: 0, duplicates: [] }
+    const { context } = authResult
 
-    if (!user) return { success: false, error: 'Unauthorized', added: 0, duplicates: [] }
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error, added: 0, duplicates: [] }
 
-    // Trim and filter empty entries
+    // 3. Validate receiveItemId
+    const idValidation = z.string().uuid().safeParse(receiveItemId)
+    if (!idValidation.success) return { success: false, error: 'Invalid receive item ID', added: 0, duplicates: [] }
+
+    // 4. Validate and limit serial numbers array
+    if (!Array.isArray(serialNumbers) || serialNumbers.length === 0) {
+        return { success: false, error: 'No serial numbers provided', added: 0, duplicates: [] }
+    }
+
+    if (serialNumbers.length > 1000) {
+        return { success: false, error: 'Maximum 1000 serial numbers per request', added: 0, duplicates: [] }
+    }
+
+    // Trim and filter empty entries, validate each
     const cleanSerials = serialNumbers
-        .map(s => s.trim())
-        .filter(s => s.length > 0)
+        .map(s => (typeof s === 'string' ? s.trim() : ''))
+        .filter(s => s.length > 0 && s.length <= 255)
 
     if (cleanSerials.length === 0) {
         return { success: false, error: 'No valid serial numbers provided', added: 0, duplicates: [] }
+    }
+
+    const supabase = await createClient()
+
+    // 5. Verify receive item belongs to user's tenant
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: receiveItem, error: fetchError } = await (supabase as any)
+        .from('receive_items')
+        .select('receive_id, receives!inner(tenant_id, status)')
+        .eq('id', receiveItemId)
+        .single()
+
+    if (fetchError || !receiveItem) {
+        return { success: false, error: 'Receive item not found', added: 0, duplicates: [] }
+    }
+
+    if (receiveItem.receives?.tenant_id !== context.tenantId) {
+        return { success: false, error: 'Unauthorized: Access denied', added: 0, duplicates: [] }
+    }
+
+    if (receiveItem.receives?.status !== 'draft') {
+        return { success: false, error: 'Can only add serials to draft receives', added: 0, duplicates: [] }
     }
 
     // Check for duplicates within the input
@@ -687,10 +1044,32 @@ export async function bulkAddReceiveItemSerials(
 export async function getReceiveItemSerials(
     receiveItemId: string
 ): Promise<ReceiveItemSerial[]> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return []
+    const { context } = authResult
 
-    if (!user) return []
+    // 2. Validate receiveItemId
+    const idValidation = z.string().uuid().safeParse(receiveItemId)
+    if (!idValidation.success) return []
+
+    const supabase = await createClient()
+
+    // 3. Verify receive item belongs to user's tenant
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: receiveItem, error: fetchError } = await (supabase as any)
+        .from('receive_items')
+        .select('receive_id, receives!inner(tenant_id)')
+        .eq('id', receiveItemId)
+        .single()
+
+    if (fetchError || !receiveItem) {
+        return []
+    }
+
+    if (receiveItem.receives?.tenant_id !== context.tenantId) {
+        return []
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase as any)
