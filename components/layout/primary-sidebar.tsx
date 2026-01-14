@@ -21,6 +21,8 @@ import {
   Activity,
   BarChart3,
   ShoppingCart,
+  Users,
+  Truck,
 } from 'lucide-react'
 import { NavSubmenu, SubmenuItem } from '@/components/layout/nav-submenu'
 import { useGlobalSearch } from '@/contexts/GlobalSearchContext'
@@ -41,6 +43,11 @@ const taskItems: SubmenuItem[] = [
 const insightsItems: SubmenuItem[] = [
   { name: 'Reports', href: '/reports', icon: FileText },
   { name: 'Reminders', href: '/reminders', icon: Bell },
+]
+
+// Partners - Suppliers & Collaborators
+const partnerItems: SubmenuItem[] = [
+  { name: 'Vendor', href: '/partners/vendors', icon: Truck },
 ]
 
 // System (bottom)
@@ -194,6 +201,15 @@ export function PrimarySidebar({ isExpanded = false, onToggle }: PrimarySidebarP
           items={insightsItems}
           sidebarExpanded={isExpanded}
           storageKey="nav-insights-expanded"
+        />
+
+        {/* Partners Section */}
+        <NavSubmenu
+          icon={Users}
+          label="Partners"
+          items={partnerItems}
+          sidebarExpanded={isExpanded}
+          storageKey="nav-partners-expanded"
         />
 
         {/* Spacer to push system nav to bottom */}
