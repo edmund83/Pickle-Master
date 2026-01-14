@@ -1957,6 +1957,57 @@ export type Database = {
           },
         ]
       }
+      payment_terms: {
+        Row: {
+          created_at: string | null
+          days: number | null
+          description: string | null
+          id: string
+          is_default: boolean | null
+          name: string
+          sort_order: number | null
+          tenant_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          days?: number | null
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          name: string
+          sort_order?: number | null
+          tenant_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          days?: number | null
+          description?: string | null
+          id?: string
+          is_default?: boolean | null
+          name?: string
+          sort_order?: number | null
+          tenant_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_terms_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "payment_terms_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pick_list_items: {
         Row: {
           id: string
@@ -3166,6 +3217,7 @@ export type Database = {
           id: string
           name: string
           notes: string | null
+          payment_term_id: string | null
           payment_terms: string | null
           phone: string | null
           postal_code: string | null
@@ -3184,6 +3236,7 @@ export type Database = {
           id?: string
           name: string
           notes?: string | null
+          payment_term_id?: string | null
           payment_terms?: string | null
           phone?: string | null
           postal_code?: string | null
@@ -3202,6 +3255,7 @@ export type Database = {
           id?: string
           name?: string
           notes?: string | null
+          payment_term_id?: string | null
           payment_terms?: string | null
           phone?: string | null
           postal_code?: string | null
@@ -3210,6 +3264,13 @@ export type Database = {
           updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "vendors_payment_term_id_fkey"
+            columns: ["payment_term_id"]
+            isOneToOne: false
+            referencedRelation: "payment_terms"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "vendors_tenant_id_fkey"
             columns: ["tenant_id"]
@@ -3911,6 +3972,17 @@ export type Database = {
         Returns: number
       }
       get_overdue_summary: { Args: never; Returns: Json }
+      get_payment_terms_with_usage: {
+        Args: never
+        Returns: {
+          days: number
+          description: string
+          id: string
+          name: string
+          sort_order: number
+          usage_count: number
+        }[]
+      }
       get_pick_list_with_items: {
         Args: { p_pick_list_id: string }
         Returns: Json
@@ -4155,6 +4227,10 @@ export type Database = {
           sku: string
           status: string
         }[]
+      }
+      seed_default_payment_terms: {
+        Args: { p_tenant_id: string }
+        Returns: number
       }
       set_item_tags: {
         Args: { p_item_id: string; p_tag_ids: string[] }

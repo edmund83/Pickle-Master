@@ -27,11 +27,12 @@ export type PurchaseOrderResult = {
 }
 
 // Status state machine - defines valid transitions
-// draft -> submitted -> confirmed -> receiving -> received
+// draft -> submitted -> pending_approval -> confirmed -> receiving -> received
 // Any status can transition to cancelled (except received)
 const PO_STATUS_TRANSITIONS: Record<string, string[]> = {
-    draft: ['submitted', 'cancelled'],
-    submitted: ['confirmed', 'cancelled', 'draft'], // Can reject back to draft
+    draft: ['submitted', 'pending_approval', 'cancelled'],
+    submitted: ['pending_approval', 'confirmed', 'cancelled', 'draft'], // Can reject back to draft
+    pending_approval: ['confirmed', 'draft', 'cancelled'], // Manager approves or rejects
     confirmed: ['receiving', 'cancelled'],
     receiving: ['received', 'cancelled'],
     received: [], // Terminal state - no transitions allowed
@@ -560,7 +561,7 @@ export async function updatePurchaseOrderStatus(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: currentPO } = await (supabase as any)
         .from('purchase_orders')
-        .select('display_id, status, vendor_id')
+        .select('display_id, status, vendor_id, created_by, submitted_by')
         .eq('id', purchaseOrderId)
         .eq('tenant_id', context.tenantId)
         .single()
@@ -580,12 +581,12 @@ export async function updatePurchaseOrderStatus(
     }
 
     // 6. Block submission without required vendor
-    if (validatedStatus === 'submitted' && !currentPO.vendor_id) {
+    if ((validatedStatus === 'submitted' || validatedStatus === 'pending_approval') && !currentPO.vendor_id) {
         return { success: false, error: 'Cannot submit purchase order without a vendor' }
     }
 
     // 7. Check for items when submitting
-    if (validatedStatus === 'submitted') {
+    if (validatedStatus === 'submitted' || validatedStatus === 'pending_approval') {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const { count: itemCount } = await (supabase as any)
             .from('purchase_order_items')
@@ -600,6 +601,18 @@ export async function updatePurchaseOrderStatus(
     const updates: Record<string, unknown> = {
         status: validatedStatus,
         updated_at: new Date().toISOString()
+    }
+
+    // Set submitted_by and submitted_at when submitting for approval
+    if ((validatedStatus === 'submitted' || validatedStatus === 'pending_approval') && !currentPO.submitted_by) {
+        updates.submitted_by = context.userId
+        updates.submitted_at = new Date().toISOString()
+    }
+
+    // Set approved_by and approved_at when confirming (approving)
+    if (validatedStatus === 'confirmed' && (previousStatus === 'submitted' || previousStatus === 'pending_approval')) {
+        updates.approved_by = context.userId
+        updates.approved_at = new Date().toISOString()
     }
 
     // Set received_date when marking as received
@@ -637,6 +650,55 @@ export async function updatePurchaseOrderStatus(
         })
     } catch (logError) {
         console.error('Activity log error:', logError)
+    }
+
+    // Trigger notifications based on status change
+    try {
+        // Notify admins when submitted for approval
+        if (validatedStatus === 'submitted' || validatedStatus === 'pending_approval') {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            await (supabase as any).rpc('notify_admins_pending_approval', {
+                p_tenant_id: context.tenantId,
+                p_entity_type: 'purchase_order',
+                p_entity_id: purchaseOrderId,
+                p_entity_display_id: currentPO.display_id,
+                p_submitter_name: context.fullName,
+                p_triggered_by: context.userId
+            })
+        }
+
+        // Notify submitter when approved or rejected
+        if (validatedStatus === 'confirmed' && currentPO.submitted_by && currentPO.submitted_by !== context.userId) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            await (supabase as any).rpc('notify_approval', {
+                p_tenant_id: context.tenantId,
+                p_user_id: currentPO.submitted_by,
+                p_entity_type: 'purchase_order',
+                p_entity_id: purchaseOrderId,
+                p_entity_display_id: currentPO.display_id,
+                p_approver_name: context.fullName,
+                p_approved: true,
+                p_triggered_by: context.userId
+            })
+        }
+
+        // Notify submitter when rejected (sent back to draft)
+        if (validatedStatus === 'draft' && (previousStatus === 'submitted' || previousStatus === 'pending_approval') && currentPO.submitted_by && currentPO.submitted_by !== context.userId) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            await (supabase as any).rpc('notify_approval', {
+                p_tenant_id: context.tenantId,
+                p_user_id: currentPO.submitted_by,
+                p_entity_type: 'purchase_order',
+                p_entity_id: purchaseOrderId,
+                p_entity_display_id: currentPO.display_id,
+                p_approver_name: context.fullName,
+                p_approved: false,
+                p_triggered_by: context.userId
+            })
+        }
+    } catch (notifyError) {
+        console.error('Notification error:', notifyError)
+        // Don't fail the operation if notification fails
     }
 
     revalidatePath('/tasks/purchase-orders')

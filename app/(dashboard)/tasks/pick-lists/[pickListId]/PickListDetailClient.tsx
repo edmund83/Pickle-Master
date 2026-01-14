@@ -45,6 +45,7 @@ import {
 import { BarcodeScanner } from '@/components/scanner/BarcodeScanner'
 import type { ScanResult } from '@/lib/scanner/useBarcodeScanner'
 import { ChatterPanel } from '@/components/chatter'
+import { useFeedback } from '@/components/feedback/FeedbackProvider'
 
 interface TeamMember {
   id: string
@@ -141,6 +142,7 @@ const itemOutcomeOptions = [
 
 export function PickListDetailClient({ data, teamMembers, currentUserId }: PickListDetailClientProps) {
   const router = useRouter()
+  const feedback = useFeedback()
   const [pickingItemId, setPickingItemId] = useState<string | null>(null)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
@@ -290,10 +292,10 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
       setSearchResults(filtered)
     } else if (foundItems.length > 0) {
       // Items found but all already in list
-      alert(`Item with barcode "${result.code}" is already in the pick list`)
+      feedback.warning(`Item with barcode "${result.code}" is already in the pick list`)
     } else {
       // No match found
-      alert(`No item found with barcode: ${result.code}`)
+      feedback.warning(`No item found with barcode: ${result.code}`)
     }
   }
 

@@ -276,6 +276,15 @@ export async function updatePickList(
 
     const supabase = await createClient()
 
+    // Get current pick list to check if assignment is changing
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: currentPickList } = await (supabase as any)
+        .from('pick_lists')
+        .select('display_id, assigned_to')
+        .eq('id', pickListId)
+        .eq('tenant_id', context.tenantId)
+        .single()
+
     // Exclude display_id from updates - it is immutable once set
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { display_id, ...safeUpdates } = validatedUpdates as Record<string, unknown>
@@ -293,6 +302,26 @@ export async function updatePickList(
     if (error) {
         console.error('Update pick list error:', error)
         return { success: false, error: error.message }
+    }
+
+    // Trigger notification if assignment changed
+    const newAssignedTo = validatedUpdates.assigned_to
+    if (newAssignedTo && newAssignedTo !== currentPickList?.assigned_to && newAssignedTo !== context.userId) {
+        try {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            await (supabase as any).rpc('notify_assignment', {
+                p_tenant_id: context.tenantId,
+                p_user_id: newAssignedTo,
+                p_entity_type: 'pick_list',
+                p_entity_id: pickListId,
+                p_entity_display_id: currentPickList?.display_id,
+                p_assigner_name: context.fullName,
+                p_triggered_by: context.userId
+            })
+        } catch (notifyError) {
+            console.error('Notification error:', notifyError)
+            // Don't fail the operation if notification fails
+        }
     }
 
     revalidatePath('/tasks/pick-lists')

@@ -23,6 +23,7 @@ import {
   FileBarChart,
   Menu,
   X,
+  Receipt,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
@@ -67,6 +68,7 @@ const settingsNavGroups: NavGroup[] = [
       { href: '/settings/custom-fields', label: 'Custom Fields', icon: Database },
       { href: '/settings/labels', label: 'Labels', icon: Tag },
       { href: '/settings/vendors', label: 'Vendors', icon: Truck },
+      { href: '/settings/payment-terms', label: 'Payment Terms', icon: Receipt },
     ],
   },
   {

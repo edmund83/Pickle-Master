@@ -45,14 +45,14 @@ const statusOptions = ['draft', 'completed', 'cancelled']
 
 type SortColumn = 'display_id' | 'po_display_id' | 'vendor_name' | 'status' | 'received_date' | 'delivery_note_number' | 'created_at'
 
-const columnHeaders: { key: SortColumn; label: string; align?: 'left' | 'right' }[] = [
+const columnHeaders: { key: SortColumn; label: string; align?: 'left' | 'right'; hideOnMobile?: boolean }[] = [
   { key: 'display_id', label: 'Receive #' },
   { key: 'po_display_id', label: 'Purchase Order' },
-  { key: 'vendor_name', label: 'Vendor' },
+  { key: 'vendor_name', label: 'Vendor', hideOnMobile: true },
   { key: 'status', label: 'Status' },
-  { key: 'received_date', label: 'Received Date' },
-  { key: 'delivery_note_number', label: 'Delivery Note' },
-  { key: 'created_at', label: 'Created' },
+  { key: 'received_date', label: 'Received Date', hideOnMobile: true },
+  { key: 'delivery_note_number', label: 'Delivery Note', hideOnMobile: true },
+  { key: 'created_at', label: 'Created', hideOnMobile: true },
 ]
 
 export function ReceivesListClient({
@@ -235,12 +235,12 @@ export function ReceivesListClient({
           <table className="w-full">
             <thead className="bg-neutral-50 sticky top-0 z-10">
               <tr>
-                {columnHeaders.map(({ key, label, align }) => (
+                {columnHeaders.map(({ key, label, align, hideOnMobile }) => (
                   <th
                     key={key}
                     className={`px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider cursor-pointer hover:bg-neutral-100 ${
                       align === 'right' ? 'text-right' : 'text-left'
-                    }`}
+                    } ${hideOnMobile ? 'hidden md:table-cell' : ''}`}
                     onClick={() => handleSort(key)}
                   >
                     <div className={`flex items-center gap-1 ${align === 'right' ? 'justify-end' : ''}`}>
@@ -259,30 +259,39 @@ export function ReceivesListClient({
               {initialData.data.map((receive) => (
                 <tr
                   key={receive.id}
-                  className="hover:bg-neutral-50 cursor-pointer"
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`View receive ${receive.display_id || receive.id.slice(0, 8)}`}
+                  className="hover:bg-neutral-50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-inset focus:bg-neutral-50"
                   onClick={() => router.push(`/tasks/receives/${receive.id}`)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      router.push(`/tasks/receives/${receive.id}`)
+                    }
+                  }}
                 >
-                  <td className="px-4 py-3 font-medium text-neutral-900">
+                  <td className="px-4 py-4 md:py-3 font-medium text-neutral-900">
                     {receive.display_id || receive.id.slice(0, 8)}
                   </td>
-                  <td className="px-4 py-3 text-neutral-600">
+                  <td className="px-4 py-4 md:py-3 text-neutral-600">
                     {receive.po_display_id || receive.po_order_number || '—'}
                   </td>
-                  <td className="px-4 py-3 text-neutral-600">
+                  <td className="px-4 py-3 text-neutral-600 hidden md:table-cell">
                     {receive.vendor_name || '—'}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-4 md:py-3">
                     <span className={`rounded px-2 py-1 text-xs font-medium ${statusColors[receive.status] || 'bg-neutral-100 text-neutral-700'}`}>
                       {statusLabels[receive.status] || receive.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-neutral-600">
+                  <td className="px-4 py-3 text-neutral-600 hidden md:table-cell">
                     {receive.received_date ? <FormattedShortDate date={receive.received_date} /> : '—'}
                   </td>
-                  <td className="px-4 py-3 text-neutral-600">
+                  <td className="px-4 py-3 text-neutral-600 hidden md:table-cell">
                     {receive.delivery_note_number || '—'}
                   </td>
-                  <td className="px-4 py-3 text-neutral-600">
+                  <td className="px-4 py-3 text-neutral-600 hidden md:table-cell">
                     <FormattedShortDate date={receive.created_at} />
                   </td>
                 </tr>

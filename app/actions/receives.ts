@@ -675,6 +675,21 @@ export async function completeReceive(receiveId: string): Promise<ReceiveResult>
         console.error('Activity log error:', logError)
     }
 
+    // Trigger notification for receive completion
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase as any).rpc('notify_receive_completed', {
+            p_tenant_id: context.tenantId,
+            p_receive_id: receiveId,
+            p_receive_display_id: receive?.display_id,
+            p_completer_name: context.fullName,
+            p_triggered_by: context.userId
+        })
+    } catch (notifyError) {
+        console.error('Notification error:', notifyError)
+        // Don't fail the operation if notification fails
+    }
+
     revalidatePath('/tasks/receives')
     revalidatePath('/tasks/purchase-orders')
     return {

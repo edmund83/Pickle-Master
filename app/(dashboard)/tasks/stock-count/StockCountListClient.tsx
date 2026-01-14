@@ -66,6 +66,7 @@ const statusLabels: Record<string, string> = {
   draft: 'Draft',
   in_progress: 'In Progress',
   review: 'Under Review',
+  pending_approval: 'Pending Approval',
   completed: 'Completed',
   cancelled: 'Cancelled',
 }
@@ -74,6 +75,7 @@ const statusColors: Record<string, string> = {
   draft: 'bg-neutral-100 text-neutral-700',
   in_progress: 'bg-blue-100 text-blue-700',
   review: 'bg-amber-100 text-amber-700',
+  pending_approval: 'bg-amber-100 text-amber-700',
   completed: 'bg-green-100 text-green-700',
   cancelled: 'bg-red-100 text-red-700',
 }
@@ -82,11 +84,12 @@ const statusIcons: Record<string, React.ReactNode> = {
   draft: <Clock className="h-4 w-4 text-neutral-400" />,
   in_progress: <Clock className="h-4 w-4 text-blue-500" />,
   review: <Eye className="h-4 w-4 text-amber-500" />,
+  pending_approval: <Clock className="h-4 w-4 text-amber-500" />,
   completed: <CheckCircle className="h-4 w-4 text-green-500" />,
   cancelled: <XCircle className="h-4 w-4 text-red-500" />,
 }
 
-const statusOptions = ['draft', 'in_progress', 'review', 'completed', 'cancelled']
+const statusOptions = ['draft', 'in_progress', 'review', 'pending_approval', 'completed', 'cancelled']
 
 const scopeLabels: Record<string, string> = {
   full: 'Full Inventory',
@@ -96,14 +99,14 @@ const scopeLabels: Record<string, string> = {
 
 type SortColumn = 'display_id' | 'name' | 'status' | 'scope_type' | 'due_date' | 'created_at' | 'total_items' | 'counted_items'
 
-const columnHeaders: { key: SortColumn; label: string; align?: 'left' | 'right' }[] = [
+const columnHeaders: { key: SortColumn; label: string; align?: 'left' | 'right'; hideOnMobile?: boolean }[] = [
   { key: 'display_id', label: 'Stock Count #' },
   { key: 'name', label: 'Name' },
   { key: 'status', label: 'Status' },
-  { key: 'scope_type', label: 'Scope' },
-  { key: 'total_items', label: 'Progress', align: 'right' },
-  { key: 'due_date', label: 'Due Date' },
-  { key: 'created_at', label: 'Created' },
+  { key: 'scope_type', label: 'Scope', hideOnMobile: true },
+  { key: 'total_items', label: 'Progress', align: 'right', hideOnMobile: true },
+  { key: 'due_date', label: 'Due Date', hideOnMobile: true },
+  { key: 'created_at', label: 'Created', hideOnMobile: true },
 ]
 
 export function StockCountListClient({
@@ -299,12 +302,12 @@ export function StockCountListClient({
           <table className="w-full">
             <thead className="bg-neutral-50 sticky top-0 z-10">
               <tr>
-                {columnHeaders.map(({ key, label, align }) => (
+                {columnHeaders.map(({ key, label, align, hideOnMobile }) => (
                   <th
                     key={key}
                     className={`px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider cursor-pointer hover:bg-neutral-100 ${
                       align === 'right' ? 'text-right' : 'text-left'
-                    }`}
+                    } ${hideOnMobile ? 'hidden md:table-cell' : ''}`}
                     onClick={() => handleSort(key)}
                   >
                     <div className={`flex items-center gap-1 ${align === 'right' ? 'justify-end' : ''}`}>
@@ -323,16 +326,25 @@ export function StockCountListClient({
               {initialData.data.map((stockCount) => (
                 <tr
                   key={stockCount.id}
-                  className="hover:bg-neutral-50 cursor-pointer"
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`View stock count ${stockCount.display_id || stockCount.id.slice(0, 8)}`}
+                  className="hover:bg-neutral-50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-inset focus:bg-neutral-50"
                   onClick={() => router.push(`/tasks/stock-count/${stockCount.id}`)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      router.push(`/tasks/stock-count/${stockCount.id}`)
+                    }
+                  }}
                 >
-                  <td className="px-4 py-3 font-medium text-neutral-900">
+                  <td className="px-4 py-4 md:py-3 font-medium text-neutral-900">
                     {stockCount.display_id || stockCount.id.slice(0, 8)}
                   </td>
-                  <td className="px-4 py-3 text-neutral-600">
+                  <td className="px-4 py-4 md:py-3 text-neutral-600">
                     {stockCount.name || '—'}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-4 md:py-3">
                     <div className="flex items-center gap-2">
                       {statusIcons[stockCount.status]}
                       <span className={`rounded px-2 py-1 text-xs font-medium ${statusColors[stockCount.status] || 'bg-neutral-100 text-neutral-700'}`}>
@@ -340,19 +352,19 @@ export function StockCountListClient({
                       </span>
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-neutral-600">
+                  <td className="px-4 py-3 text-neutral-600 hidden md:table-cell">
                     {scopeLabels[stockCount.scope_type] || stockCount.scope_type}
                     {stockCount.scope_folder_name && (
                       <span className="ml-1 text-neutral-400">({stockCount.scope_folder_name})</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-right text-neutral-600">
+                  <td className="px-4 py-3 text-right text-neutral-600 hidden md:table-cell">
                     {getProgressDisplay(stockCount.counted_items, stockCount.total_items)}
                   </td>
-                  <td className="px-4 py-3 text-neutral-600">
+                  <td className="px-4 py-3 text-neutral-600 hidden md:table-cell">
                     {stockCount.due_date ? <FormattedShortDate date={stockCount.due_date} /> : '—'}
                   </td>
-                  <td className="px-4 py-3 text-neutral-600">
+                  <td className="px-4 py-3 text-neutral-600 hidden md:table-cell">
                     {stockCount.created_at ? <FormattedShortDate date={stockCount.created_at} /> : '—'}
                   </td>
                 </tr>

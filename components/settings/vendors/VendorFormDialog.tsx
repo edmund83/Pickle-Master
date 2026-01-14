@@ -14,7 +14,7 @@ interface VendorFormData {
   address_line1: string
   city: string
   country: string
-  payment_terms: string
+  payment_term_id: string
   notes: string
 }
 
@@ -26,8 +26,13 @@ const emptyFormData: VendorFormData = {
   address_line1: '',
   city: '',
   country: '',
-  payment_terms: '',
+  payment_term_id: '',
   notes: '',
+}
+
+interface PaymentTermOption {
+  id: string
+  name: string
 }
 
 interface VendorFormDialogProps {
@@ -36,6 +41,7 @@ interface VendorFormDialogProps {
   onSave: (data: VendorFormData) => Promise<void>
   vendor?: Vendor | null
   saving?: boolean
+  paymentTerms?: PaymentTermOption[]
 }
 
 export function VendorFormDialog({
@@ -44,6 +50,7 @@ export function VendorFormDialog({
   onSave,
   vendor,
   saving = false,
+  paymentTerms = [],
 }: VendorFormDialogProps) {
   const [formData, setFormData] = useState<VendorFormData>(emptyFormData)
   const [error, setError] = useState<string | null>(null)
@@ -62,7 +69,7 @@ export function VendorFormDialog({
           address_line1: vendor.address_line1 || '',
           city: vendor.city || '',
           country: vendor.country || '',
-          payment_terms: vendor.payment_terms || '',
+          payment_term_id: vendor.payment_term_id || '',
           notes: vendor.notes || '',
         })
       } else {
@@ -237,21 +244,16 @@ export function VendorFormDialog({
               Payment Terms
             </label>
             <select
-              value={formData.payment_terms}
-              onChange={(e) => setFormData(prev => ({ ...prev, payment_terms: e.target.value }))}
+              value={formData.payment_term_id}
+              onChange={(e) => setFormData(prev => ({ ...prev, payment_term_id: e.target.value }))}
               className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary bg-white"
             >
               <option value="">Select payment terms...</option>
-              <option value="COD">COD (Cash on Delivery)</option>
-              <option value="Net 7">Net 7</option>
-              <option value="Net 15">Net 15</option>
-              <option value="Net 30">Net 30</option>
-              <option value="Net 45">Net 45</option>
-              <option value="Net 60">Net 60</option>
-              <option value="Net 90">Net 90</option>
-              <option value="2/10 Net 30">2/10 Net 30 (2% discount if paid in 10 days)</option>
-              <option value="Due on Receipt">Due on Receipt</option>
-              <option value="Prepaid">Prepaid</option>
+              {paymentTerms.map((term) => (
+                <option key={term.id} value={term.id}>
+                  {term.name}
+                </option>
+              ))}
             </select>
           </div>
 
