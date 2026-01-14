@@ -3,7 +3,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
 import {
   ArrowLeft,
   Calendar,
@@ -43,6 +42,7 @@ import {
 } from '@/app/actions/receives'
 import type { Location } from './page'
 import { ChatterPanel } from '@/components/chatter'
+import { ItemThumbnail } from '@/components/ui/item-thumbnail'
 
 interface ReceiveDetailClientProps {
   receive: ReceiveWithDetails
@@ -564,19 +564,11 @@ export function ReceiveDetailClient({
                             {/* Item cell */}
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-3">
-                                {item.item_image ? (
-                                  <Image
-                                    src={item.item_image}
-                                    alt={item.item_name}
-                                    width={40}
-                                    height={40}
-                                    className="h-10 w-10 rounded object-cover"
-                                  />
-                                ) : (
-                                  <div className="flex h-10 w-10 items-center justify-center rounded bg-neutral-100">
-                                    <Package className="h-5 w-5 text-neutral-400" />
-                                  </div>
-                                )}
+                                <ItemThumbnail
+                                  src={item.item_image}
+                                  alt={item.item_name}
+                                  size="md"
+                                />
                                 <div>
                                   <p className="font-medium text-neutral-900">{item.item_name}</p>
                                   {item.item_sku && (
@@ -916,19 +908,11 @@ export function ReceiveDetailClient({
             <div className="p-4 space-y-4">
               {/* Item Info (read-only) */}
               <div className="flex items-center gap-3 p-3 bg-neutral-50 rounded-lg">
-                {editingItem.item_image ? (
-                  <Image
-                    src={editingItem.item_image}
-                    alt={editingItem.item_name}
-                    width={48}
-                    height={48}
-                    className="h-12 w-12 rounded object-cover"
-                  />
-                ) : (
-                  <div className="flex h-12 w-12 items-center justify-center rounded bg-neutral-200">
-                    <Package className="h-6 w-6 text-neutral-400" />
-                  </div>
-                )}
+                <ItemThumbnail
+                  src={editingItem.item_image}
+                  alt={editingItem.item_name}
+                  size="lg"
+                />
                 <div>
                   <p className="font-medium text-neutral-900">{editingItem.item_name}</p>
                   {editingItem.item_sku && (
@@ -1071,19 +1055,11 @@ export function ReceiveDetailClient({
             <div className="p-4 space-y-4">
               {/* Item Info */}
               <div className="flex items-center gap-3 p-3 bg-neutral-50 rounded-lg">
-                {serialEditItem.item_image ? (
-                  <Image
-                    src={serialEditItem.item_image}
-                    alt={serialEditItem.item_name}
-                    width={48}
-                    height={48}
-                    className="h-12 w-12 rounded object-cover"
-                  />
-                ) : (
-                  <div className="flex h-12 w-12 items-center justify-center rounded bg-neutral-200">
-                    <Package className="h-6 w-6 text-neutral-400" />
-                  </div>
-                )}
+                <ItemThumbnail
+                  src={serialEditItem.item_image}
+                  alt={serialEditItem.item_name}
+                  size="lg"
+                />
                 <div className="flex-1">
                   <p className="font-medium text-neutral-900">{serialEditItem.item_name}</p>
                   {serialEditItem.item_sku && (

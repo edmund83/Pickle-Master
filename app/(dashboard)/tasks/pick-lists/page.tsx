@@ -1,39 +1,51 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
-import { PickListsClient } from '@/components/workflows/PickListsClient'
-import type { PickListWithRelations } from '@/types/database.types'
+import { getPaginatedPickLists } from '@/app/actions/pick-lists'
+import { PickListsListClient } from './PickListsListClient'
 
-async function getPickLists(): Promise<PickListWithRelations[]> {
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: profile } = await (supabase as any)
-    .from('profiles')
-    .select('tenant_id')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile?.tenant_id) return []
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data } = await (supabase as any)
-    .from('pick_lists')
-    .select(`
-      *,
-      assigned_to_profile:profiles!assigned_to(id, full_name),
-      created_by_profile:profiles!created_by(id, full_name)
-    `)
-    .eq('tenant_id', profile.tenant_id)
-    .order('updated_at', { ascending: false })
-
-  return (data || []) as PickListWithRelations[]
+interface SearchParams {
+  page?: string
+  status?: string
+  assigned?: string
+  search?: string
+  sort?: string
+  order?: string
 }
 
-export default async function PickListsPage() {
-  const pickLists = await getPickLists()
+export default async function PickListsPage({
+  searchParams
+}: {
+  searchParams: Promise<SearchParams>
+}) {
+  const params = await searchParams
 
-  return <PickListsClient pickLists={pickLists} />
+  // Parse and validate URL parameters
+  const page = parseInt(params.page || '1', 10)
+  const status = params.status || undefined
+  const assignedTo = params.assigned || undefined
+  const search = params.search || undefined
+  const sortColumn = params.sort || 'updated_at'
+  const sortDirection = (params.order === 'asc' ? 'asc' : 'desc') as 'asc' | 'desc'
+
+  // Fetch paginated data
+  const pickListsData = await getPaginatedPickLists({
+    page,
+    pageSize: 20,
+    status,
+    assignedTo,
+    search,
+    sortColumn,
+    sortDirection,
+  })
+
+  return (
+    <PickListsListClient
+      initialData={pickListsData}
+      initialFilters={{
+        status: status || '',
+        assignedTo: assignedTo || '',
+        search: search || '',
+        sortColumn,
+        sortDirection,
+      }}
+    />
+  )
 }

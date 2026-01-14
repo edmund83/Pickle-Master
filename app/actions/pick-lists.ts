@@ -24,6 +24,23 @@ export type PickListResult = {
     display_id?: string
 }
 
+// Status state machine - defines valid transitions
+// draft -> pending -> in_progress -> completed
+// Any non-completed status can transition to cancelled
+const PICK_LIST_STATUS_TRANSITIONS: Record<string, string[]> = {
+    draft: ['pending', 'cancelled'],
+    pending: ['in_progress', 'cancelled', 'draft'], // Can return to draft
+    in_progress: ['completed', 'cancelled'],
+    completed: [], // Terminal state - no transitions allowed
+    cancelled: ['draft'], // Can be revived to draft
+}
+
+function isValidPickListStatusTransition(currentStatus: string, newStatus: string): boolean {
+    if (currentStatus === newStatus) return true
+    const allowedTransitions = PICK_LIST_STATUS_TRANSITIONS[currentStatus] || []
+    return allowedTransitions.includes(newStatus)
+}
+
 // Validation schemas
 const pickListItemSchema = z.object({
     item_id: z.string().uuid(),
@@ -201,6 +218,23 @@ export async function createDraftPickList(): Promise<PickListResult> {
 
     if (data && !data.success) {
         return { success: false, error: data.error || 'Failed to create pick list' }
+    }
+
+    // Log activity for pick list creation
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase as any).from('activity_logs').insert({
+            tenant_id: context.tenantId,
+            user_id: context.userId,
+            user_name: context.fullName,
+            action_type: 'create',
+            entity_type: 'pick_list',
+            entity_id: data?.pick_list_id,
+            entity_name: data?.display_id,
+            changes: { status: 'draft', source: 'quick_create' }
+        })
+    } catch (logError) {
+        console.error('Activity log error:', logError)
     }
 
     revalidatePath('/tasks/pick-lists')
@@ -536,6 +570,15 @@ export async function completePickList(pickListId: string): Promise<PickListResu
 
     const supabase = await createClient()
 
+    // Get pick list info for logging
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: pickList } = await (supabase as any)
+        .from('pick_lists')
+        .select('display_id, status, name')
+        .eq('id', pickListId)
+        .eq('tenant_id', context.tenantId)
+        .single()
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase as any).rpc('complete_pick_list', {
         p_pick_list_id: pickListId
@@ -548,6 +591,26 @@ export async function completePickList(pickListId: string): Promise<PickListResu
 
     if (data && !data.success) {
         return { success: false, error: data.error || 'Failed to complete pick list' }
+    }
+
+    // Log activity for pick list completion
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase as any).from('activity_logs').insert({
+            tenant_id: context.tenantId,
+            user_id: context.userId,
+            user_name: context.fullName,
+            action_type: 'complete',
+            entity_type: 'pick_list',
+            entity_id: pickListId,
+            entity_name: pickList?.display_id || pickList?.name,
+            changes: {
+                previous_status: pickList?.status,
+                new_status: 'completed'
+            }
+        })
+    } catch (logError) {
+        console.error('Activity log error:', logError)
     }
 
     revalidatePath('/tasks/pick-lists')
@@ -571,6 +634,15 @@ export async function startPickList(pickListId: string): Promise<PickListResult>
 
     const supabase = await createClient()
 
+    // Get pick list info for logging
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: pickList } = await (supabase as any)
+        .from('pick_lists')
+        .select('display_id, status, name')
+        .eq('id', pickListId)
+        .eq('tenant_id', context.tenantId)
+        .single()
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any)
         .from('pick_lists')
@@ -581,6 +653,26 @@ export async function startPickList(pickListId: string): Promise<PickListResult>
     if (error) {
         console.error('Start pick list error:', error)
         return { success: false, error: error.message }
+    }
+
+    // Log activity for pick list start
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase as any).from('activity_logs').insert({
+            tenant_id: context.tenantId,
+            user_id: context.userId,
+            user_name: context.fullName,
+            action_type: 'status_change',
+            entity_type: 'pick_list',
+            entity_id: pickListId,
+            entity_name: pickList?.display_id || pickList?.name,
+            changes: {
+                previous_status: pickList?.status,
+                new_status: 'in_progress'
+            }
+        })
+    } catch (logError) {
+        console.error('Activity log error:', logError)
     }
 
     revalidatePath('/tasks/pick-lists')
@@ -604,6 +696,15 @@ export async function cancelPickList(pickListId: string): Promise<PickListResult
 
     const supabase = await createClient()
 
+    // Get pick list info for logging
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: pickList } = await (supabase as any)
+        .from('pick_lists')
+        .select('display_id, status, name')
+        .eq('id', pickListId)
+        .eq('tenant_id', context.tenantId)
+        .single()
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any)
         .from('pick_lists')
@@ -614,6 +715,26 @@ export async function cancelPickList(pickListId: string): Promise<PickListResult
     if (error) {
         console.error('Cancel pick list error:', error)
         return { success: false, error: error.message }
+    }
+
+    // Log activity for pick list cancellation
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase as any).from('activity_logs').insert({
+            tenant_id: context.tenantId,
+            user_id: context.userId,
+            user_name: context.fullName,
+            action_type: 'cancel',
+            entity_type: 'pick_list',
+            entity_id: pickListId,
+            entity_name: pickList?.display_id || pickList?.name,
+            changes: {
+                previous_status: pickList?.status,
+                new_status: 'cancelled'
+            }
+        })
+    } catch (logError) {
+        console.error('Activity log error:', logError)
     }
 
     revalidatePath('/tasks/pick-lists')
@@ -638,6 +759,184 @@ export async function getTeamMembers() {
         .order('full_name')
 
     return data || []
+}
+
+// ============================================
+// Server-side Pagination for Pick Lists
+// ============================================
+
+export interface PaginatedPickListsResult {
+    data: PickListListItem[]
+    total: number
+    page: number
+    pageSize: number
+    totalPages: number
+}
+
+export interface PickListListItem {
+    id: string
+    display_id: string | null
+    name: string | null
+    pick_list_number: string | null
+    status: string
+    due_date: string | null
+    completed_at: string | null
+    created_at: string
+    updated_at: string
+    assigned_to_name: string | null
+    created_by_name: string | null
+    item_count: number
+}
+
+export interface PickListsQueryParams {
+    page?: number
+    pageSize?: number
+    sortColumn?: string
+    sortDirection?: 'asc' | 'desc'
+    status?: string
+    assignedTo?: string
+    search?: string
+}
+
+export async function getPaginatedPickLists(
+    params: PickListsQueryParams = {}
+): Promise<PaginatedPickListsResult> {
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) {
+        return { data: [], total: 0, page: 1, pageSize: 20, totalPages: 0 }
+    }
+    const { context } = authResult
+
+    const {
+        page = 1,
+        pageSize = 20,
+        sortColumn = 'updated_at',
+        sortDirection = 'desc',
+        status,
+        assignedTo,
+        search
+    } = params
+
+    // Validate and sanitize parameters
+    const sanitizedPage = Math.max(1, page)
+    const sanitizedPageSize = Math.min(100, Math.max(1, pageSize))
+    const offset = (sanitizedPage - 1) * sanitizedPageSize
+
+    // Map sort columns to database columns
+    const columnMap: Record<string, string> = {
+        display_id: 'display_id',
+        name: 'name',
+        pick_list_number: 'pick_list_number',
+        status: 'status',
+        due_date: 'due_date',
+        completed_at: 'completed_at',
+        created_at: 'created_at',
+        updated_at: 'updated_at',
+    }
+
+    const dbSortColumn = columnMap[sortColumn] || 'updated_at'
+    const ascending = sortDirection === 'asc'
+
+    const supabase = await createClient()
+
+    // Build query for count
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let countQuery = (supabase as any)
+        .from('pick_lists')
+        .select('*', { count: 'exact', head: true })
+        .eq('tenant_id', context.tenantId)
+
+    // Build query for data - note: we'll get item_count separately
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let dataQuery = (supabase as any)
+        .from('pick_lists')
+        .select(`
+            id,
+            display_id,
+            name,
+            pick_list_number,
+            status,
+            due_date,
+            completed_at,
+            created_at,
+            updated_at,
+            assigned_to_profile:profiles!pick_lists_assigned_to_fkey(full_name),
+            created_by_profile:profiles!pick_lists_created_by_fkey(full_name),
+            pick_list_items(count)
+        `)
+        .eq('tenant_id', context.tenantId)
+        .order(dbSortColumn, { ascending })
+        .range(offset, offset + sanitizedPageSize - 1)
+
+    // Apply filters
+    if (status) {
+        const statusValidation = pickListStatusSchema.safeParse(status)
+        if (statusValidation.success) {
+            countQuery = countQuery.eq('status', statusValidation.data)
+            dataQuery = dataQuery.eq('status', statusValidation.data)
+        }
+    }
+
+    if (assignedTo) {
+        const idValidation = z.string().uuid().safeParse(assignedTo)
+        if (idValidation.success) {
+            countQuery = countQuery.eq('assigned_to', assignedTo)
+            dataQuery = dataQuery.eq('assigned_to', assignedTo)
+        }
+    }
+
+    if (search) {
+        const searchPattern = `%${search}%`
+        countQuery = countQuery.or(`display_id.ilike.${searchPattern},name.ilike.${searchPattern},pick_list_number.ilike.${searchPattern}`)
+        dataQuery = dataQuery.or(`display_id.ilike.${searchPattern},name.ilike.${searchPattern},pick_list_number.ilike.${searchPattern}`)
+    }
+
+    // Execute queries
+    const [countResult, dataResult] = await Promise.all([
+        countQuery,
+        dataQuery
+    ])
+
+    const total = countResult.count || 0
+    const totalPages = Math.ceil(total / sanitizedPageSize)
+
+    // Transform data
+    const data: PickListListItem[] = (dataResult.data || []).map((pl: {
+        id: string
+        display_id: string | null
+        name: string | null
+        pick_list_number: string | null
+        status: string
+        due_date: string | null
+        completed_at: string | null
+        created_at: string
+        updated_at: string
+        assigned_to_profile: { full_name: string } | null
+        created_by_profile: { full_name: string } | null
+        pick_list_items: { count: number }[] | null
+    }) => ({
+        id: pl.id,
+        display_id: pl.display_id,
+        name: pl.name,
+        pick_list_number: pl.pick_list_number,
+        status: pl.status,
+        due_date: pl.due_date,
+        completed_at: pl.completed_at,
+        created_at: pl.created_at,
+        updated_at: pl.updated_at,
+        assigned_to_name: pl.assigned_to_profile?.full_name || null,
+        created_by_name: pl.created_by_profile?.full_name || null,
+        item_count: pl.pick_list_items?.[0]?.count || 0
+    }))
+
+    return {
+        data,
+        total,
+        page: sanitizedPage,
+        pageSize: sanitizedPageSize,
+        totalPages
+    }
 }
 
 export async function searchInventoryItems(query: string) {

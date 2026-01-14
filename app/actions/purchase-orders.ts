@@ -26,6 +26,25 @@ export type PurchaseOrderResult = {
     vendor_id?: string
 }
 
+// Status state machine - defines valid transitions
+// draft -> submitted -> confirmed -> receiving -> received
+// Any status can transition to cancelled (except received)
+const PO_STATUS_TRANSITIONS: Record<string, string[]> = {
+    draft: ['submitted', 'cancelled'],
+    submitted: ['confirmed', 'cancelled', 'draft'], // Can reject back to draft
+    confirmed: ['receiving', 'cancelled'],
+    receiving: ['received', 'cancelled'],
+    received: [], // Terminal state - no transitions allowed
+    cancelled: ['draft'], // Can be revived to draft
+}
+
+function isValidStatusTransition(currentStatus: string, newStatus: string): boolean {
+    // Same status is always valid (no-op)
+    if (currentStatus === newStatus) return true
+    const allowedTransitions = PO_STATUS_TRANSITIONS[currentStatus] || []
+    return allowedTransitions.includes(newStatus)
+}
+
 // Validation schemas
 const createVendorSchema = z.object({
     name: z.string().min(1, 'Vendor name is required').max(255),
@@ -237,16 +256,39 @@ export async function createVendor(input: CreateVendorInput): Promise<PurchaseOr
         return { success: false, error: error.message }
     }
 
+    // Log activity
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase as any).from('activity_logs').insert({
+            tenant_id: context.tenantId,
+            user_id: context.userId,
+            user_name: context.fullName,
+            action_type: 'create',
+            entity_type: 'vendor',
+            entity_id: data.id,
+            entity_name: validatedInput.name,
+            changes: { name: validatedInput.name, email: validatedInput.email }
+        })
+    } catch (logError) {
+        console.error('Activity log error:', logError)
+    }
+
     return { success: true, vendor_id: data.id }
 }
 
 // Create a draft purchase order with minimal data (for quick-create flow)
 // Uses RPC to generate display_id in format PO-{ORG_CODE}-{5-digit-number}
 export async function createDraftPurchaseOrder(): Promise<PurchaseOrderResult> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
 
-    if (!user) return { success: false, error: 'Unauthorized' }
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    const supabase = await createClient()
 
     // Use the new RPC function for atomic creation with display_id
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -279,6 +321,23 @@ export async function createDraftPurchaseOrder(): Promise<PurchaseOrderResult> {
 
     if (data && !data.success) {
         return { success: false, error: data.error || 'Failed to create purchase order' }
+    }
+
+    // Log activity
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase as any).from('activity_logs').insert({
+            tenant_id: context.tenantId,
+            user_id: context.userId,
+            user_name: context.fullName,
+            action_type: 'create',
+            entity_type: 'purchase_order',
+            entity_id: data?.purchase_order_id,
+            entity_name: data?.display_id,
+            changes: { status: 'draft', source: 'quick_create' }
+        })
+    } catch (logError) {
+        console.error('Activity log error:', logError)
     }
 
     revalidatePath('/tasks/purchase-orders')
@@ -420,6 +479,15 @@ export async function updatePurchaseOrder(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { display_id, ...safeUpdates } = validatedUpdates as Record<string, unknown>
 
+    // Get PO current state for logging
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: currentPO } = await (supabase as any)
+        .from('purchase_orders')
+        .select('display_id, status, vendor_id')
+        .eq('id', purchaseOrderId)
+        .eq('tenant_id', context.tenantId)
+        .single()
+
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any)
         .from('purchase_orders')
@@ -433,6 +501,27 @@ export async function updatePurchaseOrder(
     if (error) {
         console.error('Update PO error:', error)
         return { success: false, error: error.message }
+    }
+
+    // Log activity
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase as any).from('activity_logs').insert({
+            tenant_id: context.tenantId,
+            user_id: context.userId,
+            user_name: context.fullName,
+            action_type: 'update',
+            entity_type: 'purchase_order',
+            entity_id: purchaseOrderId,
+            entity_name: currentPO?.display_id,
+            changes: {
+                updated_fields: Object.keys(safeUpdates),
+                previous: { status: currentPO?.status, vendor_id: currentPO?.vendor_id },
+                new: safeUpdates
+            }
+        })
+    } catch (logError) {
+        console.error('Activity log error:', logError)
     }
 
     revalidatePath('/tasks/purchase-orders')
@@ -467,6 +556,47 @@ export async function updatePurchaseOrderStatus(
 
     const supabase = await createClient()
 
+    // Get current state for validation and logging
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: currentPO } = await (supabase as any)
+        .from('purchase_orders')
+        .select('display_id, status, vendor_id')
+        .eq('id', purchaseOrderId)
+        .eq('tenant_id', context.tenantId)
+        .single()
+
+    if (!currentPO) {
+        return { success: false, error: 'Purchase order not found' }
+    }
+
+    const previousStatus = currentPO.status
+
+    // 5. Enforce status state machine
+    if (!isValidStatusTransition(previousStatus, validatedStatus)) {
+        return {
+            success: false,
+            error: `Invalid status transition: cannot change from '${previousStatus}' to '${validatedStatus}'`
+        }
+    }
+
+    // 6. Block submission without required vendor
+    if (validatedStatus === 'submitted' && !currentPO.vendor_id) {
+        return { success: false, error: 'Cannot submit purchase order without a vendor' }
+    }
+
+    // 7. Check for items when submitting
+    if (validatedStatus === 'submitted') {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { count: itemCount } = await (supabase as any)
+            .from('purchase_order_items')
+            .select('*', { count: 'exact', head: true })
+            .eq('purchase_order_id', purchaseOrderId)
+
+        if (!itemCount || itemCount === 0) {
+            return { success: false, error: 'Cannot submit purchase order without any items' }
+        }
+    }
+
     const updates: Record<string, unknown> = {
         status: validatedStatus,
         updated_at: new Date().toISOString()
@@ -487,6 +617,26 @@ export async function updatePurchaseOrderStatus(
     if (error) {
         console.error('Update PO status error:', error)
         return { success: false, error: error.message }
+    }
+
+    // Log activity for status change
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase as any).from('activity_logs').insert({
+            tenant_id: context.tenantId,
+            user_id: context.userId,
+            user_name: context.fullName,
+            action_type: 'status_change',
+            entity_type: 'purchase_order',
+            entity_id: purchaseOrderId,
+            entity_name: currentPO?.display_id,
+            changes: {
+                previous_status: previousStatus,
+                new_status: validatedStatus
+            }
+        })
+    } catch (logError) {
+        console.error('Activity log error:', logError)
     }
 
     revalidatePath('/tasks/purchase-orders')
@@ -718,7 +868,7 @@ export async function deletePurchaseOrder(purchaseOrderId: string): Promise<Purc
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: po, error: fetchError } = await (supabase as any)
         .from('purchase_orders')
-        .select('status, tenant_id')
+        .select('status, tenant_id, display_id')
         .eq('id', purchaseOrderId)
         .single()
 
@@ -752,6 +902,23 @@ export async function deletePurchaseOrder(purchaseOrderId: string): Promise<Purc
     if (error) {
         console.error('Delete PO error:', error)
         return { success: false, error: error.message }
+    }
+
+    // Log activity for delete
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase as any).from('activity_logs').insert({
+            tenant_id: context.tenantId,
+            user_id: context.userId,
+            user_name: context.fullName,
+            action_type: 'delete',
+            entity_type: 'purchase_order',
+            entity_id: purchaseOrderId,
+            entity_name: po.display_id,
+            changes: { deleted_status: po.status }
+        })
+    } catch (logError) {
+        console.error('Activity log error:', logError)
     }
 
     revalidatePath('/tasks/purchase-orders')
@@ -806,4 +973,178 @@ export async function searchInventoryItemsForPO(query: string, lowStockOnly: boo
     }
 
     return data || []
+}
+
+// Paginated purchase orders list with server-side sorting and filtering
+export interface PaginatedPurchaseOrdersResult {
+    data: PurchaseOrderListItem[]
+    total: number
+    page: number
+    pageSize: number
+    totalPages: number
+}
+
+export interface PurchaseOrderListItem {
+    id: string
+    display_id: string | null
+    order_number: string | null
+    status: string
+    total_amount: number | null
+    expected_date: string | null
+    received_date: string | null
+    ship_to_name: string | null
+    created_at: string
+    updated_at: string
+    vendor_name: string | null
+    created_by_name: string | null
+    submitted_by_name: string | null
+}
+
+export interface PurchaseOrdersQueryParams {
+    page?: number
+    pageSize?: number
+    sortColumn?: string
+    sortDirection?: 'asc' | 'desc'
+    status?: string
+    vendorId?: string
+    search?: string
+}
+
+export async function getPaginatedPurchaseOrders(
+    params: PurchaseOrdersQueryParams = {}
+): Promise<PaginatedPurchaseOrdersResult> {
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) {
+        return { data: [], total: 0, page: 1, pageSize: 20, totalPages: 0 }
+    }
+    const { context } = authResult
+
+    const {
+        page = 1,
+        pageSize = 20,
+        sortColumn = 'updated_at',
+        sortDirection = 'desc',
+        status,
+        vendorId,
+        search
+    } = params
+
+    // Validate and sanitize parameters
+    const sanitizedPage = Math.max(1, page)
+    const sanitizedPageSize = Math.min(100, Math.max(1, pageSize))
+    const offset = (sanitizedPage - 1) * sanitizedPageSize
+
+    // Map sort columns to database columns
+    const columnMap: Record<string, string> = {
+        order_number: 'order_number',
+        vendor: 'vendor_id',
+        total_amount: 'total_amount',
+        status: 'status',
+        updated_at: 'updated_at',
+        created_at: 'created_at',
+        expected_date: 'expected_date',
+        received_date: 'received_date',
+        ship_to_name: 'ship_to_name',
+    }
+
+    const dbSortColumn = columnMap[sortColumn] || 'updated_at'
+    const ascending = sortDirection === 'asc'
+
+    const supabase = await createClient()
+
+    // Build query for count
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let countQuery = (supabase as any)
+        .from('purchase_orders')
+        .select('*', { count: 'exact', head: true })
+        .eq('tenant_id', context.tenantId)
+
+    // Build query for data
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let dataQuery = (supabase as any)
+        .from('purchase_orders')
+        .select(`
+            id,
+            display_id,
+            order_number,
+            status,
+            total_amount,
+            expected_date,
+            received_date,
+            ship_to_name,
+            created_at,
+            updated_at,
+            vendors(name),
+            created_by_profile:profiles!created_by(full_name),
+            submitted_by_profile:profiles!submitted_by(full_name)
+        `)
+        .eq('tenant_id', context.tenantId)
+        .order(dbSortColumn, { ascending })
+        .range(offset, offset + sanitizedPageSize - 1)
+
+    // Apply filters
+    if (status) {
+        countQuery = countQuery.eq('status', status)
+        dataQuery = dataQuery.eq('status', status)
+    }
+
+    if (vendorId) {
+        countQuery = countQuery.eq('vendor_id', vendorId)
+        dataQuery = dataQuery.eq('vendor_id', vendorId)
+    }
+
+    if (search) {
+        const searchPattern = `%${search}%`
+        countQuery = countQuery.or(`order_number.ilike.${searchPattern},display_id.ilike.${searchPattern}`)
+        dataQuery = dataQuery.or(`order_number.ilike.${searchPattern},display_id.ilike.${searchPattern}`)
+    }
+
+    // Execute queries
+    const [countResult, dataResult] = await Promise.all([
+        countQuery,
+        dataQuery
+    ])
+
+    const total = countResult.count || 0
+    const totalPages = Math.ceil(total / sanitizedPageSize)
+
+    // Transform data
+    const data: PurchaseOrderListItem[] = (dataResult.data || []).map((po: {
+        id: string
+        display_id: string | null
+        order_number: string | null
+        status: string
+        total_amount: number | null
+        expected_date: string | null
+        received_date: string | null
+        ship_to_name: string | null
+        created_at: string
+        updated_at: string
+        vendors: { name: string } | null
+        created_by_profile: { full_name: string } | null
+        submitted_by_profile: { full_name: string } | null
+    }) => ({
+        id: po.id,
+        display_id: po.display_id,
+        order_number: po.order_number,
+        status: po.status,
+        total_amount: po.total_amount,
+        expected_date: po.expected_date,
+        received_date: po.received_date,
+        ship_to_name: po.ship_to_name,
+        created_at: po.created_at,
+        updated_at: po.updated_at,
+        vendor_name: po.vendors?.name || null,
+        created_by_name: po.created_by_profile?.full_name || null,
+        submitted_by_name: po.submitted_by_profile?.full_name || null
+    }))
+
+    return {
+        data,
+        total,
+        page: sanitizedPage,
+        pageSize: sanitizedPageSize,
+        totalPages
+    }
 }

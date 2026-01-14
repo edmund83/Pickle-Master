@@ -45,58 +45,66 @@ Based on the audit in `Audittask.md`, here's a prioritized checklist for remedia
 
 ---
 
-## Phase 2: Audit Trail & Workflow Integrity (High Priority)
+## Phase 2: Audit Trail & Workflow Integrity (High Priority) ✅ COMPLETED
 
-### Activity Logging
-- [ ] Emit activity logs for all state changes:
-  - [ ] PO created/updated/deleted/status changed
-  - [ ] Vendor created/updated
-  - [ ] Receive created/updated/completed
-  - [ ] Move operations
-  - [ ] Pick list status changes
-  - [ ] Stock count adjustments
-- [ ] Include actor, timestamp, old value, new value in logs
+### Activity Logging ✅
+- [x] Emit activity logs for all state changes:
+  - [x] PO created/updated/deleted/status changed
+  - [x] Vendor created/updated
+  - [x] Receive created/updated/completed
+  - [x] Move operations (via bulkMoveItemsToFolder)
+  - [x] Pick list status changes
+  - [ ] Stock count adjustments (handled by existing RPC functions)
+- [x] Include actor, timestamp, old value, new value in logs
 
-### Workflow Enforcement
-- [ ] Block PO status changes without required vendor/items
-- [ ] Block receive completion when serial counts ≠ quantities
-- [ ] Block receive quantities exceeding PO remaining balance
-- [ ] Add immutability constraints for locked fields (e.g., PO display_id)
-- [ ] Enforce status state machine (prevent status regressions)
+### Workflow Enforcement ✅
+- [x] Block PO status changes without required vendor/items
+- [ ] Block receive completion when serial counts ≠ quantities (handled by RPC)
+- [ ] Block receive quantities exceeding PO remaining balance (handled by RPC)
+- [x] Add immutability constraints for locked fields (e.g., PO display_id) - via DB triggers
+- [x] Enforce status state machine (prevent status regressions) - both app + DB level
 
-### Database Improvements
-- [ ] Add ledger/adjustment records for inventory movements:
-  - [ ] Moves
-  - [ ] Checkouts
-  - [ ] Receives
-- [ ] Add unique constraints for vendor names (tenant-scoped)
-- [ ] Add unique constraints for order numbers (tenant-scoped)
-- [ ] Verify composite indexes exist: `(tenant_id, updated_at desc)`, etc.
-- [ ] Add database triggers to lock immutable fields
+### Database Improvements ✅
+- [x] Add ledger/adjustment records for inventory movements (activity_logs):
+  - [x] Moves
+  - [x] Checkouts
+  - [x] Receives
+- [x] Add unique constraints for vendor names (tenant-scoped)
+- [x] Add unique constraints for order numbers (tenant-scoped)
+- [x] Verify composite indexes exist: `(tenant_id, updated_at desc)`, etc.
+- [x] Add database triggers to lock immutable fields (display_id)
+
+**Implementation Notes (Phase 2)**:
+- Created migration `00057_workflow_integrity_improvements.sql` with:
+  - Unique indexes for vendors, PO order numbers, pick list numbers
+  - Composite indexes for common query patterns
+  - Status validation constraints
+  - Immutability triggers for display_id fields
+  - Status transition validation triggers
 
 ---
 
-## Phase 3: Performance (High Priority)
+## Phase 3: Performance (High Priority) ✅ COMPLETED
 
-### Pagination & Server-Side Data
-- [ ] Add server-side pagination to list pages:
-  - [ ] Purchase Orders list
-  - [ ] Receives list
-  - [ ] Pick Lists list
-  - [ ] Stock Counts list
-- [ ] Move sorting from client to SQL queries
-- [ ] Add URL-synced filters (status, vendor, date range, assigned-to)
+### Pagination & Server-Side Data ✅
+- [x] Add server-side pagination to list pages:
+  - [x] Purchase Orders list (`getPaginatedPurchaseOrders`)
+  - [x] Receives list (`getPaginatedReceives`)
+  - [x] Pick Lists list (`getPaginatedPickLists`)
+  - [x] Stock Counts list (`getPaginatedStockCounts`)
+- [x] Move sorting from client to SQL queries (pagination functions include SQL ordering)
+- [ ] Add URL-synced filters (status, vendor, date range, assigned-to) - deferred to Phase 4
 
-### Query Optimization
-- [ ] Consolidate redundant queries in PO detail (merge creator name fetch)
-- [ ] Replace blur-based autosave with debounced explicit save
-- [ ] Refactor moves page to use server-rendered paginated data
-- [ ] Remove client-side Supabase queries for full inventory/folder trees
+### Query Optimization ✅
+- [x] Consolidate redundant queries in PO detail (merged creator name into main query)
+- [ ] Replace blur-based autosave with debounced explicit save - deferred to Phase 4
+- [x] Refactor moves page to use server-rendered paginated data (`getMovePageData`)
+- [x] Remove client-side Supabase queries for full inventory/folder trees
 
-### Image & Asset Handling
-- [ ] Add skeleton loaders for item thumbnails
-- [ ] Implement lazy loading for images
-- [ ] Add size constraints to prevent layout shift
+### Image & Asset Handling ✅
+- [x] Add skeleton loaders for item thumbnails (`ItemThumbnail` component)
+- [x] Implement lazy loading for images (Next.js Image `loading="lazy"`)
+- [x] Add size constraints to prevent layout shift (fixed dimensions in `ItemThumbnail`)
 
 ---
 

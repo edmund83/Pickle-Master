@@ -2,6 +2,8 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { getAuthContext } from '@/lib/auth/server-auth'
+import { z } from 'zod'
 
 export interface StockCount {
   id: string
@@ -296,4 +298,195 @@ export async function batchRecordCounts(
     results,
     error: allSuccessful ? undefined : 'Some counts failed to sync'
   }
+}
+
+// ============================================
+// Server-side Pagination for Stock Counts List
+// ============================================
+
+export interface PaginatedStockCountsResult {
+    data: StockCountListItem[]
+    total: number
+    page: number
+    pageSize: number
+    totalPages: number
+}
+
+export interface StockCountListItem {
+    id: string
+    display_id: string | null
+    name: string | null
+    status: 'draft' | 'in_progress' | 'review' | 'completed' | 'cancelled'
+    scope_type: 'full' | 'folder' | 'custom'
+    due_date: string | null
+    started_at: string | null
+    completed_at: string | null
+    total_items: number
+    counted_items: number
+    variance_items: number
+    created_at: string | null
+    assigned_to_name: string | null
+    created_by_name: string | null
+    scope_folder_name: string | null
+}
+
+export interface StockCountsQueryParams {
+    page?: number
+    pageSize?: number
+    sortColumn?: string
+    sortDirection?: 'asc' | 'desc'
+    status?: 'draft' | 'in_progress' | 'review' | 'completed' | 'cancelled'
+    assignedTo?: string
+    search?: string
+}
+
+export async function getPaginatedStockCounts(
+    params: StockCountsQueryParams = {}
+): Promise<PaginatedStockCountsResult> {
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) {
+        return { data: [], total: 0, page: 1, pageSize: 20, totalPages: 0 }
+    }
+    const { context } = authResult
+
+    const {
+        page = 1,
+        pageSize = 20,
+        sortColumn = 'created_at',
+        sortDirection = 'desc',
+        status,
+        assignedTo,
+        search
+    } = params
+
+    // Validate and sanitize parameters
+    const sanitizedPage = Math.max(1, page)
+    const sanitizedPageSize = Math.min(100, Math.max(1, pageSize))
+    const offset = (sanitizedPage - 1) * sanitizedPageSize
+
+    // Map sort columns to database columns
+    const columnMap: Record<string, string> = {
+        display_id: 'display_id',
+        name: 'name',
+        status: 'status',
+        due_date: 'due_date',
+        started_at: 'started_at',
+        completed_at: 'completed_at',
+        created_at: 'created_at',
+        total_items: 'total_items',
+        counted_items: 'counted_items',
+    }
+
+    const dbSortColumn = columnMap[sortColumn] || 'created_at'
+    const ascending = sortDirection === 'asc'
+
+    const supabase = await createClient()
+
+    // Build query for count
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let countQuery = (supabase as any)
+        .from('stock_counts')
+        .select('*', { count: 'exact', head: true })
+        .eq('tenant_id', context.tenantId)
+
+    // Build query for data
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let dataQuery = (supabase as any)
+        .from('stock_counts')
+        .select(`
+            id,
+            display_id,
+            name,
+            status,
+            scope_type,
+            due_date,
+            started_at,
+            completed_at,
+            total_items,
+            counted_items,
+            variance_items,
+            created_at,
+            assigned_to_profile:profiles!stock_counts_assigned_to_fkey(full_name),
+            created_by_profile:profiles!stock_counts_created_by_fkey(full_name),
+            scope_folder:folders!stock_counts_scope_folder_id_fkey(name)
+        `)
+        .eq('tenant_id', context.tenantId)
+        .order(dbSortColumn, { ascending })
+        .range(offset, offset + sanitizedPageSize - 1)
+
+    // Apply filters
+    if (status) {
+        const statusValidation = z.enum(['draft', 'in_progress', 'review', 'completed', 'cancelled']).safeParse(status)
+        if (statusValidation.success) {
+            countQuery = countQuery.eq('status', statusValidation.data)
+            dataQuery = dataQuery.eq('status', statusValidation.data)
+        }
+    }
+
+    if (assignedTo) {
+        const idValidation = z.string().uuid().safeParse(assignedTo)
+        if (idValidation.success) {
+            countQuery = countQuery.eq('assigned_to', assignedTo)
+            dataQuery = dataQuery.eq('assigned_to', assignedTo)
+        }
+    }
+
+    if (search) {
+        const searchPattern = `%${search}%`
+        countQuery = countQuery.or(`display_id.ilike.${searchPattern},name.ilike.${searchPattern}`)
+        dataQuery = dataQuery.or(`display_id.ilike.${searchPattern},name.ilike.${searchPattern}`)
+    }
+
+    // Execute queries
+    const [countResult, dataResult] = await Promise.all([
+        countQuery,
+        dataQuery
+    ])
+
+    const total = countResult.count || 0
+    const totalPages = Math.ceil(total / sanitizedPageSize)
+
+    // Transform data
+    const data: StockCountListItem[] = (dataResult.data || []).map((sc: {
+        id: string
+        display_id: string | null
+        name: string | null
+        status: 'draft' | 'in_progress' | 'review' | 'completed' | 'cancelled'
+        scope_type: 'full' | 'folder' | 'custom'
+        due_date: string | null
+        started_at: string | null
+        completed_at: string | null
+        total_items: number
+        counted_items: number
+        variance_items: number
+        created_at: string | null
+        assigned_to_profile: { full_name: string } | null
+        created_by_profile: { full_name: string } | null
+        scope_folder: { name: string } | null
+    }) => ({
+        id: sc.id,
+        display_id: sc.display_id,
+        name: sc.name,
+        status: sc.status,
+        scope_type: sc.scope_type,
+        due_date: sc.due_date,
+        started_at: sc.started_at,
+        completed_at: sc.completed_at,
+        total_items: sc.total_items,
+        counted_items: sc.counted_items,
+        variance_items: sc.variance_items,
+        created_at: sc.created_at,
+        assigned_to_name: sc.assigned_to_profile?.full_name || null,
+        created_by_name: sc.created_by_profile?.full_name || null,
+        scope_folder_name: sc.scope_folder?.name || null
+    }))
+
+    return {
+        data,
+        total,
+        page: sanitizedPage,
+        pageSize: sanitizedPageSize,
+        totalPages
+    }
 }

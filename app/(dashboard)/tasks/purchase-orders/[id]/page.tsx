@@ -90,13 +90,13 @@ export interface PurchaseOrderWithDetails {
   }>
 }
 
-async function getPurchaseOrderWithDetails(id: string): Promise<PurchaseOrderWithDetails | null> {
+async function getPurchaseOrderWithDetails(id: string): Promise<(PurchaseOrderWithDetails & { created_by_name: string | null }) | null> {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // Get PO with vendor and items
+  // Get PO with vendor, items, and creator profile - consolidates separate getCreatorName query
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data, error } = await (supabase as any)
     .from('purchase_orders')
@@ -106,7 +106,8 @@ async function getPurchaseOrderWithDetails(id: string): Promise<PurchaseOrderWit
       purchase_order_items(
         *,
         inventory_items(id, name, sku, quantity, unit, image_urls)
-      )
+      ),
+      created_by_profile:profiles!purchase_orders_created_by_fkey(full_name)
     `)
     .eq('id', id)
     .single()
@@ -125,7 +126,8 @@ async function getPurchaseOrderWithDetails(id: string): Promise<PurchaseOrderWit
     items: (data.purchase_order_items || []).map((item: Record<string, unknown>) => ({
       ...item,
       inventory_item: item.inventory_items || null
-    }))
+    })),
+    created_by_name: data.created_by_profile?.full_name || null
   }
 }
 
@@ -179,21 +181,6 @@ async function getVendorsList(): Promise<Vendor[]> {
   return data || []
 }
 
-async function getCreatorName(userId: string | null): Promise<string | null> {
-  if (!userId) return null
-
-  const supabase = await createClient()
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data } = await (supabase as any)
-    .from('profiles')
-    .select('full_name')
-    .eq('id', userId)
-    .single()
-
-  return data?.full_name || null
-}
-
 async function getCurrentUserId(): Promise<string | null> {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
@@ -217,14 +204,13 @@ export default async function PurchaseOrderDetailPage({
     notFound()
   }
 
-  const createdByName = await getCreatorName(purchaseOrder.created_by)
-
+  // created_by_name is now included in the main PO query (consolidated)
   return (
     <PurchaseOrderDetailClient
       purchaseOrder={purchaseOrder}
       teamMembers={teamMembers}
       vendors={vendors}
-      createdByName={createdByName}
+      createdByName={purchaseOrder.created_by_name}
       currentUserId={userId}
     />
   )
