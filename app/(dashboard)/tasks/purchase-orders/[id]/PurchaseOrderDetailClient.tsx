@@ -52,6 +52,8 @@ import type { ScanResult } from '@/lib/scanner/useBarcodeScanner'
 import { ChatterPanel } from '@/components/chatter'
 import { VendorFormDialog, type VendorFormData } from '@/components/settings/vendors/VendorFormDialog'
 import { ItemThumbnail } from '@/components/ui/item-thumbnail'
+import { useFeedback } from '@/components/feedback/FeedbackProvider'
+import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 
 interface PurchaseOrderDetailClientProps {
   purchaseOrder: PurchaseOrderWithDetails
@@ -64,6 +66,7 @@ interface PurchaseOrderDetailClientProps {
 const statusConfig: Record<string, { icon: React.ElementType; color: string; bgColor: string; label: string }> = {
   draft: { icon: Clock, color: 'text-neutral-600', bgColor: 'bg-neutral-100', label: 'Draft' },
   submitted: { icon: Send, color: 'text-blue-600', bgColor: 'bg-blue-100', label: 'Submitted' },
+  pending_approval: { icon: Clock, color: 'text-amber-600', bgColor: 'bg-amber-100', label: 'Pending Approval' },
   confirmed: { icon: Truck, color: 'text-purple-600', bgColor: 'bg-purple-100', label: 'Confirmed' },
   partial: { icon: Truck, color: 'text-yellow-600', bgColor: 'bg-yellow-100', label: 'Partially Received' },
   received: { icon: CheckCircle, color: 'text-green-600', bgColor: 'bg-green-100', label: 'Received' },
@@ -79,6 +82,7 @@ export function PurchaseOrderDetailClient({
 }: PurchaseOrderDetailClientProps) {
   const router = useRouter()
   const { formatCurrency } = useFormatting()
+  const feedback = useFeedback()
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -145,6 +149,10 @@ export function PurchaseOrderDetailClient({
   const [isDirty, setIsDirty] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const saveTimerRef = useRef<NodeJS.Timeout | null>(null)
+
+  // Confirmation dialog state
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  const [showCancelConfirm, setShowCancelConfirm] = useState(false)
 
   const status = purchaseOrder.status || 'draft'
   const isDraft = status === 'draft'
@@ -228,6 +236,7 @@ export function PurchaseOrderDetailClient({
     } catch (err) {
       console.error('Save error:', err)
       setError('Failed to save changes')
+      feedback.error('Failed to save changes')
     } finally {
       setIsSaving(false)
     }
@@ -362,14 +371,18 @@ export function PurchaseOrderDetailClient({
       })
 
       if (result.success) {
+        feedback.success('Item added')
         router.refresh()
         setSearchQuery('')
         setSearchResults([])
       } else {
-        setError(result.error || 'Failed to add item')
+        const errorMsg = result.error || 'Failed to add item'
+        setError(errorMsg)
+        feedback.error(errorMsg)
       }
     } catch (err) {
       console.error('Add item error:', err)
+      feedback.error('Failed to add item')
     } finally {
       setActionLoading(null)
     }
@@ -394,10 +407,10 @@ export function PurchaseOrderDetailClient({
       setSearchResults(filtered)
     } else if (foundItems.length > 0) {
       // Items found but all already in PO
-      alert(`Item with barcode "${result.code}" is already in the purchase order`)
+      feedback.warning(`Item with barcode "${result.code}" is already in the purchase order`)
     } else {
       // No match found
-      alert(`No item found with barcode: ${result.code}`)
+      feedback.warning(`No item found with barcode: ${result.code}`)
     }
   }
 
@@ -406,12 +419,16 @@ export function PurchaseOrderDetailClient({
     try {
       const result = await removePurchaseOrderItem(itemId)
       if (result.success) {
+        feedback.success('Item removed')
         router.refresh()
       } else {
-        setError(result.error || 'Failed to remove item')
+        const errorMsg = result.error || 'Failed to remove item'
+        setError(errorMsg)
+        feedback.error(errorMsg)
       }
     } catch (err) {
       console.error('Remove item error:', err)
+      feedback.error('Failed to remove item')
     } finally {
       setActionLoading(null)
     }
@@ -425,10 +442,13 @@ export function PurchaseOrderDetailClient({
       if (result.success) {
         router.refresh()
       } else {
-        setError(result.error || 'Failed to update item')
+        const errorMsg = result.error || 'Failed to update item'
+        setError(errorMsg)
+        feedback.error(errorMsg)
       }
     } catch (err) {
       console.error('Update item error:', err)
+      feedback.error('Failed to update item')
     } finally {
       setActionLoading(null)
     }
@@ -441,32 +461,37 @@ export function PurchaseOrderDetailClient({
     const result = await updatePurchaseOrderStatus(purchaseOrder.id, newStatus)
 
     if (result.success) {
+      feedback.success('Status updated')
       router.refresh()
     } else {
-      setError(result.error || 'Failed to update status')
+      const errorMsg = result.error || 'Failed to update status'
+      setError(errorMsg)
+      feedback.error(errorMsg)
     }
 
     setActionLoading(null)
   }
 
   async function handleDelete() {
-    if (!confirm('Are you sure you want to delete this purchase order? This cannot be undone.')) return
-
+    setShowDeleteConfirm(false)
     setActionLoading('delete')
     setError(null)
 
     const result = await deletePurchaseOrder(purchaseOrder.id)
 
     if (result.success) {
+      feedback.success('Purchase order deleted')
       router.push('/tasks/purchase-orders')
     } else {
-      setError(result.error || 'Failed to delete purchase order')
+      const errorMsg = result.error || 'Failed to delete purchase order'
+      setError(errorMsg)
+      feedback.error(errorMsg)
       setActionLoading(null)
     }
   }
 
   async function handleCancel() {
-    if (!confirm('Are you sure you want to cancel this purchase order?')) return
+    setShowCancelConfirm(false)
     await handleStatusChange('cancelled')
   }
 
@@ -477,9 +502,12 @@ export function PurchaseOrderDetailClient({
     const result = await createReceive({ purchase_order_id: purchaseOrder.id })
 
     if (result.success && result.receive_id) {
+      feedback.success('Receive created')
       router.push(`/tasks/receives/${result.receive_id}`)
     } else {
-      setError(result.error || 'Failed to create receive')
+      const errorMsg = result.error || 'Failed to create receive'
+      setError(errorMsg)
+      feedback.error(errorMsg)
       setActionLoading(null)
     }
   }
@@ -535,7 +563,7 @@ export function PurchaseOrderDetailClient({
                       <button
                         onClick={() => {
                           setShowMoreMenu(false)
-                          handleDelete()
+                          setShowDeleteConfirm(true)
                         }}
                         disabled={actionLoading !== null}
                         className="w-full flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 disabled:opacity-50"
@@ -1186,7 +1214,7 @@ export function PurchaseOrderDetailClient({
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2">
-            {status === 'submitted' && (
+            {(status === 'submitted' || status === 'pending_approval') && (
               <>
                 <Button
                   variant="outline"
@@ -1204,7 +1232,7 @@ export function PurchaseOrderDetailClient({
                   ) : (
                     <Check className="mr-2 h-4 w-4" />
                   )}
-                  Confirm Order
+                  Approve Order
                 </Button>
               </>
             )}
@@ -1233,10 +1261,10 @@ export function PurchaseOrderDetailClient({
               </Button>
             )}
 
-            {['submitted', 'confirmed'].includes(status) && (
+            {['submitted', 'pending_approval', 'confirmed'].includes(status) && (
               <Button
                 variant="ghost"
-                onClick={handleCancel}
+                onClick={() => setShowCancelConfirm(true)}
                 disabled={actionLoading !== null}
                 className="text-red-600 hover:bg-red-50"
               >
@@ -1526,6 +1554,27 @@ export function PurchaseOrderDetailClient({
           />
         )}
       </div>
+
+      {/* Confirmation Dialogs */}
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDelete}
+        title="Delete Purchase Order"
+        description="Are you sure you want to delete this purchase order? This action cannot be undone."
+        confirmLabel="Delete"
+        variant="destructive"
+      />
+
+      <ConfirmDialog
+        isOpen={showCancelConfirm}
+        onClose={() => setShowCancelConfirm(false)}
+        onConfirm={handleCancel}
+        title="Cancel Purchase Order"
+        description="Are you sure you want to cancel this purchase order? This will mark it as cancelled."
+        confirmLabel="Cancel Order"
+        variant="warning"
+      />
     </div>
   )
 }

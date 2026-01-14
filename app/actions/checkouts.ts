@@ -75,83 +75,24 @@ export async function checkoutItem(
 
     const supabase = await createClient()
 
-    // 5. Get current item to check stock (with tenant filter)
+    // 5. Use atomic RPC function that handles checkout + inventory update in single transaction
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: item, error: fetchError } = await (supabase as any)
-        .from('inventory_items')
-        .select('*')
-        .eq('id', validatedInput.itemId)
-        .eq('tenant_id', context.tenantId)
-        .is('deleted_at', null)
-        .single()
+    const { data, error } = await (supabase as any).rpc('checkout_item_atomic', {
+        p_item_id: validatedInput.itemId,
+        p_quantity: validatedInput.quantity,
+        p_assignee_type: 'person',
+        p_assignee_name: validatedInput.assigneeName,
+        p_due_date: validatedInput.dueDate || null,
+        p_notes: validatedInput.notes || null
+    })
 
-    if (fetchError || !item) return { success: false, error: 'Item not found' }
-
-    if (item.quantity < validatedInput.quantity) {
-        return { success: false, error: `Insufficient stock. Available: ${item.quantity}` }
+    if (error) {
+        console.error('Checkout error:', error)
+        return { success: false, error: error.message }
     }
 
-    // 6. Create Checkout Record
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error: checkoutError } = await (supabase as any)
-        .from('checkouts')
-        .insert({
-            tenant_id: context.tenantId,
-            item_id: validatedInput.itemId,
-            quantity: validatedInput.quantity,
-            assignee_type: 'person',
-            assignee_name: validatedInput.assigneeName,
-            status: 'checked_out',
-            checked_out_at: new Date().toISOString(),
-            checked_out_by: context.userId,
-            due_date: validatedInput.dueDate || null,
-            notes: validatedInput.notes || null
-        })
-
-    if (checkoutError) return { success: false, error: checkoutError.message }
-
-    // 7. Decrement Inventory
-    const newQuantity = item.quantity - validatedInput.quantity
-    let status = item.status
-    if (newQuantity <= 0) status = 'out_of_stock'
-    else if (item.min_quantity && newQuantity <= item.min_quantity) status = 'low_stock'
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error: updateError } = await (supabase as any)
-        .from('inventory_items')
-        .update({
-            quantity: newQuantity,
-            status: status,
-            updated_at: new Date().toISOString(),
-            last_modified_by: context.userId
-        })
-        .eq('id', validatedInput.itemId)
-        .eq('tenant_id', context.tenantId)
-
-    if (updateError) {
-        console.error('Failed to update inventory after checkout:', updateError)
-        // Note: Checkout record was created but inventory update failed
-        // In production, this should be a transaction
-    }
-
-    // 8. Log Activity (awaited for reliability)
-    try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supabase as any).from('activity_logs').insert({
-            tenant_id: context.tenantId,
-            user_id: context.userId,
-            user_name: context.fullName,
-            action_type: 'checkout',
-            entity_type: 'item',
-            entity_id: validatedInput.itemId,
-            entity_name: item.name,
-            quantity_before: item.quantity,
-            quantity_after: newQuantity,
-            quantity_delta: -validatedInput.quantity,
-            changes: { assignee: validatedInput.assigneeName, notes: validatedInput.notes }
-        })
-    } catch (logError) {
-        console.error('Activity log error:', logError)
+    if (data && !data.success) {
+        return { success: false, error: data.error || 'Checkout failed' }
     }
 
     revalidatePath(`/inventory/${validatedInput.itemId}`)
@@ -179,81 +120,35 @@ export async function returnItem(
 
     const supabase = await createClient()
 
-    // 4. Get Checkout Record with tenant verification
+    // 4. Get checkout item_id for revalidation (before atomic operation)
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: checkout, error: fetchError } = await (supabase as any)
+    const { data: checkoutInfo } = await (supabase as any)
         .from('checkouts')
-        .select('*, inventory_items(name, quantity, min_quantity, status)')
+        .select('item_id')
         .eq('id', validatedInput.checkoutId)
         .eq('tenant_id', context.tenantId)
         .single()
 
-    if (fetchError || !checkout) return { success: false, error: 'Checkout not found' }
-    if (checkout.status === 'returned') return { success: false, error: 'Already returned' }
-
-    // 5. Update Checkout Record
+    // 5. Use atomic RPC function that handles return + inventory update in single transaction
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { error: updateError } = await (supabase as any)
-        .from('checkouts')
-        .update({
-            status: 'returned',
-            returned_at: new Date().toISOString(),
-            returned_by: context.userId,
-            return_condition: validatedInput.condition,
-            return_notes: validatedInput.notes || null
-        })
-        .eq('id', validatedInput.checkoutId)
-        .eq('tenant_id', context.tenantId)
+    const { data, error } = await (supabase as any).rpc('return_item_atomic', {
+        p_checkout_id: validatedInput.checkoutId,
+        p_notes: validatedInput.notes || null,
+        p_condition: validatedInput.condition
+    })
 
-    if (updateError) return { success: false, error: updateError.message }
-
-    // 6. Increment Inventory (unless lost)
-    let quantityDelta = 0
-    if (validatedInput.condition !== 'lost') {
-        quantityDelta = checkout.quantity
-        const item = checkout.inventory_items
-        const newQuantity = (item.quantity || 0) + quantityDelta
-
-        let status = 'in_stock'
-        if (newQuantity <= 0) status = 'out_of_stock'
-        else if (item.min_quantity && newQuantity <= item.min_quantity) status = 'low_stock'
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const { error: invUpdateError } = await (supabase as any)
-            .from('inventory_items')
-            .update({
-                quantity: newQuantity,
-                status: status,
-                updated_at: new Date().toISOString(),
-                last_modified_by: context.userId
-            })
-            .eq('id', checkout.item_id)
-            .eq('tenant_id', context.tenantId)
-
-        if (invUpdateError) {
-            console.error('Failed to update inventory after return:', invUpdateError)
-        }
+    if (error) {
+        console.error('Return error:', error)
+        return { success: false, error: error.message }
     }
 
-    // 7. Log Activity (awaited for reliability)
-    try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        await (supabase as any).from('activity_logs').insert({
-            tenant_id: context.tenantId,
-            user_id: context.userId,
-            user_name: context.fullName,
-            action_type: 'check_in',
-            entity_type: 'item',
-            entity_id: checkout.item_id,
-            entity_name: checkout.inventory_items?.name || 'Item',
-            quantity_delta: quantityDelta,
-            changes: { checkout_id: validatedInput.checkoutId, condition: validatedInput.condition, notes: validatedInput.notes }
-        })
-    } catch (logError) {
-        console.error('Activity log error:', logError)
+    if (data && !data.success) {
+        return { success: false, error: data.error || 'Return failed' }
     }
 
-    revalidatePath(`/inventory/${checkout.item_id}`)
+    if (checkoutInfo?.item_id) {
+        revalidatePath(`/inventory/${checkoutInfo.item_id}`)
+    }
     return { success: true }
 }
 

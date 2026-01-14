@@ -38,6 +38,7 @@ interface PurchaseOrdersListClientProps {
 const statusLabels: Record<string, string> = {
   draft: 'Draft',
   submitted: 'Submitted',
+  pending_approval: 'Pending Approval',
   confirmed: 'Confirmed',
   receiving: 'Receiving',
   received: 'Received',
@@ -47,24 +48,25 @@ const statusLabels: Record<string, string> = {
 const statusColors: Record<string, string> = {
   draft: 'bg-neutral-100 text-neutral-700',
   submitted: 'bg-blue-100 text-blue-700',
+  pending_approval: 'bg-amber-100 text-amber-700',
   confirmed: 'bg-purple-100 text-purple-700',
   receiving: 'bg-yellow-100 text-yellow-700',
   received: 'bg-green-100 text-green-700',
   cancelled: 'bg-red-100 text-red-700',
 }
 
-const statusOptions = ['draft', 'submitted', 'confirmed', 'receiving', 'received', 'cancelled']
+const statusOptions = ['draft', 'submitted', 'pending_approval', 'confirmed', 'receiving', 'received', 'cancelled']
 
 type SortColumn = 'order_number' | 'vendor' | 'total_amount' | 'status' | 'updated_at' | 'created_at' | 'expected_date'
 
-const columnHeaders: { key: SortColumn; label: string; align?: 'left' | 'right' }[] = [
+const columnHeaders: { key: SortColumn; label: string; align?: 'left' | 'right'; hideOnMobile?: boolean }[] = [
   { key: 'order_number', label: 'PO #' },
   { key: 'vendor', label: 'Vendor' },
-  { key: 'total_amount', label: 'Order Total', align: 'right' },
+  { key: 'total_amount', label: 'Order Total', align: 'right', hideOnMobile: true },
   { key: 'status', label: 'Status' },
-  { key: 'updated_at', label: 'Last Updated' },
-  { key: 'created_at', label: 'Date Created' },
-  { key: 'expected_date', label: 'Expected' },
+  { key: 'updated_at', label: 'Last Updated', hideOnMobile: true },
+  { key: 'created_at', label: 'Date Created', hideOnMobile: true },
+  { key: 'expected_date', label: 'Expected', hideOnMobile: true },
 ]
 
 export function PurchaseOrdersListClient({
@@ -279,12 +281,12 @@ export function PurchaseOrdersListClient({
         <table className="w-full">
           <thead className="bg-neutral-50 sticky top-0 z-10">
             <tr>
-              {columnHeaders.map(({ key, label, align }) => (
+              {columnHeaders.map(({ key, label, align, hideOnMobile }) => (
                 <th
                   key={key}
                   className={`px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider cursor-pointer hover:bg-neutral-100 ${
                     align === 'right' ? 'text-right' : 'text-left'
-                  }`}
+                  } ${hideOnMobile ? 'hidden md:table-cell' : ''}`}
                   onClick={() => handleSort(key)}
                 >
                   <div className={`flex items-center gap-1 ${align === 'right' ? 'justify-end' : ''}`}>
@@ -310,30 +312,39 @@ export function PurchaseOrdersListClient({
               initialData.data.map((po) => (
                 <tr
                   key={po.id}
-                  className="hover:bg-neutral-50 cursor-pointer"
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`View purchase order ${po.display_id || po.order_number || po.id.slice(0, 8)}`}
+                  className="hover:bg-neutral-50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-inset focus:bg-neutral-50"
                   onClick={() => router.push(`/tasks/purchase-orders/${po.id}`)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      router.push(`/tasks/purchase-orders/${po.id}`)
+                    }
+                  }}
                 >
-                  <td className="px-4 py-3 font-medium text-neutral-900">
+                  <td className="px-4 py-4 md:py-3 font-medium text-neutral-900">
                     {po.display_id || po.order_number || `PO-${po.id.slice(0, 8)}`}
                   </td>
-                  <td className="px-4 py-3 text-neutral-600">
+                  <td className="px-4 py-4 md:py-3 text-neutral-600">
                     {po.vendor_name || '—'}
                   </td>
-                  <td className="px-4 py-3 text-right">
+                  <td className="px-4 py-3 text-right hidden md:table-cell">
                     <FormattedOrderAmount amount={po.total_amount ?? 0} />
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-4 md:py-3">
                     <span className={`rounded px-2 py-1 text-xs font-medium ${statusColors[po.status] || 'bg-neutral-100 text-neutral-700'}`}>
                       {statusLabels[po.status] || po.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-neutral-600">
+                  <td className="px-4 py-3 text-neutral-600 hidden md:table-cell">
                     <FormattedShortDate date={po.updated_at} />
                   </td>
-                  <td className="px-4 py-3 text-neutral-600">
+                  <td className="px-4 py-3 text-neutral-600 hidden md:table-cell">
                     <FormattedShortDate date={po.created_at} />
                   </td>
-                  <td className="px-4 py-3 text-neutral-600">
+                  <td className="px-4 py-3 text-neutral-600 hidden md:table-cell">
                     {po.expected_date ? <FormattedShortDate date={po.expected_date} /> : '—'}
                   </td>
                 </tr>

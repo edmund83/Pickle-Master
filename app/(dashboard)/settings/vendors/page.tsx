@@ -17,8 +17,14 @@ import {
 } from 'lucide-react'
 import type { Vendor } from '@/types/database.types'
 
+interface PaymentTermOption {
+  id: string
+  name: string
+}
+
 export default function VendorsSettingsPage() {
   const [vendors, setVendors] = useState<Vendor[]>([])
+  const [paymentTerms, setPaymentTerms] = useState<PaymentTermOption[]>([])
   const [loading, setLoading] = useState(true)
   const [tenantId, setTenantId] = useState<string | null>(null)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
@@ -57,14 +63,24 @@ export default function VendorsSettingsPage() {
       if (!profile?.tenant_id) return
       setTenantId(profile.tenant_id)
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const { data } = await (supabase as any)
-        .from('vendors')
-        .select('*')
-        .eq('tenant_id', profile.tenant_id)
-        .order('name', { ascending: true })
+      // Fetch vendors and payment terms in parallel
+      const [vendorsResult, paymentTermsResult] = await Promise.all([
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase as any)
+          .from('vendors')
+          .select('*')
+          .eq('tenant_id', profile.tenant_id)
+          .order('name', { ascending: true }),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (supabase as any)
+          .from('payment_terms')
+          .select('id, name')
+          .eq('tenant_id', profile.tenant_id)
+          .order('sort_order', { ascending: true }),
+      ])
 
-      setVendors((data || []) as Vendor[])
+      setVendors((vendorsResult.data || []) as Vendor[])
+      setPaymentTerms((paymentTermsResult.data || []) as PaymentTermOption[])
     } finally {
       setLoading(false)
     }
@@ -109,6 +125,7 @@ export default function VendorsSettingsPage() {
             address_line1: formData.address_line1 || null,
             city: formData.city || null,
             country: formData.country || null,
+            payment_term_id: formData.payment_term_id || null,
             notes: formData.notes || null,
             updated_at: new Date().toISOString(),
           })
@@ -131,6 +148,7 @@ export default function VendorsSettingsPage() {
             address_line1: formData.address_line1 || null,
             city: formData.city || null,
             country: formData.country || null,
+            payment_term_id: formData.payment_term_id || null,
             notes: formData.notes || null,
           })
 
@@ -286,6 +304,7 @@ export default function VendorsSettingsPage() {
         onSave={handleSaveVendor}
         vendor={editingVendor}
         saving={saving}
+        paymentTerms={paymentTerms}
       />
 
       {/* Delete Confirmation Dialog */}

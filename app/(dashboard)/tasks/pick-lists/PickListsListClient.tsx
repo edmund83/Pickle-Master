@@ -47,14 +47,14 @@ const statusOptions = ['draft', 'in_progress', 'completed', 'cancelled']
 
 type SortColumn = 'display_id' | 'name' | 'status' | 'due_date' | 'updated_at' | 'created_at' | 'completed_at'
 
-const columnHeaders: { key: SortColumn; label: string; align?: 'left' | 'right' }[] = [
+const columnHeaders: { key: SortColumn; label: string; align?: 'left' | 'right'; hideOnMobile?: boolean }[] = [
   { key: 'display_id', label: 'Pick List #' },
   { key: 'name', label: 'Name' },
   { key: 'status', label: 'Status' },
-  { key: 'due_date', label: 'Due Date' },
-  { key: 'updated_at', label: 'Last Updated' },
-  { key: 'created_at', label: 'Created' },
-  { key: 'completed_at', label: 'Completed' },
+  { key: 'due_date', label: 'Due Date', hideOnMobile: true },
+  { key: 'updated_at', label: 'Last Updated', hideOnMobile: true },
+  { key: 'created_at', label: 'Created', hideOnMobile: true },
+  { key: 'completed_at', label: 'Completed', hideOnMobile: true },
 ]
 
 export function PickListsListClient({
@@ -265,12 +265,12 @@ export function PickListsListClient({
           <table className="w-full">
             <thead className="bg-neutral-50 sticky top-0 z-10">
               <tr>
-                {columnHeaders.map(({ key, label, align }) => (
+                {columnHeaders.map(({ key, label, align, hideOnMobile }) => (
                   <th
                     key={key}
                     className={`px-4 py-3 text-xs font-semibold text-neutral-500 uppercase tracking-wider cursor-pointer hover:bg-neutral-100 ${
                       align === 'right' ? 'text-right' : 'text-left'
-                    }`}
+                    } ${hideOnMobile ? 'hidden md:table-cell' : ''}`}
                     onClick={() => handleSort(key)}
                   >
                     <div className={`flex items-center gap-1 ${align === 'right' ? 'justify-end' : ''}`}>
@@ -289,30 +289,39 @@ export function PickListsListClient({
               {initialData.data.map((pickList) => (
                 <tr
                   key={pickList.id}
-                  className="hover:bg-neutral-50 cursor-pointer"
+                  tabIndex={0}
+                  role="button"
+                  aria-label={`View pick list ${pickList.display_id || pickList.pick_list_number || pickList.id.slice(0, 8)}`}
+                  className="hover:bg-neutral-50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-primary/50 focus:ring-inset focus:bg-neutral-50"
                   onClick={() => router.push(`/tasks/pick-lists/${pickList.id}`)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      router.push(`/tasks/pick-lists/${pickList.id}`)
+                    }
+                  }}
                 >
-                  <td className="px-4 py-3 font-medium text-neutral-900">
+                  <td className="px-4 py-4 md:py-3 font-medium text-neutral-900">
                     {pickList.display_id || pickList.pick_list_number || pickList.id.slice(0, 8)}
                   </td>
-                  <td className="px-4 py-3 text-neutral-600">
+                  <td className="px-4 py-4 md:py-3 text-neutral-600">
                     {pickList.name || '—'}
                   </td>
-                  <td className="px-4 py-3">
+                  <td className="px-4 py-4 md:py-3">
                     <span className={`rounded px-2 py-1 text-xs font-medium ${statusColors[pickList.status] || 'bg-neutral-100 text-neutral-700'}`}>
                       {statusLabels[pickList.status] || pickList.status}
                     </span>
                   </td>
-                  <td className="px-4 py-3 text-neutral-600">
+                  <td className="px-4 py-3 text-neutral-600 hidden md:table-cell">
                     {pickList.due_date ? <FormattedShortDate date={pickList.due_date} /> : '—'}
                   </td>
-                  <td className="px-4 py-3 text-neutral-600">
+                  <td className="px-4 py-3 text-neutral-600 hidden md:table-cell">
                     <FormattedShortDate date={pickList.updated_at} />
                   </td>
-                  <td className="px-4 py-3 text-neutral-600">
+                  <td className="px-4 py-3 text-neutral-600 hidden md:table-cell">
                     <FormattedShortDate date={pickList.created_at} />
                   </td>
-                  <td className="px-4 py-3 text-neutral-600">
+                  <td className="px-4 py-3 text-neutral-600 hidden md:table-cell">
                     {pickList.completed_at ? <FormattedShortDate date={pickList.completed_at} /> : '—'}
                   </td>
                 </tr>

@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { getAuthContext } from '@/lib/auth/server-auth'
+import { getAuthContext, requireWritePermission } from '@/lib/auth/server-auth'
 import { z } from 'zod'
 
 export interface StockCount {
@@ -11,7 +11,7 @@ export interface StockCount {
   display_id: string | null
   name: string | null
   description: string | null
-  status: 'draft' | 'in_progress' | 'review' | 'completed' | 'cancelled'
+  status: 'draft' | 'in_progress' | 'review' | 'pending_approval' | 'completed' | 'cancelled'
   scope_type: 'full' | 'folder' | 'custom'
   scope_folder_id: string | null
   assigned_to: string | null
@@ -26,6 +26,11 @@ export interface StockCount {
   created_at: string | null
   updated_at: string | null
   notes: string | null
+  // Approval workflow fields
+  submitted_by: string | null
+  submitted_at: string | null
+  approved_by: string | null
+  approved_at: string | null
 }
 
 export interface StockCountWithRelations extends StockCount {
@@ -96,6 +101,13 @@ export async function getStockCount(id: string): Promise<{
   stock_count: StockCountWithRelations | null
   items: StockCountItemWithDetails[]
 } | null> {
+  // Auth check - ensure user is authenticated
+  const authResult = await getAuthContext()
+  if (!authResult.success) {
+    console.error('Auth error:', authResult.error)
+    return null
+  }
+
   const supabase = await createClient()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -123,6 +135,18 @@ export async function createStockCount(input: {
   due_date?: string
   notes?: string
 }): Promise<{ success: boolean; id?: string; display_id?: string; error?: string }> {
+  // Auth check with write permission
+  const authResult = await getAuthContext()
+  if (!authResult.success) {
+    return { success: false, error: authResult.error }
+  }
+  const { context } = authResult
+
+  const permCheck = requireWritePermission(context)
+  if (!permCheck.success) {
+    return permCheck
+  }
+
   const supabase = await createClient()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -146,6 +170,18 @@ export async function createStockCount(input: {
 }
 
 export async function startStockCount(id: string): Promise<{ success: boolean; error?: string }> {
+  // Auth check with write permission
+  const authResult = await getAuthContext()
+  if (!authResult.success) {
+    return { success: false, error: authResult.error }
+  }
+  const { context } = authResult
+
+  const permCheck = requireWritePermission(context)
+  if (!permCheck.success) {
+    return permCheck
+  }
+
   const supabase = await createClient()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -168,6 +204,18 @@ export async function recordCount(
   countedQuantity: number,
   notes?: string
 ): Promise<{ success: boolean; error?: string }> {
+  // Auth check with write permission
+  const authResult = await getAuthContext()
+  if (!authResult.success) {
+    return { success: false, error: authResult.error }
+  }
+  const { context } = authResult
+
+  const permCheck = requireWritePermission(context)
+  if (!permCheck.success) {
+    return permCheck
+  }
+
   const supabase = await createClient()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -187,6 +235,18 @@ export async function recordCount(
 }
 
 export async function submitForReview(id: string): Promise<{ success: boolean; error?: string }> {
+  // Auth check with write permission
+  const authResult = await getAuthContext()
+  if (!authResult.success) {
+    return { success: false, error: authResult.error }
+  }
+  const { context } = authResult
+
+  const permCheck = requireWritePermission(context)
+  if (!permCheck.success) {
+    return permCheck
+  }
+
   const supabase = await createClient()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -208,6 +268,18 @@ export async function completeStockCount(
   id: string,
   applyAdjustments: boolean = false
 ): Promise<{ success: boolean; adjustments_applied?: boolean; adjusted_count?: number; error?: string }> {
+  // Auth check with write permission
+  const authResult = await getAuthContext()
+  if (!authResult.success) {
+    return { success: false, error: authResult.error }
+  }
+  const { context } = authResult
+
+  const permCheck = requireWritePermission(context)
+  if (!permCheck.success) {
+    return permCheck
+  }
+
   const supabase = await createClient()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -228,6 +300,18 @@ export async function completeStockCount(
 }
 
 export async function cancelStockCount(id: string): Promise<{ success: boolean; error?: string }> {
+  // Auth check with write permission
+  const authResult = await getAuthContext()
+  if (!authResult.success) {
+    return { success: false, error: authResult.error }
+  }
+  const { context } = authResult
+
+  const permCheck = requireWritePermission(context)
+  if (!permCheck.success) {
+    return permCheck
+  }
+
   const supabase = await createClient()
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -246,6 +330,205 @@ export async function cancelStockCount(id: string): Promise<{ success: boolean; 
 }
 
 /**
+ * Approve stock count - transition from review to completed (or allow adjustments)
+ * Only admins/owners can approve
+ */
+export async function approveStockCount(
+  id: string,
+  applyAdjustments: boolean = false
+): Promise<{ success: boolean; adjustments_applied?: boolean; adjusted_count?: number; error?: string }> {
+  const authResult = await getAuthContext()
+  if (!authResult.success) {
+    return { success: false, error: authResult.error }
+  }
+  const { context } = authResult
+
+  // Check admin permission
+  if (!['owner', 'admin'].includes(context.role)) {
+    return { success: false, error: 'Only admins can approve stock counts' }
+  }
+
+  const supabase = await createClient()
+
+  // Get the stock count to check status and get display_id
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: stockCount, error: fetchError } = await (supabase as any)
+    .from('stock_counts')
+    .select('id, display_id, status, submitted_by, tenant_id')
+    .eq('id', id)
+    .eq('tenant_id', context.tenantId)
+    .single()
+
+  if (fetchError || !stockCount) {
+    return { success: false, error: 'Stock count not found' }
+  }
+
+  if (stockCount.status !== 'review' && stockCount.status !== 'pending_approval') {
+    return { success: false, error: 'Stock count must be in review status to approve' }
+  }
+
+  // Complete the stock count with optional adjustments
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data, error } = await (supabase as any).rpc('complete_stock_count', {
+    p_stock_count_id: id,
+    p_apply_adjustments: applyAdjustments,
+  })
+
+  if (error) {
+    console.error('Error approving stock count:', error)
+    return { success: false, error: error.message }
+  }
+
+  // Update approved_by and approved_at
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  await (supabase as any)
+    .from('stock_counts')
+    .update({
+      approved_by: context.userId,
+      approved_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+    .eq('tenant_id', context.tenantId)
+
+  // Notify submitter of approval
+  if (stockCount.submitted_by && stockCount.submitted_by !== context.userId) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase as any).rpc('notify_approval', {
+        p_tenant_id: context.tenantId,
+        p_user_id: stockCount.submitted_by,
+        p_entity_type: 'stock_count',
+        p_entity_id: id,
+        p_entity_display_id: stockCount.display_id,
+        p_approver_name: context.fullName,
+        p_approved: true,
+        p_triggered_by: context.userId
+      })
+    } catch (notifyError) {
+      console.error('Notification error:', notifyError)
+    }
+  }
+
+  // Log activity
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase as any).from('activity_logs').insert({
+      tenant_id: context.tenantId,
+      user_id: context.userId,
+      user_name: context.fullName,
+      action_type: 'approve',
+      entity_type: 'stock_count',
+      entity_id: id,
+      entity_name: stockCount.display_id,
+      changes: { adjustments_applied: applyAdjustments }
+    })
+  } catch (logError) {
+    console.error('Activity log error:', logError)
+  }
+
+  revalidatePath(`/tasks/stock-count/${id}`)
+  revalidatePath('/tasks/stock-count')
+  revalidatePath('/inventory')
+  return data as { success: boolean; adjustments_applied?: boolean; adjusted_count?: number; error?: string }
+}
+
+/**
+ * Reject stock count - send back to in_progress status for corrections
+ * Only admins/owners can reject
+ */
+export async function rejectStockCount(
+  id: string,
+  reason?: string
+): Promise<{ success: boolean; error?: string }> {
+  const authResult = await getAuthContext()
+  if (!authResult.success) {
+    return { success: false, error: authResult.error }
+  }
+  const { context } = authResult
+
+  // Check admin permission
+  if (!['owner', 'admin'].includes(context.role)) {
+    return { success: false, error: 'Only admins can reject stock counts' }
+  }
+
+  const supabase = await createClient()
+
+  // Get the stock count
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: stockCount, error: fetchError } = await (supabase as any)
+    .from('stock_counts')
+    .select('id, display_id, status, submitted_by, tenant_id')
+    .eq('id', id)
+    .eq('tenant_id', context.tenantId)
+    .single()
+
+  if (fetchError || !stockCount) {
+    return { success: false, error: 'Stock count not found' }
+  }
+
+  if (stockCount.status !== 'review' && stockCount.status !== 'pending_approval') {
+    return { success: false, error: 'Stock count must be in review status to reject' }
+  }
+
+  // Update status back to in_progress
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { error } = await (supabase as any)
+    .from('stock_counts')
+    .update({
+      status: 'in_progress',
+      notes: reason ? `Rejected: ${reason}` : stockCount.notes,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', id)
+    .eq('tenant_id', context.tenantId)
+
+  if (error) {
+    console.error('Error rejecting stock count:', error)
+    return { success: false, error: error.message }
+  }
+
+  // Notify submitter of rejection
+  if (stockCount.submitted_by && stockCount.submitted_by !== context.userId) {
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      await (supabase as any).rpc('notify_approval', {
+        p_tenant_id: context.tenantId,
+        p_user_id: stockCount.submitted_by,
+        p_entity_type: 'stock_count',
+        p_entity_id: id,
+        p_entity_display_id: stockCount.display_id,
+        p_approver_name: context.fullName,
+        p_approved: false,
+        p_triggered_by: context.userId
+      })
+    } catch (notifyError) {
+      console.error('Notification error:', notifyError)
+    }
+  }
+
+  // Log activity
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase as any).from('activity_logs').insert({
+      tenant_id: context.tenantId,
+      user_id: context.userId,
+      user_name: context.fullName,
+      action_type: 'reject',
+      entity_type: 'stock_count',
+      entity_id: id,
+      entity_name: stockCount.display_id,
+      changes: { reason }
+    })
+  } catch (logError) {
+    console.error('Activity log error:', logError)
+  }
+
+  revalidatePath(`/tasks/stock-count/${id}`)
+  revalidatePath('/tasks/stock-count')
+  return { success: true }
+}
+
+/**
  * Batch record multiple counts at once (for offline sync)
  */
 export async function batchRecordCounts(
@@ -259,6 +542,18 @@ export async function batchRecordCounts(
   results?: Array<{ itemId: string; success: boolean; error?: string }>
   error?: string
 }> {
+  // Auth check with write permission
+  const authResult = await getAuthContext()
+  if (!authResult.success) {
+    return { success: false, error: authResult.error }
+  }
+  const { context } = authResult
+
+  const permCheck = requireWritePermission(context)
+  if (!permCheck.success) {
+    return permCheck
+  }
+
   const supabase = await createClient()
   const results: Array<{ itemId: string; success: boolean; error?: string }> = []
 
@@ -316,7 +611,7 @@ export interface StockCountListItem {
     id: string
     display_id: string | null
     name: string | null
-    status: 'draft' | 'in_progress' | 'review' | 'completed' | 'cancelled'
+    status: 'draft' | 'in_progress' | 'review' | 'pending_approval' | 'completed' | 'cancelled'
     scope_type: 'full' | 'folder' | 'custom'
     due_date: string | null
     started_at: string | null
@@ -335,7 +630,7 @@ export interface StockCountsQueryParams {
     pageSize?: number
     sortColumn?: string
     sortDirection?: 'asc' | 'desc'
-    status?: 'draft' | 'in_progress' | 'review' | 'completed' | 'cancelled'
+    status?: 'draft' | 'in_progress' | 'review' | 'pending_approval' | 'completed' | 'cancelled'
     assignedTo?: string
     search?: string
 }
@@ -417,7 +712,7 @@ export async function getPaginatedStockCounts(
 
     // Apply filters
     if (status) {
-        const statusValidation = z.enum(['draft', 'in_progress', 'review', 'completed', 'cancelled']).safeParse(status)
+        const statusValidation = z.enum(['draft', 'in_progress', 'review', 'pending_approval', 'completed', 'cancelled']).safeParse(status)
         if (statusValidation.success) {
             countQuery = countQuery.eq('status', statusValidation.data)
             dataQuery = dataQuery.eq('status', statusValidation.data)

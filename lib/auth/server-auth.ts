@@ -182,7 +182,7 @@ export const addressSchema = z.object({
 }).partial()
 
 // Status validation
-export const purchaseOrderStatusSchema = z.enum(['draft', 'submitted', 'confirmed', 'receiving', 'received', 'cancelled'])
+export const purchaseOrderStatusSchema = z.enum(['draft', 'submitted', 'pending_approval', 'confirmed', 'receiving', 'received', 'cancelled'])
 export const pickListStatusSchema = z.enum(['draft', 'pending', 'in_progress', 'completed', 'cancelled'])
 export const receiveStatusSchema = z.enum(['draft', 'in_progress', 'completed', 'cancelled'])
 
