@@ -2,6 +2,21 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import {
+    getAuthContext,
+    requireWritePermission,
+    requireAdminPermission,
+    verifyTenantOwnership,
+    verifyRelatedTenantOwnership,
+    validateInput,
+    optionalStringSchema,
+    optionalUuidSchema,
+    quantitySchema,
+    priceSchema,
+    optionalDateStringSchema,
+    purchaseOrderStatusSchema,
+} from '@/lib/auth/server-auth'
+import { z } from 'zod'
 
 export type PurchaseOrderResult = {
     success: boolean
@@ -10,6 +25,75 @@ export type PurchaseOrderResult = {
     display_id?: string
     vendor_id?: string
 }
+
+// Validation schemas
+const createVendorSchema = z.object({
+    name: z.string().min(1, 'Vendor name is required').max(255),
+    contact_name: optionalStringSchema,
+    email: z.string().email().max(255).nullable().optional(),
+    phone: z.string().max(50).nullable().optional(),
+    address_line1: optionalStringSchema,
+    address_line2: optionalStringSchema,
+    city: optionalStringSchema,
+    state: optionalStringSchema,
+    postal_code: optionalStringSchema,
+    country: optionalStringSchema,
+    payment_terms: optionalStringSchema,
+    notes: z.string().max(2000).nullable().optional(),
+})
+
+const purchaseOrderItemSchema = z.object({
+    item_id: optionalUuidSchema,
+    item_name: z.string().min(1).max(255),
+    sku: optionalStringSchema,
+    part_number: optionalStringSchema,
+    ordered_quantity: quantitySchema,
+    unit_price: priceSchema,
+})
+
+const createPurchaseOrderSchema = z.object({
+    vendor_id: optionalUuidSchema,
+    order_number: optionalStringSchema,
+    expected_date: optionalDateStringSchema,
+    notes: z.string().max(2000).nullable().optional(),
+    ship_to_name: optionalStringSchema,
+    ship_to_address1: optionalStringSchema,
+    ship_to_address2: optionalStringSchema,
+    ship_to_city: optionalStringSchema,
+    ship_to_state: optionalStringSchema,
+    ship_to_postal_code: optionalStringSchema,
+    ship_to_country: optionalStringSchema,
+    bill_to_name: optionalStringSchema,
+    bill_to_address1: optionalStringSchema,
+    bill_to_address2: optionalStringSchema,
+    bill_to_city: optionalStringSchema,
+    bill_to_state: optionalStringSchema,
+    bill_to_postal_code: optionalStringSchema,
+    bill_to_country: optionalStringSchema,
+    items: z.array(purchaseOrderItemSchema),
+})
+
+const updatePurchaseOrderSchema = z.object({
+    vendor_id: optionalUuidSchema,
+    order_number: optionalStringSchema,
+    expected_date: optionalDateStringSchema,
+    notes: z.string().max(2000).nullable().optional(),
+    status: purchaseOrderStatusSchema.optional(),
+    ship_to_name: optionalStringSchema,
+    ship_to_address1: optionalStringSchema,
+    ship_to_address2: optionalStringSchema,
+    ship_to_city: optionalStringSchema,
+    ship_to_state: optionalStringSchema,
+    ship_to_postal_code: optionalStringSchema,
+    ship_to_country: optionalStringSchema,
+    bill_to_name: optionalStringSchema,
+    bill_to_address1: optionalStringSchema,
+    bill_to_address2: optionalStringSchema,
+    bill_to_city: optionalStringSchema,
+    bill_to_state: optionalStringSchema,
+    bill_to_postal_code: optionalStringSchema,
+    bill_to_country: optionalStringSchema,
+}).partial()
 
 export interface CreateVendorInput {
     name: string
@@ -111,38 +195,39 @@ export async function getVendors() {
 
 // Create a new vendor
 export async function createVendor(input: CreateVendorInput): Promise<PurchaseOrderResult> {
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
+
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // 3. Validate input
+    const validation = validateInput(createVendorSchema, input)
+    if (!validation.success) return { success: false, error: validation.error }
+    const validatedInput = validation.data
+
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) return { success: false, error: 'Unauthorized' }
-
-    // Get user's tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: profile } = await (supabase as any)
-        .from('profiles')
-        .select('tenant_id')
-        .eq('id', user.id)
-        .single()
-
-    if (!profile?.tenant_id) return { success: false, error: 'No tenant found' }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase as any)
         .from('vendors')
         .insert({
-            tenant_id: profile.tenant_id,
-            name: input.name,
-            contact_name: input.contact_name || null,
-            email: input.email || null,
-            phone: input.phone || null,
-            address_line1: input.address_line1 || null,
-            address_line2: input.address_line2 || null,
-            city: input.city || null,
-            state: input.state || null,
-            postal_code: input.postal_code || null,
-            country: input.country || null,
-            payment_terms: input.payment_terms || null,
-            notes: input.notes || null
+            tenant_id: context.tenantId,
+            name: validatedInput.name,
+            contact_name: validatedInput.contact_name || null,
+            email: validatedInput.email || null,
+            phone: validatedInput.phone || null,
+            address_line1: validatedInput.address_line1 || null,
+            address_line2: validatedInput.address_line2 || null,
+            city: validatedInput.city || null,
+            state: validatedInput.state || null,
+            postal_code: validatedInput.postal_code || null,
+            country: validatedInput.country || null,
+            payment_terms: validatedInput.payment_terms || null,
+            notes: validatedInput.notes || null
         })
         .select('id')
         .single()
@@ -269,11 +354,14 @@ export async function createPurchaseOrder(input: CreatePurchaseOrderInput): Prom
 
 // Get a single purchase order with items and vendor
 export async function getPurchaseOrder(purchaseOrderId: string) {
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return null
+    const { context } = authResult
+
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) return null
-
+    // 2. Fetch with tenant filter for defense-in-depth
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data } = await (supabase as any)
         .from('purchase_orders')
@@ -286,6 +374,7 @@ export async function getPurchaseOrder(purchaseOrderId: string) {
             )
         `)
         .eq('id', purchaseOrderId)
+        .eq('tenant_id', context.tenantId)
         .single()
 
     return data
@@ -296,14 +385,40 @@ export async function updatePurchaseOrder(
     purchaseOrderId: string,
     updates: UpdatePurchaseOrderInput
 ): Promise<PurchaseOrderResult> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
 
-    if (!user) return { success: false, error: 'Unauthorized' }
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // 3. Validate input
+    const validation = validateInput(updatePurchaseOrderSchema, updates)
+    if (!validation.success) return { success: false, error: validation.error }
+    const validatedUpdates = validation.data
+
+    // 4. Verify PO belongs to user's tenant
+    const ownershipResult = await verifyTenantOwnership('purchase_orders', purchaseOrderId, context.tenantId)
+    if (!ownershipResult.success) return { success: false, error: ownershipResult.error }
+
+    // 5. If updating vendor_id, verify it belongs to the tenant
+    if (validatedUpdates.vendor_id) {
+        const vendorCheck = await verifyRelatedTenantOwnership(
+            'vendors',
+            validatedUpdates.vendor_id,
+            context.tenantId,
+            'Vendor'
+        )
+        if (!vendorCheck.success) return { success: false, error: vendorCheck.error }
+    }
+
+    const supabase = await createClient()
 
     // Exclude display_id from updates - it is immutable once set
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { display_id, ...safeUpdates } = updates as Record<string, unknown>
+    const { display_id, ...safeUpdates } = validatedUpdates as Record<string, unknown>
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any)
@@ -313,6 +428,7 @@ export async function updatePurchaseOrder(
             updated_at: new Date().toISOString()
         })
         .eq('id', purchaseOrderId)
+        .eq('tenant_id', context.tenantId) // Double-check tenant
 
     if (error) {
         console.error('Update PO error:', error)
@@ -329,18 +445,35 @@ export async function updatePurchaseOrderStatus(
     purchaseOrderId: string,
     status: string
 ): Promise<PurchaseOrderResult> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
 
-    if (!user) return { success: false, error: 'Unauthorized' }
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // 3. Validate status
+    const statusValidation = purchaseOrderStatusSchema.safeParse(status)
+    if (!statusValidation.success) {
+        return { success: false, error: 'Invalid status value' }
+    }
+    const validatedStatus = statusValidation.data
+
+    // 4. Verify PO belongs to user's tenant
+    const ownershipResult = await verifyTenantOwnership('purchase_orders', purchaseOrderId, context.tenantId)
+    if (!ownershipResult.success) return { success: false, error: ownershipResult.error }
+
+    const supabase = await createClient()
 
     const updates: Record<string, unknown> = {
-        status,
+        status: validatedStatus,
         updated_at: new Date().toISOString()
     }
 
     // Set received_date when marking as received
-    if (status === 'received') {
+    if (validatedStatus === 'received') {
         updates.received_date = new Date().toISOString().split('T')[0]
     }
 
@@ -349,6 +482,7 @@ export async function updatePurchaseOrderStatus(
         .from('purchase_orders')
         .update(updates)
         .eq('id', purchaseOrderId)
+        .eq('tenant_id', context.tenantId) // Double-check tenant
 
     if (error) {
         console.error('Update PO status error:', error)
@@ -372,22 +506,48 @@ export async function addPurchaseOrderItem(
         unit_price: number
     }
 ): Promise<PurchaseOrderResult> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
 
-    if (!user) return { success: false, error: 'Unauthorized' }
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // 3. Validate input
+    const validation = validateInput(purchaseOrderItemSchema, item)
+    if (!validation.success) return { success: false, error: validation.error }
+    const validatedItem = validation.data
+
+    // 4. Verify PO belongs to user's tenant
+    const ownershipResult = await verifyTenantOwnership('purchase_orders', purchaseOrderId, context.tenantId)
+    if (!ownershipResult.success) return { success: false, error: ownershipResult.error }
+
+    // 5. If item_id is provided, verify it belongs to the tenant
+    if (validatedItem.item_id) {
+        const itemCheck = await verifyRelatedTenantOwnership(
+            'inventory_items',
+            validatedItem.item_id,
+            context.tenantId,
+            'Inventory item'
+        )
+        if (!itemCheck.success) return { success: false, error: itemCheck.error }
+    }
+
+    const supabase = await createClient()
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any)
         .from('purchase_order_items')
         .insert({
             purchase_order_id: purchaseOrderId,
-            item_id: item.item_id || null,
-            item_name: item.item_name,
-            sku: item.sku || null,
-            part_number: item.part_number || null,
-            ordered_quantity: item.ordered_quantity,
-            unit_price: item.unit_price,
+            item_id: validatedItem.item_id || null,
+            item_name: validatedItem.item_name,
+            sku: validatedItem.sku || null,
+            part_number: validatedItem.part_number || null,
+            ordered_quantity: validatedItem.ordered_quantity,
+            unit_price: validatedItem.unit_price,
             received_quantity: 0
         })
 
@@ -405,18 +565,32 @@ export async function addPurchaseOrderItem(
 
 // Remove item from purchase order
 export async function removePurchaseOrderItem(purchaseOrderItemId: string): Promise<PurchaseOrderResult> {
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
+
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) return { success: false, error: 'Unauthorized' }
-
-    // Get PO id for revalidation and recalculation
+    // 3. Get PO item and verify the parent PO belongs to user's tenant
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: item } = await (supabase as any)
+    const { data: poItem, error: fetchError } = await (supabase as any)
         .from('purchase_order_items')
-        .select('purchase_order_id')
+        .select('purchase_order_id, purchase_orders!inner(tenant_id)')
         .eq('id', purchaseOrderItemId)
         .single()
+
+    if (fetchError || !poItem) {
+        return { success: false, error: 'Purchase order item not found' }
+    }
+
+    if (poItem.purchase_orders?.tenant_id !== context.tenantId) {
+        return { success: false, error: 'Unauthorized: Access denied' }
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any)
@@ -429,9 +603,9 @@ export async function removePurchaseOrderItem(purchaseOrderItemId: string): Prom
         return { success: false, error: error.message }
     }
 
-    if (item?.purchase_order_id) {
-        await recalculatePurchaseOrderTotals(supabase, item.purchase_order_id)
-        revalidatePath(`/tasks/purchase-orders/${item.purchase_order_id}`)
+    if (poItem?.purchase_order_id) {
+        await recalculatePurchaseOrderTotals(supabase, poItem.purchase_order_id)
+        revalidatePath(`/tasks/purchase-orders/${poItem.purchase_order_id}`)
     }
 
     return { success: true }
@@ -445,23 +619,46 @@ export async function updatePurchaseOrderItem(
         unit_price?: number
     }
 ): Promise<PurchaseOrderResult> {
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
+
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // 3. Validate updates
+    const updateSchema = z.object({
+        ordered_quantity: quantitySchema.optional(),
+        unit_price: priceSchema.optional(),
+    })
+    const validation = validateInput(updateSchema, updates)
+    if (!validation.success) return { success: false, error: validation.error }
+    const validatedUpdates = validation.data
+
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) return { success: false, error: 'Unauthorized' }
-
-    // Get PO id for recalculation
+    // 4. Get PO item and verify the parent PO belongs to user's tenant
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: item } = await (supabase as any)
+    const { data: poItem, error: fetchError } = await (supabase as any)
         .from('purchase_order_items')
-        .select('purchase_order_id')
+        .select('purchase_order_id, purchase_orders!inner(tenant_id)')
         .eq('id', purchaseOrderItemId)
         .single()
+
+    if (fetchError || !poItem) {
+        return { success: false, error: 'Purchase order item not found' }
+    }
+
+    if (poItem.purchase_orders?.tenant_id !== context.tenantId) {
+        return { success: false, error: 'Unauthorized: Access denied' }
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any)
         .from('purchase_order_items')
-        .update(updates)
+        .update(validatedUpdates)
         .eq('id', purchaseOrderItemId)
 
     if (error) {
@@ -469,9 +666,9 @@ export async function updatePurchaseOrderItem(
         return { success: false, error: error.message }
     }
 
-    if (item?.purchase_order_id) {
-        await recalculatePurchaseOrderTotals(supabase, item.purchase_order_id)
-        revalidatePath(`/tasks/purchase-orders/${item.purchase_order_id}`)
+    if (poItem?.purchase_order_id) {
+        await recalculatePurchaseOrderTotals(supabase, poItem.purchase_order_id)
+        revalidatePath(`/tasks/purchase-orders/${poItem.purchase_order_id}`)
     }
 
     return { success: true }
@@ -506,20 +703,34 @@ async function recalculatePurchaseOrderTotals(
 
 // Delete purchase order (only draft status)
 export async function deletePurchaseOrder(purchaseOrderId: string): Promise<PurchaseOrderResult> {
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
+
+    // 2. Check admin permission for delete operations
+    const permResult = requireAdminPermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) return { success: false, error: 'Unauthorized' }
-
-    // Check if PO is in draft status
+    // 3. Check if PO exists, belongs to tenant, and is in draft status
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: po } = await (supabase as any)
+    const { data: po, error: fetchError } = await (supabase as any)
         .from('purchase_orders')
-        .select('status')
+        .select('status, tenant_id')
         .eq('id', purchaseOrderId)
         .single()
 
-    if (po?.status !== 'draft') {
+    if (fetchError || !po) {
+        return { success: false, error: 'Purchase order not found' }
+    }
+
+    if (po.tenant_id !== context.tenantId) {
+        return { success: false, error: 'Unauthorized: Access denied' }
+    }
+
+    if (po.status !== 'draft') {
         return { success: false, error: 'Only draft purchase orders can be deleted' }
     }
 
@@ -530,12 +741,13 @@ export async function deletePurchaseOrder(purchaseOrderId: string): Promise<Purc
         .delete()
         .eq('purchase_order_id', purchaseOrderId)
 
-    // Delete PO
+    // Delete PO with tenant check
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any)
         .from('purchase_orders')
         .delete()
         .eq('id', purchaseOrderId)
+        .eq('tenant_id', context.tenantId) // Double-check tenant
 
     if (error) {
         console.error('Delete PO error:', error)

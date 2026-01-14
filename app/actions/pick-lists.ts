@@ -2,6 +2,20 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import {
+    getAuthContext,
+    requireWritePermission,
+    requireAdminPermission,
+    verifyTenantOwnership,
+    verifyRelatedTenantOwnership,
+    validateInput,
+    optionalStringSchema,
+    optionalUuidSchema,
+    quantitySchema,
+    optionalDateStringSchema,
+    pickListStatusSchema,
+} from '@/lib/auth/server-auth'
+import { z } from 'zod'
 
 export type PickListResult = {
     success: boolean
@@ -9,6 +23,43 @@ export type PickListResult = {
     pick_list_id?: string
     display_id?: string
 }
+
+// Validation schemas
+const pickListItemSchema = z.object({
+    item_id: z.string().uuid(),
+    requested_quantity: quantitySchema,
+})
+
+const createPickListSchema = z.object({
+    name: optionalStringSchema,
+    pick_list_number: optionalStringSchema,
+    assigned_to: optionalUuidSchema,
+    due_date: optionalDateStringSchema,
+    notes: z.string().max(2000).nullable().optional(),
+    ship_to_name: optionalStringSchema,
+    ship_to_address1: optionalStringSchema,
+    ship_to_address2: optionalStringSchema,
+    ship_to_city: optionalStringSchema,
+    ship_to_state: optionalStringSchema,
+    ship_to_postal_code: optionalStringSchema,
+    ship_to_country: optionalStringSchema,
+    items: z.array(pickListItemSchema),
+})
+
+const updatePickListSchema = z.object({
+    name: optionalStringSchema,
+    pick_list_number: optionalStringSchema,
+    assigned_to: optionalUuidSchema,
+    due_date: optionalDateStringSchema,
+    notes: z.string().max(2000).nullable().optional(),
+    ship_to_name: optionalStringSchema,
+    ship_to_address1: optionalStringSchema,
+    ship_to_address2: optionalStringSchema,
+    ship_to_city: optionalStringSchema,
+    ship_to_state: optionalStringSchema,
+    ship_to_postal_code: optionalStringSchema,
+    ship_to_country: optionalStringSchema,
+}).partial()
 
 export interface CreatePickListInput {
     name?: string
@@ -43,26 +94,59 @@ async function generateDisplayId(supabase: ReturnType<typeof createClient> exten
 }
 
 export async function createPickList(input: CreatePickListInput): Promise<PickListResult> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
 
-    if (!user) return { success: false, error: 'Unauthorized' }
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // 3. Validate input
+    const validation = validateInput(createPickListSchema, input)
+    if (!validation.success) return { success: false, error: validation.error }
+    const validatedInput = validation.data
+
+    // 4. If assigned_to is provided, verify it's a valid team member in the tenant
+    if (validatedInput.assigned_to) {
+        const assigneeCheck = await verifyRelatedTenantOwnership(
+            'profiles',
+            validatedInput.assigned_to,
+            context.tenantId,
+            'Team member'
+        )
+        if (!assigneeCheck.success) return { success: false, error: assigneeCheck.error }
+    }
+
+    // 5. Verify all item_ids belong to the tenant
+    for (const item of validatedInput.items) {
+        const itemCheck = await verifyRelatedTenantOwnership(
+            'inventory_items',
+            item.item_id,
+            context.tenantId,
+            'Inventory item'
+        )
+        if (!itemCheck.success) return { success: false, error: itemCheck.error }
+    }
+
+    const supabase = await createClient()
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase as any).rpc('create_pick_list_with_items', {
-        p_name: input.name,
-        p_assigned_to: input.assigned_to || null,
-        p_due_date: input.due_date || null,
+        p_name: validatedInput.name,
+        p_assigned_to: validatedInput.assigned_to || null,
+        p_due_date: validatedInput.due_date || null,
         p_item_outcome: 'decrement',  // Pick Lists always decrement stock
-        p_notes: input.notes || null,
-        p_ship_to_name: input.ship_to_name || null,
-        p_ship_to_address1: input.ship_to_address1 || null,
-        p_ship_to_address2: input.ship_to_address2 || null,
-        p_ship_to_city: input.ship_to_city || null,
-        p_ship_to_state: input.ship_to_state || null,
-        p_ship_to_postal_code: input.ship_to_postal_code || null,
-        p_ship_to_country: input.ship_to_country || null,
-        p_items: input.items  // Pass array directly, Supabase handles JSONB conversion
+        p_notes: validatedInput.notes || null,
+        p_ship_to_name: validatedInput.ship_to_name || null,
+        p_ship_to_address1: validatedInput.ship_to_address1 || null,
+        p_ship_to_address2: validatedInput.ship_to_address2 || null,
+        p_ship_to_city: validatedInput.ship_to_city || null,
+        p_ship_to_state: validatedInput.ship_to_state || null,
+        p_ship_to_postal_code: validatedInput.ship_to_postal_code || null,
+        p_ship_to_country: validatedInput.ship_to_country || null,
+        p_items: validatedInput.items
     })
 
     if (error) {
@@ -81,10 +165,16 @@ export async function createPickList(input: CreatePickListInput): Promise<PickLi
 // Create a draft pick list with minimal data (for quick-create flow)
 // Uses RPC to generate display_id in format PL-{ORG_CODE}-{5-digit-number}
 export async function createDraftPickList(): Promise<PickListResult> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
 
-    if (!user) return { success: false, error: 'Unauthorized' }
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    const supabase = await createClient()
 
     // Use the new RPC function for atomic creation with display_id
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -121,14 +211,40 @@ export async function updatePickList(
     pickListId: string,
     updates: Partial<Omit<CreatePickListInput, 'items'>> & { pick_list_number?: string | null }
 ): Promise<PickListResult> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
 
-    if (!user) return { success: false, error: 'Unauthorized' }
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // 3. Validate input
+    const validation = validateInput(updatePickListSchema, updates)
+    if (!validation.success) return { success: false, error: validation.error }
+    const validatedUpdates = validation.data
+
+    // 4. Verify pick list belongs to user's tenant
+    const ownershipResult = await verifyTenantOwnership('pick_lists', pickListId, context.tenantId)
+    if (!ownershipResult.success) return { success: false, error: ownershipResult.error }
+
+    // 5. If assigned_to is provided, verify it's a valid team member in the tenant
+    if (validatedUpdates.assigned_to) {
+        const assigneeCheck = await verifyRelatedTenantOwnership(
+            'profiles',
+            validatedUpdates.assigned_to,
+            context.tenantId,
+            'Team member'
+        )
+        if (!assigneeCheck.success) return { success: false, error: assigneeCheck.error }
+    }
+
+    const supabase = await createClient()
 
     // Exclude display_id from updates - it is immutable once set
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { display_id, ...safeUpdates } = updates as Record<string, unknown>
+    const { display_id, ...safeUpdates } = validatedUpdates as Record<string, unknown>
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any)
@@ -138,6 +254,7 @@ export async function updatePickList(
             updated_at: new Date().toISOString()
         })
         .eq('id', pickListId)
+        .eq('tenant_id', context.tenantId) // Double-check tenant
 
     if (error) {
         console.error('Update pick list error:', error)
@@ -150,16 +267,43 @@ export async function updatePickList(
 }
 
 export async function deletePickList(pickListId: string): Promise<PickListResult> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
 
-    if (!user) return { success: false, error: 'Unauthorized' }
+    // 2. Check admin permission for delete operations
+    const permResult = requireAdminPermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // 3. Verify pick list belongs to user's tenant and check status
+    const supabase = await createClient()
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: pickList, error: fetchError } = await (supabase as any)
+        .from('pick_lists')
+        .select('status, tenant_id')
+        .eq('id', pickListId)
+        .single()
+
+    if (fetchError || !pickList) {
+        return { success: false, error: 'Pick list not found' }
+    }
+
+    if (pickList.tenant_id !== context.tenantId) {
+        return { success: false, error: 'Unauthorized: Access denied' }
+    }
+
+    // Only allow deletion of draft or cancelled pick lists
+    if (!['draft', 'cancelled'].includes(pickList.status)) {
+        return { success: false, error: 'Only draft or cancelled pick lists can be deleted' }
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any)
         .from('pick_lists')
         .delete()
         .eq('id', pickListId)
+        .eq('tenant_id', context.tenantId) // Double-check tenant
 
     if (error) {
         console.error('Delete pick list error:', error)
@@ -175,10 +319,33 @@ export async function addPickListItem(
     itemId: string,
     requestedQuantity: number
 ): Promise<PickListResult> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
 
-    if (!user) return { success: false, error: 'Unauthorized' }
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // 3. Validate input
+    const validation = validateInput(pickListItemSchema, { item_id: itemId, requested_quantity: requestedQuantity })
+    if (!validation.success) return { success: false, error: validation.error }
+
+    // 4. Verify pick list belongs to user's tenant
+    const ownershipResult = await verifyTenantOwnership('pick_lists', pickListId, context.tenantId)
+    if (!ownershipResult.success) return { success: false, error: ownershipResult.error }
+
+    // 5. Verify item belongs to tenant
+    const itemCheck = await verifyRelatedTenantOwnership(
+        'inventory_items',
+        itemId,
+        context.tenantId,
+        'Inventory item'
+    )
+    if (!itemCheck.success) return { success: false, error: itemCheck.error }
+
+    const supabase = await createClient()
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any)
@@ -199,18 +366,32 @@ export async function addPickListItem(
 }
 
 export async function removePickListItem(pickListItemId: string): Promise<PickListResult> {
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
+
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) return { success: false, error: 'Unauthorized' }
-
-    // Get pick list id for revalidation
+    // 3. Get pick list item and verify the parent pick list belongs to user's tenant
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: item } = await (supabase as any)
+    const { data: plItem, error: fetchError } = await (supabase as any)
         .from('pick_list_items')
-        .select('pick_list_id')
+        .select('pick_list_id, pick_lists!inner(tenant_id)')
         .eq('id', pickListItemId)
         .single()
+
+    if (fetchError || !plItem) {
+        return { success: false, error: 'Pick list item not found' }
+    }
+
+    if (plItem.pick_lists?.tenant_id !== context.tenantId) {
+        return { success: false, error: 'Unauthorized: Access denied' }
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any)
@@ -223,8 +404,8 @@ export async function removePickListItem(pickListItemId: string): Promise<PickLi
         return { success: false, error: error.message }
     }
 
-    if (item?.pick_list_id) {
-        revalidatePath(`/tasks/pick-lists/${item.pick_list_id}`)
+    if (plItem?.pick_list_id) {
+        revalidatePath(`/tasks/pick-lists/${plItem.pick_list_id}`)
     }
     return { success: true }
 }
@@ -233,18 +414,38 @@ export async function updatePickListItem(
     pickListItemId: string,
     requestedQuantity: number
 ): Promise<PickListResult> {
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
+
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // 3. Validate quantity
+    const qtyValidation = quantitySchema.safeParse(requestedQuantity)
+    if (!qtyValidation.success) {
+        return { success: false, error: 'Invalid quantity' }
+    }
+
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) return { success: false, error: 'Unauthorized' }
-
-    // Get pick list id for revalidation
+    // 4. Get pick list item and verify the parent pick list belongs to user's tenant
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: item } = await (supabase as any)
+    const { data: plItem, error: fetchError } = await (supabase as any)
         .from('pick_list_items')
-        .select('pick_list_id')
+        .select('pick_list_id, pick_lists!inner(tenant_id)')
         .eq('id', pickListItemId)
         .single()
+
+    if (fetchError || !plItem) {
+        return { success: false, error: 'Pick list item not found' }
+    }
+
+    if (plItem.pick_lists?.tenant_id !== context.tenantId) {
+        return { success: false, error: 'Unauthorized: Access denied' }
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any)
@@ -257,8 +458,8 @@ export async function updatePickListItem(
         return { success: false, error: error.message }
     }
 
-    if (item?.pick_list_id) {
-        revalidatePath(`/tasks/pick-lists/${item.pick_list_id}`)
+    if (plItem?.pick_list_id) {
+        revalidatePath(`/tasks/pick-lists/${plItem.pick_list_id}`)
     }
     return { success: true }
 }
@@ -267,10 +468,38 @@ export async function pickItem(
     pickListItemId: string,
     pickedQuantity: number
 ): Promise<PickListResult> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
 
-    if (!user) return { success: false, error: 'Unauthorized' }
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // 3. Validate quantity
+    const qtyValidation = quantitySchema.safeParse(pickedQuantity)
+    if (!qtyValidation.success) {
+        return { success: false, error: 'Invalid quantity' }
+    }
+
+    const supabase = await createClient()
+
+    // 4. Verify the pick list item belongs to user's tenant
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: plItem, error: fetchError } = await (supabase as any)
+        .from('pick_list_items')
+        .select('pick_list_id, pick_lists!inner(tenant_id)')
+        .eq('id', pickListItemId)
+        .single()
+
+    if (fetchError || !plItem) {
+        return { success: false, error: 'Pick list item not found' }
+    }
+
+    if (plItem.pick_lists?.tenant_id !== context.tenantId) {
+        return { success: false, error: 'Unauthorized: Access denied' }
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase as any).rpc('pick_pick_list_item', {
@@ -292,10 +521,20 @@ export async function pickItem(
 }
 
 export async function completePickList(pickListId: string): Promise<PickListResult> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
 
-    if (!user) return { success: false, error: 'Unauthorized' }
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // 3. Verify pick list belongs to user's tenant
+    const ownershipResult = await verifyTenantOwnership('pick_lists', pickListId, context.tenantId)
+    if (!ownershipResult.success) return { success: false, error: ownershipResult.error }
+
+    const supabase = await createClient()
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase as any).rpc('complete_pick_list', {
@@ -317,16 +556,27 @@ export async function completePickList(pickListId: string): Promise<PickListResu
 }
 
 export async function startPickList(pickListId: string): Promise<PickListResult> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
 
-    if (!user) return { success: false, error: 'Unauthorized' }
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // 3. Verify pick list belongs to user's tenant
+    const ownershipResult = await verifyTenantOwnership('pick_lists', pickListId, context.tenantId)
+    if (!ownershipResult.success) return { success: false, error: ownershipResult.error }
+
+    const supabase = await createClient()
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any)
         .from('pick_lists')
         .update({ status: 'in_progress' })
         .eq('id', pickListId)
+        .eq('tenant_id', context.tenantId) // Double-check tenant
 
     if (error) {
         console.error('Start pick list error:', error)
@@ -339,16 +589,27 @@ export async function startPickList(pickListId: string): Promise<PickListResult>
 }
 
 export async function cancelPickList(pickListId: string): Promise<PickListResult> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
 
-    if (!user) return { success: false, error: 'Unauthorized' }
+    // 2. Check admin permission for cancel operations
+    const permResult = requireAdminPermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // 3. Verify pick list belongs to user's tenant
+    const ownershipResult = await verifyTenantOwnership('pick_lists', pickListId, context.tenantId)
+    if (!ownershipResult.success) return { success: false, error: ownershipResult.error }
+
+    const supabase = await createClient()
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { error } = await (supabase as any)
         .from('pick_lists')
         .update({ status: 'cancelled' })
         .eq('id', pickListId)
+        .eq('tenant_id', context.tenantId) // Double-check tenant
 
     if (error) {
         console.error('Cancel pick list error:', error)
@@ -361,61 +622,47 @@ export async function cancelPickList(pickListId: string): Promise<PickListResult
 }
 
 export async function getTeamMembers() {
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return []
+    const { context } = authResult
+
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) return []
-
-    // Get user's tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: profile } = await (supabase as any)
-        .from('profiles')
-        .select('tenant_id')
-        .eq('id', user.id)
-        .single()
-
-    if (!profile?.tenant_id) return []
-
-    // Get team members
+    // Get team members with tenant filter
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data } = await (supabase as any)
         .from('profiles')
         .select('id, full_name, email')
-        .eq('tenant_id', profile.tenant_id)
+        .eq('tenant_id', context.tenantId)
         .order('full_name')
 
     return data || []
 }
 
 export async function searchInventoryItems(query: string) {
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return []
+    const { context } = authResult
+
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
 
-    if (!user) return []
-
-    // Get user's tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data: profile } = await (supabase as any)
-        .from('profiles')
-        .select('tenant_id')
-        .eq('id', user.id)
-        .single()
-
-    if (!profile?.tenant_id) return []
-
-    // Search items
+    // Search items with tenant filter
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let queryBuilder = (supabase as any)
         .from('inventory_items')
         .select('id, name, sku, quantity, image_urls, unit')
-        .eq('tenant_id', profile.tenant_id)
+        .eq('tenant_id', context.tenantId)
         .is('deleted_at', null)
         .gt('quantity', 0)
         .order('name')
         .limit(20)
 
     if (query) {
-        queryBuilder = queryBuilder.or(`name.ilike.%${query}%,sku.ilike.%${query}%`)
+        // Escape special characters in query to prevent SQL injection via ilike
+        const escapedQuery = query.replace(/[%_]/g, '\\$&')
+        queryBuilder = queryBuilder.or(`name.ilike.%${escapedQuery}%,sku.ilike.%${escapedQuery}%`)
     }
 
     const { data } = await queryBuilder
