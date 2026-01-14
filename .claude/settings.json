@@ -1,13 +1,41 @@
 {
   "permissions": {
     "allow": [
-      "Bash(/Users/tongkwankiat/.claude/plugins/cache/claude-plugins-official/ralph-wiggum/**/*.sh:*)",
-      "Bash(if \\[\\[ -f .claude/ralph-loop.local.md \\]\\]:*)",
-      "Bash(if \\[ -f .claude/ralph-loop.local.md \\]:*)"
-    ]
+      "Bash(git:*)",
+      "Bash(npm:*)",
+      "Bash(npx:*)",
+      "Bash(pnpm:*)",
+      "Bash(bun:*)",
+      "Bash(node:*)",
+      "Bash(ls:*)",
+      "Bash(mkdir:*)",
+      "Bash(rm:*)",
+      "Bash(mv:*)",
+      "Bash(cp:*)",
+      "Bash(cat:*)",
+      "Bash(head:*)",
+      "Bash(tail:*)",
+      "Bash(grep:*)",
+      "Bash(sed:*)",
+      "Bash(awk:*)",
+      "Bash(perl:*)",
+      "Bash(which:*)",
+      "Bash(echo:*)",
+      "Bash(test:*)",
+      "Bash(jq:*)",
+      "Bash(curl:*)",
+      "Bash(supabase:*)",
+      "Bash(tsc:*)",
+      "Bash(eslint:*)",
+      "Bash(prettier:*)",
+      "Edit",
+      "Write",
+      "Read"
+    ],
+    "deny": []
   },
   "enabledPlugins": {
     "context7@claude-plugins-official": true,
-    "ralph-wiggum@claude-plugins-official": true
+    "ralph-loop@claude-plugins-official": true
   }
 }
