@@ -1,9 +1,8 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
 import {
   ArrowLeft,
   Building2,
@@ -52,6 +51,7 @@ import { BarcodeScanner } from '@/components/scanner/BarcodeScanner'
 import type { ScanResult } from '@/lib/scanner/useBarcodeScanner'
 import { ChatterPanel } from '@/components/chatter'
 import { VendorFormDialog, type VendorFormData } from '@/components/settings/vendors/VendorFormDialog'
+import { ItemThumbnail } from '@/components/ui/item-thumbnail'
 
 interface PurchaseOrderDetailClientProps {
   purchaseOrder: PurchaseOrderWithDetails
@@ -141,6 +141,11 @@ export function PurchaseOrderDetailClient({
   const [showLowStock, setShowLowStock] = useState(false)
   const [isScannerOpen, setIsScannerOpen] = useState(false)
 
+  // Debounced save state
+  const [isDirty, setIsDirty] = useState(false)
+  const [isSaving, setIsSaving] = useState(false)
+  const saveTimerRef = useRef<NodeJS.Timeout | null>(null)
+
   const status = purchaseOrder.status || 'draft'
   const isDraft = status === 'draft'
   const canReceive = ['submitted', 'confirmed', 'partial'].includes(status)
@@ -190,54 +195,87 @@ export function PurchaseOrderDetailClient({
     return () => clearTimeout(timer)
   }, [searchQuery, handleSearch])
 
-  // Save field on blur
-  async function saveField(field: string, value?: string | null) {
+  // Collect all updates and save (called by debounced timer or explicit save)
+  const performSave = useCallback(async () => {
+    if (!isDirty) return
+
+    setIsSaving(true)
+    try {
+      const updates: Record<string, string | null> = {
+        order_number: orderNumber || null,
+        expected_date: expectedDate || null,
+        notes: notes || null,
+        vendor_id: vendorId || null,
+        ship_to_name: shipToName || null,
+        ship_to_address1: shipToAddress1 || null,
+        ship_to_address2: shipToAddress2 || null,
+        ship_to_city: shipToCity || null,
+        ship_to_state: shipToState || null,
+        ship_to_postal_code: shipToPostalCode || null,
+        ship_to_country: shipToCountry || null,
+        bill_to_name: billToName || null,
+        bill_to_address1: billToAddress1 || null,
+        bill_to_address2: billToAddress2 || null,
+        bill_to_city: billToCity || null,
+        bill_to_state: billToState || null,
+        bill_to_postal_code: billToPostalCode || null,
+        bill_to_country: billToCountry || null,
+      }
+
+      await updatePurchaseOrder(purchaseOrder.id, updates)
+      setIsDirty(false)
+      router.refresh()
+    } catch (err) {
+      console.error('Save error:', err)
+      setError('Failed to save changes')
+    } finally {
+      setIsSaving(false)
+    }
+  }, [
+    isDirty, purchaseOrder.id, router,
+    orderNumber, expectedDate, notes, vendorId,
+    shipToName, shipToAddress1, shipToAddress2, shipToCity, shipToState, shipToPostalCode, shipToCountry,
+    billToName, billToAddress1, billToAddress2, billToCity, billToState, billToPostalCode, billToCountry
+  ])
+
+  // Trigger debounced save when any field changes
+  const scheduleSave = useCallback(() => {
+    setIsDirty(true)
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current)
+    }
+    saveTimerRef.current = setTimeout(() => {
+      performSave()
+    }, 1500) // Save after 1.5s of no changes
+  }, [performSave])
+
+  // Cleanup timer on unmount
+  useEffect(() => {
+    return () => {
+      if (saveTimerRef.current) {
+        clearTimeout(saveTimerRef.current)
+      }
+    }
+  }, [])
+
+  // Save immediately on certain actions (vendor select, immediate save needed)
+  async function saveFieldImmediate(field: string, value: string | null) {
+    if (saveTimerRef.current) {
+      clearTimeout(saveTimerRef.current)
+    }
+    setIsSaving(true)
     try {
       const updates: Record<string, string | null> = {}
-
-      switch (field) {
-        case 'order_number':
-          updates.order_number = (value ?? orderNumber) || null
-          break
-        case 'expected_date':
-          updates.expected_date = (value ?? expectedDate) || null
-          break
-        case 'notes':
-          updates.notes = (value ?? notes) || null
-          break
-        case 'vendor':
-          updates.vendor_id = (value ?? vendorId) || null
-          break
-        case 'ship_to':
-          Object.assign(updates, {
-            ship_to_name: shipToName || null,
-            ship_to_address1: shipToAddress1 || null,
-            ship_to_address2: shipToAddress2 || null,
-            ship_to_city: shipToCity || null,
-            ship_to_state: shipToState || null,
-            ship_to_postal_code: shipToPostalCode || null,
-            ship_to_country: shipToCountry || null,
-          })
-          break
-        case 'bill_to':
-          Object.assign(updates, {
-            bill_to_name: billToName || null,
-            bill_to_address1: billToAddress1 || null,
-            bill_to_address2: billToAddress2 || null,
-            bill_to_city: billToCity || null,
-            bill_to_state: billToState || null,
-            bill_to_postal_code: billToPostalCode || null,
-            bill_to_country: billToCountry || null,
-          })
-          break
+      if (field === 'vendor') {
+        updates.vendor_id = value
       }
-
-      if (Object.keys(updates).length > 0) {
-        await updatePurchaseOrder(purchaseOrder.id, updates)
-        router.refresh()
-      }
+      await updatePurchaseOrder(purchaseOrder.id, updates)
+      setIsDirty(false)
+      router.refresh()
     } catch (err) {
       console.error('Save field error:', err)
+    } finally {
+      setIsSaving(false)
     }
   }
 
@@ -249,7 +287,7 @@ export function PurchaseOrderDetailClient({
       setVendorEmail(vendor.email || '')
       setVendorPhone(vendor.phone || '')
       setVendorPaymentTerms(vendor.payment_terms || '')
-      await saveField('vendor', vendor.id)
+      await saveFieldImmediate('vendor', vendor.id)
     }
   }
 
@@ -277,7 +315,7 @@ export function PurchaseOrderDetailClient({
         setVendorPaymentTerms(data.payment_terms || '')
         setVendorSearchQuery('')
         setShowVendorForm(false)
-        await saveField('vendor', result.vendor_id)
+        await saveFieldImmediate('vendor', result.vendor_id)
         router.refresh() // Refresh to get updated vendors list
       } else {
         throw new Error(result.error || 'Failed to create vendor')
@@ -582,7 +620,7 @@ export function PurchaseOrderDetailClient({
                           setVendorPhone('')
                           setVendorPaymentTerms('')
                           setVendorSearchQuery('')
-                          saveField('vendor', '')
+                          saveFieldImmediate('vendor', '')
                         }}
                         className="p-1.5 text-neutral-400 hover:text-neutral-600 hover:bg-neutral-200 rounded-lg transition-colors"
                       >
@@ -724,19 +762,11 @@ export function PurchaseOrderDetailClient({
                           disabled={actionLoading === 'add-item'}
                           className="w-full flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 text-left border-b border-neutral-100 last:border-0"
                         >
-                          {item.image_urls?.[0] ? (
-                            <Image
-                              src={item.image_urls[0]}
-                              alt={item.name}
-                              width={32}
-                              height={32}
-                              className="h-8 w-8 rounded object-cover"
-                            />
-                          ) : (
-                            <div className="h-8 w-8 rounded bg-neutral-100 flex items-center justify-center">
-                              <Package className="h-4 w-4 text-neutral-400" />
-                            </div>
-                          )}
+                          <ItemThumbnail
+                            src={item.image_urls?.[0]}
+                            alt={item.name}
+                            size="sm"
+                          />
                           <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-neutral-900 truncate">{item.name}</p>
                             {item.sku && <p className="text-xs text-neutral-500">SKU: {item.sku}</p>}
@@ -766,19 +796,11 @@ export function PurchaseOrderDetailClient({
                         key={item.id}
                         className="flex items-center gap-3 p-3 rounded-xl border border-neutral-200 bg-white hover:border-neutral-300 transition-colors"
                       >
-                        {item.inventory_item?.image_urls?.[0] ? (
-                          <Image
-                            src={item.inventory_item.image_urls[0]}
-                            alt={item.item_name}
-                            width={40}
-                            height={40}
-                            className="h-10 w-10 rounded-lg object-cover flex-shrink-0"
-                          />
-                        ) : (
-                          <div className="h-10 w-10 rounded-lg bg-neutral-100 flex items-center justify-center flex-shrink-0">
-                            <Package className="h-5 w-5 text-neutral-400" />
-                          </div>
-                        )}
+                        <ItemThumbnail
+                          src={item.inventory_item?.image_urls?.[0]}
+                          alt={item.item_name}
+                          size="md"
+                        />
                         <div className="min-w-0 flex-1">
                           <p className="font-medium text-neutral-900 truncate">{item.item_name}</p>
                           {item.sku && <p className="text-xs text-neutral-500 truncate">SKU: {item.sku}</p>}
@@ -872,8 +894,7 @@ export function PurchaseOrderDetailClient({
                     <input
                       type="text"
                       value={shipToName}
-                      onChange={(e) => setShipToName(e.target.value)}
-                      onBlur={() => saveField('ship_to')}
+                      onChange={(e) => { setShipToName(e.target.value); scheduleSave() }}
                       placeholder="Enter name"
                       className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
                     />
@@ -883,8 +904,7 @@ export function PurchaseOrderDetailClient({
                     <input
                       type="text"
                       value={shipToAddress1}
-                      onChange={(e) => setShipToAddress1(e.target.value)}
-                      onBlur={() => saveField('ship_to')}
+                      onChange={(e) => { setShipToAddress1(e.target.value); scheduleSave() }}
                       placeholder="Street address"
                       className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
                     />
@@ -892,8 +912,7 @@ export function PurchaseOrderDetailClient({
                   <input
                     type="text"
                     value={shipToAddress2}
-                    onChange={(e) => setShipToAddress2(e.target.value)}
-                    onBlur={() => saveField('ship_to')}
+                    onChange={(e) => { setShipToAddress2(e.target.value); scheduleSave() }}
                     placeholder="Apt, suite, unit (optional)"
                     className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
                   />
@@ -901,16 +920,14 @@ export function PurchaseOrderDetailClient({
                     <input
                       type="text"
                       value={shipToCity}
-                      onChange={(e) => setShipToCity(e.target.value)}
-                      onBlur={() => saveField('ship_to')}
+                      onChange={(e) => { setShipToCity(e.target.value); scheduleSave() }}
                       placeholder="City"
                       className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
                     />
                     <input
                       type="text"
                       value={shipToState}
-                      onChange={(e) => setShipToState(e.target.value)}
-                      onBlur={() => saveField('ship_to')}
+                      onChange={(e) => { setShipToState(e.target.value); scheduleSave() }}
                       placeholder="State"
                       className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
                     />
@@ -919,17 +936,13 @@ export function PurchaseOrderDetailClient({
                     <input
                       type="text"
                       value={shipToPostalCode}
-                      onChange={(e) => setShipToPostalCode(e.target.value)}
-                      onBlur={() => saveField('ship_to')}
+                      onChange={(e) => { setShipToPostalCode(e.target.value); scheduleSave() }}
                       placeholder="Postal Code"
                       className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
                     />
                     <select
                       value={shipToCountry}
-                      onChange={(e) => {
-                        setShipToCountry(e.target.value)
-                        saveField('ship_to')
-                      }}
+                      onChange={(e) => { setShipToCountry(e.target.value); scheduleSave() }}
                       className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
                     >
                       <option value="">Country</option>
@@ -978,16 +991,14 @@ export function PurchaseOrderDetailClient({
                       <input
                         type="text"
                         value={billToName}
-                        onChange={(e) => setBillToName(e.target.value)}
-                        onBlur={() => saveField('bill_to')}
+                        onChange={(e) => { setBillToName(e.target.value); scheduleSave() }}
                         placeholder="Name"
                         className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
                       />
                       <input
                         type="text"
                         value={billToAddress1}
-                        onChange={(e) => setBillToAddress1(e.target.value)}
-                        onBlur={() => saveField('bill_to')}
+                        onChange={(e) => { setBillToAddress1(e.target.value); scheduleSave() }}
                         placeholder="Address"
                         className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
                       />
@@ -995,16 +1006,14 @@ export function PurchaseOrderDetailClient({
                         <input
                           type="text"
                           value={billToCity}
-                          onChange={(e) => setBillToCity(e.target.value)}
-                          onBlur={() => saveField('bill_to')}
+                          onChange={(e) => { setBillToCity(e.target.value); scheduleSave() }}
                           placeholder="City"
                           className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
                         />
                         <input
                           type="text"
                           value={billToPostalCode}
-                          onChange={(e) => setBillToPostalCode(e.target.value)}
-                          onBlur={() => saveField('bill_to')}
+                          onChange={(e) => { setBillToPostalCode(e.target.value); scheduleSave() }}
                           placeholder="Postal Code"
                           className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
                         />
@@ -1024,10 +1033,7 @@ export function PurchaseOrderDetailClient({
                   <input
                     type="date"
                     value={expectedDate}
-                    onChange={(e) => {
-                      setExpectedDate(e.target.value)
-                      saveField('expected_date', e.target.value)
-                    }}
+                    onChange={(e) => { setExpectedDate(e.target.value); scheduleSave() }}
                     className="w-full rounded-lg border border-neutral-200 px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
                   />
                 </CardContent>
@@ -1042,13 +1048,39 @@ export function PurchaseOrderDetailClient({
               >
                 <textarea
                   value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
-                  onBlur={() => saveField('notes')}
+                  onChange={(e) => { setNotes(e.target.value); scheduleSave() }}
                   placeholder="Message to vendor..."
                   rows={3}
                   className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm resize-none"
                 />
               </CollapsibleSection>
+
+              {/* Save Status Indicator */}
+              {isDraft && (isDirty || isSaving) && (
+                <div className="flex items-center justify-between px-1 py-2 text-xs">
+                  {isSaving ? (
+                    <span className="flex items-center gap-1.5 text-blue-600">
+                      <Loader2 className="h-3 w-3 animate-spin" />
+                      Saving...
+                    </span>
+                  ) : isDirty ? (
+                    <span className="flex items-center gap-1.5 text-amber-600">
+                      <Clock className="h-3 w-3" />
+                      Unsaved changes
+                    </span>
+                  ) : null}
+                  {isDirty && !isSaving && (
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={performSave}
+                      className="h-6 text-xs"
+                    >
+                      Save now
+                    </Button>
+                  )}
+                </div>
+              )}
 
               {/* Metadata */}
               <div className="text-xs text-neutral-500 space-y-1 px-1">
@@ -1255,19 +1287,11 @@ export function PurchaseOrderDetailClient({
                           <tr key={item.id} className="hover:bg-neutral-50">
                             <td className="px-4 py-3">
                               <div className="flex items-center gap-3">
-                                {item.inventory_item?.image_urls?.[0] ? (
-                                  <Image
-                                    src={item.inventory_item.image_urls[0]}
-                                    alt={item.item_name}
-                                    width={40}
-                                    height={40}
-                                    className="h-10 w-10 rounded object-cover"
-                                  />
-                                ) : (
-                                  <div className="flex h-10 w-10 items-center justify-center rounded bg-neutral-100">
-                                    <Package className="h-5 w-5 text-neutral-400" />
-                                  </div>
-                                )}
+                                <ItemThumbnail
+                                  src={item.inventory_item?.image_urls?.[0]}
+                                  alt={item.item_name}
+                                  size="md"
+                                />
                                 <div>
                                   <p className="font-medium text-neutral-900">{item.item_name}</p>
                                   {item.sku && (

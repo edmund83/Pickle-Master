@@ -1,7 +1,16 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import { getStockCounts } from '@/app/actions/stock-counts'
-import { StockCountClient } from '@/components/workflows/StockCountClient'
+import { getPaginatedStockCounts } from '@/app/actions/stock-counts'
+import { StockCountListClient } from './StockCountListClient'
+
+interface SearchParams {
+  page?: string
+  status?: string
+  assigned?: string
+  search?: string
+  sort?: string
+  order?: string
+}
 
 interface TeamMember {
   id: string
@@ -91,7 +100,11 @@ async function getTotalItemCount(): Promise<number> {
   return count || 0
 }
 
-export default async function StockCountPage() {
+export default async function StockCountPage({
+  searchParams
+}: {
+  searchParams: Promise<SearchParams>
+}) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -99,19 +112,44 @@ export default async function StockCountPage() {
     redirect('/login')
   }
 
-  const [stockCounts, teamMembers, folders, totalItemCount] = await Promise.all([
-    getStockCounts(),
+  const params = await searchParams
+
+  // Parse and validate URL parameters
+  const page = parseInt(params.page || '1', 10)
+  const status = params.status as 'draft' | 'in_progress' | 'review' | 'completed' | 'cancelled' | undefined
+  const assignedTo = params.assigned || undefined
+  const search = params.search || undefined
+  const sortColumn = params.sort || 'created_at'
+  const sortDirection = (params.order === 'asc' ? 'asc' : 'desc') as 'asc' | 'desc'
+
+  const [stockCountsData, teamMembers, folders, totalItemCount] = await Promise.all([
+    getPaginatedStockCounts({
+      page,
+      pageSize: 20,
+      status,
+      assignedTo,
+      search,
+      sortColumn,
+      sortDirection,
+    }),
     getTeamMembers(),
     getFolders(),
     getTotalItemCount(),
   ])
 
   return (
-    <StockCountClient
-      stockCounts={stockCounts}
+    <StockCountListClient
+      initialData={stockCountsData}
       teamMembers={teamMembers}
       folders={folders}
       totalItemCount={totalItemCount}
+      initialFilters={{
+        status: status || '',
+        assignedTo: assignedTo || '',
+        search: search || '',
+        sortColumn,
+        sortDirection,
+      }}
     />
   )
 }

@@ -1,4 +1,7 @@
-'use server'
+// Server-side authentication utilities
+// Note: This is NOT a server actions file. It provides utilities that are imported
+// by server action files. The functions here can be async or sync.
+// Server actions must be in files with 'use server' directive at the top.
 
 import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'

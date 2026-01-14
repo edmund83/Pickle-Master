@@ -242,6 +242,27 @@ export async function createReceive(input: CreateReceiveInput): Promise<ReceiveR
         return { success: false, error: data.error || 'Failed to create receive' }
     }
 
+    // Log activity for receive creation
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase as any).from('activity_logs').insert({
+            tenant_id: context.tenantId,
+            user_id: context.userId,
+            user_name: context.fullName,
+            action_type: 'create',
+            entity_type: 'receive',
+            entity_id: data?.id,
+            entity_name: data?.display_id,
+            changes: {
+                purchase_order_id: validatedInput.purchase_order_id,
+                items_added: data?.items_added,
+                status: 'draft'
+            }
+        })
+    } catch (logError) {
+        console.error('Activity log error:', logError)
+    }
+
     revalidatePath('/tasks/receives')
     revalidatePath(`/tasks/purchase-orders/${validatedInput.purchase_order_id}`)
     return {
@@ -607,6 +628,15 @@ export async function completeReceive(receiveId: string): Promise<ReceiveResult>
 
     const supabase = await createClient()
 
+    // Get receive info for logging
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: receive } = await (supabase as any)
+        .from('receives')
+        .select('display_id, status')
+        .eq('id', receiveId)
+        .eq('tenant_id', context.tenantId)
+        .single()
+
     // Use the RPC function
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase as any).rpc('complete_receive', {
@@ -620,6 +650,29 @@ export async function completeReceive(receiveId: string): Promise<ReceiveResult>
 
     if (data && !data.success) {
         return { success: false, error: data.error || 'Failed to complete receive' }
+    }
+
+    // Log activity for receive completion
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase as any).from('activity_logs').insert({
+            tenant_id: context.tenantId,
+            user_id: context.userId,
+            user_name: context.fullName,
+            action_type: 'complete',
+            entity_type: 'receive',
+            entity_id: receiveId,
+            entity_name: receive?.display_id,
+            changes: {
+                previous_status: receive?.status,
+                new_status: 'completed',
+                items_processed: data?.items_processed,
+                lots_created: data?.lots_created,
+                po_fully_received: data?.po_fully_received
+            }
+        })
+    } catch (logError) {
+        console.error('Activity log error:', logError)
     }
 
     revalidatePath('/tasks/receives')
@@ -653,6 +706,15 @@ export async function cancelReceive(receiveId: string): Promise<ReceiveResult> {
 
     const supabase = await createClient()
 
+    // Get receive info for logging
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: receive } = await (supabase as any)
+        .from('receives')
+        .select('display_id, status')
+        .eq('id', receiveId)
+        .eq('tenant_id', context.tenantId)
+        .single()
+
     // Use the RPC function
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data, error } = await (supabase as any).rpc('cancel_receive', {
@@ -666,6 +728,26 @@ export async function cancelReceive(receiveId: string): Promise<ReceiveResult> {
 
     if (data && !data.success) {
         return { success: false, error: data.error || 'Failed to cancel receive' }
+    }
+
+    // Log activity for receive cancellation
+    try {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase as any).from('activity_logs').insert({
+            tenant_id: context.tenantId,
+            user_id: context.userId,
+            user_name: context.fullName,
+            action_type: 'cancel',
+            entity_type: 'receive',
+            entity_id: receiveId,
+            entity_name: receive?.display_id,
+            changes: {
+                previous_status: receive?.status,
+                new_status: 'cancelled'
+            }
+        })
+    } catch (logError) {
+        console.error('Activity log error:', logError)
     }
 
     revalidatePath('/tasks/receives')
@@ -1037,6 +1119,183 @@ export async function bulkAddReceiveItemSerials(
         success: true,
         added: newSerials.length,
         duplicates: [...duplicates, ...(inputDuplicates > 0 ? ['(input had duplicates)'] : [])]
+    }
+}
+
+// ============================================
+// Server-side Pagination for Receives List
+// ============================================
+
+export interface PaginatedReceivesResult {
+    data: ReceiveListItem[]
+    total: number
+    page: number
+    pageSize: number
+    totalPages: number
+}
+
+export interface ReceiveListItem {
+    id: string
+    display_id: string | null
+    status: 'draft' | 'completed' | 'cancelled'
+    received_date: string
+    delivery_note_number: string | null
+    carrier: string | null
+    tracking_number: string | null
+    completed_at: string | null
+    created_at: string
+    po_display_id: string | null
+    po_order_number: string | null
+    vendor_name: string | null
+    received_by_name: string | null
+}
+
+export interface ReceivesQueryParams {
+    page?: number
+    pageSize?: number
+    sortColumn?: string
+    sortDirection?: 'asc' | 'desc'
+    status?: 'draft' | 'completed' | 'cancelled'
+    purchaseOrderId?: string
+    search?: string
+}
+
+export async function getPaginatedReceives(
+    params: ReceivesQueryParams = {}
+): Promise<PaginatedReceivesResult> {
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) {
+        return { data: [], total: 0, page: 1, pageSize: 20, totalPages: 0 }
+    }
+    const { context } = authResult
+
+    const {
+        page = 1,
+        pageSize = 20,
+        sortColumn = 'created_at',
+        sortDirection = 'desc',
+        status,
+        purchaseOrderId,
+        search
+    } = params
+
+    // Validate and sanitize parameters
+    const sanitizedPage = Math.max(1, page)
+    const sanitizedPageSize = Math.min(100, Math.max(1, pageSize))
+    const offset = (sanitizedPage - 1) * sanitizedPageSize
+
+    // Map sort columns to database columns
+    const columnMap: Record<string, string> = {
+        display_id: 'display_id',
+        status: 'status',
+        received_date: 'received_date',
+        delivery_note_number: 'delivery_note_number',
+        carrier: 'carrier',
+        completed_at: 'completed_at',
+        created_at: 'created_at',
+    }
+
+    const dbSortColumn = columnMap[sortColumn] || 'created_at'
+    const ascending = sortDirection === 'asc'
+
+    const supabase = await createClient()
+
+    // Build query for count
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let countQuery = (supabase as any)
+        .from('receives')
+        .select('*', { count: 'exact', head: true })
+        .eq('tenant_id', context.tenantId)
+
+    // Build query for data
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let dataQuery = (supabase as any)
+        .from('receives')
+        .select(`
+            id,
+            display_id,
+            status,
+            received_date,
+            delivery_note_number,
+            carrier,
+            tracking_number,
+            completed_at,
+            created_at,
+            purchase_orders(display_id, order_number, vendors(name)),
+            profiles!receives_received_by_fkey(full_name)
+        `)
+        .eq('tenant_id', context.tenantId)
+        .order(dbSortColumn, { ascending })
+        .range(offset, offset + sanitizedPageSize - 1)
+
+    // Apply filters
+    if (status) {
+        const statusValidation = z.enum(['draft', 'completed', 'cancelled']).safeParse(status)
+        if (statusValidation.success) {
+            countQuery = countQuery.eq('status', statusValidation.data)
+            dataQuery = dataQuery.eq('status', statusValidation.data)
+        }
+    }
+
+    if (purchaseOrderId) {
+        const idValidation = z.string().uuid().safeParse(purchaseOrderId)
+        if (idValidation.success) {
+            countQuery = countQuery.eq('purchase_order_id', purchaseOrderId)
+            dataQuery = dataQuery.eq('purchase_order_id', purchaseOrderId)
+        }
+    }
+
+    if (search) {
+        const searchPattern = `%${search}%`
+        countQuery = countQuery.or(`display_id.ilike.${searchPattern},delivery_note_number.ilike.${searchPattern},tracking_number.ilike.${searchPattern}`)
+        dataQuery = dataQuery.or(`display_id.ilike.${searchPattern},delivery_note_number.ilike.${searchPattern},tracking_number.ilike.${searchPattern}`)
+    }
+
+    // Execute queries
+    const [countResult, dataResult] = await Promise.all([
+        countQuery,
+        dataQuery
+    ])
+
+    const total = countResult.count || 0
+    const totalPages = Math.ceil(total / sanitizedPageSize)
+
+    // Transform data
+    const data: ReceiveListItem[] = (dataResult.data || []).map((r: {
+        id: string
+        display_id: string | null
+        status: 'draft' | 'completed' | 'cancelled'
+        received_date: string
+        delivery_note_number: string | null
+        carrier: string | null
+        tracking_number: string | null
+        completed_at: string | null
+        created_at: string
+        purchase_orders: { display_id: string | null; order_number: string | null; vendors: { name: string } | null } | null
+        profiles: { full_name: string } | null
+    }) => ({
+        id: r.id,
+        display_id: r.display_id,
+        status: r.status,
+        received_date: r.received_date,
+        delivery_note_number: r.delivery_note_number,
+        carrier: r.carrier,
+        tracking_number: r.tracking_number,
+        completed_at: r.completed_at,
+        created_at: r.created_at,
+        po_display_id: r.purchase_orders?.display_id || null,
+        po_order_number: r.purchase_orders?.order_number || null,
+        vendor_name: r.purchase_orders?.vendors?.name || null,
+        received_by_name: r.profiles?.full_name || null
+    }))
+
+    return {
+        data,
+        total,
+        page: sanitizedPage,
+        pageSize: sanitizedPageSize,
+        totalPages
     }
 }
 

@@ -1,40 +1,55 @@
-import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
-import { PurchaseOrdersClient } from '@/components/workflows/PurchaseOrdersClient'
-import type { PurchaseOrderWithRelations } from '@/types/database.types'
+import { getPaginatedPurchaseOrders, getVendors } from '@/app/actions/purchase-orders'
+import { PurchaseOrdersListClient } from './PurchaseOrdersListClient'
 
-async function getPurchaseOrders(): Promise<PurchaseOrderWithRelations[]> {
-  const supabase = await createClient()
-
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) redirect('/login')
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: profile } = await (supabase as any)
-    .from('profiles')
-    .select('tenant_id')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile?.tenant_id) return []
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data } = await (supabase as any)
-    .from('purchase_orders')
-    .select(`
-      *,
-      vendors(id, name),
-      created_by_profile:profiles!created_by(id, full_name),
-      submitted_by_profile:profiles!submitted_by(id, full_name)
-    `)
-    .eq('tenant_id', profile.tenant_id)
-    .order('updated_at', { ascending: false })
-
-  return (data || []) as PurchaseOrderWithRelations[]
+interface SearchParams {
+  page?: string
+  status?: string
+  vendor?: string
+  search?: string
+  sort?: string
+  order?: string
 }
 
-export default async function PurchaseOrdersPage() {
-  const purchaseOrders = await getPurchaseOrders()
+export default async function PurchaseOrdersPage({
+  searchParams
+}: {
+  searchParams: Promise<SearchParams>
+}) {
+  const params = await searchParams
 
-  return <PurchaseOrdersClient purchaseOrders={purchaseOrders} />
+  // Parse URL params
+  const page = parseInt(params.page || '1', 10)
+  const status = params.status || undefined
+  const vendorId = params.vendor || undefined
+  const search = params.search || undefined
+  const sortColumn = params.sort || 'updated_at'
+  const sortDirection = (params.order === 'asc' ? 'asc' : 'desc') as 'asc' | 'desc'
+
+  // Fetch data with pagination and filters
+  const [purchaseOrdersData, vendors] = await Promise.all([
+    getPaginatedPurchaseOrders({
+      page,
+      pageSize: 20,
+      status,
+      vendorId,
+      search,
+      sortColumn,
+      sortDirection
+    }),
+    getVendors()
+  ])
+
+  return (
+    <PurchaseOrdersListClient
+      initialData={purchaseOrdersData}
+      vendors={vendors}
+      initialFilters={{
+        status: status || '',
+        vendorId: vendorId || '',
+        search: search || '',
+        sortColumn,
+        sortDirection
+      }}
+    />
+  )
 }
