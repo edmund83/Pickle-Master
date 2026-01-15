@@ -78,6 +78,13 @@ export interface InvoiceWithDetails {
       sku: string | null
       image_urls: string[] | null
     } | null
+    line_item_taxes: Array<{
+      id: string
+      tax_rate_id: string | null
+      tax_name: string
+      tax_rate: number
+      tax_amount: number
+    }>
   }>
   payments: Array<{
     id: string
@@ -119,7 +126,8 @@ async function getInvoiceWithDetails(id: string): Promise<(InvoiceWithDetails & 
       delivery_orders(id, display_id),
       invoice_items(
         *,
-        inventory_items(id, name, sku, image_urls)
+        inventory_items(id, name, sku, image_urls),
+        line_item_taxes(id, tax_rate_id, tax_name, tax_rate, tax_amount)
       ),
       invoice_payments(*),
       created_by_profile:profiles!invoices_created_by_fkey(full_name),
@@ -142,7 +150,8 @@ async function getInvoiceWithDetails(id: string): Promise<(InvoiceWithDetails & 
     delivery_order: data.delivery_orders || null,
     items: (data.invoice_items || []).map((item: Record<string, unknown>) => ({
       ...item,
-      inventory_item: item.inventory_items || null
+      inventory_item: item.inventory_items || null,
+      line_item_taxes: item.line_item_taxes || []
     })),
     payments: data.invoice_payments || [],
     created_by_name: data.created_by_profile?.full_name || null,

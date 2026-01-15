@@ -249,7 +249,9 @@ export function TaxRatesDataTable({
                                             </>
                                         )}
                                     </DropdownMenuItem>
-                                    <DropdownMenuSeparator className="sm:hidden" />
+                                    <div className="sm:hidden">
+                                        <DropdownMenuSeparator />
+                                    </div>
                                     <DropdownMenuItem
                                         onClick={() => onDelete(rate)}
                                         className={cn(
