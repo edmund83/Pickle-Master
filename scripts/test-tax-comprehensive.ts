@@ -394,7 +394,7 @@ async function testPerformance() {
 
     // Test 3.1: Query tax_rates by tenant_id (should use index)
     const { result: taxRatesResult, duration: taxRatesDuration } = await measureQuery(
-        () => supabase
+        async () => supabase
             .from('tax_rates')
             .select('*')
             .eq('tenant_id', testTenantId)
@@ -408,7 +408,7 @@ async function testPerformance() {
 
     // Test 3.2: Query line_item_taxes by sales_order_item_id (should use index)
     const { duration: litDuration } = await measureQuery(
-        () => supabase
+        async () => supabase
             .from('line_item_taxes')
             .select('*')
             .eq('sales_order_item_id', '00000000-0000-0000-0000-000000000000')
@@ -429,7 +429,7 @@ async function testPerformance() {
 
     // Test 3.4: Join performance - sales_order_items with line_item_taxes
     const { duration: joinDuration } = await measureQuery(
-        () => supabase
+        async () => supabase
             .from('sales_order_items')
             .select(`
                 id, item_name, line_total,
@@ -445,7 +445,7 @@ async function testPerformance() {
 
     // Test 3.5: Aggregate tax query performance
     const { duration: aggDuration } = await measureQuery(
-        () => supabase.rpc('get_sales_order_tax_summary', {
+        async () => supabase.rpc('get_sales_order_tax_summary', {
             p_sales_order_id: '00000000-0000-0000-0000-000000000000'
         })
     )

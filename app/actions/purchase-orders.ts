@@ -27,14 +27,15 @@ export type PurchaseOrderResult = {
 }
 
 // Status state machine - defines valid transitions
-// draft -> submitted -> pending_approval -> confirmed -> receiving -> received
+// draft -> submitted -> pending_approval -> confirmed -> partial -> received
 // Any status can transition to cancelled (except received)
+// Note: 'partial' status is set by complete_receive when not all items are received
 const PO_STATUS_TRANSITIONS: Record<string, string[]> = {
     draft: ['submitted', 'pending_approval', 'cancelled'],
     submitted: ['pending_approval', 'confirmed', 'cancelled', 'draft'], // Can reject back to draft
     pending_approval: ['confirmed', 'draft', 'cancelled'], // Manager approves or rejects
-    confirmed: ['receiving', 'cancelled'],
-    receiving: ['received', 'cancelled'],
+    confirmed: ['partial', 'received', 'cancelled'], // After confirm, can start receiving items
+    partial: ['partial', 'received', 'cancelled'], // More receives can happen until fully received
     received: [], // Terminal state - no transitions allowed
     cancelled: ['draft'], // Can be revived to draft
 }

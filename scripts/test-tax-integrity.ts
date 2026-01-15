@@ -316,7 +316,7 @@ async function testUniqueConstraint() {
     })
 
   const duplicateBlocked = dupError && dupError.message.includes('duplicate')
-  logTest('Unique constraint blocks duplicate names per tenant', duplicateBlocked,
+  logTest('Unique constraint blocks duplicate names per tenant', duplicateBlocked ?? false,
     dupError ? 'Correctly rejected' : 'Duplicate was allowed!')
 
   // Cleanup
@@ -350,7 +350,7 @@ async function testCheckConstraints() {
     })
 
   const over100Blocked = overError && overError.message.includes('check')
-  logTest('Check constraint blocks rate > 100', over100Blocked,
+  logTest('Check constraint blocks rate > 100', over100Blocked ?? false,
     overError ? 'Correctly rejected' : 'Invalid rate was allowed!')
 
   // Test rate < 0 should fail
@@ -364,7 +364,7 @@ async function testCheckConstraints() {
     })
 
   const under0Blocked = underError && underError.message.includes('check')
-  logTest('Check constraint blocks rate < 0', under0Blocked,
+  logTest('Check constraint blocks rate < 0', under0Blocked ?? false,
     underError ? 'Correctly rejected' : 'Invalid rate was allowed!')
 }
 

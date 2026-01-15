@@ -21,6 +21,17 @@ export type CustomerResult = {
     display_id?: string
 }
 
+// Basic customer type for list components
+export interface Customer {
+    id: string
+    name: string
+    customer_code: string | null
+    contact_name: string | null
+    email: string | null
+    phone: string | null
+    is_active: boolean
+}
+
 // Validation schemas
 const createCustomerSchema = z.object({
     name: z.string().min(1, 'Customer name is required').max(255),

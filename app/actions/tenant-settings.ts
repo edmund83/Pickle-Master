@@ -161,3 +161,89 @@ export async function updateTenantSettings(
     return { error: 'An unexpected error occurred' }
   }
 }
+
+/**
+ * Get tenant's tax inclusive setting
+ */
+export async function getTaxInclusiveSetting(): Promise<{ pricesIncludeTax: boolean; error?: string }> {
+  try {
+    const supabase = await createClient()
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return { pricesIncludeTax: false, error: 'Not authenticated' }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: profile } = await (supabase as any)
+      .from('profiles')
+      .select('tenant_id')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile?.tenant_id) {
+      return { pricesIncludeTax: false, error: 'No tenant found' }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: tenant } = await (supabase as any)
+      .from('tenants')
+      .select('prices_include_tax')
+      .eq('id', profile.tenant_id)
+      .single()
+
+    return { pricesIncludeTax: tenant?.prices_include_tax ?? false }
+  } catch (err) {
+    console.error('Error getting tax inclusive setting:', err)
+    return { pricesIncludeTax: false, error: 'Failed to load setting' }
+  }
+}
+
+/**
+ * Update tenant's tax inclusive setting
+ */
+export async function updateTaxInclusiveSetting(pricesIncludeTax: boolean): Promise<ActionResult> {
+  try {
+    const supabase = await createClient()
+
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+    if (authError || !user) {
+      return { error: 'Not authenticated' }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: profile } = await (supabase as any)
+      .from('profiles')
+      .select('tenant_id, role')
+      .eq('id', user.id)
+      .single()
+
+    if (!profile?.tenant_id) {
+      return { error: 'No tenant found' }
+    }
+
+    if (!['owner', 'admin'].includes(profile.role)) {
+      return { error: 'Permission denied' }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: updateError } = await (supabase as any)
+      .from('tenants')
+      .update({
+        prices_include_tax: pricesIncludeTax,
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', profile.tenant_id)
+
+    if (updateError) {
+      console.error('Failed to update tax inclusive setting:', updateError)
+      return { error: 'Failed to update setting' }
+    }
+
+    revalidatePath('/settings/taxes')
+    return { success: true }
+  } catch (err) {
+    console.error('Error updating tax inclusive setting:', err)
+    return { error: 'An unexpected error occurred' }
+  }
+}

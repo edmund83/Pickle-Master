@@ -3,16 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { Button } from '@/components/ui/button'
 import { SettingsSection } from '@/components/settings'
-import {
-    Plus,
-    Percent,
-    Check,
-    AlertCircle,
-    Trash2,
-    Loader2,
-    Star,
-    Globe,
-} from 'lucide-react'
+import { Plus, Percent, Check, AlertCircle, Trash2, Loader2, Settings } from 'lucide-react'
 import {
     getAllTaxRates,
     createTaxRate,
@@ -22,8 +13,8 @@ import {
     toggleTaxRateActive,
     type TaxRate,
     type CreateTaxRateInput,
-    TAX_TYPES,
 } from '@/app/actions/tax-rates'
+import { getTaxInclusiveSetting, updateTaxInclusiveSetting } from '@/app/actions/tenant-settings'
 import { TaxRateFormSheet } from '@/components/settings/taxes/TaxRateFormSheet'
 import { TaxRatesDataTable } from '@/components/settings/taxes/TaxRatesDataTable'
 import { DeleteTaxRateDialog } from '@/components/settings/taxes/DeleteTaxRateDialog'
@@ -31,6 +22,8 @@ import { DeleteTaxRateDialog } from '@/components/settings/taxes/DeleteTaxRateDi
 export default function TaxSettingsPage() {
     const [taxRates, setTaxRates] = useState<TaxRate[]>([])
     const [loading, setLoading] = useState(true)
+    const [pricesIncludeTax, setPricesIncludeTax] = useState(false)
+    const [savingTaxMode, setSavingTaxMode] = useState(false)
 
     // Form sheet state
     const [formSheetOpen, setFormSheetOpen] = useState(false)
@@ -69,9 +62,39 @@ export default function TaxSettingsPage() {
         }
     }, [])
 
+    const loadTaxInclusiveSetting = useCallback(async () => {
+        const result = await getTaxInclusiveSetting()
+        if (!result.error) {
+            setPricesIncludeTax(result.pricesIncludeTax)
+        }
+    }, [])
+
     useEffect(() => {
         loadTaxRates()
-    }, [loadTaxRates])
+        loadTaxInclusiveSetting()
+    }, [loadTaxRates, loadTaxInclusiveSetting])
+
+    async function handleToggleTaxInclusive() {
+        setSavingTaxMode(true)
+        try {
+            const result = await updateTaxInclusiveSetting(!pricesIncludeTax)
+            if (result.success) {
+                setPricesIncludeTax(!pricesIncludeTax)
+                setMessage({
+                    type: 'success',
+                    text: !pricesIncludeTax
+                        ? 'Prices now include tax'
+                        : 'Prices now exclude tax',
+                })
+            } else {
+                setMessage({ type: 'error', text: result.error || 'Failed to update setting' })
+            }
+        } catch {
+            setMessage({ type: 'error', text: 'Failed to update setting' })
+        } finally {
+            setSavingTaxMode(false)
+        }
+    }
 
     async function handleCreate(data: CreateTaxRateInput) {
         const result = await createTaxRate(data)
@@ -178,10 +201,6 @@ export default function TaxSettingsPage() {
         setDeleteDialogOpen(true)
     }
 
-    // Stats
-    const activeRates = taxRates.filter((r) => r.is_active)
-    const defaultRate = taxRates.find((r) => r.is_default)
-
     if (loading) {
         return (
             <div className="p-6">
@@ -224,50 +243,39 @@ export default function TaxSettingsPage() {
             )}
 
             <div className="mx-auto max-w-5xl space-y-6">
-                {/* Quick Stats */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div className="rounded-xl bg-white border border-neutral-200 p-4">
-                        <div className="flex items-center gap-3">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50">
-                                <Percent className="h-5 w-5 text-blue-600" />
-                            </div>
-                            <div>
-                                <p className="text-2xl font-semibold text-neutral-900">
-                                    {activeRates.length}
-                                </p>
-                                <p className="text-sm text-neutral-500">Active Rates</p>
-                            </div>
+                {/* Tax Mode Setting */}
+                <SettingsSection
+                    title="Tax Mode"
+                    description="How prices are displayed and calculated"
+                    icon={Settings}
+                >
+                    <div className="flex items-center justify-between py-2">
+                        <div>
+                            <p className="font-medium text-neutral-900">Prices include tax</p>
+                            <p className="text-sm text-neutral-500">
+                                {pricesIncludeTax
+                                    ? 'Tax is included in displayed prices (VAT-style)'
+                                    : 'Tax is added on top of prices (US Sales Tax-style)'}
+                            </p>
                         </div>
+                        <button
+                            type="button"
+                            role="switch"
+                            aria-checked={pricesIncludeTax}
+                            onClick={handleToggleTaxInclusive}
+                            disabled={savingTaxMode}
+                            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 disabled:opacity-50 ${
+                                pricesIncludeTax ? 'bg-primary' : 'bg-neutral-200'
+                            }`}
+                        >
+                            <span
+                                className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                                    pricesIncludeTax ? 'translate-x-5' : 'translate-x-0'
+                                }`}
+                            />
+                        </button>
                     </div>
-
-                    <div className="rounded-xl bg-white border border-neutral-200 p-4">
-                        <div className="flex items-center gap-3">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-50">
-                                <Star className="h-5 w-5 text-amber-600" />
-                            </div>
-                            <div>
-                                <p className="text-2xl font-semibold text-neutral-900">
-                                    {defaultRate ? `${defaultRate.rate}%` : 'None'}
-                                </p>
-                                <p className="text-sm text-neutral-500">Default Rate</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div className="rounded-xl bg-white border border-neutral-200 p-4">
-                        <div className="flex items-center gap-3">
-                            <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-green-50">
-                                <Globe className="h-5 w-5 text-green-600" />
-                            </div>
-                            <div>
-                                <p className="text-2xl font-semibold text-neutral-900">
-                                    {TAX_TYPES.length}
-                                </p>
-                                <p className="text-sm text-neutral-500">Tax Types Supported</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+                </SettingsSection>
 
                 {/* Tax Rates Table */}
                 <SettingsSection
@@ -322,18 +330,6 @@ export default function TaxSettingsPage() {
                     )}
                 </SettingsSection>
 
-                {/* Help Section */}
-                <div className="rounded-xl bg-blue-50 border border-blue-100 p-4">
-                    <h3 className="font-medium text-blue-900">Tax Rate Types</h3>
-                    <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
-                        {TAX_TYPES.map((type) => (
-                            <div key={type.value} className="text-sm text-blue-700">
-                                <span className="font-medium">{type.label}</span>
-                                <span className="text-blue-600"> - {type.description}</span>
-                            </div>
-                        ))}
-                    </div>
-                </div>
             </div>
 
             {/* Create/Edit Form Sheet */}

@@ -13,7 +13,8 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { cn } from '@/lib/utils'
-import { type TaxRate, TAX_TYPES } from '@/app/actions/tax-rates'
+import { type TaxRate } from '@/app/actions/tax-rates'
+import { TAX_TYPES } from '@/lib/constants/tax'
 
 interface TaxRatesDataTableProps {
     taxRates: TaxRate[]

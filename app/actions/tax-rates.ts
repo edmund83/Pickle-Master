@@ -10,6 +10,7 @@ import {
     optionalStringSchema,
 } from '@/lib/auth/server-auth'
 import { z } from 'zod'
+import type { TaxType } from '@/lib/constants/tax'
 
 export type TaxRateResult = {
     success: boolean
@@ -17,27 +18,23 @@ export type TaxRateResult = {
     tax_rate_id?: string
 }
 
-// Tax types supported globally
-export const TAX_TYPES = [
-    { value: 'sales_tax', label: 'Sales Tax', description: 'US state/local sales tax' },
-    { value: 'vat', label: 'VAT', description: 'Value Added Tax (EU, UK)' },
-    { value: 'gst', label: 'GST', description: 'Goods and Services Tax (AU, NZ, SG, IN)' },
-    { value: 'hst', label: 'HST', description: 'Harmonized Sales Tax (Canada)' },
-    { value: 'pst', label: 'PST', description: 'Provincial Sales Tax (Canada)' },
-    { value: 'other', label: 'Other', description: 'Custom tax type' },
-] as const
-
-export type TaxType = (typeof TAX_TYPES)[number]['value']
-
 // Validation schemas
 const createTaxRateSchema = z.object({
     name: z.string().min(1, 'Tax name is required').max(100),
     code: optionalStringSchema,
     description: z.string().max(500).nullable().optional(),
-    tax_type: z.enum(['sales_tax', 'vat', 'gst', 'hst', 'pst', 'other']).default('sales_tax'),
+    tax_type: z.enum(['sales_tax', 'vat', 'gst', 'hst', 'pst', 'other']).optional(),
     rate: z.number().min(0, 'Rate must be 0 or greater').max(100, 'Rate cannot exceed 100%'),
-    country_code: z.string().length(2).nullable().optional(),
-    region_code: z.string().max(10).nullable().optional(),
+    country_code: z
+        .union([z.string().length(2), z.literal('')])
+        .transform((val) => (val === '' ? null : val))
+        .nullable()
+        .optional(),
+    region_code: z
+        .union([z.string().max(10), z.literal('')])
+        .transform((val) => (val === '' ? null : val))
+        .nullable()
+        .optional(),
     is_default: z.boolean().optional(),
     applies_to_shipping: z.boolean().optional(),
     is_compound: z.boolean().optional(),
