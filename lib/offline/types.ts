@@ -4,6 +4,7 @@
 
 // Cached inventory item for offline barcode/SKU lookup
 export interface OfflineItem {
+  tenant_id: string
   id: string
   barcode: string | null
   sku: string | null
@@ -21,6 +22,8 @@ export interface OfflineItem {
 
 // Pending change to sync when back online
 export interface PendingChange {
+  tenant_id: string
+  user_id?: string | null
   id: string
   type: 'quantity_adjust' | 'checkout' | 'checkin' | 'create' | 'update' | 'stock_count_record'
   entity_type: 'inventory_item' | 'checkout' | 'stock_count_item'
@@ -44,6 +47,8 @@ export interface BatchScanItem {
 }
 
 export interface ScanSession {
+  tenant_id: string
+  user_id?: string | null
   id: string
   name: string
   mode: 'single' | 'quick' | 'batch'
@@ -55,6 +60,8 @@ export interface ScanSession {
 
 // Sync metadata
 export interface SyncMetadata {
+  tenant_id: string
+  user_id?: string | null
   key: string
   value: string
   updated_at: Date
@@ -67,6 +74,7 @@ export interface QuantityAdjustPayload {
   new_quantity: number
   adjustment: number
   reason?: string
+  last_known_updated_at?: string | null
   [key: string]: unknown // Allow indexing for Record<string, unknown> compatibility
 }
 
@@ -105,6 +113,7 @@ export interface StockCountRecordPayload {
 
 // Offline stock count item for local state
 export interface OfflineStockCountItem {
+  tenant_id: string
   id: string
   stock_count_id: string
   item_id: string
@@ -121,6 +130,8 @@ export interface OfflineStockCountItem {
 
 // Offline stock count session
 export interface OfflineStockCountSession {
+  tenant_id: string
+  user_id?: string | null
   id: string
   stock_count_id: string
   display_id: string | null

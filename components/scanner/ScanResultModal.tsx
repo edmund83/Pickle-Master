@@ -15,6 +15,7 @@ export interface ScannedItem {
   unit_cost: number | null
   photo_url: string | null
   folder_name: string | null
+  updated_at?: string | null
 }
 
 interface ScanResultModalProps {
