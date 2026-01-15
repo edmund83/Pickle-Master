@@ -9,6 +9,17 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Removed
+
+#### Multi-Location Stock Tracking Feature
+- **Removed Settings → Locations page** - The location management UI has been removed from settings
+- **Removed "Multi-Location Inventory" feature toggle** - This feature flag is no longer available in Settings → Features
+- **Removed ItemLocationsPanel** - The panel showing stock quantities per location on item detail pages
+- **Removed StockTransferModal** - The modal for transferring stock between locations
+- **Renamed inventory dropdown** - Changed "All Locations" to "All Folders" in the inventory view for clarity
+
+**Note**: The underlying `locations` and `location_stock` database tables are retained for Goods Receiving functionality (assigning received items to storage locations). Only the multi-location stock tracking feature UI has been removed.
+
 ### Added
 
 #### Auto-Reorder Suggestions Feature

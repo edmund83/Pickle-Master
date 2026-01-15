@@ -7,7 +7,6 @@ import { SettingsSection, SettingsToggle } from '@/components/settings'
 import {
   Save,
   Zap,
-  MapPin,
   Package,
   Calendar,
   Truck,
@@ -21,13 +20,11 @@ import {
 import type { Tenant } from '@/types/database.types'
 
 interface FeaturesEnabled {
-  multi_location: boolean
   shipping_dimensions: boolean
   lot_tracking: boolean
 }
 
 const defaultFeatures: FeaturesEnabled = {
-  multi_location: false,
   shipping_dimensions: false,
   lot_tracking: false,
 }
@@ -78,7 +75,6 @@ export default function FeaturesSettingsPage() {
           const settings = tenantData.settings as Record<string, unknown> | null
           const enabledFeatures = settings?.features_enabled as FeaturesEnabled | undefined
           setFeatures({
-            multi_location: enabledFeatures?.multi_location ?? false,
             shipping_dimensions: enabledFeatures?.shipping_dimensions ?? false,
             lot_tracking: enabledFeatures?.lot_tracking ?? false,
           })
@@ -196,14 +192,6 @@ export default function FeaturesSettingsPage() {
           icon={Zap}
         >
           <div className="space-y-3">
-            <SettingsToggle
-              icon={MapPin}
-              label="Multi-Location Inventory"
-              description="Track inventory across multiple warehouses, vans, stores, or job sites. Transfer stock between locations."
-              checked={features.multi_location}
-              onChange={() => toggleFeature('multi_location')}
-            />
-
             <SettingsToggle
               icon={Truck}
               label="Shipping Dimensions"

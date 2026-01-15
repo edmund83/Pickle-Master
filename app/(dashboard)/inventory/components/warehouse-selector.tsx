@@ -1,6 +1,6 @@
 'use client'
 
-import { MapPin, ChevronDown, Check } from 'lucide-react'
+import { Folder as FolderIcon, ChevronDown, Check } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { Folder } from '@/types/database.types'
 import {
@@ -24,7 +24,7 @@ export function WarehouseSelector({
   itemCounts,
 }: WarehouseSelectorProps) {
   const selectedWarehouse = warehouses.find(w => w.id === selectedWarehouseId)
-  const displayName = selectedWarehouse?.name || 'All Locations'
+  const displayName = selectedWarehouse?.name || 'All Folders'
   const displayColor = selectedWarehouse?.color || null
 
   return (
@@ -44,7 +44,7 @@ export function WarehouseSelector({
             'cursor-pointer'
           )}
         >
-          <MapPin
+          <FolderIcon
             className="h-4 w-4 flex-shrink-0"
             style={displayColor ? { color: displayColor } : { color: '#0EA5FF' }}
           />
@@ -58,7 +58,7 @@ export function WarehouseSelector({
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="start" className="w-[calc(100vw-2rem)] max-w-sm">
-        {/* All Locations option */}
+        {/* All Folders option */}
         <DropdownMenuItem
           onClick={() => onWarehouseChange(null)}
           className={cn(
@@ -72,7 +72,7 @@ export function WarehouseSelector({
               'font-medium',
               selectedWarehouseId === null ? 'text-primary' : 'text-neutral-700'
             )}>
-              All Locations
+              All Folders
             </span>
           </div>
           <div className="flex items-center gap-2">
@@ -126,10 +126,10 @@ export function WarehouseSelector({
         {/* Empty state */}
         {warehouses.length === 0 && (
           <div className="px-4 py-6 text-center">
-            <MapPin className="h-8 w-8 text-neutral-300 mx-auto mb-2" />
-            <p className="text-sm text-neutral-500">No locations yet</p>
+            <FolderIcon className="h-8 w-8 text-neutral-300 mx-auto mb-2" />
+            <p className="text-sm text-neutral-500">No folders yet</p>
             <p className="text-xs text-neutral-400 mt-1">
-              Create a folder to organize items by location
+              Create a folder to organize your items
             </p>
           </div>
         )}
