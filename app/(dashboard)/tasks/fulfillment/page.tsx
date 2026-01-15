@@ -1,15 +1,39 @@
 import Link from 'next/link'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ClipboardList, ArrowLeft } from 'lucide-react'
+import { ClipboardList, ArrowLeft, ShoppingCart, Truck, FileText } from 'lucide-react'
 
 const tasks = [
+  {
+    href: '/tasks/sales-orders',
+    title: 'Sales Orders',
+    description: 'Manage customer orders and track fulfillment progress',
+    icon: ShoppingCart,
+    color: 'text-blue-600',
+    bgColor: 'bg-blue-100',
+  },
   {
     href: '/tasks/pick-lists',
     title: 'Pick Lists',
     description: 'Create and manage picking lists for orders',
     icon: ClipboardList,
-    color: 'text-neutral-600',
-    bgColor: 'bg-neutral-100',
+    color: 'text-amber-600',
+    bgColor: 'bg-amber-100',
+  },
+  {
+    href: '/tasks/delivery-orders',
+    title: 'Delivery Orders',
+    description: 'Track shipments and confirm deliveries',
+    icon: Truck,
+    color: 'text-purple-600',
+    bgColor: 'bg-purple-100',
+  },
+  {
+    href: '/tasks/invoices',
+    title: 'Invoices',
+    description: 'Create invoices and track payments',
+    icon: FileText,
+    color: 'text-green-600',
+    bgColor: 'bg-green-100',
   },
 ]
 

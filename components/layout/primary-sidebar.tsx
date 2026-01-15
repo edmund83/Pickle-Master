@@ -23,6 +23,7 @@ import {
   ShoppingCart,
   Users,
   Truck,
+  Building2,
 } from 'lucide-react'
 import { NavSubmenu, SubmenuItem } from '@/components/layout/nav-submenu'
 import { useGlobalSearch } from '@/contexts/GlobalSearchContext'
@@ -47,7 +48,8 @@ const insightsItems: SubmenuItem[] = [
 
 // Partners - Suppliers & Collaborators
 const partnerItems: SubmenuItem[] = [
-  { name: 'Vendor', href: '/partners/vendors', icon: Truck },
+  { name: 'Vendors', href: '/partners/vendors', icon: Truck },
+  { name: 'Customers', href: '/partners/customers', icon: Building2 },
 ]
 
 // System (bottom)
