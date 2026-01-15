@@ -23,6 +23,7 @@ import {
   Menu,
   X,
   Receipt,
+  Percent,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { createClient } from '@/lib/supabase/client'
@@ -67,6 +68,7 @@ const settingsNavGroups: NavGroup[] = [
       { href: '/settings/custom-fields', label: 'Custom Fields', icon: Database },
       { href: '/settings/labels', label: 'Labels', icon: Tag },
       { href: '/settings/payment-terms', label: 'Payment Terms', icon: Receipt },
+      { href: '/settings/taxes', label: 'Tax Rates', icon: Percent },
     ],
   },
   {

@@ -127,6 +127,8 @@ export default function VendorsSettingsPage() {
             country: formData.country || null,
             payment_term_id: formData.payment_term_id || null,
             notes: formData.notes || null,
+            tax_id: formData.tax_id || null,
+            tax_id_label: formData.tax_id_label || null,
             updated_at: new Date().toISOString(),
           })
           .eq('id', editingVendor.id)
@@ -150,6 +152,8 @@ export default function VendorsSettingsPage() {
             country: formData.country || null,
             payment_term_id: formData.payment_term_id || null,
             notes: formData.notes || null,
+            tax_id: formData.tax_id || null,
+            tax_id_label: formData.tax_id_label || null,
           })
 
         if (insertError) throw insertError

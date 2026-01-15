@@ -28,6 +28,11 @@ interface CustomerFormData {
   payment_term_id: string
   credit_limit: number
   notes: string
+  // Tax fields
+  tax_id: string
+  tax_id_label: string
+  is_tax_exempt: boolean
+  default_tax_rate_id: string
 }
 
 const emptyFormData: CustomerFormData = {
@@ -52,11 +57,21 @@ const emptyFormData: CustomerFormData = {
   payment_term_id: '',
   credit_limit: 0,
   notes: '',
+  tax_id: '',
+  tax_id_label: '',
+  is_tax_exempt: false,
+  default_tax_rate_id: '',
 }
 
 interface PaymentTermOption {
   id: string
   name: string
+}
+
+interface TaxRateOption {
+  id: string
+  name: string
+  rate: number
 }
 
 interface CustomerFormDialogProps {
@@ -66,6 +81,7 @@ interface CustomerFormDialogProps {
   customer?: CustomerListItem | null
   saving?: boolean
   paymentTerms?: PaymentTermOption[]
+  taxRates?: TaxRateOption[]
 }
 
 export function CustomerFormDialog({
@@ -75,10 +91,11 @@ export function CustomerFormDialog({
   customer,
   saving = false,
   paymentTerms = [],
+  taxRates = [],
 }: CustomerFormDialogProps) {
   const [formData, setFormData] = useState<CustomerFormData>(emptyFormData)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'basic' | 'billing' | 'shipping'>('basic')
+  const [activeTab, setActiveTab] = useState<'basic' | 'billing' | 'shipping' | 'tax'>('basic')
 
   const isEdit = !!customer
 
@@ -110,6 +127,10 @@ export function CustomerFormDialog({
           payment_term_id: '',
           credit_limit: customer.credit_limit || 0,
           notes: '',
+          tax_id: '',
+          tax_id_label: '',
+          is_tax_exempt: false,
+          default_tax_rate_id: '',
         })
       } else {
         setFormData(emptyFormData)
@@ -231,6 +252,16 @@ export function CustomerFormDialog({
             onClick={() => setActiveTab('shipping')}
           >
             Shipping Address
+          </button>
+          <button
+            className={`px-4 py-2.5 text-sm font-medium border-b-2 -mb-px ${
+              activeTab === 'tax'
+                ? 'border-primary text-primary'
+                : 'border-transparent text-neutral-500 hover:text-neutral-700'
+            }`}
+            onClick={() => setActiveTab('tax')}
+          >
+            Tax
           </button>
         </div>
 
@@ -512,6 +543,83 @@ export function CustomerFormDialog({
                     placeholder="Malaysia"
                     disabled={formData.shipping_same_as_billing}
                   />
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* Tax Tab */}
+          {activeTab === 'tax' && (
+            <>
+              <div className="rounded-lg bg-blue-50 p-4 mb-4">
+                <p className="text-sm text-blue-700">
+                  Configure tax settings for this customer. Tax-exempt customers won&apos;t have tax applied to their orders.
+                </p>
+              </div>
+
+              {/* Tax ID and Label */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                    Tax ID / VAT Number
+                  </label>
+                  <Input
+                    value={formData.tax_id}
+                    onChange={(e) => setFormData(prev => ({ ...prev, tax_id: e.target.value }))}
+                    placeholder="e.g., GB123456789"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                    Tax ID Label
+                  </label>
+                  <Input
+                    value={formData.tax_id_label}
+                    onChange={(e) => setFormData(prev => ({ ...prev, tax_id_label: e.target.value }))}
+                    placeholder="e.g., VAT Number, GST Number"
+                  />
+                  <p className="mt-1 text-xs text-neutral-500">Label shown on invoices</p>
+                </div>
+              </div>
+
+              {/* Default Tax Rate */}
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                  Default Tax Rate
+                </label>
+                <select
+                  value={formData.default_tax_rate_id}
+                  onChange={(e) => setFormData(prev => ({ ...prev, default_tax_rate_id: e.target.value }))}
+                  className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary bg-white"
+                >
+                  <option value="">Use tenant default</option>
+                  {taxRates.map((rate) => (
+                    <option key={rate.id} value={rate.id}>
+                      {rate.name} ({rate.rate}%)
+                    </option>
+                  ))}
+                </select>
+                <p className="mt-1 text-xs text-neutral-500">
+                  Tax rate to apply by default on orders for this customer
+                </p>
+              </div>
+
+              {/* Tax Exempt Checkbox */}
+              <div className="flex items-start gap-3 pt-2">
+                <input
+                  type="checkbox"
+                  id="is_tax_exempt"
+                  checked={formData.is_tax_exempt}
+                  onChange={(e) => setFormData(prev => ({ ...prev, is_tax_exempt: e.target.checked }))}
+                  className="mt-1 h-4 w-4 rounded border-neutral-300 text-primary focus:ring-primary"
+                />
+                <div>
+                  <label htmlFor="is_tax_exempt" className="text-sm font-medium text-neutral-700">
+                    Tax Exempt Customer
+                  </label>
+                  <p className="text-xs text-neutral-500">
+                    No tax will be applied to orders for this customer
+                  </p>
                 </div>
               </div>
             </>

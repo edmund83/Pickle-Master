@@ -16,6 +16,9 @@ interface VendorFormData {
   country: string
   payment_term_id: string
   notes: string
+  // Tax fields
+  tax_id: string
+  tax_id_label: string
 }
 
 const emptyFormData: VendorFormData = {
@@ -28,6 +31,8 @@ const emptyFormData: VendorFormData = {
   country: '',
   payment_term_id: '',
   notes: '',
+  tax_id: '',
+  tax_id_label: '',
 }
 
 interface PaymentTermOption {
@@ -71,6 +76,8 @@ export function VendorFormDialog({
           country: vendor.country || '',
           payment_term_id: vendor.payment_term_id || '',
           notes: vendor.notes || '',
+          tax_id: vendor.tax_id || '',
+          tax_id_label: vendor.tax_id_label || '',
         })
       } else {
         setFormData(emptyFormData)
@@ -255,6 +262,30 @@ export function VendorFormDialog({
                 </option>
               ))}
             </select>
+          </div>
+
+          {/* Tax Information */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                Tax ID / VAT Number
+              </label>
+              <Input
+                value={formData.tax_id}
+                onChange={(e) => setFormData(prev => ({ ...prev, tax_id: e.target.value }))}
+                placeholder="e.g., GB123456789"
+              />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                Tax ID Label
+              </label>
+              <Input
+                value={formData.tax_id_label}
+                onChange={(e) => setFormData(prev => ({ ...prev, tax_id_label: e.target.value }))}
+                placeholder="e.g., VAT Number"
+              />
+            </div>
           </div>
 
           {/* Notes */}
