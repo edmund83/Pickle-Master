@@ -5,6 +5,7 @@ import { useSyncStore } from '@/lib/stores/sync-store'
 import { useOnlineStatus } from './useOnlineStatus'
 import { syncItemCache, isCacheStale, getCacheStats } from '@/lib/offline/item-cache'
 import { isIndexedDBAvailable } from '@/lib/offline/db'
+import { useAuth } from '@/lib/stores/auth-store'
 
 interface UseItemCacheSyncOptions {
   // Automatically sync cache on mount if stale
@@ -29,11 +30,26 @@ export function useItemCacheSync(options: UseItemCacheSyncOptions = {}) {
 
   const isOnline = useOnlineStatus()
   const { setCacheReady } = useSyncStore()
+  const { tenantId, userId, fetchAuthIfNeeded } = useAuth()
   const syncInProgressRef = useRef(false)
   const lastSyncRef = useRef<Date | null>(null)
 
+  const resolveScope = useCallback(async () => {
+    if (tenantId) {
+      return { tenantId, userId }
+    }
+    const auth = await fetchAuthIfNeeded()
+    if (!auth?.tenantId) return null
+    return { tenantId: auth.tenantId, userId: auth.userId }
+  }, [tenantId, userId, fetchAuthIfNeeded])
+
   // Perform cache sync
   const sync = useCallback(async () => {
+    const scope = await resolveScope()
+    if (!scope) {
+      return { success: false, reason: 'no_tenant' }
+    }
+
     // Skip if not online or sync already in progress
     if (!isOnline || syncInProgressRef.current) {
       return { success: false, reason: !isOnline ? 'offline' : 'in_progress' }
@@ -48,7 +64,7 @@ export function useItemCacheSync(options: UseItemCacheSyncOptions = {}) {
     syncInProgressRef.current = true
 
     try {
-      const result = await syncItemCache()
+      const result = await syncItemCache(scope)
       lastSyncRef.current = new Date()
 
       if (result.error) {
@@ -71,18 +87,23 @@ export function useItemCacheSync(options: UseItemCacheSyncOptions = {}) {
     } finally {
       syncInProgressRef.current = false
     }
-  }, [isOnline, setCacheReady])
+  }, [isOnline, resolveScope, setCacheReady])
 
   // Check if sync is needed and perform it
   const syncIfNeeded = useCallback(async () => {
-    const stale = await isCacheStale()
+    const scope = await resolveScope()
+    if (!scope) {
+      return { success: false, reason: 'no_tenant' }
+    }
+
+    const stale = await isCacheStale(scope)
     if (stale) {
       return sync()
     }
     // Cache is fresh, mark as ready
     setCacheReady(true)
     return { success: true, reason: 'cache_fresh' }
-  }, [sync, setCacheReady])
+  }, [resolveScope, sync, setCacheReady])
 
   // Initial sync on mount
   useEffect(() => {
@@ -121,10 +142,18 @@ export function useItemCacheSync(options: UseItemCacheSyncOptions = {}) {
     }
   }, [isOnline, sync])
 
+  const getScopedCacheStats = useCallback(async () => {
+    const scope = await resolveScope()
+    if (!scope) {
+      return { itemCount: 0, lastSync: null, isStale: true }
+    }
+    return getCacheStats(scope)
+  }, [resolveScope])
+
   return {
     sync,
     syncIfNeeded,
-    getCacheStats,
+    getCacheStats: getScopedCacheStats,
   }
 }
 

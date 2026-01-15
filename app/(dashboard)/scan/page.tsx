@@ -22,6 +22,7 @@ import {
 } from '@/lib/offline/db'
 import type { ScanResult } from '@/lib/scanner/useBarcodeScanner'
 import { useHardwareScanner } from '@/lib/scanner/useHardwareScanner'
+import { useAuth } from '@/lib/stores/auth-store'
 
 type ScanMode = 'single' | 'quick-adjust' | 'batch'
 type ViewState = 'scanning' | 'result' | 'adjust' | 'batch-list'
@@ -49,8 +50,18 @@ export default function ScanPage() {
     lookupItemOffline,
     queueQuantityAdjustment,
   } = useOfflineSync()
+  const { tenantId, userId, fetchAuthIfNeeded } = useAuth()
 
   const supabase = createClient()
+
+  const resolveScope = useCallback(async () => {
+    if (tenantId) {
+      return { tenantId, userId }
+    }
+    const auth = await fetchAuthIfNeeded()
+    if (!auth?.tenantId) return null
+    return { tenantId: auth.tenantId, userId: auth.userId }
+  }, [tenantId, userId, fetchAuthIfNeeded])
 
   // Hardware scanner for desktop mode
   // Note: The hook is always active but we only render the UI on desktop
@@ -67,7 +78,10 @@ export default function ScanPage() {
   useEffect(() => {
     const restoreSession = async () => {
       try {
-        const activeSession = await getActiveSession()
+        const scope = await resolveScope()
+        if (!scope) return
+
+        const activeSession = await getActiveSession(scope)
         if (activeSession && activeSession.mode === 'batch') {
           setSessionId(activeSession.id)
           // Convert stored items back to BatchScanItem format
@@ -101,7 +115,7 @@ export default function ScanPage() {
       }
     }
     restoreSession()
-  }, [])
+  }, [resolveScope])
 
   // Persist batch items to IndexedDB when they change
   useEffect(() => {
@@ -109,9 +123,12 @@ export default function ScanPage() {
       if (mode !== 'batch') return
 
       try {
+        const scope = await resolveScope()
+        if (!scope) return
+
         if (batchItems.length === 0 && sessionId) {
           // Clear session if no items
-          await deleteScanSession(sessionId)
+          await deleteScanSession(scope, sessionId)
           setSessionId(null)
           return
         }
@@ -128,9 +145,9 @@ export default function ScanPage() {
           }))
 
           if (sessionId) {
-            await updateScanSession(sessionId, { items: sessionItems })
+            await updateScanSession(scope, sessionId, { items: sessionItems })
           } else {
-            const newId = await createScanSession({
+            const newId = await createScanSession(scope, {
               name: 'Batch Scan',
               mode: 'batch',
               items: sessionItems,
@@ -144,7 +161,7 @@ export default function ScanPage() {
     }
 
     persistSession()
-  }, [batchItems, mode, sessionId])
+  }, [batchItems, mode, sessionId, resolveScope])
 
   // Look up item by barcode or SKU - uses offline cache first
   const lookupItem = useCallback(
@@ -162,6 +179,7 @@ export default function ScanPage() {
           unit_cost: offlineItem.price,
           photo_url: offlineItem.image_url,
           folder_name: offlineItem.folder_name,
+          updated_at: offlineItem.updated_at,
         }
       }
 
@@ -181,6 +199,7 @@ export default function ScanPage() {
             price,
             image_urls,
             folder_id,
+            updated_at,
             folders (name)
           `
           )
@@ -204,6 +223,7 @@ export default function ScanPage() {
           unit_cost: item.price,
           photo_url: item.image_urls?.[0] || null,
           folder_name: item.folders?.name || null,
+          updated_at: item.updated_at || null,
         }
       }
 
@@ -269,6 +289,7 @@ export default function ScanPage() {
           new_quantity: newQuantity,
           adjustment,
           reason: 'Quick adjust via scanner',
+          last_known_updated_at: scannedItem.updated_at ?? null,
         })
 
         // Update local state immediately
@@ -298,6 +319,9 @@ export default function ScanPage() {
   const handleSaveBatch = useCallback(async () => {
     setIsSaving(true)
     try {
+      const scope = await resolveScope()
+      if (!scope) return
+
       // Save all verified items with different quantities
       const updates = batchItems
         .filter((bi) => bi.item && bi.verified && bi.actualQuantity !== undefined)
@@ -311,13 +335,14 @@ export default function ScanPage() {
           new_quantity: item.actualQuantity!,
           adjustment: item.actualQuantity! - item.item!.quantity,
           reason: 'Batch count adjustment',
+          last_known_updated_at: item.item!.updated_at ?? null,
         })
       }
 
       // Clear batch list and session after saving
       setBatchItems([])
       if (sessionId) {
-        await deleteScanSession(sessionId)
+        await deleteScanSession(scope, sessionId)
         setSessionId(null)
       }
       setViewState('scanning')
@@ -326,15 +351,18 @@ export default function ScanPage() {
     } finally {
       setIsSaving(false)
     }
-  }, [batchItems, sessionId, queueQuantityAdjustment])
+  }, [batchItems, sessionId, queueQuantityAdjustment, resolveScope])
 
   const handleClearBatch = useCallback(async () => {
+    const scope = await resolveScope()
+    if (!scope) return
+
     setBatchItems([])
     if (sessionId) {
-      await deleteScanSession(sessionId)
+      await deleteScanSession(scope, sessionId)
       setSessionId(null)
     }
-  }, [sessionId])
+  }, [sessionId, resolveScope])
 
   // Navigation handlers
   const handleBack = () => {

@@ -15,9 +15,12 @@ import {
   lookupItemBySku,
   lookupItemById,
   setLastSuccessfulSync,
+  requeueSyncingChanges,
+  resetFailedChanges,
 } from '@/lib/offline/db'
 import type { PendingChange, QuantityAdjustPayload } from '@/lib/offline/types'
 import { createClient } from '@/lib/supabase/client'
+import { useAuth } from '@/lib/stores/auth-store'
 
 interface UseOfflineSyncOptions {
   // Auto-sync when coming online
@@ -52,25 +55,53 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}) {
     setLastSync,
     setSyncError,
   } = useSyncStore()
+  const { tenantId, userId, fetchAuthIfNeeded } = useAuth()
 
   const syncInProgressRef = useRef(false)
   const supabaseRef = useRef(createClient())
 
+  const resolveScope = useCallback(async () => {
+    if (tenantId) {
+      return { tenantId, userId }
+    }
+    const auth = await fetchAuthIfNeeded()
+    if (!auth?.tenantId) return null
+    return { tenantId: auth.tenantId, userId: auth.userId }
+  }, [tenantId, userId, fetchAuthIfNeeded])
+
   // Update pending count from IndexedDB on mount
   useEffect(() => {
     const updateCount = async () => {
-      const count = await getPendingChangeCount()
+      const scope = await resolveScope()
+      if (!scope) {
+        setPendingCount(0)
+        return
+      }
+      const count = await getPendingChangeCount(scope)
       setPendingCount(count)
     }
     updateCount()
-  }, [setPendingCount])
+  }, [resolveScope, setPendingCount])
+
+  useEffect(() => {
+    const recoverSyncing = async () => {
+      const scope = await resolveScope()
+      if (!scope) return
+      await requeueSyncingChanges(scope)
+    }
+    recoverSyncing()
+  }, [resolveScope])
 
   /**
    * Queue a change for sync
    */
   const queueChange = useCallback(
     async (change: Omit<PendingChange, 'id' | 'created_at' | 'retry_count' | 'status'>) => {
-      await dbQueueChange(change)
+      const scope = await resolveScope()
+      if (!scope) {
+        throw new Error('Offline sync unavailable: no tenant context')
+      }
+      await dbQueueChange(scope, change)
       incrementPending()
 
       // If online, trigger immediate sync
@@ -81,7 +112,7 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}) {
         }, 500)
       }
     },
-    [isOnline, isSyncing, incrementPending]
+    [resolveScope, isOnline, isSyncing, incrementPending]
   )
 
   /**
@@ -89,8 +120,13 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}) {
    */
   const queueQuantityAdjustment = useCallback(
     async (payload: QuantityAdjustPayload) => {
+      const scope = await resolveScope()
+      if (!scope) {
+        throw new Error('Offline sync unavailable: no tenant context')
+      }
+
       // Update local cache immediately
-      await updateCachedItemQuantity(payload.item_id, payload.new_quantity)
+      await updateCachedItemQuantity(scope, payload.item_id, payload.new_quantity)
 
       // Queue for sync
       await queueChange({
@@ -100,7 +136,7 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}) {
         payload,
       })
     },
-    [queueChange]
+    [resolveScope, queueChange]
   )
 
   /**
@@ -108,6 +144,10 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}) {
    */
   const syncChange = useCallback(
     async (change: PendingChange): Promise<void> => {
+      const scope = await resolveScope()
+      if (!scope) {
+        throw new Error('Offline sync unavailable: no tenant context')
+      }
       const supabase = supabaseRef.current
 
       switch (change.type) {
@@ -116,21 +156,42 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}) {
 
           // Update the item quantity
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const { error: updateError } = await (supabase as any)
+          const updatedAt = new Date().toISOString()
+          let updateQuery = (supabase as any)
             .from('inventory_items')
             .update({
               quantity: payload.new_quantity,
-              updated_at: new Date().toISOString(),
+              updated_at: updatedAt,
             })
             .eq('id', payload.item_id)
+            .eq('tenant_id', scope.tenantId)
+
+          if (payload.last_known_updated_at) {
+            updateQuery = updateQuery.eq('updated_at', payload.last_known_updated_at)
+          }
+
+          const { data: updatedRows, error: updateError } = await updateQuery.select('id')
 
           if (updateError) {
             throw new Error(updateError.message)
           }
 
+          if (!updatedRows || updatedRows.length === 0) {
+            throw new Error('Conflict detected: item was updated elsewhere')
+          }
+
+          await updateCachedItemQuantity(
+            scope,
+            payload.item_id,
+            payload.new_quantity,
+            updatedAt
+          )
+
           // Log activity
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          await (supabase as any).from('activity_logs').insert({
+          const { error: activityError } = await (supabase as any).from('activity_logs').insert({
+            tenant_id: scope.tenantId,
+            user_id: scope.userId ?? null,
             entity_type: 'item',
             entity_id: payload.item_id,
             action_type: 'quantity_adjusted',
@@ -142,6 +203,9 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}) {
               reason: payload.reason || 'Synced from offline',
             },
           })
+          if (activityError) {
+            console.warn('Activity log insert failed:', activityError)
+          }
           break
         }
 
@@ -155,7 +219,7 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}) {
           console.warn('Unknown change type:', change.type)
       }
     },
-    []
+    [resolveScope]
   )
 
   /**
@@ -167,12 +231,18 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}) {
       return
     }
 
+    const scope = await resolveScope()
+    if (!scope) {
+      return
+    }
+
     syncInProgressRef.current = true
     setSyncing(true)
     setSyncError(null)
 
     try {
-      const pending = await getPendingChanges()
+      await requeueSyncingChanges(scope)
+      const pending = await getPendingChanges(scope)
 
       if (pending.length === 0) {
         syncInProgressRef.current = false
@@ -185,15 +255,15 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}) {
 
       for (const change of pending) {
         try {
-          await markChangeSyncing(change.id)
+          await markChangeSyncing(scope, change.id)
           await syncChange(change)
-          await markChangeCompleted(change.id)
+          await markChangeCompleted(scope, change.id)
           decrementPending()
           successCount++
         } catch (error) {
           const errorMessage =
             error instanceof Error ? error.message : 'Unknown error'
-          await markChangeFailed(change.id, errorMessage)
+          await markChangeFailed(scope, change.id, errorMessage)
           failCount++
         }
       }
@@ -204,7 +274,7 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}) {
 
       if (successCount > 0) {
         setLastSync(new Date())
-        await setLastSuccessfulSync(new Date())
+        await setLastSuccessfulSync(scope, new Date())
       }
     } catch (error) {
       const errorMessage =
@@ -214,39 +284,47 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}) {
       syncInProgressRef.current = false
       setSyncing(false)
     }
-  }, [isOnline, setSyncing, setSyncError, decrementPending, setLastSync, syncChange])
+  }, [isOnline, resolveScope, setSyncing, setSyncError, decrementPending, setLastSync, syncChange])
 
   /**
    * Retry all failed changes
    */
   const retryFailed = useCallback(async () => {
-    // Reset failed changes to pending, then process
-    // This is done via the processQueue which will pick them up
+    const scope = await resolveScope()
+    if (!scope) return
+    await resetFailedChanges(scope)
     await processQueue()
-  }, [processQueue])
+  }, [resolveScope, processQueue])
 
   /**
    * Look up an item offline by barcode or SKU
    */
   const lookupItemOffline = useCallback(
     async (code: string) => {
+      const scope = await resolveScope()
+      if (!scope) return undefined
       // Try barcode first
-      let item = await lookupItemByBarcode(code)
+      let item = await lookupItemByBarcode(scope, code)
       if (item) return item
 
       // Try SKU
-      item = await lookupItemBySku(code)
+      item = await lookupItemBySku(scope, code)
       return item
     },
-    []
+    [resolveScope]
   )
 
   /**
    * Look up an item offline by ID
    */
-  const lookupItemByIdOffline = useCallback(async (id: string) => {
-    return lookupItemById(id)
-  }, [])
+  const lookupItemByIdOffline = useCallback(
+    async (id: string) => {
+      const scope = await resolveScope()
+      if (!scope) return undefined
+      return lookupItemById(scope, id)
+    },
+    [resolveScope]
+  )
 
   // Auto-sync when coming online
   useOnlineEvent(

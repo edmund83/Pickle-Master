@@ -7,6 +7,7 @@ import { queueChange, getPendingChanges, markChangeCompleted, markChangeFailed }
 import { recordCount as recordCountAction } from '@/app/actions/stock-counts'
 import type { StockCountItemWithDetails } from '@/app/actions/stock-counts'
 import type { OfflineStockCountItem, StockCountRecordPayload } from '@/lib/offline/types'
+import { useAuth } from '@/lib/stores/auth-store'
 
 interface UseStockCountOfflineOptions {
   stockCountId: string
@@ -20,10 +21,12 @@ interface UseStockCountOfflineOptions {
  * Transform server items to offline items
  */
 function transformToOfflineItems(
+  tenantId: string,
   stockCountId: string,
   items: StockCountItemWithDetails[]
 ): OfflineStockCountItem[] {
   return items.map((item) => ({
+    tenant_id: tenantId,
     id: item.id,
     stock_count_id: stockCountId,
     item_id: item.item_id,
@@ -60,6 +63,16 @@ export function useStockCountOffline({
   const [syncError, setSyncError] = useState<string | null>(null)
   const syncTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const lastSyncAttemptRef = useRef<number>(0)
+  const { tenantId, userId, fetchAuthIfNeeded } = useAuth()
+
+  const resolveScope = useCallback(async () => {
+    if (tenantId) {
+      return { tenantId, userId }
+    }
+    const auth = await fetchAuthIfNeeded()
+    if (!auth?.tenantId) return null
+    return { tenantId: auth.tenantId, userId: auth.userId }
+  }, [tenantId, userId, fetchAuthIfNeeded])
 
   // Sync store for online status
   const { isOnline, incrementPending, decrementPending, setPendingCount } = useSyncStore()
@@ -82,14 +95,23 @@ export function useStockCountOffline({
   // Progress stats
   const progress = useStockCountProgress()
 
+  useEffect(() => {
+    if (!tenantId) return
+    if (activeSession && activeSession.tenant_id !== tenantId) {
+      reset()
+    }
+  }, [tenantId, activeSession, reset])
+
   /**
    * Initialize the store with server data
    */
   const initialize = useCallback(() => {
+    if (!tenantId) return
+
     // Check if we already have this session loaded
     if (activeSession?.stock_count_id === stockCountId) {
       // Merge server state with local state
-      const offlineItems = transformToOfflineItems(stockCountId, serverItems)
+      const offlineItems = transformToOfflineItems(tenantId, stockCountId, serverItems)
       const mergedItems = offlineItems.map((serverItem) => {
         const localItem = items.find((i) => i.id === serverItem.id)
         // If we have a local unsynced change, prefer local state
@@ -106,21 +128,28 @@ export function useStockCountOffline({
         stock_count_id: stockCountId,
         display_id: displayId,
         name,
+        tenant_id: tenantId,
+        user_id: userId ?? null,
         items: [],
         created_at: new Date(),
         updated_at: new Date(),
       })
-      setItems(transformToOfflineItems(stockCountId, serverItems))
+      setItems(transformToOfflineItems(tenantId, stockCountId, serverItems))
     }
 
     setIsLoading(false)
-  }, [stockCountId, displayId, name, serverItems, activeSession, items, setActiveSession, setItems])
+  }, [tenantId, userId, stockCountId, displayId, name, serverItems, activeSession, items, setActiveSession, setItems])
 
   /**
    * Record a count (works offline)
    */
   const recordCountOffline = useCallback(
     async (itemId: string, quantity: number): Promise<{ success: boolean; error?: string }> => {
+      const scope = await resolveScope()
+      if (!scope) {
+        return { success: false, error: 'No tenant context available' }
+      }
+
       const item = items.find((i) => i.id === itemId)
       if (!item) {
         return { success: false, error: 'Item not found' }
@@ -140,7 +169,7 @@ export function useStockCountOffline({
             return { success: true }
           } else {
             // Failed - queue for retry
-            await queueChange({
+            await queueChange(scope, {
               type: 'stock_count_record',
               entity_type: 'stock_count_item',
               entity_id: itemId,
@@ -160,7 +189,7 @@ export function useStockCountOffline({
         } catch (error) {
           console.error('Error syncing count:', error)
           // Queue for offline sync
-          await queueChange({
+          await queueChange(scope, {
             type: 'stock_count_record',
             entity_type: 'stock_count_item',
             entity_id: itemId,
@@ -179,7 +208,7 @@ export function useStockCountOffline({
         }
       } else {
         // Offline - queue for later sync
-        await queueChange({
+        await queueChange(scope, {
           type: 'stock_count_record',
           entity_type: 'stock_count_item',
           entity_id: itemId,
@@ -197,7 +226,7 @@ export function useStockCountOffline({
         return { success: true }
       }
     },
-    [items, stockCountId, isOnline, storeRecordCount, incrementPending, decrementPending, markCountSynced]
+    [resolveScope, items, stockCountId, isOnline, storeRecordCount, incrementPending, decrementPending, markCountSynced]
   )
 
   /**
@@ -205,6 +234,9 @@ export function useStockCountOffline({
    */
   const syncPendingChanges = useCallback(async () => {
     if (!isOnline || isSyncing) return
+
+    const scope = await resolveScope()
+    if (!scope) return
 
     // Rate limit sync attempts
     const now = Date.now()
@@ -215,7 +247,7 @@ export function useStockCountOffline({
     setSyncError(null)
 
     try {
-      const pendingChanges = await getPendingChanges()
+      const pendingChanges = await getPendingChanges(scope)
       const stockCountChanges = pendingChanges.filter(
         (c) => c.type === 'stock_count_record' && c.entity_type === 'stock_count_item'
       )
@@ -229,15 +261,16 @@ export function useStockCountOffline({
           )
 
           if (result.success) {
-            await markChangeCompleted(change.id)
+            await markChangeCompleted(scope, change.id)
             markCountSynced(payload.stock_count_item_id)
             decrementPending()
           } else {
-            await markChangeFailed(change.id, result.error || 'Unknown error')
+            await markChangeFailed(scope, change.id, result.error || 'Unknown error')
           }
         } catch (error) {
           console.error('Error syncing change:', error)
           await markChangeFailed(
+            scope,
             change.id,
             error instanceof Error ? error.message : 'Unknown error'
           )
@@ -245,7 +278,7 @@ export function useStockCountOffline({
       }
 
       // Update pending count
-      const remaining = await getPendingChanges()
+      const remaining = await getPendingChanges(scope)
       setPendingCount(remaining.filter((c) => c.type === 'stock_count_record').length)
 
       // Clear synced pending counts from local store
@@ -261,6 +294,7 @@ export function useStockCountOffline({
   }, [
     isOnline,
     isSyncing,
+    resolveScope,
     decrementPending,
     markCountSynced,
     clearPendingCounts,
@@ -272,8 +306,9 @@ export function useStockCountOffline({
    * Force refresh from server
    */
   const refreshFromServer = useCallback(() => {
-    setItems(transformToOfflineItems(stockCountId, serverItems))
-  }, [stockCountId, serverItems, setItems])
+    if (!tenantId) return
+    setItems(transformToOfflineItems(tenantId, stockCountId, serverItems))
+  }, [tenantId, stockCountId, serverItems, setItems])
 
   // Initialize on mount
   useEffect(() => {
