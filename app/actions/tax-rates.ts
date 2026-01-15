@@ -186,10 +186,20 @@ export async function getDefaultTaxRate(): Promise<TaxRate | null> {
 // Create a new tax rate (admin only)
 export async function createTaxRate(input: CreateTaxRateInput): Promise<TaxRateResult> {
     try {
-        const { tenantId, userId } = await getAuthContext()
-        await requireAdminPermission()
+        const authResult = await getAuthContext()
+        if (!authResult.success) {
+            return { success: false, error: authResult.error }
+        }
+        const { context } = authResult
+        const adminCheck = requireAdminPermission(context)
+        if (!adminCheck.success) {
+            return { success: false, error: adminCheck.error }
+        }
 
         const validated = validateInput(createTaxRateSchema, input)
+        if (!validated.success) {
+            return { success: false, error: validated.error }
+        }
 
         const supabase = await createClient()
 
@@ -198,8 +208,8 @@ export async function createTaxRate(input: CreateTaxRateInput): Promise<TaxRateR
         const { data: existing } = await (supabase as any)
             .from('tax_rates')
             .select('id')
-            .eq('tenant_id', tenantId)
-            .eq('name', validated.name)
+            .eq('tenant_id', context.tenantId)
+            .eq('name', validated.data.name)
             .single()
 
         if (existing) {
@@ -211,18 +221,18 @@ export async function createTaxRate(input: CreateTaxRateInput): Promise<TaxRateR
         const { data, error } = await (supabase as any)
             .from('tax_rates')
             .insert({
-                tenant_id: tenantId,
-                name: validated.name,
-                code: validated.code || null,
-                description: validated.description || null,
-                tax_type: validated.tax_type || 'sales_tax',
-                rate: validated.rate,
-                country_code: validated.country_code || null,
-                region_code: validated.region_code || null,
-                is_default: validated.is_default || false,
-                applies_to_shipping: validated.applies_to_shipping || false,
-                is_compound: validated.is_compound || false,
-                is_active: validated.is_active !== false,
+                tenant_id: context.tenantId,
+                name: validated.data.name,
+                code: validated.data.code || null,
+                description: validated.data.description || null,
+                tax_type: validated.data.tax_type || 'sales_tax',
+                rate: validated.data.rate,
+                country_code: validated.data.country_code || null,
+                region_code: validated.data.region_code || null,
+                is_default: validated.data.is_default || false,
+                applies_to_shipping: validated.data.applies_to_shipping || false,
+                is_compound: validated.data.is_compound || false,
+                is_active: validated.data.is_active !== false,
             })
             .select('id')
             .single()
@@ -249,24 +259,37 @@ export async function updateTaxRate(
     input: UpdateTaxRateInput
 ): Promise<TaxRateResult> {
     try {
-        const { tenantId } = await getAuthContext()
-        await requireAdminPermission()
+        const authResult = await getAuthContext()
+        if (!authResult.success) {
+            return { success: false, error: authResult.error }
+        }
+        const { context } = authResult
+        const adminCheck = requireAdminPermission(context)
+        if (!adminCheck.success) {
+            return { success: false, error: adminCheck.error }
+        }
 
         const validated = validateInput(updateTaxRateSchema, input)
+        if (!validated.success) {
+            return { success: false, error: validated.error }
+        }
 
         const supabase = await createClient()
 
         // Verify ownership
-        await verifyTenantOwnership(supabase, 'tax_rates', taxRateId, tenantId)
+        const ownershipCheck = await verifyTenantOwnership('tax_rates', taxRateId, context.tenantId)
+        if (!ownershipCheck.success) {
+            return { success: false, error: ownershipCheck.error }
+        }
 
         // Check for duplicate name if name is being changed
-        if (validated.name) {
+        if (validated.data.name) {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             const { data: existing } = await (supabase as any)
                 .from('tax_rates')
                 .select('id')
-                .eq('tenant_id', tenantId)
-                .eq('name', validated.name)
+                .eq('tenant_id', context.tenantId)
+                .eq('name', validated.data.name)
                 .neq('id', taxRateId)
                 .single()
 
@@ -280,7 +303,7 @@ export async function updateTaxRate(
         const { error } = await (supabase as any)
             .from('tax_rates')
             .update({
-                ...validated,
+                ...validated.data,
                 updated_at: new Date().toISOString(),
             })
             .eq('id', taxRateId)
@@ -304,13 +327,23 @@ export async function updateTaxRate(
 // Delete a tax rate (admin only)
 export async function deleteTaxRate(taxRateId: string): Promise<TaxRateResult> {
     try {
-        const { tenantId } = await getAuthContext()
-        await requireAdminPermission()
+        const authResult = await getAuthContext()
+        if (!authResult.success) {
+            return { success: false, error: authResult.error }
+        }
+        const { context } = authResult
+        const adminCheck = requireAdminPermission(context)
+        if (!adminCheck.success) {
+            return { success: false, error: adminCheck.error }
+        }
 
         const supabase = await createClient()
 
         // Verify ownership
-        await verifyTenantOwnership(supabase, 'tax_rates', taxRateId, tenantId)
+        const ownershipCheck = await verifyTenantOwnership('tax_rates', taxRateId, context.tenantId)
+        if (!ownershipCheck.success) {
+            return { success: false, error: ownershipCheck.error }
+        }
 
         // Check if tax rate is in use
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -361,13 +394,23 @@ export async function deleteTaxRate(taxRateId: string): Promise<TaxRateResult> {
 // Set a tax rate as the default (admin only)
 export async function setDefaultTaxRate(taxRateId: string): Promise<TaxRateResult> {
     try {
-        const { tenantId } = await getAuthContext()
-        await requireAdminPermission()
+        const authResult = await getAuthContext()
+        if (!authResult.success) {
+            return { success: false, error: authResult.error }
+        }
+        const { context } = authResult
+        const adminCheck = requireAdminPermission(context)
+        if (!adminCheck.success) {
+            return { success: false, error: adminCheck.error }
+        }
 
         const supabase = await createClient()
 
         // Verify ownership
-        await verifyTenantOwnership(supabase, 'tax_rates', taxRateId, tenantId)
+        const ownershipCheck = await verifyTenantOwnership('tax_rates', taxRateId, context.tenantId)
+        if (!ownershipCheck.success) {
+            return { success: false, error: ownershipCheck.error }
+        }
 
         // The database trigger will handle unsetting other defaults
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -393,8 +436,15 @@ export async function setDefaultTaxRate(taxRateId: string): Promise<TaxRateResul
 // Toggle tax rate active status (admin only)
 export async function toggleTaxRateActive(taxRateId: string): Promise<TaxRateResult> {
     try {
-        const { tenantId } = await getAuthContext()
-        await requireAdminPermission()
+        const authResult = await getAuthContext()
+        if (!authResult.success) {
+            return { success: false, error: authResult.error }
+        }
+        const { context } = authResult
+        const adminCheck = requireAdminPermission(context)
+        if (!adminCheck.success) {
+            return { success: false, error: adminCheck.error }
+        }
 
         const supabase = await createClient()
 
@@ -410,7 +460,7 @@ export async function toggleTaxRateActive(taxRateId: string): Promise<TaxRateRes
             return { success: false, error: 'Tax rate not found' }
         }
 
-        if (taxRate.tenant_id !== tenantId) {
+        if (taxRate.tenant_id !== context.tenantId) {
             return { success: false, error: 'Access denied' }
         }
 

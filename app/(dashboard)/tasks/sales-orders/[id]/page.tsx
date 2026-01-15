@@ -114,6 +114,7 @@ export interface SalesOrderWithDetails {
     discount_percent: number
     discount_amount: number
     tax_rate: number
+    tax_amount: number | null
     line_total: number
     notes: string | null
     inventory_item: {
@@ -124,6 +125,13 @@ export interface SalesOrderWithDetails {
       unit: string | null
       image_urls: string[] | null
     } | null
+    line_item_taxes: Array<{
+      id: string
+      tax_rate_id: string | null
+      tax_name: string
+      tax_rate: number
+      tax_amount: number
+    }>
   }>
 }
 
@@ -143,7 +151,8 @@ async function getSalesOrderWithDetails(id: string): Promise<(SalesOrderWithDeta
       pick_lists(id, display_id, status),
       sales_order_items(
         *,
-        inventory_items(id, name, sku, quantity, unit, image_urls)
+        inventory_items(id, name, sku, quantity, unit, image_urls),
+        line_item_taxes(id, tax_rate_id, tax_name, tax_rate, tax_amount)
       ),
       created_by_profile:profiles!sales_orders_created_by_fkey(full_name),
       assigned_to_profile:profiles!sales_orders_assigned_to_fkey(full_name)
@@ -165,7 +174,8 @@ async function getSalesOrderWithDetails(id: string): Promise<(SalesOrderWithDeta
     pick_list: data.pick_lists || null,
     items: (data.sales_order_items || []).map((item: Record<string, unknown>) => ({
       ...item,
-      inventory_item: item.inventory_items || null
+      inventory_item: item.inventory_items || null,
+      line_item_taxes: item.line_item_taxes || []
     })),
     created_by_name: data.created_by_profile?.full_name || null,
     assigned_to_name: data.assigned_to_profile?.full_name || null

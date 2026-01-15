@@ -1021,3 +1021,106 @@ export async function getPaginatedInvoices(
         totalPages
     }
 }
+
+// Set tax rate for an invoice item
+export async function setInvoiceItemTax(
+    itemId: string,
+    taxRateId: string | null
+): Promise<InvoiceResult> {
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
+
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    const supabase = await createClient()
+
+    // Get item and verify parent invoice belongs to tenant
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: invItem, error: fetchError } = await (supabase as any)
+        .from('invoice_items')
+        .select('invoice_id, line_total, invoices!inner(tenant_id, status)')
+        .eq('id', itemId)
+        .single()
+
+    if (fetchError || !invItem) {
+        return { success: false, error: 'Invoice item not found' }
+    }
+
+    if (invItem.invoices?.tenant_id !== context.tenantId) {
+        return { success: false, error: 'Unauthorized: Access denied' }
+    }
+
+    if (!['draft', 'pending'].includes(invItem.invoices?.status)) {
+        return { success: false, error: 'Cannot update items after invoice is sent' }
+    }
+
+    // If taxRateId is null, remove all taxes for this item
+    if (!taxRateId) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { error: deleteError } = await (supabase as any)
+            .from('line_item_taxes')
+            .delete()
+            .eq('invoice_item_id', itemId)
+
+        if (deleteError) {
+            console.error('Delete line item taxes error:', deleteError)
+            return { success: false, error: deleteError.message }
+        }
+
+        // Also clear the legacy tax_rate field
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        await (supabase as any)
+            .from('invoice_items')
+            .update({ tax_rate: null, tax_amount: null })
+            .eq('id', itemId)
+
+        revalidatePath(`/tasks/invoices/${invItem.invoice_id}`)
+        return { success: true }
+    }
+
+    // Verify tax rate belongs to tenant
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { data: taxRate, error: taxError } = await (supabase as any)
+        .from('tax_rates')
+        .select('id, name, code, tax_type, rate, is_compound, tenant_id')
+        .eq('id', taxRateId)
+        .single()
+
+    if (taxError || !taxRate) {
+        return { success: false, error: 'Tax rate not found' }
+    }
+
+    if (taxRate.tenant_id !== context.tenantId) {
+        return { success: false, error: 'Unauthorized: Access denied to tax rate' }
+    }
+
+    // Call the recalculate function with a single tax rate
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const { error: rpcError } = await (supabase as any)
+        .rpc('recalculate_line_item_taxes', {
+            p_item_type: 'invoice_item',
+            p_item_id: itemId,
+            p_tax_rate_ids: [taxRateId],
+            p_taxable_amount: invItem.line_total || 0
+        })
+
+    if (rpcError) {
+        console.error('Recalculate line item taxes error:', rpcError)
+        return { success: false, error: rpcError.message }
+    }
+
+    // Also update the legacy tax_rate field for backward compatibility
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await (supabase as any)
+        .from('invoice_items')
+        .update({
+            tax_rate: taxRate.rate,
+            tax_amount: Math.round(invItem.line_total * taxRate.rate) / 100
+        })
+        .eq('id', itemId)
+
+    revalidatePath(`/tasks/invoices/${invItem.invoice_id}`)
+    return { success: true }
+}

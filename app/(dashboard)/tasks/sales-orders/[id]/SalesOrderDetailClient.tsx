@@ -44,8 +44,9 @@ import {
   removeSalesOrderItem,
   updateSalesOrderItem,
   searchInventoryItemsForSO,
+  setSalesOrderItemTax,
 } from '@/app/actions/sales-orders'
-import { createCustomer, type CustomerFormData } from '@/app/actions/customers'
+import { createCustomer, type CreateCustomerInput } from '@/app/actions/customers'
 import type { SalesOrderWithDetails, TeamMember, Customer, Location } from './page'
 import { BarcodeScanner } from '@/components/scanner/BarcodeScanner'
 import type { ScanResult } from '@/lib/scanner/useBarcodeScanner'
@@ -54,6 +55,7 @@ import { CustomerFormDialog } from '@/components/partners/customers/CustomerForm
 import { ItemThumbnail } from '@/components/ui/item-thumbnail'
 import { useFeedback } from '@/components/feedback/FeedbackProvider'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { TaxRateDropdown } from '@/components/tax/TaxRateSelector'
 
 interface SalesOrderDetailClientProps {
   salesOrder: SalesOrderWithDetails
@@ -347,7 +349,7 @@ export function SalesOrderDetailClient({
     }
   }
 
-  async function handleCreateCustomer(data: CustomerFormData) {
+  async function handleCreateCustomer(data: CreateCustomerInput) {
     setSavingCustomer(true)
     try {
       const result = await createCustomer({
@@ -369,7 +371,7 @@ export function SalesOrderDetailClient({
         shipping_postal_code: data.shipping_same_as_billing ? data.billing_postal_code || null : data.shipping_postal_code || null,
         shipping_country: data.shipping_same_as_billing ? data.billing_country || null : data.shipping_country || null,
         payment_term_id: data.payment_term_id || null,
-        credit_limit: data.credit_limit || null,
+        credit_limit: data.credit_limit ?? undefined,
         notes: data.notes || null,
       })
 
@@ -496,6 +498,25 @@ export function SalesOrderDetailClient({
     } catch (err) {
       console.error('Update item error:', err)
       feedback.error('Failed to update item')
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  async function handleUpdateItemTax(itemId: string, taxRateId: string | null) {
+    setActionLoading(`tax-${itemId}`)
+    try {
+      const result = await setSalesOrderItemTax(itemId, taxRateId)
+      if (result.success) {
+        router.refresh()
+      } else {
+        const errorMsg = result.error || 'Failed to update tax'
+        setError(errorMsg)
+        feedback.error(errorMsg)
+      }
+    } catch (err) {
+      console.error('Update tax error:', err)
+      feedback.error('Failed to update tax')
     } finally {
       setActionLoading(null)
     }
@@ -848,58 +869,85 @@ export function SalesOrderDetailClient({
 
                   {/* Items List */}
                   <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                    {salesOrder.items.map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex items-center gap-3 p-3 rounded-xl border border-neutral-200 bg-white hover:border-neutral-300 transition-colors"
-                      >
-                        <ItemThumbnail
-                          src={item.inventory_item?.image_urls?.[0]}
-                          alt={item.item_name}
-                          size="md"
-                        />
-                        <div className="min-w-0 flex-1">
-                          <p className="font-medium text-neutral-900 truncate">{item.item_name}</p>
-                          {item.sku && <p className="text-xs text-neutral-500 truncate">SKU: {item.sku}</p>}
-                          <p className="text-xs text-neutral-500">{formatCurrency(item.unit_price)} each</p>
-                        </div>
+                    {salesOrder.items.map((item) => {
+                      // Get the first tax rate ID from line_item_taxes (we support single tax for simplicity)
+                      const currentTaxRateId = item.line_item_taxes?.[0]?.tax_rate_id || null
+                      const taxInfo = item.line_item_taxes?.[0]
 
-                        {/* Quantity controls */}
-                        <div className="flex items-center gap-1 flex-shrink-0">
-                          <button
-                            onClick={() => handleUpdateItemQuantity(item.id, item.quantity_ordered - 1)}
-                            disabled={item.quantity_ordered <= 1 || actionLoading === `qty-${item.id}`}
-                            className="h-8 w-8 rounded-lg border border-neutral-200 flex items-center justify-center text-neutral-600 hover:bg-neutral-50 disabled:opacity-50"
-                          >
-                            <Minus className="h-4 w-4" />
-                          </button>
-                          <span className="w-10 text-center font-medium">{item.quantity_ordered}</span>
-                          <button
-                            onClick={() => handleUpdateItemQuantity(item.id, item.quantity_ordered + 1)}
-                            disabled={actionLoading === `qty-${item.id}`}
-                            className="h-8 w-8 rounded-lg border border-neutral-200 flex items-center justify-center text-neutral-600 hover:bg-neutral-50"
-                          >
-                            <Plus className="h-4 w-4" />
-                          </button>
-                        </div>
-
-                        {/* Amount and Remove */}
-                        <div className="text-right flex-shrink-0">
-                          <p className="font-medium text-neutral-900">{formatCurrency(item.line_total)}</p>
-                        </div>
-                        <button
-                          onClick={() => handleRemoveItem(item.id)}
-                          disabled={actionLoading === `remove-${item.id}`}
-                          className="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      return (
+                        <div
+                          key={item.id}
+                          className="p-3 rounded-xl border border-neutral-200 bg-white hover:border-neutral-300 transition-colors"
                         >
-                          {actionLoading === `remove-${item.id}` ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Trash2 className="h-4 w-4" />
-                          )}
-                        </button>
-                      </div>
-                    ))}
+                          <div className="flex items-center gap-3">
+                            <ItemThumbnail
+                              src={item.inventory_item?.image_urls?.[0]}
+                              alt={item.item_name}
+                              size="md"
+                            />
+                            <div className="min-w-0 flex-1">
+                              <p className="font-medium text-neutral-900 truncate">{item.item_name}</p>
+                              {item.sku && <p className="text-xs text-neutral-500 truncate">SKU: {item.sku}</p>}
+                              <p className="text-xs text-neutral-500">{formatCurrency(item.unit_price)} each</p>
+                            </div>
+
+                            {/* Quantity controls */}
+                            <div className="flex items-center gap-1 flex-shrink-0">
+                              <button
+                                onClick={() => handleUpdateItemQuantity(item.id, item.quantity_ordered - 1)}
+                                disabled={item.quantity_ordered <= 1 || actionLoading === `qty-${item.id}`}
+                                className="h-8 w-8 rounded-lg border border-neutral-200 flex items-center justify-center text-neutral-600 hover:bg-neutral-50 disabled:opacity-50"
+                              >
+                                <Minus className="h-4 w-4" />
+                              </button>
+                              <span className="w-10 text-center font-medium">{item.quantity_ordered}</span>
+                              <button
+                                onClick={() => handleUpdateItemQuantity(item.id, item.quantity_ordered + 1)}
+                                disabled={actionLoading === `qty-${item.id}`}
+                                className="h-8 w-8 rounded-lg border border-neutral-200 flex items-center justify-center text-neutral-600 hover:bg-neutral-50"
+                              >
+                                <Plus className="h-4 w-4" />
+                              </button>
+                            </div>
+
+                            {/* Amount and Remove */}
+                            <div className="text-right flex-shrink-0">
+                              <p className="font-medium text-neutral-900">{formatCurrency(item.line_total)}</p>
+                              {taxInfo && (
+                                <p className="text-xs text-neutral-500">
+                                  +{formatCurrency(taxInfo.tax_amount)} tax
+                                </p>
+                              )}
+                            </div>
+                            <button
+                              onClick={() => handleRemoveItem(item.id)}
+                              disabled={actionLoading === `remove-${item.id}`}
+                              className="p-1.5 text-neutral-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                            >
+                              {actionLoading === `remove-${item.id}` ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
+                            </button>
+                          </div>
+
+                          {/* Tax Rate Selector Row */}
+                          <div className="mt-2 pt-2 border-t border-neutral-100 flex items-center gap-2">
+                            <span className="text-xs text-neutral-500 flex-shrink-0">Tax:</span>
+                            <TaxRateDropdown
+                              value={currentTaxRateId}
+                              onChange={(taxRateId) => handleUpdateItemTax(item.id, taxRateId)}
+                              disabled={actionLoading === `tax-${item.id}`}
+                              className="flex-1 h-8 text-xs"
+                            />
+                            {actionLoading === `tax-${item.id}` && (
+                              <Loader2 className="h-4 w-4 animate-spin text-neutral-400" />
+                            )}
+                          </div>
+                        </div>
+                      )
+                    })}
 
                     {salesOrder.items.length === 0 && (
                       <div className="text-center py-8">
@@ -909,13 +957,40 @@ export function SalesOrderDetailClient({
                     )}
                   </div>
 
-                  {/* Subtotal */}
+                  {/* Subtotal and Tax Summary */}
                   {salesOrder.items.length > 0 && (
-                    <div className="flex items-center justify-between pt-3 border-t border-neutral-200">
-                      <span className="text-sm font-medium text-neutral-600">
-                        Subtotal ({salesOrder.items.length} item{salesOrder.items.length !== 1 ? 's' : ''})
-                      </span>
-                      <span className="text-lg font-semibold text-neutral-900">{formatCurrency(subtotal)}</span>
+                    <div className="pt-3 border-t border-neutral-200 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-neutral-600">
+                          Subtotal ({salesOrder.items.length} item{salesOrder.items.length !== 1 ? 's' : ''})
+                        </span>
+                        <span className="font-medium text-neutral-900">{formatCurrency(subtotal)}</span>
+                      </div>
+                      {/* Tax summary */}
+                      {(() => {
+                        const totalTax = salesOrder.items.reduce((sum, item) => {
+                          const itemTax = item.line_item_taxes?.reduce((t, tax) => t + tax.tax_amount, 0) || 0
+                          return sum + itemTax
+                        }, 0)
+                        if (totalTax > 0) {
+                          return (
+                            <div className="flex items-center justify-between text-sm">
+                              <span className="text-neutral-600">Tax</span>
+                              <span className="text-neutral-700">{formatCurrency(totalTax)}</span>
+                            </div>
+                          )
+                        }
+                        return null
+                      })()}
+                      <div className="flex items-center justify-between pt-2 border-t border-neutral-100">
+                        <span className="text-sm font-medium text-neutral-700">Total</span>
+                        <span className="text-lg font-semibold text-neutral-900">
+                          {formatCurrency(subtotal + salesOrder.items.reduce((sum, item) => {
+                            const itemTax = item.line_item_taxes?.reduce((t, tax) => t + tax.tax_amount, 0) || 0
+                            return sum + itemTax
+                          }, 0))}
+                        </span>
+                      </div>
                     </div>
                   )}
                 </CardContent>
@@ -1196,7 +1271,12 @@ export function SalesOrderDetailClient({
             <div className="flex items-center gap-3">
               <div className="text-right">
                 <p className="text-xs text-neutral-500">{salesOrder.items.length} item{salesOrder.items.length !== 1 ? 's' : ''}</p>
-                <p className="text-lg font-semibold text-neutral-900">{formatCurrency(subtotal)}</p>
+                <p className="text-lg font-semibold text-neutral-900">
+                  {formatCurrency(subtotal + salesOrder.items.reduce((sum, item) => {
+                    const itemTax = item.line_item_taxes?.reduce((t, tax) => t + tax.tax_amount, 0) || 0
+                    return sum + itemTax
+                  }, 0))}
+                </p>
               </div>
               {isDraft && (
                 <Button

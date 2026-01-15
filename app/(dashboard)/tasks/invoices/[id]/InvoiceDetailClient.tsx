@@ -34,6 +34,7 @@ import {
   addInvoiceItem,
   removeInvoiceItem,
   recordPayment,
+  setInvoiceItemTax,
 } from '@/app/actions/invoices'
 import type { InvoiceWithDetails, Customer } from './page'
 import { ChatterPanel } from '@/components/chatter'
@@ -41,6 +42,7 @@ import { ItemThumbnail } from '@/components/ui/item-thumbnail'
 import { useFeedback } from '@/components/feedback/FeedbackProvider'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Input } from '@/components/ui/input'
+import { TaxRateDropdown } from '@/components/tax/TaxRateSelector'
 
 interface InvoiceDetailClientProps {
   invoice: InvoiceWithDetails
@@ -201,6 +203,23 @@ export function InvoiceDetailClient({
       router.refresh()
     } else {
       const errorMsg = result.error || 'Failed to record payment'
+      setError(errorMsg)
+      feedback.error(errorMsg)
+    }
+
+    setActionLoading(null)
+  }
+
+  async function handleUpdateItemTax(itemId: string, taxRateId: string | null) {
+    setActionLoading(`tax-${itemId}`)
+    setError(null)
+
+    const result = await setInvoiceItemTax(itemId, taxRateId)
+
+    if (result.success) {
+      router.refresh()
+    } else {
+      const errorMsg = result.error || 'Failed to update tax'
       setError(errorMsg)
       feedback.error(errorMsg)
     }
@@ -438,75 +457,106 @@ export function InvoiceDetailClient({
                           <th className="px-4 py-3 text-left font-medium text-neutral-600">Item</th>
                           <th className="px-4 py-3 text-center font-medium text-neutral-600 w-20">Qty</th>
                           <th className="px-4 py-3 text-right font-medium text-neutral-600 w-28">Unit Price</th>
+                          {canEdit && <th className="px-4 py-3 text-left font-medium text-neutral-600 w-40">Tax</th>}
                           <th className="px-4 py-3 text-right font-medium text-neutral-600 w-28">Total</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-neutral-100">
-                        {invoice.items.map((item) => (
-                          <tr key={item.id} className="hover:bg-neutral-50">
-                            <td className="px-4 py-3">
-                              <div className="flex items-center gap-3">
-                                <ItemThumbnail
-                                  src={item.inventory_item?.image_urls?.[0]}
-                                  alt={item.item_name}
-                                  size="md"
-                                />
-                                <div>
-                                  <p className="font-medium text-neutral-900">{item.item_name}</p>
-                                  {item.sku && (
-                                    <p className="text-xs text-neutral-500">SKU: {item.sku}</p>
-                                  )}
-                                  {item.description && (
-                                    <p className="text-xs text-neutral-500 mt-0.5">{item.description}</p>
-                                  )}
+                        {invoice.items.map((item) => {
+                          const currentTaxRateId = item.line_item_taxes?.[0]?.tax_rate_id || null
+                          const taxInfo = item.line_item_taxes?.[0]
+                          return (
+                            <tr key={item.id} className="hover:bg-neutral-50">
+                              <td className="px-4 py-3">
+                                <div className="flex items-center gap-3">
+                                  <ItemThumbnail
+                                    src={item.inventory_item?.image_urls?.[0]}
+                                    alt={item.item_name}
+                                    size="md"
+                                  />
+                                  <div>
+                                    <p className="font-medium text-neutral-900">{item.item_name}</p>
+                                    {item.sku && (
+                                      <p className="text-xs text-neutral-500">SKU: {item.sku}</p>
+                                    )}
+                                    {item.description && (
+                                      <p className="text-xs text-neutral-500 mt-0.5">{item.description}</p>
+                                    )}
+                                  </div>
                                 </div>
-                              </div>
-                            </td>
-                            <td className="px-4 py-3 text-center font-medium">
-                              {item.quantity}
-                            </td>
-                            <td className="px-4 py-3 text-right text-neutral-600">
-                              {formatCurrency(item.unit_price)}
-                            </td>
-                            <td className="px-4 py-3 text-right font-medium text-neutral-900">
-                              {formatCurrency(item.line_total)}
-                            </td>
-                          </tr>
-                        ))}
+                              </td>
+                              <td className="px-4 py-3 text-center font-medium">
+                                {item.quantity}
+                              </td>
+                              <td className="px-4 py-3 text-right text-neutral-600">
+                                {formatCurrency(item.unit_price)}
+                              </td>
+                              {canEdit && (
+                                <td className="px-4 py-3">
+                                  <TaxRateDropdown
+                                    value={currentTaxRateId}
+                                    onChange={(taxRateId) => handleUpdateItemTax(item.id, taxRateId)}
+                                    disabled={actionLoading === `tax-${item.id}`}
+                                    className="h-8 text-xs"
+                                  />
+                                </td>
+                              )}
+                              <td className="px-4 py-3 text-right">
+                                <p className="font-medium text-neutral-900">{formatCurrency(item.line_total)}</p>
+                                {taxInfo && (
+                                  <p className="text-xs text-neutral-500">
+                                    +{formatCurrency(taxInfo.tax_amount)} tax
+                                  </p>
+                                )}
+                              </td>
+                            </tr>
+                          )
+                        })}
                       </tbody>
                       <tfoot className="bg-neutral-50 border-t border-neutral-200">
-                        <tr>
-                          <td colSpan={3} className="px-4 py-2 text-right text-neutral-600">Subtotal</td>
-                          <td className="px-4 py-2 text-right font-medium">{formatCurrency(invoice.subtotal)}</td>
-                        </tr>
-                        {invoice.discount_amount > 0 && (
-                          <tr>
-                            <td colSpan={3} className="px-4 py-2 text-right text-neutral-600">Discount</td>
-                            <td className="px-4 py-2 text-right font-medium text-red-600">-{formatCurrency(invoice.discount_amount)}</td>
-                          </tr>
-                        )}
-                        {invoice.tax_amount > 0 && (
-                          <tr>
-                            <td colSpan={3} className="px-4 py-2 text-right text-neutral-600">Tax ({invoice.tax_rate}%)</td>
-                            <td className="px-4 py-2 text-right font-medium">{formatCurrency(invoice.tax_amount)}</td>
-                          </tr>
-                        )}
-                        <tr className="border-t border-neutral-200">
-                          <td colSpan={3} className="px-4 py-3 text-right font-semibold text-neutral-900">Total</td>
-                          <td className="px-4 py-3 text-right font-bold text-lg">{formatCurrency(invoice.total)}</td>
-                        </tr>
-                        {invoice.amount_paid > 0 && (
-                          <tr>
-                            <td colSpan={3} className="px-4 py-2 text-right text-green-600 font-medium">Paid</td>
-                            <td className="px-4 py-2 text-right font-medium text-green-600">-{formatCurrency(invoice.amount_paid)}</td>
-                          </tr>
-                        )}
-                        {invoice.balance_due > 0 && (
-                          <tr className="border-t border-neutral-200">
-                            <td colSpan={3} className="px-4 py-3 text-right font-semibold text-amber-600">Balance Due</td>
-                            <td className="px-4 py-3 text-right font-bold text-lg text-amber-600">{formatCurrency(invoice.balance_due)}</td>
-                          </tr>
-                        )}
+                        {(() => {
+                          const footerColSpan = canEdit ? 4 : 3
+                          const totalTax = invoice.items.reduce((sum, item) => {
+                            const itemTax = item.line_item_taxes?.reduce((t, tax) => t + tax.tax_amount, 0) || 0
+                            return sum + itemTax
+                          }, 0)
+                          return (
+                            <>
+                              <tr>
+                                <td colSpan={footerColSpan} className="px-4 py-2 text-right text-neutral-600">Subtotal</td>
+                                <td className="px-4 py-2 text-right font-medium">{formatCurrency(invoice.subtotal)}</td>
+                              </tr>
+                              {invoice.discount_amount > 0 && (
+                                <tr>
+                                  <td colSpan={footerColSpan} className="px-4 py-2 text-right text-neutral-600">Discount</td>
+                                  <td className="px-4 py-2 text-right font-medium text-red-600">-{formatCurrency(invoice.discount_amount)}</td>
+                                </tr>
+                              )}
+                              {totalTax > 0 && (
+                                <tr>
+                                  <td colSpan={footerColSpan} className="px-4 py-2 text-right text-neutral-600">Tax</td>
+                                  <td className="px-4 py-2 text-right font-medium">{formatCurrency(totalTax)}</td>
+                                </tr>
+                              )}
+                              <tr className="border-t border-neutral-200">
+                                <td colSpan={footerColSpan} className="px-4 py-3 text-right font-semibold text-neutral-900">Total</td>
+                                <td className="px-4 py-3 text-right font-bold text-lg">{formatCurrency(invoice.subtotal - invoice.discount_amount + totalTax)}</td>
+                              </tr>
+                              {invoice.amount_paid > 0 && (
+                                <tr>
+                                  <td colSpan={footerColSpan} className="px-4 py-2 text-right text-green-600 font-medium">Paid</td>
+                                  <td className="px-4 py-2 text-right font-medium text-green-600">-{formatCurrency(invoice.amount_paid)}</td>
+                                </tr>
+                              )}
+                              {(invoice.subtotal - invoice.discount_amount + totalTax - invoice.amount_paid) > 0 && (
+                                <tr className="border-t border-neutral-200">
+                                  <td colSpan={footerColSpan} className="px-4 py-3 text-right font-semibold text-amber-600">Balance Due</td>
+                                  <td className="px-4 py-3 text-right font-bold text-lg text-amber-600">{formatCurrency(invoice.subtotal - invoice.discount_amount + totalTax - invoice.amount_paid)}</td>
+                                </tr>
+                              )}
+                            </>
+                          )
+                        })()}
                       </tfoot>
                     </table>
                   </div>
