@@ -498,7 +498,11 @@ function getEntityPath(entityType: ChatterEntityType, entityId: string): string 
         stock_count: `/tasks/stock-count/${entityId}`,
         purchase_order: `/tasks/purchase-orders/${entityId}`,
         pick_list: `/tasks/pick-lists/${entityId}`,
-        receive: `/tasks/receives/${entityId}`
+        receive: `/tasks/receives/${entityId}`,
+        customer: `/settings/customers/${entityId}`,
+        sales_order: `/tasks/sales-orders/${entityId}`,
+        delivery_order: `/tasks/delivery-orders/${entityId}`,
+        invoice: `/tasks/invoices/${entityId}`
     }
     return paths[entityType]
 }
@@ -515,7 +519,11 @@ async function getEntityName(
         stock_count: 'stock_counts',
         purchase_order: 'purchase_orders',
         pick_list: 'pick_lists',
-        receive: 'receives'
+        receive: 'receives',
+        customer: 'customers',
+        sales_order: 'sales_orders',
+        delivery_order: 'delivery_orders',
+        invoice: 'invoices'
     }
 
     const nameFieldMap: Record<ChatterEntityType, string> = {
@@ -524,7 +532,11 @@ async function getEntityName(
         stock_count: 'display_id',
         purchase_order: 'display_id',
         pick_list: 'display_id',
-        receive: 'display_id'
+        receive: 'display_id',
+        customer: 'name',
+        sales_order: 'display_id',
+        delivery_order: 'display_id',
+        invoice: 'display_id'
     }
 
     const table = tableMap[entityType]

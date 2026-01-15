@@ -311,7 +311,6 @@ export function PurchaseOrderDetailClient({
         address_line1: data.address_line1 || null,
         city: data.city || null,
         country: data.country || null,
-        payment_terms: data.payment_terms || null,
         notes: data.notes || null
       })
 
@@ -321,7 +320,7 @@ export function PurchaseOrderDetailClient({
         setVendorName(data.name)
         setVendorEmail(data.email || '')
         setVendorPhone(data.phone || '')
-        setVendorPaymentTerms(data.payment_terms || '')
+        setVendorPaymentTerms('')
         setVendorSearchQuery('')
         setShowVendorForm(false)
         await saveFieldImmediate('vendor', result.vendor_id)
