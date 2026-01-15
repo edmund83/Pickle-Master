@@ -48,6 +48,11 @@ const createCustomerSchema = z.object({
     credit_limit: priceSchema.optional(),
     // Notes
     notes: z.string().max(2000).nullable().optional(),
+    // Tax fields
+    tax_id: z.string().max(50).nullable().optional(),
+    tax_id_label: z.string().max(30).nullable().optional(),
+    is_tax_exempt: z.boolean().optional(),
+    default_tax_rate_id: optionalUuidSchema,
 })
 
 const updateCustomerSchema = createCustomerSchema.partial().extend({
@@ -76,6 +81,11 @@ export interface CreateCustomerInput {
     payment_term_id?: string | null
     credit_limit?: number
     notes?: string | null
+    // Tax fields
+    tax_id?: string | null
+    tax_id_label?: string | null
+    is_tax_exempt?: boolean
+    default_tax_rate_id?: string | null
 }
 
 export interface UpdateCustomerInput extends Partial<CreateCustomerInput> {
@@ -204,6 +214,21 @@ export async function createCustomer(input: CreateCustomerInput): Promise<Custom
         }
     }
 
+    // If default_tax_rate_id is provided, verify it belongs to the tenant
+    if (validatedInput.default_tax_rate_id) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: taxRate } = await (supabase as any)
+            .from('tax_rates')
+            .select('id')
+            .eq('id', validatedInput.default_tax_rate_id)
+            .eq('tenant_id', context.tenantId)
+            .single()
+
+        if (!taxRate) {
+            return { success: false, error: 'Tax rate not found or not in your organization' }
+        }
+    }
+
     // Generate display_id
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: displayId, error: displayIdError } = await (supabase as any).rpc('generate_display_id_for_current_user', {
@@ -243,6 +268,11 @@ export async function createCustomer(input: CreateCustomerInput): Promise<Custom
             payment_term_id: validatedInput.payment_term_id || null,
             credit_limit: validatedInput.credit_limit || 0,
             notes: validatedInput.notes || null,
+            // Tax fields
+            tax_id: validatedInput.tax_id || null,
+            tax_id_label: validatedInput.tax_id_label || null,
+            is_tax_exempt: validatedInput.is_tax_exempt || false,
+            default_tax_rate_id: validatedInput.default_tax_rate_id || null,
             created_by: context.userId,
             is_active: true,
         })
@@ -320,6 +350,21 @@ export async function updateCustomer(
 
         if (!paymentTerm) {
             return { success: false, error: 'Payment term not found or not in your organization' }
+        }
+    }
+
+    // If default_tax_rate_id is provided, verify it belongs to the tenant
+    if (validatedUpdates.default_tax_rate_id) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const { data: taxRate } = await (supabase as any)
+            .from('tax_rates')
+            .select('id')
+            .eq('id', validatedUpdates.default_tax_rate_id)
+            .eq('tenant_id', context.tenantId)
+            .single()
+
+        if (!taxRate) {
+            return { success: false, error: 'Tax rate not found or not in your organization' }
         }
     }
 
