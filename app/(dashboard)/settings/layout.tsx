@@ -15,7 +15,6 @@ import {
   Upload,
   Settings2,
   Zap,
-  MapPin,
   ChevronDown,
   UserCircle,
   Package,
@@ -64,7 +63,6 @@ const settingsNavGroups: NavGroup[] = [
     label: 'Inventory',
     icon: Package,
     items: [
-      { href: '/settings/locations', label: 'Locations', icon: MapPin },
       { href: '/settings/custom-fields', label: 'Custom Fields', icon: Database },
       { href: '/settings/labels', label: 'Labels', icon: Tag },
       { href: '/settings/payment-terms', label: 'Payment Terms', icon: Receipt },

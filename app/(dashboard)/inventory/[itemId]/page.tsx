@@ -34,7 +34,6 @@ import { ItemMoreOptions } from './components/item-more-options'
 import { ChatterPanel } from '@/components/chatter'
 
 interface FeaturesEnabled {
-  multi_location?: boolean
   shipping_dimensions?: boolean
   lot_tracking?: boolean
 }
@@ -434,14 +433,13 @@ export default async function ItemDetailPage({ params }: PageProps) {
             <ItemCheckoutHistoryCard itemId={item.id} limit={5} />
           </div>
 
-          {/* Advanced Panels - Multi-Location & Lot Tracking */}
-          {(features.multi_location || features.lot_tracking) && (
+          {/* Advanced Panels - Lot Tracking */}
+          {features.lot_tracking && (
             <div className="mb-6">
               <ItemAdvancedPanels
                 itemId={item.id}
                 itemName={item.name}
                 trackingMode={(item.tracking_mode as 'none' | 'serialized' | 'lot_expiry') || 'none'}
-                multiLocationEnabled={!!features.multi_location}
               />
             </div>
           )}

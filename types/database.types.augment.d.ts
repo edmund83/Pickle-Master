@@ -11,14 +11,12 @@ declare module '@/types/database.types' {
   export type Vendor = Tables<'vendors'>
   export type Tenant = Tables<'tenants'>
   export type Alert = Tables<'alerts'>
-  export type Location = Tables<'locations'>
   export type Job = Tables<'jobs'>
 
   export type InventoryItemWithTags = Tables<'items_with_tags'>
   export type TagListItem = Pick<Tag, 'id' | 'name' | 'color'>
 
   export type ItemCondition = Enums<'item_condition'>
-  export type LocationType = Enums<'location_type'>
   export type ComparisonOperator = Enums<'comparison_operator_enum'>
   export type ReminderType = Enums<'reminder_type_enum'>
   export type ReminderRecurrence = Enums<'reminder_recurrence_enum'>
