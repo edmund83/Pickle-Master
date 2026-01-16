@@ -70,7 +70,7 @@ export function MobileHeader() {
         {/* Logo / Brand / Title */}
         <div className="flex items-center gap-3 min-w-0">
           <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary flex-shrink-0">
-            <span className="text-white font-bold text-lg">P</span>
+            <span className="text-white font-bold text-lg">S</span>
           </div>
           <div className="min-w-0">
             <h1 className="text-lg font-semibold text-neutral-900 truncate">
