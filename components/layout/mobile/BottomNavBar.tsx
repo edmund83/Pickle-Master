@@ -114,7 +114,7 @@ export function BottomNavBar() {
   const isOnScanPage = pathname === '/scan' || pathname.startsWith('/scan/')
 
   // Check if More should show as active (when on pages accessible via More sheet)
-  const moreActiveRoutes = ['/reports', '/reminders', '/partners', '/ai-assistant', '/settings', '/help']
+  const moreActiveRoutes = ['/reports', '/reminders', '/partners', '/ai-assistant', '/settings', '/help', '/notifications']
   const isMoreActive = moreActiveRoutes.some(route => pathname === route || pathname.startsWith(`${route}/`))
 
   // Close on escape key
