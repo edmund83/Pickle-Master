@@ -60,6 +60,9 @@ supabase/.temp
 test-results/
 playwright-report/
 
+# Screenshots
+docs/screenshot/
+
 # PWA build outputs
 public/sw.js
 public/workbox-*.js
