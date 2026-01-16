@@ -2,11 +2,9 @@
 
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import { Search, Package, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { InventoryItemWithTags, Folder, TagListItem } from '@/types/database.types'
-import { FloatingActionButton } from '@/components/layout/mobile/FloatingActionButton'
 import { WarehouseSelector } from './warehouse-selector'
 
 interface MobileInventoryViewProps {
@@ -36,7 +34,6 @@ const statusConfig = {
 }
 
 export function MobileInventoryView({ items, folders }: MobileInventoryViewProps) {
-  const router = useRouter()
   const [searchQuery, setSearchQuery] = useState('')
   const [activeFilter, setActiveFilter] = useState<'all' | 'low' | 'out'>('all')
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<string | null>(null)
@@ -178,11 +175,6 @@ export function MobileInventoryView({ items, folders }: MobileInventoryViewProps
         )}
       </div>
 
-      {/* Floating Action Button - Add new item */}
-      <FloatingActionButton
-        icon={Package}
-        onClick={() => router.push('/inventory/new')}
-      />
     </div>
   )
 }

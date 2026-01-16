@@ -30,8 +30,8 @@ function initFlyonUIGlobals() {
   ] as const
 
   collections.forEach((name) => {
-    if (!(window as Record<string, unknown>)[name]) {
-      ;(window as Record<string, unknown>)[name] = []
+    if (!(window as unknown as Record<string, unknown>)[name]) {
+      ;(window as unknown as Record<string, unknown>)[name] = []
     }
   })
 }

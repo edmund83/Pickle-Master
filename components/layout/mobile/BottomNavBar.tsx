@@ -78,7 +78,16 @@ const quickActions: QuickAction[] = [
     color: 'text-white',
     bgColor: 'bg-blue-500',
     href: '/scan',
-    position: { x: 0, y: -100 }, // Top center
+    position: { x: 0, y: -80 }, // Center
+  },
+  {
+    id: 'new-item',
+    icon: Package,
+    label: 'New',
+    color: 'text-white',
+    bgColor: 'bg-primary',
+    href: '/inventory/new',
+    position: { x: 0, y: -150 }, // Top center
   },
   {
     id: 'check-out',
@@ -87,7 +96,7 @@ const quickActions: QuickAction[] = [
     color: 'text-white',
     bgColor: 'bg-amber-500',
     href: '/scan?mode=checkout',
-    position: { x: -70, y: -70 }, // Top left
+    position: { x: 70, y: -115 }, // Top right
   },
   {
     id: 'check-in',
@@ -96,7 +105,7 @@ const quickActions: QuickAction[] = [
     color: 'text-white',
     bgColor: 'bg-green-500',
     href: '/tasks/checkouts?filter=active',
-    position: { x: 70, y: -70 }, // Top right
+    position: { x: -70, y: -115 }, // Top left
   },
 ]
 

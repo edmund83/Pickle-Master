@@ -13,6 +13,17 @@ import type { OfflineItem } from './types'
 // Cache is considered stale after 24 hours
 const CACHE_MAX_AGE_MS = 24 * 60 * 60 * 1000
 
+/**
+ * Check if an error is a JWT expiration error
+ */
+function isJwtExpiredError(error: unknown): boolean {
+  if (error instanceof Error) {
+    const message = error.message.toLowerCase()
+    return message.includes('jwt expired') || message.includes('token expired')
+  }
+  return false
+}
+
 // How many items to fetch per batch
 const BATCH_SIZE = 100
 
@@ -67,13 +78,15 @@ export async function isCacheStale(scope: OfflineScope): Promise<boolean> {
  * Falls back to full sync if no previous sync exists.
  */
 export async function syncItemCache(
-  scope: OfflineScope
+  scope: OfflineScope,
+  options: { retryOnJwtExpired?: boolean } = {}
 ): Promise<{
   itemsAdded: number
   itemsUpdated: number
   totalCached: number
   error?: string
 }> {
+  const { retryOnJwtExpired = true } = options
   const supabase = createClient()
   const result = {
     itemsAdded: 0,
@@ -169,8 +182,25 @@ export async function syncItemCache(
     await setLastCacheSync(scope, new Date())
     result.totalCached = await getCachedItemCount(scope)
   } catch (error) {
-    result.error = error instanceof Error ? error.message : 'Unknown error'
-    console.error('Failed to sync item cache:', error)
+    // Handle JWT expiration by refreshing session and retrying once
+    if (isJwtExpiredError(error) && retryOnJwtExpired) {
+      console.log('JWT expired during cache sync, attempting to refresh session...')
+
+      const { error: refreshError } = await supabase.auth.refreshSession()
+
+      if (!refreshError) {
+        console.log('Session refreshed successfully, retrying cache sync...')
+        // Retry once without the retry flag to prevent infinite loops
+        return syncItemCache(scope, { retryOnJwtExpired: false })
+      }
+
+      // Refresh failed - user needs to re-authenticate
+      result.error = 'Session expired. Please sign in again.'
+      console.error('Failed to refresh session:', refreshError)
+    } else {
+      result.error = error instanceof Error ? error.message : 'Unknown error'
+      console.error('Failed to sync item cache:', error)
+    }
   }
 
   return result
