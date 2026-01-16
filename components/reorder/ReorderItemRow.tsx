@@ -29,23 +29,23 @@ interface ReorderItemRowProps {
 
 const URGENCY_STYLES = {
     critical: {
-        bg: 'bg-red-50',
-        border: 'border-red-200',
-        badge: 'bg-red-100 text-red-700',
+        accent: 'border-l-red-300',
+        badge: 'text-red-700',
+        iconClass: 'text-red-600',
         icon: AlertCircle,
         label: 'Out of Stock',
     },
     urgent: {
-        bg: 'bg-amber-50',
-        border: 'border-amber-200',
-        badge: 'bg-amber-100 text-amber-700',
+        accent: 'border-l-amber-300',
+        badge: 'text-amber-700',
+        iconClass: 'text-amber-600',
         icon: AlertTriangle,
         label: 'Low Stock',
     },
     reorder: {
-        bg: 'bg-blue-50',
-        border: 'border-blue-200',
-        badge: 'bg-blue-100 text-blue-700',
+        accent: 'border-l-blue-300',
+        badge: 'text-blue-700',
+        iconClass: 'text-blue-600',
         icon: TrendingDown,
         label: 'Reorder',
     },
@@ -104,9 +104,8 @@ export function ReorderItemRow({
     return (
         <div
             className={cn(
-                'flex items-center gap-3 p-3 rounded-lg border transition-colors',
-                style.bg,
-                style.border
+                'flex items-center gap-3 p-3 rounded-lg border border-neutral-200 border-l-4 bg-white transition-colors hover:bg-neutral-50',
+                style.accent
             )}
         >
             {/* Item Image */}
@@ -145,11 +144,11 @@ export function ReorderItemRow({
                     </span>
                     <span
                         className={cn(
-                            'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium',
+                            'inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium border border-neutral-200 bg-white text-neutral-600',
                             style.badge
                         )}
                     >
-                        <Icon className="h-3 w-3" />
+                        <Icon className={cn('h-3 w-3', style.iconClass)} />
                         {style.label}
                     </span>
                 </div>

@@ -1,3 +1,5 @@
+'use client'
+
 export { ChatterPanel } from './ChatterPanel'
 export { MentionInput } from './MentionInput'
 export { MessageItem } from './MessageItem'

@@ -77,7 +77,7 @@ export async function checkoutItem(
 
     // 5. Use atomic RPC function that handles checkout + inventory update in single transaction
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const { data, error } = await (supabase as any).rpc('checkout_item_atomic', {
+    const { data, error } = await (supabase as any).rpc('perform_checkout', {
         p_item_id: validatedInput.itemId,
         p_quantity: validatedInput.quantity,
         p_assignee_type: 'person',
@@ -203,7 +203,7 @@ export async function checkoutWithSerials(
     // 5. Verify all serial IDs belong to the item and tenant
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: serials, error: serialFetchError } = await (supabase as any)
-        .from('item_serials')
+        .from('serial_numbers')
         .select('id, item_id')
         .in('id', validatedInput.serialIds)
         .eq('item_id', validatedInput.itemId)

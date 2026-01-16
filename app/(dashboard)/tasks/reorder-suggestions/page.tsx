@@ -154,38 +154,40 @@ export default function ReorderSuggestionsPage() {
     const itemsWithoutVendor = allSuggestions.filter((s) => !s.preferred_vendor_id).length
 
     return (
-        <div className="min-h-screen bg-neutral-50">
+        <div className="min-h-screen w-full bg-neutral-50">
             {/* Header */}
             <header className="sticky top-0 z-40 bg-white border-b border-neutral-200">
-                <div className="flex items-center justify-between h-14 px-4">
-                    <div className="flex items-center gap-3">
-                        <Link
-                            href="/tasks"
-                            className="p-2 -ml-2 rounded-lg hover:bg-neutral-100 transition-colors"
-                        >
-                            <ArrowLeft className="h-5 w-5 text-neutral-600" />
-                        </Link>
-                        <div>
-                            <h1 className="text-lg font-semibold text-neutral-900">
-                                Reorder Suggestions
-                            </h1>
-                            <p className="text-xs text-neutral-500">
-                                Items below reorder point
-                            </p>
+                <div className="max-w-5xl mx-auto px-4">
+                    <div className="flex items-center justify-between h-14">
+                        <div className="flex items-center gap-3">
+                            <Link
+                                href="/tasks"
+                                className="p-2 -ml-2 rounded-lg hover:bg-neutral-100 transition-colors"
+                            >
+                                <ArrowLeft className="h-5 w-5 text-neutral-600" />
+                            </Link>
+                            <div>
+                                <h1 className="text-lg font-semibold text-neutral-900">
+                                    Reorder Suggestions
+                                </h1>
+                                <p className="text-xs text-neutral-500">
+                                    Items below reorder point
+                                </p>
+                            </div>
                         </div>
-                    </div>
 
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={handleRefresh}
-                        disabled={refreshing}
-                    >
-                        <RefreshCw
-                            className={cn('h-4 w-4 mr-2', refreshing && 'animate-spin')}
-                        />
-                        Refresh
-                    </Button>
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleRefresh}
+                            disabled={refreshing}
+                        >
+                            <RefreshCw
+                                className={cn('h-4 w-4 mr-2', refreshing && 'animate-spin')}
+                            />
+                            Refresh
+                        </Button>
+                    </div>
                 </div>
             </header>
 
@@ -205,7 +207,7 @@ export default function ReorderSuggestionsPage() {
                     <div className="flex items-center justify-center h-64">
                         <Loader2 className="h-8 w-8 animate-spin text-primary" />
                     </div>
-                ) : totalItems === 0 ? (
+                ) : allSuggestions.length === 0 ? (
                     <Card className="bg-white">
                         <CardContent className="flex flex-col items-center justify-center py-16 text-center">
                             <div className="h-16 w-16 rounded-full bg-green-100 flex items-center justify-center mb-4">
@@ -227,8 +229,8 @@ export default function ReorderSuggestionsPage() {
                             <Card className="bg-white">
                                 <CardContent className="p-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                                            <Package className="h-5 w-5 text-primary" />
+                                        <div className="h-10 w-10 rounded-lg bg-neutral-100 flex items-center justify-center">
+                                            <Package className="h-5 w-5 text-neutral-700" />
                                         </div>
                                         <div>
                                             <p className="text-2xl font-bold text-neutral-900">
@@ -245,7 +247,7 @@ export default function ReorderSuggestionsPage() {
                             <Card className="bg-white">
                                 <CardContent className="p-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="h-10 w-10 rounded-lg bg-red-100 flex items-center justify-center">
+                                        <div className="h-10 w-10 rounded-lg bg-neutral-100 flex items-center justify-center">
                                             <AlertCircle className="h-5 w-5 text-red-600" />
                                         </div>
                                         <div>
@@ -263,7 +265,7 @@ export default function ReorderSuggestionsPage() {
                             <Card className="bg-white">
                                 <CardContent className="p-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="h-10 w-10 rounded-lg bg-amber-100 flex items-center justify-center">
+                                        <div className="h-10 w-10 rounded-lg bg-neutral-100 flex items-center justify-center">
                                             <AlertTriangle className="h-5 w-5 text-amber-600" />
                                         </div>
                                         <div>
@@ -279,8 +281,8 @@ export default function ReorderSuggestionsPage() {
                             <Card className="bg-white">
                                 <CardContent className="p-4">
                                     <div className="flex items-center gap-3">
-                                        <div className="h-10 w-10 rounded-lg bg-green-100 flex items-center justify-center">
-                                            <ShoppingCart className="h-5 w-5 text-green-600" />
+                                        <div className="h-10 w-10 rounded-lg bg-neutral-100 flex items-center justify-center">
+                                            <ShoppingCart className="h-5 w-5 text-neutral-700" />
                                         </div>
                                         <div>
                                             <p className="text-2xl font-bold text-neutral-900">
@@ -325,8 +327,8 @@ export default function ReorderSuggestionsPage() {
                             </div>
 
                             {itemsWithoutVendor > 0 && viewMode === 'vendor' && (
-                                <span className="text-sm text-amber-600 flex items-center gap-1">
-                                    <Info className="h-4 w-4" />
+                                <span className="text-sm text-neutral-500 flex items-center gap-1">
+                                    <Info className="h-4 w-4 text-neutral-400" />
                                     {itemsWithoutVendor} item
                                     {itemsWithoutVendor !== 1 ? 's' : ''} without vendor
                                 </span>
@@ -377,25 +379,19 @@ export default function ReorderSuggestionsPage() {
                                             <div
                                                 key={suggestion.item_id}
                                                 className={cn(
-                                                    'flex items-center gap-3 p-3 rounded-lg border',
+                                                    'flex items-center gap-3 p-3 rounded-lg border border-neutral-200 border-l-4 bg-white hover:bg-neutral-50',
                                                     suggestion.urgency === 'critical' &&
-                                                        'bg-red-50 border-red-200',
+                                                        'border-l-red-300',
                                                     suggestion.urgency === 'urgent' &&
-                                                        'bg-amber-50 border-amber-200',
+                                                        'border-l-amber-300',
                                                     suggestion.urgency === 'reorder' &&
-                                                        'bg-blue-50 border-blue-200'
+                                                        'border-l-blue-300'
                                                 )}
                                             >
                                                 {/* Urgency Icon */}
                                                 <div
                                                     className={cn(
-                                                        'h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0',
-                                                        suggestion.urgency === 'critical' &&
-                                                            'bg-red-100',
-                                                        suggestion.urgency === 'urgent' &&
-                                                            'bg-amber-100',
-                                                        suggestion.urgency === 'reorder' &&
-                                                            'bg-blue-100'
+                                                        'h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-neutral-100'
                                                     )}
                                                 >
                                                     {suggestion.urgency === 'critical' && (
@@ -430,7 +426,7 @@ export default function ReorderSuggestionsPage() {
                                                             {suggestion.preferred_vendor_name}
                                                         </div>
                                                     ) : (
-                                                        <div className="text-amber-600">
+                                                        <div className="text-neutral-500">
                                                             No vendor linked
                                                         </div>
                                                     )}
