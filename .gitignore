@@ -57,6 +57,7 @@ supabase/.temp
 
 # Playwright
 .playwright/
+.playwright-mcp/
 test-results/
 playwright-report/
 
