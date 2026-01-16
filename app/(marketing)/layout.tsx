@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import Script from 'next/script'
 import { FlyonUIInit } from '@/components/marketing/FlyonUIInit'
 import { MarketingFooter } from '@/components/marketing/MarketingFooter'
 import { MarketingNavbar } from '@/components/marketing/MarketingNavbar'
@@ -11,6 +12,36 @@ export const metadata: Metadata = {
   },
 }
 
+// Inline script to initialize FlyonUI globals before module loads
+const flyonuiGlobalsScript = `
+(function() {
+  var collections = [
+    '$hsOverlayCollection',
+    '$hsDropdownCollection',
+    '$hsCollapseCollection',
+    '$hsAccordionCollection',
+    '$hsCarouselCollection',
+    '$hsTabsCollection',
+    '$hsTooltipCollection',
+    '$hsScrollspyCollection',
+    '$hsSelectCollection',
+    '$hsInputNumberCollection',
+    '$hsStrongPasswordCollection',
+    '$hsPinInputCollection',
+    '$hsFileUploadCollection',
+    '$hsRangeSliderCollection',
+    '$hsRemoveElementCollection',
+    '$hsStepperCollection',
+    '$hsToggleCountCollection',
+    '$hsTogglePasswordCollection',
+    '$hsTreeViewCollection'
+  ];
+  collections.forEach(function(name) {
+    if (!window[name]) window[name] = [];
+  });
+})();
+`
+
 export default function MarketingLayout({
   children,
 }: {
@@ -18,6 +49,9 @@ export default function MarketingLayout({
 }) {
   return (
     <div className="min-h-screen">
+      <Script id="flyonui-globals" strategy="beforeInteractive">
+        {flyonuiGlobalsScript}
+      </Script>
       <FlyonUIInit />
       <div className="fixed top-0 z-10 w-full">
         {/* Announcement Banner */}
