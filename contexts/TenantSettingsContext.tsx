@@ -6,6 +6,7 @@ import { TenantSettings, DEFAULT_TENANT_SETTINGS } from '@/lib/formatting'
 
 interface TenantSettingsContextType {
   settings: TenantSettings
+  tenantName: string | null
   loading: boolean
   error: string | null
   refetch: () => Promise<void>
@@ -19,6 +20,7 @@ interface TenantSettingsProviderProps {
 
 export function TenantSettingsProvider({ children }: TenantSettingsProviderProps) {
   const [settings, setSettings] = useState<TenantSettings>(DEFAULT_TENANT_SETTINGS)
+  const [tenantName, setTenantName] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -55,17 +57,20 @@ export function TenantSettingsProvider({ children }: TenantSettingsProviderProps
         return
       }
 
-      // Get tenant settings
+      // Get tenant settings and name
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const { data: tenant, error: tenantError } = await (supabase as any)
         .from('tenants')
-        .select('settings')
+        .select('name, settings')
         .eq('id', profile.tenant_id)
         .single()
 
       if (tenantError) {
         throw tenantError
       }
+
+      // Set tenant name
+      setTenantName(tenant?.name || null)
 
       if (tenant?.settings) {
         const tenantSettings = tenant.settings as Record<string, unknown>
@@ -103,6 +108,7 @@ export function TenantSettingsProvider({ children }: TenantSettingsProviderProps
         fetchSettings()
       } else if (event === 'SIGNED_OUT') {
         setSettings(DEFAULT_TENANT_SETTINGS)
+        setTenantName(null)
         setLoading(false)
       }
     })
@@ -116,11 +122,12 @@ export function TenantSettingsProvider({ children }: TenantSettingsProviderProps
   const contextValue = useMemo(
     () => ({
       settings,
+      tenantName,
       loading,
       error,
       refetch: fetchSettings,
     }),
-    [settings, loading, error, fetchSettings]
+    [settings, tenantName, loading, error, fetchSettings]
   )
 
   return (
@@ -148,4 +155,12 @@ export function useTenantSettingsContext(): TenantSettingsContextType {
 export function useTenantSettings(): TenantSettings {
   const { settings } = useTenantSettingsContext()
   return settings
+}
+
+/**
+ * Hook to get the tenant name
+ */
+export function useTenantName(): string | null {
+  const { tenantName } = useTenantSettingsContext()
+  return tenantName
 }
