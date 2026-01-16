@@ -9,6 +9,16 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Added
+
+#### User Documentation Guide
+- **Learn.md** (`docs/Learn.md`) - Comprehensive user guide covering all StockZip features
+  - 23 sections covering the complete user workflow
+  - Step-by-step instructions for all features
+  - Tables and formatting for easy reference
+  - Troubleshooting & FAQ section
+  - Getting Started checklist for new users
+
 ### Removed
 
 #### Multi-Location Stock Tracking Feature

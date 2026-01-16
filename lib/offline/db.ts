@@ -11,6 +11,10 @@ export type OfflineScope = {
   userId?: string | null
 }
 
+function buildScopedSyncKey(tenantId: string, key: string): string {
+  return `${tenantId}:${key}`
+}
+
 /**
  * StockZip Offline Database
  *
@@ -49,7 +53,7 @@ class StockZipOfflineDB extends Dexie {
         // Scan sessions: indexed by tenant_id for scoped retrieval
         scanSessions: 'id, tenant_id, created_at, updated_at',
         // Sync metadata: tenant-scoped key-value store
-        syncMetadata: '[tenant_id+key], tenant_id',
+        syncMetadata: 'key, tenant_id',
       })
       .upgrade(async (tx) => {
         await Promise.all([
@@ -564,10 +568,11 @@ export async function setSyncMetadata(
   value: string
 ): Promise<void> {
   const db = getDB()
+  const scopedKey = buildScopedSyncKey(scope.tenantId, key)
   await db.syncMetadata.put({
     tenant_id: scope.tenantId,
     user_id: scope.userId ?? null,
-    key,
+    key: scopedKey,
     value,
     updated_at: new Date(),
   })
@@ -581,7 +586,12 @@ export async function getSyncMetadata(
   key: string
 ): Promise<string | undefined> {
   const db = getDB()
-  const record = await db.syncMetadata.get([scope.tenantId, key])
+  const scopedKey = buildScopedSyncKey(scope.tenantId, key)
+  const record = await db.syncMetadata
+    .where('tenant_id')
+    .equals(scope.tenantId)
+    .and((entry) => entry.key === scopedKey || entry.key === key)
+    .first()
   return record?.value
 }
 
