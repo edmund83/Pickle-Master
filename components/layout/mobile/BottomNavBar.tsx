@@ -10,15 +10,16 @@ import {
   LayoutDashboard,
   PackageOpen,
   LayoutGrid,
-  Settings,
   ClipboardList,
   ClipboardCheck,
   Plus,
   ArrowUpFromLine,
   ArrowDownToLine,
+  Menu,
   LucideIcon,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { MoreSheet } from './MoreSheet'
 
 interface QuickAction {
   id: string
@@ -56,18 +57,14 @@ const leftItems: NavItem[] = [
 // Right side tabs (after center button)
 const rightItems: NavItem[] = [
   {
-    name: 'Activity',
-    href: '/reports',
+    name: 'Tasks',
+    href: '/tasks',
     icon: ClipboardList,
     activeIcon: ClipboardCheck,
   },
-  {
-    name: 'Settings',
-    href: '/settings',
-    icon: Settings,
-    activeIcon: Settings,
-  },
 ]
+
+// "More" is handled separately as it opens a sheet, not a route
 
 // Quick actions that fan out from center button
 const quickActions: QuickAction[] = [
@@ -113,7 +110,12 @@ export function BottomNavBar() {
   const pathname = usePathname()
   const router = useRouter()
   const [isExpanded, setIsExpanded] = useState(false)
+  const [isMoreSheetOpen, setIsMoreSheetOpen] = useState(false)
   const isOnScanPage = pathname === '/scan' || pathname.startsWith('/scan/')
+
+  // Check if More should show as active (when on pages accessible via More sheet)
+  const moreActiveRoutes = ['/reports', '/reminders', '/partners', '/ai-assistant', '/settings', '/help']
+  const isMoreActive = moreActiveRoutes.some(route => pathname === route || pathname.startsWith(`${route}/`))
 
   // Close on escape key
   useEffect(() => {
@@ -210,9 +212,49 @@ export function BottomNavBar() {
         {/* Center spacer for the raised button */}
         <div className="w-20" />
 
-        {/* Right tabs */}
+        {/* Right tabs: Tasks + More */}
         <div className="flex flex-1">
           {rightItems.map(renderNavItem)}
+          {/* More button */}
+          <button
+            onClick={() => setIsMoreSheetOpen(true)}
+            className={cn(
+              'flex flex-col items-center justify-center',
+              'flex-1 min-h-14 py-2',
+              'transition-all duration-200 ease-out',
+              'active:scale-95',
+              isMoreActive
+                ? 'text-primary'
+                : 'text-neutral-400 hover:text-neutral-600'
+            )}
+            aria-label="More options"
+          >
+            <div
+              className={cn(
+                'relative flex items-center justify-center',
+                'w-10 h-10 rounded-xl',
+                'transition-all duration-200',
+                isMoreActive && 'bg-primary/10'
+              )}
+            >
+              <Menu
+                className={cn(
+                  'h-6 w-6 transition-transform duration-200',
+                  isMoreActive && 'scale-105'
+                )}
+                strokeWidth={isMoreActive ? 2.5 : 2}
+              />
+            </div>
+            <span
+              className={cn(
+                'text-[10px] font-medium mt-0.5',
+                'transition-all duration-200',
+                isMoreActive ? 'opacity-100' : 'opacity-70'
+              )}
+            >
+              More
+            </span>
+          </button>
         </div>
 
         {/* Backdrop when expanded */}
@@ -319,6 +361,9 @@ export function BottomNavBar() {
           )}
         </button>
       </div>
+
+      {/* More Sheet */}
+      <MoreSheet isOpen={isMoreSheetOpen} onClose={() => setIsMoreSheetOpen(false)} />
     </nav>
   )
 }
