@@ -1,59 +1,221 @@
-import { HelpCircle, BookOpen, MessageCircle, Mail, ExternalLink, ChevronRight } from 'lucide-react'
+'use client'
+
+import {
+  HelpCircle,
+  BookOpen,
+  MessageCircle,
+  Mail,
+  ChevronRight,
+  Rocket,
+  LayoutDashboard,
+  Package,
+  FolderTree,
+  ScanBarcode,
+  Printer,
+  Search,
+  ShoppingCart,
+  ClipboardList,
+  Calculator,
+  ArrowLeftRight,
+  Layers,
+  Hash,
+  Bell,
+  RefreshCw,
+  Users,
+  BarChart3,
+  UserCog,
+  Settings,
+  FileSpreadsheet,
+  Smartphone,
+  Keyboard,
+  LifeBuoy
+} from 'lucide-react'
 import Link from 'next/link'
 
-const FAQ_ITEMS = [
+const HELP_SECTIONS = [
   {
-    question: 'How do I add a new inventory item?',
-    answer: 'Navigate to Inventory in the sidebar, then click the "Add Item" button. Fill in the item details like name, quantity, price, and optionally add images and tags.',
+    id: 'getting-started',
+    title: 'Getting Started',
+    description: 'Create your account and learn the basics',
+    icon: Rocket,
+    href: '/help/getting-started',
+    color: 'bg-green-50 text-green-600',
   },
   {
-    question: 'How do I organize items into folders?',
-    answer: 'You can create folders from the Inventory page by clicking "New Folder". Then drag and drop items into folders, or select the folder when creating/editing an item.',
+    id: 'dashboard',
+    title: 'Dashboard Overview',
+    description: 'Understand your inventory at a glance',
+    icon: LayoutDashboard,
+    href: '/help/dashboard',
+    color: 'bg-blue-50 text-blue-600',
   },
   {
-    question: 'What do the stock status colors mean?',
-    answer: 'Green (In Stock) means your item quantity is above the low stock threshold. Yellow (Low Stock) means you\'re running low and should reorder soon. Red (Out of Stock) means the quantity has reached zero.',
+    id: 'items',
+    title: 'Managing Items',
+    description: 'Add, edit, and organize your inventory',
+    icon: Package,
+    href: '/help/items',
+    color: 'bg-purple-50 text-purple-600',
   },
   {
-    question: 'How do I set up low stock alerts?',
-    answer: 'Go to Settings > Alerts to configure low stock thresholds for your items. You\'ll receive notifications when items fall below the threshold.',
+    id: 'folders',
+    title: 'Organizing with Folders',
+    description: 'Create locations and categories',
+    icon: FolderTree,
+    href: '/help/folders',
+    color: 'bg-amber-50 text-amber-600',
   },
   {
-    question: 'Can I track item movements between locations?',
-    answer: 'Yes! Use the Workflows > Stock Moves feature to transfer items between folders/locations. All movements are logged in your activity history.',
+    id: 'scanning',
+    title: 'Barcode Scanning',
+    description: 'Scan barcodes and QR codes',
+    icon: ScanBarcode,
+    href: '/help/scanning',
+    color: 'bg-cyan-50 text-cyan-600',
   },
   {
-    question: 'How do I create a pick list for orders?',
-    answer: 'Go to Workflows > Pick Lists and click "New Pick List". Add items you need to pick, and mark them as picked as you process the order.',
+    id: 'labels',
+    title: 'Printing Labels',
+    description: 'Create and print custom labels',
+    icon: Printer,
+    href: '/help/labels',
+    color: 'bg-rose-50 text-rose-600',
   },
   {
-    question: 'How do I invite team members?',
-    answer: 'Go to Settings > Team and click "Invite Member". Enter their email and assign a role (Admin, Editor, or Viewer).',
+    id: 'search',
+    title: 'Search & Filtering',
+    description: 'Find items quickly',
+    icon: Search,
+    href: '/help/search',
+    color: 'bg-indigo-50 text-indigo-600',
   },
   {
-    question: 'What\'s the difference between user roles?',
-    answer: 'Owners have full access. Admins can manage settings and team members. Editors can add, edit, and delete inventory. Viewers can only view inventory data.',
-  },
-]
-
-const QUICK_LINKS = [
-  {
-    title: 'Getting Started Guide',
-    description: 'Learn the basics of StockZip inventory management',
-    icon: BookOpen,
-    href: '#getting-started',
+    id: 'purchase-orders',
+    title: 'Purchase Orders',
+    description: 'Order and receive stock',
+    icon: ShoppingCart,
+    href: '/help/purchase-orders',
+    color: 'bg-emerald-50 text-emerald-600',
   },
   {
-    title: 'Video Tutorials',
-    description: 'Watch step-by-step video guides',
-    icon: ExternalLink,
-    href: '#tutorials',
+    id: 'pick-lists',
+    title: 'Pick Lists',
+    description: 'Fulfill orders efficiently',
+    icon: ClipboardList,
+    href: '/help/pick-lists',
+    color: 'bg-orange-50 text-orange-600',
   },
   {
-    title: 'Contact Support',
-    description: 'Get help from our support team',
-    icon: MessageCircle,
-    href: '#support',
+    id: 'stock-counts',
+    title: 'Stock Counts',
+    description: 'Verify inventory accuracy',
+    icon: Calculator,
+    href: '/help/stock-counts',
+    color: 'bg-teal-50 text-teal-600',
+  },
+  {
+    id: 'checkouts',
+    title: 'Check-In / Check-Out',
+    description: 'Track items assigned to people',
+    icon: ArrowLeftRight,
+    href: '/help/checkouts',
+    color: 'bg-pink-50 text-pink-600',
+  },
+  {
+    id: 'lots',
+    title: 'Lot & Batch Tracking',
+    description: 'Track expiry dates and batches',
+    icon: Layers,
+    href: '/help/lots',
+    color: 'bg-lime-50 text-lime-600',
+  },
+  {
+    id: 'serials',
+    title: 'Serial Numbers',
+    description: 'Track individual units',
+    icon: Hash,
+    href: '/help/serials',
+    color: 'bg-violet-50 text-violet-600',
+  },
+  {
+    id: 'reminders',
+    title: 'Reminders & Alerts',
+    description: 'Never miss a restock',
+    icon: Bell,
+    href: '/help/reminders',
+    color: 'bg-red-50 text-red-600',
+  },
+  {
+    id: 'reorder',
+    title: 'Auto-Reorder',
+    description: 'Smart reorder suggestions',
+    icon: RefreshCw,
+    href: '/help/reorder',
+    color: 'bg-sky-50 text-sky-600',
+  },
+  {
+    id: 'vendors',
+    title: 'Vendors & Partners',
+    description: 'Manage suppliers and customers',
+    icon: Users,
+    href: '/help/vendors',
+    color: 'bg-fuchsia-50 text-fuchsia-600',
+  },
+  {
+    id: 'reports',
+    title: 'Reports & Analytics',
+    description: 'Insights about your inventory',
+    icon: BarChart3,
+    href: '/help/reports',
+    color: 'bg-yellow-50 text-yellow-600',
+  },
+  {
+    id: 'team',
+    title: 'Team Management',
+    description: 'Invite and manage users',
+    icon: UserCog,
+    href: '/help/team',
+    color: 'bg-slate-50 text-slate-600',
+  },
+  {
+    id: 'settings',
+    title: 'Settings',
+    description: 'Customize StockZip',
+    icon: Settings,
+    href: '/help/settings',
+    color: 'bg-neutral-100 text-neutral-600',
+  },
+  {
+    id: 'import-export',
+    title: 'Import & Export',
+    description: 'Move data in and out',
+    icon: FileSpreadsheet,
+    href: '/help/import-export',
+    color: 'bg-emerald-50 text-emerald-600',
+  },
+  {
+    id: 'mobile',
+    title: 'Mobile & Offline',
+    description: 'Use on your phone, even offline',
+    icon: Smartphone,
+    href: '/help/mobile',
+    color: 'bg-blue-50 text-blue-600',
+  },
+  {
+    id: 'shortcuts',
+    title: 'Keyboard Shortcuts',
+    description: 'Speed up your workflow',
+    icon: Keyboard,
+    href: '/help/shortcuts',
+    color: 'bg-gray-50 text-gray-600',
+  },
+  {
+    id: 'troubleshooting',
+    title: 'Troubleshooting',
+    description: 'Fix common problems',
+    icon: LifeBuoy,
+    href: '/help/troubleshooting',
+    color: 'bg-red-50 text-red-600',
   },
 ]
 
@@ -61,106 +223,90 @@ export default function HelpPage() {
   return (
     <div className="flex-1 overflow-y-auto">
       {/* Header */}
-      <div className="border-b border-neutral-200 bg-white px-8 py-6">
-        <h1 className="text-2xl font-semibold text-neutral-900">Help Center</h1>
-        <p className="mt-1 text-neutral-500">
-          Find answers, learn tips, and get support
-        </p>
+      <div className="border-b border-neutral-200 bg-white px-4 py-6 sm:px-8">
+        <div className="flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary">
+            <HelpCircle className="h-5 w-5" />
+          </div>
+          <div>
+            <h1 className="text-2xl font-semibold text-neutral-900">Help Center</h1>
+            <p className="mt-0.5 text-neutral-500">
+              Learn how to use StockZip - written in simple, everyday language
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div className="p-8">
-        {/* Quick Links */}
-        <div className="mb-8 grid gap-4 sm:grid-cols-3">
-          {QUICK_LINKS.map((link) => (
+      <div className="p-4 sm:p-8">
+        {/* Welcome Message */}
+        <div className="mb-8 rounded-xl border border-green-200 bg-green-50 p-6">
+          <h2 className="text-lg font-semibold text-green-900">Welcome to StockZip Help!</h2>
+          <p className="mt-2 text-green-800">
+            This guide explains everything in simple words that anyone can understand.
+            No confusing tech talk - just clear, step-by-step instructions to help you
+            manage your inventory like a pro.
+          </p>
+          <div className="mt-4">
             <Link
-              key={link.title}
-              href={link.href}
-              className="group flex items-center gap-4 rounded-xl border border-neutral-200 bg-white p-6 transition-shadow hover:shadow-md"
+              href="/help/getting-started"
+              className="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
             >
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                <link.icon className="h-6 w-6" />
+              <Rocket className="h-4 w-4" />
+              Start Here - Getting Started Guide
+            </Link>
+          </div>
+        </div>
+
+        {/* All Help Topics */}
+        <h2 className="mb-4 text-lg font-semibold text-neutral-900">All Help Topics</h2>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {HELP_SECTIONS.map((section) => (
+            <Link
+              key={section.id}
+              href={section.href}
+              className="group flex items-center gap-4 rounded-xl border border-neutral-200 bg-white p-4 transition-all hover:border-primary/30 hover:shadow-md"
+            >
+              <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${section.color}`}>
+                <section.icon className="h-6 w-6" />
               </div>
-              <div className="flex-1">
+              <div className="min-w-0 flex-1">
                 <h3 className="font-medium text-neutral-900 group-hover:text-primary">
-                  {link.title}
+                  {section.title}
                 </h3>
-                <p className="mt-0.5 text-sm text-neutral-500">{link.description}</p>
+                <p className="mt-0.5 truncate text-sm text-neutral-500">{section.description}</p>
               </div>
-              <ChevronRight className="h-5 w-5 text-neutral-400 group-hover:text-primary" />
+              <ChevronRight className="h-5 w-5 shrink-0 text-neutral-400 transition-transform group-hover:translate-x-1 group-hover:text-primary" />
             </Link>
           ))}
         </div>
 
-        {/* FAQ Section */}
-        <div className="rounded-xl border border-neutral-200 bg-white" id="getting-started">
-          <div className="border-b border-neutral-200 px-6 py-4">
-            <h2 className="text-lg font-semibold text-neutral-900">Frequently Asked Questions</h2>
-          </div>
-          <div className="divide-y divide-neutral-200">
-            {FAQ_ITEMS.map((item, index) => (
-              <details key={index} className="group">
-                <summary className="flex cursor-pointer items-center justify-between px-6 py-4 text-neutral-900 hover:bg-neutral-50">
-                  <span className="font-medium">{item.question}</span>
-                  <ChevronRight className="h-5 w-5 text-neutral-400 transition-transform group-open:rotate-90" />
-                </summary>
-                <div className="px-6 pb-4 text-neutral-600">
-                  {item.answer}
-                </div>
-              </details>
-            ))}
-          </div>
-        </div>
-
-        {/* Contact Section */}
-        <div className="mt-8 rounded-xl border border-neutral-200 bg-white p-6" id="support">
+        {/* Contact Support */}
+        <div className="mt-8 rounded-xl border border-neutral-200 bg-white p-6">
           <div className="flex items-start gap-4">
             <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-blue-50 text-blue-600">
               <Mail className="h-6 w-6" />
             </div>
             <div className="flex-1">
-              <h3 className="font-semibold text-neutral-900">Still need help?</h3>
+              <h3 className="font-semibold text-neutral-900">Still Need Help?</h3>
               <p className="mt-1 text-neutral-600">
-                Can&apos;t find what you&apos;re looking for? Our support team is here to help.
+                Can&apos;t find what you&apos;re looking for? Our friendly support team is ready to help you.
               </p>
               <div className="mt-4 flex flex-wrap gap-3">
                 <a
                   href="mailto:support@stockzip.app"
-                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary"
+                  className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:opacity-90"
                 >
                   <Mail className="h-4 w-4" />
                   Email Support
                 </a>
                 <a
                   href="#"
-                  className="inline-flex items-center gap-2 rounded-lg border border-neutral-300 px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
+                  className="inline-flex items-center gap-2 rounded-lg border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 hover:bg-neutral-50"
                 >
                   <MessageCircle className="h-4 w-4" />
                   Live Chat
                 </a>
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Keyboard Shortcuts */}
-        <div className="mt-8 rounded-xl border border-neutral-200 bg-white p-6">
-          <h3 className="mb-4 font-semibold text-neutral-900">Keyboard Shortcuts</h3>
-          <div className="grid gap-3 sm:grid-cols-2">
-            <div className="flex items-center justify-between rounded-lg bg-neutral-50 px-4 py-2">
-              <span className="text-sm text-neutral-600">Quick search</span>
-              <kbd className="rounded bg-neutral-200 px-2 py-1 text-xs font-mono">⌘ K</kbd>
-            </div>
-            <div className="flex items-center justify-between rounded-lg bg-neutral-50 px-4 py-2">
-              <span className="text-sm text-neutral-600">New item</span>
-              <kbd className="rounded bg-neutral-200 px-2 py-1 text-xs font-mono">⌘ N</kbd>
-            </div>
-            <div className="flex items-center justify-between rounded-lg bg-neutral-50 px-4 py-2">
-              <span className="text-sm text-neutral-600">Go to dashboard</span>
-              <kbd className="rounded bg-neutral-200 px-2 py-1 text-xs font-mono">G D</kbd>
-            </div>
-            <div className="flex items-center justify-between rounded-lg bg-neutral-50 px-4 py-2">
-              <span className="text-sm text-neutral-600">Go to inventory</span>
-              <kbd className="rounded bg-neutral-200 px-2 py-1 text-xs font-mono">G I</kbd>
             </div>
           </div>
         </div>
