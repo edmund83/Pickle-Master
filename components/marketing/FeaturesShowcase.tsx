@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import { FadeIn, StaggerContainer, StaggerItem } from './animations'
 
@@ -14,28 +15,30 @@ interface Feature {
   title: string
   bullets: FeatureBullet[]
   imageAlt: string
+  imageSrc?: string
 }
 
 const FEATURES: Feature[] = [
   {
-    category: 'Speed',
-    categoryIcon: 'icon-[tabler--rocket]',
-    title: 'Add items in seconds. Find anything instantly.',
+    category: 'Easy to Use',
+    categoryIcon: 'icon-[tabler--sparkles]',
+    title: 'Organize like folders. Find like photos.',
     bullets: [
       {
-        icon: 'icon-[tabler--file-import]',
-        text: 'Upload your spreadsheet and start tracking in under 5 minutes. No data entry marathon.',
+        icon: 'icon-[tabler--folders]',
+        text: 'Put items in folders just like your computer. Warehouse, shelf, bin—organize your way.',
       },
       {
-        icon: 'icon-[tabler--search]',
-        text: 'Type a few letters to find any item across all locations. Smart search understands what you mean.',
+        icon: 'icon-[tabler--photo]',
+        text: 'See your inventory at a glance with photo cards. No more guessing which "Widget A" is which.',
       },
       {
-        icon: 'icon-[tabler--device-mobile]',
-        text: 'If your team can use a smartphone, they can use StockZip. No training required.',
+        icon: 'icon-[tabler--user-check]',
+        text: 'If your team can use a smartphone, they can use StockZip. Zero training required.',
       },
     ],
-    imageAlt: 'StockZip fast item search and bulk import interface',
+    imageAlt: 'StockZip folder-style inventory with photo cards',
+    imageSrc: '/images/Folder Style Inventory.png',
   },
   {
     category: 'Scanning',
@@ -146,11 +149,23 @@ function FeatureSection({ feature, index }: { feature: Feature; index: number })
           </div>
         </div>
 
-        {/* Image Placeholder */}
+        {/* Image */}
         <div className={`${isReversed ? 'lg:order-1' : 'lg:order-2'}`}>
-          <div className="flex aspect-[4/3] items-center justify-center rounded-2xl bg-base-200 shadow-sm">
-            <span className="text-sm text-base-content/40">Image: 600 × 450</span>
-          </div>
+          {feature.imageSrc ? (
+            <div className="overflow-hidden rounded-2xl shadow-sm">
+              <Image
+                src={feature.imageSrc}
+                alt={feature.imageAlt}
+                width={600}
+                height={450}
+                className="h-auto w-full object-cover"
+              />
+            </div>
+          ) : (
+            <div className="flex aspect-[4/3] items-center justify-center rounded-2xl bg-base-200 shadow-sm">
+              <span className="text-sm text-base-content/40">Image: 600 × 450</span>
+            </div>
+          )}
         </div>
       </div>
     </FadeIn>
