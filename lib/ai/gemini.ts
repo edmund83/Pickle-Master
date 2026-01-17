@@ -1,4 +1,11 @@
 import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai'
+import { QueryType } from './query-classifier'
+import {
+  FEATURE_SUMMARY,
+  getHelpTopicList,
+  findRelevantTopics,
+  formatRelevantTopics
+} from './help-knowledge'
 
 // Ensure this is only called server-side
 const getGeminiClient = () => {
@@ -84,31 +91,91 @@ Return ONLY the JSON array, no other text.`
 }
 
 /**
- * Chat with AI about inventory queries
+ * Build adaptive system prompt based on query type
+ */
+function buildSystemPrompt(
+  query: string,
+  context: InventoryItem[],
+  queryType: QueryType
+): string {
+  const relevantTopics = findRelevantTopics(query)
+
+  if (queryType === 'feature') {
+    // Feature questions: More documentation, fewer items
+    const itemCount = Math.min(context.length, 20)
+    return `You are Zoe, a helpful AI assistant for StockZip inventory management.
+
+${FEATURE_SUMMARY}
+
+${relevantTopics.length > 0 ? `Relevant Help Topics:\n${formatRelevantTopics(relevantTopics)}\n` : ''}
+User's Inventory Sample (${itemCount} items):
+${JSON.stringify(context.slice(0, itemCount), null, 2)}
+
+Guidelines:
+- Answer questions about StockZip features with confidence
+- Reference specific help articles when explaining features (e.g., "See /help/stock-counts for step-by-step instructions")
+- If asked about a specific feature, explain it clearly and suggest the relevant help page
+- Be concise but thorough
+- Use markdown formatting for clarity
+
+User Query: ${query}`
+  }
+
+  if (queryType === 'inventory') {
+    // Inventory questions: More items, less documentation
+    const itemCount = Math.min(context.length, 50)
+    return `You are Zoe, a helpful AI assistant for StockZip inventory management.
+
+Current Inventory Context (${itemCount} items):
+${JSON.stringify(context.slice(0, itemCount), null, 2)}
+
+Help Topics Available:
+${getHelpTopicList()}
+
+Guidelines:
+- Provide specific numbers from the inventory data
+- Mention item locations (folders) when relevant
+- Suggest actions when appropriate (reorder, move, review)
+- If a feature question arises, suggest visiting the help article (e.g., "For details on stock counts, see /help/stock-counts")
+- Be concise and professional
+- Use markdown formatting for lists and emphasis when helpful
+
+User Query: ${query}`
+  }
+
+  // Mixed questions: Balanced context
+  const itemCount = Math.min(context.length, 35)
+  return `You are Zoe, a helpful AI assistant for StockZip inventory management.
+
+${FEATURE_SUMMARY}
+
+${relevantTopics.length > 0 ? `Relevant Help Topics:\n${formatRelevantTopics(relevantTopics)}\n` : ''}
+Current Inventory Context (${itemCount} items):
+${JSON.stringify(context.slice(0, itemCount), null, 2)}
+
+Guidelines:
+- Balance feature explanations with inventory insights
+- Reference help articles for detailed instructions (e.g., "See /help/labels for printing options")
+- Provide specific data when inventory-related
+- Be helpful, concise, and professional
+- Use markdown formatting for clarity
+
+User Query: ${query}`
+}
+
+/**
+ * Chat with AI about inventory queries (basic inventory context)
  */
 export async function inventoryChat(
   query: string,
   context: InventoryItem[],
-  conversationHistory: { role: 'user' | 'model'; content: string }[] = []
+  conversationHistory: { role: 'user' | 'model'; content: string }[] = [],
+  queryType: QueryType = 'mixed'
 ): Promise<string> {
   const genAI = getGeminiClient()
   const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
 
-  const systemPrompt = `You are StockZip AI, a helpful Warehouse Assistant for StockZip inventory management system.
-
-Current Inventory Context (sample of items):
-${JSON.stringify(context.slice(0, 50), null, 2)}
-
-Guidelines:
-- Be concise and professional
-- When asked about stock levels, provide specific numbers
-- When asked about items, mention their location (folder) if available
-- Suggest actions when appropriate (reorder, move, review)
-- If you can't find specific information, say so clearly
-- Keep responses under 200 words unless the user asks for details
-- Use markdown formatting for lists and emphasis when helpful
-
-User Query: ${query}`
+  const systemPrompt = buildSystemPrompt(query, context, queryType)
 
   try {
     // Build conversation for chat
@@ -126,6 +193,72 @@ User Query: ${query}`
     return result.response.text()
   } catch (error) {
     console.error('Error in inventory chat:', error)
+    return 'I apologize, but I encountered an error processing your request. Please try again.'
+  }
+}
+
+/**
+ * Chat with AI using extended context (activities, POs, tasks, etc.)
+ * This is used for sophisticated queries that need more than just inventory data
+ */
+export async function inventoryChatWithContext(
+  query: string,
+  formattedContext: string,
+  conversationHistory: { role: 'user' | 'model'; content: string }[] = [],
+  queryType: QueryType = 'mixed'
+): Promise<string> {
+  const genAI = getGeminiClient()
+  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+
+  const relevantTopics = findRelevantTopics(query)
+
+  const systemPrompt = `You are Zoe, an intelligent AI assistant for StockZip inventory management. You have comprehensive knowledge of the tenant's operations.
+
+${FEATURE_SUMMARY}
+
+${relevantTopics.length > 0 ? `Relevant Help Topics:\n${formatRelevantTopics(relevantTopics)}\n` : ''}
+
+## Your Knowledge Base (Tenant Data)
+
+**IMPORTANT**: The "Overview" sections contain COMPLETE counts from the entire database. Use these for accurate totals.
+The "Samples" and "Recent" sections show representative items - not the full list.
+
+${formattedContext}
+
+## Guidelines
+
+1. **Use aggregates for totals**: When asked "how many items?", use the Overview numbers (they're complete)
+2. **Be specific**: Use actual names, numbers, and dates from the data
+3. **Answer directly**: If asked "who moved X", name the person and when
+4. **Connect the dots**: Link related data (e.g., "John moved 5 items, mostly from Warehouse A")
+5. **Suggest actions**: Recommend next steps when appropriate
+6. **Reference help**: Point to relevant help articles for feature questions (e.g., "See /help/stock-counts")
+7. **Be concise**: Keep answers focused and actionable
+8. **Use markdown**: Format lists, bold important items, use tables for comparisons
+9. **Clarify sample data**: If showing specific items, mention "Here are some examples:" rather than implying it's everything
+
+## Query Type: ${queryType}
+${queryType === 'feature' ? 'Focus on explaining features and referencing documentation.' : ''}
+${queryType === 'inventory' ? 'Focus on providing specific data insights and recommendations.' : ''}
+${queryType === 'mixed' ? 'Balance feature explanations with data insights.' : ''}
+
+User Query: ${query}`
+
+  try {
+    const chat = model.startChat({
+      history: conversationHistory.map(msg => ({
+        role: msg.role,
+        parts: [{ text: msg.content }]
+      })),
+      generationConfig: {
+        maxOutputTokens: 1500, // Allow longer responses for complex queries
+      }
+    })
+
+    const result = await chat.sendMessage(systemPrompt)
+    return result.response.text()
+  } catch (error) {
+    console.error('Error in inventory chat with context:', error)
     return 'I apologize, but I encountered an error processing your request. Please try again.'
   }
 }
