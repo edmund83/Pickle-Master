@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Bell, Check, CheckCheck, Trash2, AlertTriangle, Package, Users, Settings, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useFormatting } from '@/hooks/useFormatting'
 import type { Notification } from '@/types/database.types'
 
 const NOTIFICATION_ICONS: Record<string, React.ElementType> = {
@@ -26,6 +27,7 @@ export default function NotificationsPage() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
   const [filter, setFilter] = useState<'all' | 'unread'>('all')
+  const { formatDateTime } = useFormatting()
 
   useEffect(() => {
     loadNotifications()
@@ -178,7 +180,7 @@ export default function NotificationsPage() {
                             </p>
                           )}
                           <p className="mt-1 text-xs text-neutral-400">
-                            {notification.created_at ? new Date(notification.created_at).toLocaleString() : ''}
+                            {notification.created_at ? formatDateTime(notification.created_at) : ''}
                           </p>
                         </div>
                         <div className="flex items-center gap-1">

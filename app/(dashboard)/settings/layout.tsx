@@ -9,7 +9,6 @@ import {
   CreditCard,
   Users,
   Bell,
-  Palette,
   Database,
   Tag,
   Upload,
@@ -46,7 +45,6 @@ const settingsNavGroups: NavGroup[] = [
     icon: UserCircle,
     items: [
       { href: '/settings/profile', label: 'Profile', icon: User },
-      { href: '/settings/preferences', label: 'Preferences', icon: Palette },
       { href: '/settings/billing', label: 'Billing', icon: CreditCard },
     ],
   },

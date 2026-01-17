@@ -2,6 +2,7 @@
 
 import { Suspense, useState } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { AlertCircle, CheckCircle, Sparkles } from 'lucide-react'
@@ -193,9 +194,11 @@ function SignupForm() {
               {oauthLoading === 'google' ? (
                 <span className="loading loading-spinner loading-sm"></span>
               ) : (
-                <img
-                  src="https://cdn.flyonui.com/fy-assets/blocks/marketing-ui/brand-logo/google-icon.png"
+                <Image
+                  src="/images/google-icon.png"
                   alt="Google"
+                  width={20}
+                  height={20}
                   className="size-5 object-cover"
                 />
               )}

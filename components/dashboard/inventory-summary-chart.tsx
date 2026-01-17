@@ -1,6 +1,7 @@
 'use client'
 
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
+import { useState, useEffect, useRef } from 'react'
+import { PieChart, Pie, Cell, Legend, Tooltip } from 'recharts'
 
 interface InventorySummaryChartProps {
     data: {
@@ -10,22 +11,36 @@ interface InventorySummaryChartProps {
     }[]
 }
 
-const RADIAN = Math.PI / 180
-const renderCustomizedLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }: any) => {
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5
-    const x = cx + radius * Math.cos(-midAngle * RADIAN)
-    const y = cy + radius * Math.sin(-midAngle * RADIAN)
-
-    if (percent < 0.05) return null // Hide label if slice is too small
-
-    return (
-        <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
-            {`${(percent * 100).toFixed(0)}%`}
-        </text>
-    )
-}
-
 export function InventorySummaryChart({ data }: InventorySummaryChartProps) {
+    const containerRef = useRef<HTMLDivElement>(null)
+    const [dimensions, setDimensions] = useState<{ width: number; height: number } | null>(null)
+
+    // Only render chart when container is visible and has dimensions
+    useEffect(() => {
+        const container = containerRef.current
+        if (!container) return
+
+        // Check initial dimensions
+        const rect = container.getBoundingClientRect()
+        if (rect.width > 0 && rect.height > 0) {
+            setDimensions({ width: rect.width, height: rect.height })
+        }
+
+        const observer = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                const { width, height } = entry.contentRect
+                if (width > 0 && height > 0) {
+                    setDimensions({ width, height })
+                } else {
+                    setDimensions(null)
+                }
+            }
+        })
+
+        observer.observe(container)
+        return () => observer.disconnect()
+    }, [])
+
     if (data.every(d => d.value === 0)) {
         return (
             <div className="flex h-[300px] items-center justify-center text-neutral-400 text-sm">
@@ -35,16 +50,16 @@ export function InventorySummaryChart({ data }: InventorySummaryChartProps) {
     }
 
     return (
-        <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
+        <div ref={containerRef} className="h-[300px] w-full">
+            {dimensions && (
+                <PieChart width={dimensions.width} height={dimensions.height}>
                     <Pie
                         data={data}
                         cx="50%"
                         cy="50%"
                         labelLine={false}
                         outerRadius={100}
-                        innerRadius={60} // Donut chart
+                        innerRadius={60}
                         fill="#8884d8"
                         dataKey="value"
                         paddingAngle={2}
@@ -59,7 +74,7 @@ export function InventorySummaryChart({ data }: InventorySummaryChartProps) {
                     />
                     <Legend verticalAlign="bottom" height={36} iconType="circle" />
                 </PieChart>
-            </ResponsiveContainer>
+            )}
         </div>
     )
 }

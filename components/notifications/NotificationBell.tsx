@@ -7,6 +7,8 @@ import Link from 'next/link'
 import { Bell, Check, AlertTriangle, Package, Users, Settings, X, Calendar, RefreshCw } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useFormatting } from '@/hooks/useFormatting'
+import { useTenantSettings } from '@/contexts/TenantSettingsContext'
+import { toZonedTime } from 'date-fns-tz'
 import type { Notification } from '@/types/database.types'
 
 // Polling interval: 60 seconds (increased from 30s to reduce API load)
@@ -51,6 +53,7 @@ export function NotificationBell({ className, variant = 'default', isExpanded = 
   const dropdownRef = useRef<HTMLDivElement>(null)
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null)
   const { formatShortDate } = useFormatting()
+  const settings = useTenantSettings()
 
   // Get userId from auth store (no need to call auth.getUser() every time)
   const userId = useAuthStore((state) => state.userId)
@@ -195,8 +198,11 @@ export function NotificationBell({ className, variant = 'default', isExpanded = 
 
   function formatTimeAgo(dateString: string): string {
     const date = new Date(dateString)
-    const now = new Date()
-    const diffMs = now.getTime() - date.getTime()
+    // Convert both dates to tenant timezone for accurate relative time
+    const timezone = settings.timezone || 'UTC'
+    const zonedDate = toZonedTime(date, timezone)
+    const zonedNow = toZonedTime(new Date(), timezone)
+    const diffMs = zonedNow.getTime() - zonedDate.getTime()
     const diffMins = Math.floor(diffMs / 60000)
     const diffHours = Math.floor(diffMs / 3600000)
     const diffDays = Math.floor(diffMs / 86400000)

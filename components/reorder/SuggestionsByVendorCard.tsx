@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { ReorderItemRow } from './ReorderItemRow'
 import { cn } from '@/lib/utils'
+import { useFormatting } from '@/hooks/useFormatting'
 import type { VendorSuggestionGroup } from '@/app/actions/reorder-suggestions'
 
 interface SuggestionsByVendorCardProps {
@@ -31,6 +32,7 @@ export function SuggestionsByVendorCard({
     onCreatePO,
     isCreating = false,
 }: SuggestionsByVendorCardProps) {
+    const { formatCurrency } = useFormatting()
     const [isExpanded, setIsExpanded] = useState(true)
     const [itemQuantities, setItemQuantities] = useState<Record<string, number>>(() => {
         const initial: Record<string, number> = {}
@@ -140,7 +142,7 @@ export function SuggestionsByVendorCard({
                     <div className="ml-auto text-sm">
                         <span className="text-neutral-500">Est. Total:</span>{' '}
                         <span className="font-semibold text-neutral-900">
-                            RM {estimatedTotal.toFixed(2)}
+                            {formatCurrency(estimatedTotal)}
                         </span>
                     </div>
 

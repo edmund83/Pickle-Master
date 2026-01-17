@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { X, ShoppingCart, Loader2, CheckCircle, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { useFormatting } from '@/hooks/useFormatting'
 
 interface POItem {
     item_id: string
@@ -27,6 +28,7 @@ export function CreatePODialog({
     items,
     onConfirm,
 }: CreatePODialogProps) {
+    const { formatCurrency, currencySymbol } = useFormatting()
     const [status, setStatus] = useState<'idle' | 'creating' | 'success' | 'error'>('idle')
     const [result, setResult] = useState<{ display_id?: string; error?: string }>({})
 
@@ -170,12 +172,12 @@ export function CreatePODialog({
                                                     <span className="text-neutral-500">
                                                         Qty: {item.quantity}
                                                         {item.unit_cost !== null &&
-                                                            ` @ RM ${item.unit_cost.toFixed(2)}`}
+                                                            ` @ ${formatCurrency(item.unit_cost)}`}
                                                     </span>
                                                 </div>
                                                 {item.unit_cost !== null && (
                                                     <span className="font-medium text-neutral-900 ml-2">
-                                                        RM {(item.quantity * item.unit_cost).toFixed(2)}
+                                                        {formatCurrency(item.quantity * item.unit_cost)}
                                                     </span>
                                                 )}
                                             </div>
@@ -189,7 +191,7 @@ export function CreatePODialog({
                                         Estimated Total
                                     </span>
                                     <span className="text-lg font-semibold text-neutral-900">
-                                        RM {total.toFixed(2)}
+                                        {formatCurrency(total)}
                                     </span>
                                 </div>
 
