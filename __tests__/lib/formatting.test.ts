@@ -14,6 +14,9 @@ import {
   type TenantSettings,
 } from '@/lib/formatting'
 
+// Non-breaking space used in currency formatting to prevent line breaks between symbol and number
+const NBSP = '\u00A0'
+
 /**
  * Formatting Library Tests
  *
@@ -48,17 +51,17 @@ describe('Formatting Library', () => {
   describe('formatCurrency', () => {
     it('formats positive values correctly with default settings', () => {
       const result = formatCurrency(1234.56)
-      expect(result).toBe('RM 1,234.56')
+      expect(result).toBe(`RM${NBSP}1,234.56`)
     })
 
     it('formats negative values correctly', () => {
       const result = formatCurrency(-1234.56)
-      expect(result).toBe('RM -1,234.56')
+      expect(result).toBe(`RM${NBSP}-1,234.56`)
     })
 
     it('formats zero correctly', () => {
       const result = formatCurrency(0)
-      expect(result).toBe('RM 0.00')
+      expect(result).toBe(`RM${NBSP}0.00`)
     })
 
     it('returns dash for null value', () => {
@@ -80,32 +83,32 @@ describe('Formatting Library', () => {
 
     it('respects custom currency setting', () => {
       const settings: Partial<TenantSettings> = { currency: 'USD' }
-      expect(formatCurrency(100, settings)).toBe('$ 100.00')
+      expect(formatCurrency(100, settings)).toBe(`$${NBSP}100.00`)
     })
 
     it('respects decimal precision of 0', () => {
       const settings: Partial<TenantSettings> = { decimal_precision: '1' }
-      expect(formatCurrency(1234.56, settings)).toBe('RM 1,235')
+      expect(formatCurrency(1234.56, settings)).toBe(`RM${NBSP}1,235`)
     })
 
     it('respects decimal precision of 1', () => {
       const settings: Partial<TenantSettings> = { decimal_precision: '0.1' }
-      expect(formatCurrency(1234.56, settings)).toBe('RM 1,234.6')
+      expect(formatCurrency(1234.56, settings)).toBe(`RM${NBSP}1,234.6`)
     })
 
     it('respects decimal precision of 3', () => {
       const settings: Partial<TenantSettings> = { decimal_precision: '0.001' }
-      expect(formatCurrency(1234.5678, settings)).toBe('RM 1,234.568')
+      expect(formatCurrency(1234.5678, settings)).toBe(`RM${NBSP}1,234.568`)
     })
 
     it('handles large numbers', () => {
       const result = formatCurrency(1234567890.12)
-      expect(result).toBe('RM 1,234,567,890.12')
+      expect(result).toBe(`RM${NBSP}1,234,567,890.12`)
     })
 
     it('handles very small decimal values', () => {
       const settings: Partial<TenantSettings> = { decimal_precision: '0.01' }
-      expect(formatCurrency(0.01, settings)).toBe('RM 0.01')
+      expect(formatCurrency(0.01, settings)).toBe(`RM${NBSP}0.01`)
     })
   })
 
@@ -345,7 +348,7 @@ describe('Formatting Library', () => {
   describe('Edge Cases', () => {
     it('handles very large numbers in formatCurrency', () => {
       const result = formatCurrency(999999999999.99)
-      expect(result).toBe('RM 999,999,999,999.99')
+      expect(result).toBe(`RM${NBSP}999,999,999,999.99`)
     })
 
     it('handles empty string date', () => {
