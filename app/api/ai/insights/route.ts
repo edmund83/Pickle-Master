@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { analyzeInventory, InventoryItem } from '@/lib/ai/gemini'
+import { checkRateLimit, RATE_LIMITED_OPERATIONS } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
   try {
@@ -24,6 +25,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'No tenant found' }, { status: 400 })
     }
 
+    // Check rate limit
+    const rateLimitResult = await checkRateLimit(RATE_LIMITED_OPERATIONS.AI_INSIGHTS)
+    if (!rateLimitResult.allowed) {
+      return NextResponse.json(
+        { error: rateLimitResult.error || 'Rate limit exceeded', remaining: 0 },
+        { status: 429 }
+      )
+    }
+
     // Fetch inventory items for analysis
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const { data: items, error: itemsError } = await (supabase as any)
@@ -37,7 +47,7 @@ export async function POST(request: NextRequest) {
         price,
         status,
         updated_at,
-        folders!inner(name)
+        folders(name)
       `)
       .eq('tenant_id', profile.tenant_id)
       .is('deleted_at', null)
