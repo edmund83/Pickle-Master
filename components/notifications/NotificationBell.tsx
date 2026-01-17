@@ -4,40 +4,19 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuthStore } from '@/lib/stores/auth-store'
 import Link from 'next/link'
-import { Bell, Check, AlertTriangle, Package, Users, Settings, X, Calendar, RefreshCw } from 'lucide-react'
+import { Bell, Check, X } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { useFormatting } from '@/hooks/useFormatting'
 import { useTenantSettings } from '@/contexts/TenantSettingsContext'
 import { toZonedTime } from 'date-fns-tz'
+import { getNotificationIcon, getNotificationColor, getEntityRoute } from '@/lib/notifications/notification-utils'
 import type { Notification } from '@/types/database.types'
 
 // Polling interval: 60 seconds (increased from 30s to reduce API load)
 const POLL_INTERVAL_MS = 60000
 
 // Explicit columns to select (avoid select('*'))
-const NOTIFICATION_COLUMNS = 'id, title, message, notification_type, entity_id, created_at'
-
-const NOTIFICATION_ICONS: Record<string, React.ElementType> = {
-  low_stock: AlertTriangle,
-  order_update: Package,
-  system: Settings,
-  team: Users,
-  alert: Bell,
-  reminder_low_stock: AlertTriangle,
-  reminder_expiry: Calendar,
-  reminder_restock: RefreshCw,
-}
-
-const NOTIFICATION_COLORS: Record<string, string> = {
-  low_stock: 'bg-yellow-100 text-yellow-600',
-  order_update: 'bg-blue-100 text-blue-600',
-  system: 'bg-neutral-100 text-neutral-600',
-  team: 'bg-purple-100 text-purple-600',
-  alert: 'bg-red-100 text-red-600',
-  reminder_low_stock: 'bg-yellow-100 text-yellow-600',
-  reminder_expiry: 'bg-orange-100 text-orange-600',
-  reminder_restock: 'bg-blue-100 text-blue-600',
-}
+const NOTIFICATION_COLUMNS = 'id, title, message, notification_type, notification_subtype, entity_type, entity_id, created_at'
 
 interface NotificationBellProps {
   className?: string
@@ -324,13 +303,14 @@ export function NotificationBell({ className, variant = 'default', isExpanded = 
             ) : notifications.length > 0 ? (
               <ul className="divide-y divide-neutral-100">
                 {notifications.map((notification) => {
-                  const Icon = NOTIFICATION_ICONS[notification.notification_type] || Bell
-                  const colorClass = NOTIFICATION_COLORS[notification.notification_type] || NOTIFICATION_COLORS.system
+                  const Icon = getNotificationIcon(notification.notification_type, notification.notification_subtype)
+                  const colorClass = getNotificationColor(notification.notification_type, notification.notification_subtype)
+                  const href = getEntityRoute(notification.entity_type, notification.entity_id)
 
                   return (
                     <li key={notification.id} className="group relative">
                       <Link
-                        href={notification.entity_id ? `/inventory/${notification.entity_id}` : '/notifications'}
+                        href={href}
                         className="flex items-start gap-3 px-4 py-3 hover:bg-neutral-50"
                         onClick={() => setIsOpen(false)}
                       >
