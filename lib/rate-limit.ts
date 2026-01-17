@@ -52,7 +52,11 @@ export const RATE_LIMITED_OPERATIONS = {
     /** Data export operations (30/hour default) */
     EXPORT: 'export',
     /** Global search queries (100/hour default) */
-    GLOBAL_SEARCH: 'global_search'
+    GLOBAL_SEARCH: 'global_search',
+    /** AI insights generation (30/hour default) */
+    AI_INSIGHTS: 'ai_insights',
+    /** AI chat messages (60/hour default) */
+    AI_CHAT: 'ai_chat'
 } as const
 
 export type RateLimitedOperation = typeof RATE_LIMITED_OPERATIONS[keyof typeof RATE_LIMITED_OPERATIONS]

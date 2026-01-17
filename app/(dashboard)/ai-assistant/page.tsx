@@ -4,25 +4,12 @@ import { useState, useEffect, useRef } from 'react'
 import {
   Sparkles,
   Send,
-  RefreshCw,
-  AlertTriangle,
-  TrendingUp,
-  Package,
-  ArrowRight,
   Loader2,
   Bot,
-  User,
-  Lightbulb
+  User
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-
-interface Insight {
-  title: string
-  description: string
-  severity: 'low' | 'medium' | 'high'
-  actionType?: 'reorder' | 'move' | 'review' | 'alert'
-}
 
 interface ChatMessage {
   role: 'user' | 'assistant'
@@ -30,17 +17,10 @@ interface ChatMessage {
 }
 
 export default function AIAssistantPage() {
-  const [insights, setInsights] = useState<Insight[]>([])
-  const [insightsLoading, setInsightsLoading] = useState(true)
   const [chatInput, setChatInput] = useState('')
   const [messages, setMessages] = useState<ChatMessage[]>([])
   const [chatLoading, setChatLoading] = useState(false)
-  const [isDemo, setIsDemo] = useState(false)
   const chatContainerRef = useRef<HTMLDivElement>(null)
-
-  useEffect(() => {
-    fetchInsights()
-  }, [])
 
   useEffect(() => {
     // Scroll to bottom when new messages arrive
@@ -48,29 +28,6 @@ export default function AIAssistantPage() {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight
     }
   }, [messages])
-
-  async function fetchInsights() {
-    setInsightsLoading(true)
-    try {
-      const response = await fetch('/api/ai/insights', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      })
-      const data = await response.json()
-      setInsights(data.insights || [])
-      setIsDemo(data.demo || false)
-    } catch (error) {
-      console.error('Error fetching insights:', error)
-      setInsights([{
-        title: 'Error Loading Insights',
-        description: 'Unable to fetch AI insights at this time',
-        severity: 'low',
-        actionType: 'review'
-      }])
-    } finally {
-      setInsightsLoading(false)
-    }
-  }
 
   async function handleChat(e: React.FormEvent) {
     e.preventDefault()
@@ -94,7 +51,11 @@ export default function AIAssistantPage() {
         })
       })
       const data = await response.json()
-      setMessages(prev => [...prev, { role: 'assistant', content: data.response || 'No response' }])
+      if (data.error) {
+        setMessages(prev => [...prev, { role: 'assistant', content: `Error: ${data.error}` }])
+      } else {
+        setMessages(prev => [...prev, { role: 'assistant', content: data.response || 'No response received' }])
+      }
     } catch (error) {
       console.error('Chat error:', error)
       setMessages(prev => [...prev, {
@@ -106,117 +67,33 @@ export default function AIAssistantPage() {
     }
   }
 
-  function getSeverityColor(severity: string) {
-    switch (severity) {
-      case 'high': return 'bg-red-100 text-red-600 border-red-200'
-      case 'medium': return 'bg-yellow-100 text-yellow-600 border-yellow-200'
-      default: return 'bg-blue-100 text-blue-600 border-blue-200'
-    }
-  }
-
-  function getSeverityIcon(severity: string) {
-    switch (severity) {
-      case 'high': return <AlertTriangle className="h-5 w-5" />
-      case 'medium': return <TrendingUp className="h-5 w-5" />
-      default: return <Lightbulb className="h-5 w-5" />
-    }
-  }
-
-  function getActionIcon(actionType?: string) {
-    switch (actionType) {
-      case 'reorder': return <Package className="h-4 w-4" />
-      case 'move': return <ArrowRight className="h-4 w-4" />
-      default: return <Lightbulb className="h-4 w-4" />
-    }
-  }
-
   return (
     <div className="flex-1 overflow-hidden flex flex-col">
       {/* Header */}
-      <div className="border-b border-neutral-200 bg-white px-8 py-6">
+      <div className="border-b border-neutral-200 bg-white px-4 sm:px-8 py-4 sm:py-6">
         <div className="flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-primary to-primary/90 text-white">
             <Sparkles className="h-5 w-5" />
           </div>
           <div>
-            <h1 className="text-2xl font-semibold text-neutral-900">AI Assistant</h1>
-            <p className="text-neutral-500">
-              Intelligent insights and chat for your inventory
-              {isDemo && <span className="ml-2 text-xs font-medium text-yellow-600">(Demo Mode)</span>}
+            <h1 className="text-xl sm:text-2xl font-semibold text-neutral-900">Ask Zoe</h1>
+            <p className="text-sm text-neutral-500">
+              Your AI inventory assistant
             </p>
           </div>
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="flex-1 overflow-hidden grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
-        {/* Insights Panel */}
-        <div className="lg:col-span-1 flex flex-col min-h-0">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-neutral-900">AI Insights</h2>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={fetchInsights}
-              disabled={insightsLoading}
-            >
-              <RefreshCw className={`h-4 w-4 mr-1 ${insightsLoading ? 'animate-spin' : ''}`} />
-              Refresh
-            </Button>
-          </div>
-
-          <div className="flex-1 overflow-y-auto space-y-4">
-            {insightsLoading ? (
-              <>
-                {[1, 2, 3].map(i => (
-                  <div key={i} className="rounded-xl border border-neutral-200 bg-white p-5 animate-pulse">
-                    <div className="h-4 bg-neutral-200 rounded w-1/2 mb-3"></div>
-                    <div className="h-3 bg-neutral-100 rounded w-full mb-2"></div>
-                    <div className="h-3 bg-neutral-100 rounded w-3/4"></div>
-                  </div>
-                ))}
-              </>
-            ) : insights.length > 0 ? (
-              insights.map((insight, idx) => (
-                <div
-                  key={idx}
-                  className="rounded-xl border border-neutral-200 bg-white p-5 hover:shadow-md transition-shadow"
-                >
-                  <div className="flex items-start gap-3 mb-3">
-                    <div className={`flex h-9 w-9 items-center justify-center rounded-lg ${getSeverityColor(insight.severity)}`}>
-                      {getSeverityIcon(insight.severity)}
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-neutral-900">{insight.title}</h3>
-                      <p className="text-sm text-neutral-500 mt-1">{insight.description}</p>
-                    </div>
-                  </div>
-                  {insight.actionType && (
-                    <Button variant="outline" size="sm" className="w-full">
-                      {getActionIcon(insight.actionType)}
-                      <span className="ml-2 capitalize">{insight.actionType}</span>
-                    </Button>
-                  )}
-                </div>
-              ))
-            ) : (
-              <div className="text-center py-8">
-                <Lightbulb className="h-12 w-12 text-neutral-300 mx-auto" />
-                <p className="mt-4 text-neutral-500">No insights available</p>
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Chat Panel */}
-        <div className="lg:col-span-2 flex flex-col min-h-0 rounded-2xl border border-neutral-200 bg-white overflow-hidden">
+      {/* Main Content - Chat Only */}
+      <div className="flex-1 overflow-hidden flex justify-center p-4 sm:p-6">
+        <div className="w-full max-w-3xl flex flex-col min-h-0 rounded-2xl border border-neutral-200 bg-white overflow-hidden">
           {/* Chat Header */}
-          <div className="flex items-center gap-4 px-6 py-4 border-b border-neutral-200 bg-neutral-50/50">
+          <div className="flex items-center gap-4 px-4 sm:px-6 py-4 border-b border-neutral-200 bg-neutral-50/50">
             <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary text-white shadow-lg shadow-primary/20">
               <Bot className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="font-semibold text-neutral-900">StockZip AI</h3>
+              <h3 className="font-semibold text-neutral-900">Zoe</h3>
               <p className="text-xs text-primary font-medium flex items-center gap-1.5">
                 <span className="w-1.5 h-1.5 bg-primary rounded-full animate-pulse"></span>
                 Analyzing your inventory
@@ -227,7 +104,7 @@ export default function AIAssistantPage() {
           {/* Chat Messages */}
           <div
             ref={chatContainerRef}
-            className="flex-1 overflow-y-auto p-6 space-y-4 bg-neutral-50/30"
+            className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 bg-neutral-50/30"
           >
             {messages.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center text-center py-12">
