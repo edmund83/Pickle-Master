@@ -10,6 +10,7 @@ import {
   findRelevantTopics,
   formatRelevantTopics
 } from './help-knowledge'
+import { ManagedHistory } from './history-manager'
 
 export interface InventoryItem {
   id: string
@@ -237,6 +238,189 @@ ${queryType === 'mixed' ? 'Balance feature explanations with data insights.' : '
       model: MODEL,
       messages,
       max_tokens: 1500 // Allow longer responses for complex queries
+    })
+  })
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}))
+    console.error('[OpenRouter] Error:', response.status, JSON.stringify(errorData))
+    const errorMsg = errorData?.error?.message || errorData?.error || `HTTP ${response.status}`
+    throw new Error(`OpenRouter: ${errorMsg}`)
+  }
+
+  const data = await response.json()
+  const content = data.choices?.[0]?.message?.content
+  if (!content) {
+    throw new Error('OpenRouter: Empty response')
+  }
+
+  return content
+}
+
+// ============================================
+// OPTIMIZED FUNCTIONS (using compressed context)
+// ============================================
+
+/**
+ * Tiered system prompts for different query complexities
+ */
+type PromptTier = 'minimal' | 'standard' | 'extended'
+
+function selectPromptTier(query: string, queryType: QueryType): PromptTier {
+  // Simple greetings or very short queries
+  if (query.length < 30 && /^(hi|hello|hey|thanks|ok|yes|no|sure)\b/i.test(query)) {
+    return 'minimal'
+  }
+
+  // Feature questions need docs
+  if (queryType === 'feature') return 'standard'
+
+  // Complex inventory questions
+  if (query.length > 100 || /\b(who|when|history|trend|compare|analysis)\b/i.test(query)) {
+    return 'extended'
+  }
+
+  return 'standard'
+}
+
+/**
+ * Build minimal prompt (for greetings, simple confirmations)
+ * ~50 tokens
+ */
+function buildMinimalPromptOR(): string {
+  return `You are Zoe, StockZip's friendly AI inventory assistant.
+Be brief, helpful, and conversational.
+For detailed help, suggest visiting /help.`
+}
+
+/**
+ * Build standard prompt (most queries)
+ * ~500-800 tokens
+ */
+function buildStandardPromptOR(
+  query: string,
+  context: string,
+  queryType: QueryType
+): string {
+  const relevantTopics = findRelevantTopics(query, 2)
+
+  const featureSection = queryType !== 'inventory' && relevantTopics.length > 0
+    ? `\n## Relevant Features\n${formatRelevantTopics(relevantTopics)}`
+    : ''
+
+  return `You are Zoe, StockZip's AI inventory assistant.
+
+${featureSection}
+## Data
+${context}
+
+Guidelines:
+- Use COMPLETE counts for totals (marked in Overview)
+- Be specific with names, numbers, dates
+- Keep responses under 150 words
+- Use markdown for clarity
+- Reference /help/* for feature details`
+}
+
+/**
+ * Build extended prompt (complex queries)
+ * ~1000-1500 tokens
+ */
+function buildExtendedPromptOR(
+  query: string,
+  context: string,
+  queryType: QueryType
+): string {
+  const relevantTopics = findRelevantTopics(query, 3)
+
+  const featureSection = queryType !== 'inventory'
+    ? `\n## StockZip Features\n${FEATURE_SUMMARY}\n${relevantTopics.length > 0 ? `\nRelevant: ${formatRelevantTopics(relevantTopics)}` : ''}`
+    : `\nHelp: ${getHelpTopicList()}`
+
+  return `You are Zoe, an intelligent AI assistant for StockZip inventory management.
+
+${featureSection}
+
+## Your Knowledge Base
+**Overview sections = COMPLETE counts (use for totals)**
+**Samples = representative items (not full list)**
+
+${context}
+
+## Guidelines
+1. Use aggregates for totals - they're complete
+2. Be specific with names, numbers, dates
+3. Connect related data (who did what, when, where)
+4. Suggest actions when appropriate
+5. Reference /help/* for features
+6. Keep responses under 300 words
+7. Use markdown formatting
+
+Query Type: ${queryType}`
+}
+
+/**
+ * OPTIMIZED: Chat with compressed context and managed history
+ * Uses tiered prompts based on query complexity
+ */
+export async function inventoryChatOpenRouterOptimized(
+  query: string,
+  compressedContext: string,
+  managedHistory: ManagedHistory,
+  queryType: QueryType = 'mixed'
+): Promise<string> {
+  const apiKey = getOpenRouterApiKey()
+  if (!apiKey) {
+    throw new Error('OpenRouter API key not configured')
+  }
+
+  const tier = selectPromptTier(query, queryType)
+
+  // Build prompt based on tier
+  let systemPrompt: string
+  let maxTokens: number
+
+  switch (tier) {
+    case 'minimal':
+      systemPrompt = buildMinimalPromptOR()
+      maxTokens = 500
+      break
+    case 'extended':
+      systemPrompt = buildExtendedPromptOR(query, compressedContext, queryType)
+      maxTokens = 1500
+      break
+    default:
+      systemPrompt = buildStandardPromptOR(query, compressedContext, queryType)
+      maxTokens = 1000
+  }
+
+  // Add conversation summary if exists
+  if (managedHistory.summary) {
+    systemPrompt = `[Earlier context: ${managedHistory.summary}]\n\n${systemPrompt}`
+  }
+
+  // Convert managed history to OpenAI format
+  const messages: ChatMessage[] = [
+    { role: 'system', content: systemPrompt },
+    ...managedHistory.recentMessages.map(msg => ({
+      role: (msg.role === 'user' ? 'user' : 'assistant') as 'user' | 'assistant',
+      content: msg.content
+    })),
+    { role: 'user', content: query }
+  ]
+
+  const response = await fetch(OPENROUTER_API_URL, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+      'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'https://stockzip.app',
+      'X-Title': 'StockZip - Ask Zoe'
+    },
+    body: JSON.stringify({
+      model: MODEL,
+      messages,
+      max_tokens: maxTokens
     })
   })
 

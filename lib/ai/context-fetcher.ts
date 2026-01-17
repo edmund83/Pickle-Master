@@ -1,4 +1,11 @@
 import { SupabaseClient } from '@supabase/supabase-js'
+import {
+  formatCompactContext,
+  ZoeContextRPCResponse,
+} from './context-compressor'
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnySupabaseClient = SupabaseClient<any, any, any>
 
 /**
  * Context types that can be fetched for AI chat
@@ -50,6 +57,10 @@ const CONTEXT_PATTERNS: Record<ContextType, RegExp[]> = {
     /who has|assigned to|equipment/i,
   ],
 }
+
+// In-memory cache for context with TTL
+const contextCache = new Map<string, { data: ZoeContextRPCResponse; timestamp: number }>()
+const CACHE_TTL_MS = 60000 // 1 minute
 
 /**
  * Determine which context types are needed based on the query
@@ -890,4 +901,156 @@ ${JSON.stringify(context.teamActivity, null, 2)}`)
   }
 
   return sections.join('\n\n')
+}
+
+// ============================================
+// OPTIMIZED FUNCTIONS (using RPC)
+// ============================================
+
+/**
+ * Generate cache key based on tenant and required context types
+ */
+function getCacheKey(tenantId: string, requiredContext: ContextType[]): string {
+  return `${tenantId}:${requiredContext.sort().join(',')}`
+}
+
+/**
+ * Fetch context using optimized RPC (single database call)
+ * This replaces 7+ individual queries with 1 RPC call
+ *
+ * @param supabase - Supabase client
+ * @param query - User's query (used to extract keywords and detect context needs)
+ * @param daysBack - How many days of historical data to include
+ * @returns Formatted context string ready for AI prompt
+ */
+export async function fetchZoeContextOptimized(
+  supabase: AnySupabaseClient,
+  query: string,
+  daysBack: number = 30
+): Promise<{ context: ZoeContextRPCResponse; formatted: string }> {
+  const requiredContext = detectRequiredContext(query)
+  const searchKeywords = extractSearchKeywords(query)
+
+  // Determine item limit based on context complexity
+  const itemLimit = requiredContext.length > 2 ? 15 : requiredContext.length > 1 ? 20 : 25
+
+  // Call the optimized RPC function
+  const { data, error } = await supabase.rpc('get_zoe_context', {
+    p_query_keywords: searchKeywords,
+    p_include_movements: requiredContext.includes('movements'),
+    p_include_po: requiredContext.includes('purchase_orders'),
+    p_include_pick_lists: requiredContext.includes('pick_lists'),
+    p_include_checkouts: requiredContext.includes('checkouts'),
+    p_include_tasks: requiredContext.includes('tasks'),
+    p_include_team: requiredContext.includes('team_activity'),
+    p_days_back: daysBack,
+    p_item_limit: itemLimit,
+  })
+
+  if (error) {
+    console.error('Error fetching Zoe context via RPC:', error)
+    throw new Error(`Failed to fetch context: ${error.message}`)
+  }
+
+  if (!data) {
+    throw new Error('No context data returned (unauthorized?)')
+  }
+
+  const context = data as ZoeContextRPCResponse
+
+  // Format using compact compression (50-60% token reduction)
+  const formatted = formatCompactContext(context)
+
+  return { context, formatted }
+}
+
+/**
+ * Fetch context with caching (1-minute TTL)
+ * Uses RPC under the hood for efficiency
+ */
+export async function fetchZoeContextCached(
+  supabase: AnySupabaseClient,
+  tenantId: string,
+  query: string,
+  daysBack: number = 30
+): Promise<{ context: ZoeContextRPCResponse; formatted: string; cached: boolean }> {
+  const requiredContext = detectRequiredContext(query)
+  const cacheKey = getCacheKey(tenantId, requiredContext)
+
+  // Check cache
+  const cached = contextCache.get(cacheKey)
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+    // Cache hit - but still need to format (search results may differ)
+    const formatted = formatCompactContext(cached.data)
+    return { context: cached.data, formatted, cached: true }
+  }
+
+  // Cache miss - fetch fresh
+  const result = await fetchZoeContextOptimized(supabase, query, daysBack)
+
+  // Update cache
+  contextCache.set(cacheKey, { data: result.context, timestamp: Date.now() })
+
+  return { ...result, cached: false }
+}
+
+/**
+ * Clear the context cache (call after inventory mutations)
+ */
+export function clearContextCache(tenantId?: string): void {
+  if (tenantId) {
+    // Clear only for specific tenant
+    for (const key of contextCache.keys()) {
+      if (key.startsWith(tenantId)) {
+        contextCache.delete(key)
+      }
+    }
+  } else {
+    // Clear all
+    contextCache.clear()
+  }
+}
+
+/**
+ * Validate AI request using optimized RPC (single call for auth + rate limit + tenant)
+ * Returns tenant_id and rate limit info if allowed
+ */
+export async function validateAiRequest(
+  supabase: AnySupabaseClient,
+  operation: string = 'ai_chat'
+): Promise<{
+  allowed: boolean
+  tenantId?: string
+  remaining?: number
+  error?: string
+  status: number
+}> {
+  const { data, error } = await supabase.rpc('validate_ai_request', {
+    p_operation: operation,
+  })
+
+  if (error) {
+    console.error('Error validating AI request:', error)
+    return { allowed: false, error: error.message, status: 500 }
+  }
+
+  if (!data) {
+    return { allowed: false, error: 'No validation response', status: 500 }
+  }
+
+  const result = data as {
+    allowed: boolean
+    tenant_id?: string
+    remaining?: number
+    error?: string
+    status: number
+  }
+
+  return {
+    allowed: result.allowed,
+    tenantId: result.tenant_id,
+    remaining: result.remaining,
+    error: result.error,
+    status: result.status,
+  }
 }

@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 import { QueryType } from './query-classifier'
 import {
   FEATURE_SUMMARY,
@@ -6,6 +6,14 @@ import {
   findRelevantTopics,
   formatRelevantTopics
 } from './help-knowledge'
+import { ManagedHistory, formatHistoryForPrompt } from './history-manager'
+
+/**
+ * Check if Gemini is configured
+ */
+export function isGeminiConfigured(): boolean {
+  return !!(process.env.GOOGLE_AI_API_KEY || process.env.GEMINI_API_KEY)
+}
 
 // Ensure this is only called server-side
 const getGeminiClient = () => {
@@ -343,5 +351,170 @@ Keep it concise and actionable. Do not use markdown.`
   } catch (error) {
     console.error('Error generating summary:', error)
     return `Your inventory contains ${totalItems} items with ${lowStock} low stock and ${outOfStock} out of stock items requiring attention.`
+  }
+}
+
+// ============================================
+// OPTIMIZED FUNCTIONS (using compressed context)
+// ============================================
+
+/**
+ * Tiered system prompts for different query complexities
+ */
+type PromptTier = 'minimal' | 'standard' | 'extended'
+
+function selectPromptTier(query: string, queryType: QueryType): PromptTier {
+  // Simple greetings or very short queries
+  if (query.length < 30 && /^(hi|hello|hey|thanks|ok|yes|no|sure)\b/i.test(query)) {
+    return 'minimal'
+  }
+
+  // Feature questions need docs
+  if (queryType === 'feature') return 'standard'
+
+  // Complex inventory questions
+  if (query.length > 100 || /\b(who|when|history|trend|compare|analysis)\b/i.test(query)) {
+    return 'extended'
+  }
+
+  return 'standard'
+}
+
+/**
+ * Build minimal prompt (for greetings, simple confirmations)
+ * ~50 tokens
+ */
+function buildMinimalPrompt(): string {
+  return `You are Zoe, StockZip's friendly AI inventory assistant.
+Be brief, helpful, and conversational.
+For detailed help, suggest visiting /help.`
+}
+
+/**
+ * Build standard prompt (most queries)
+ * ~500-800 tokens
+ */
+function buildStandardPrompt(
+  query: string,
+  context: string,
+  queryType: QueryType
+): string {
+  const relevantTopics = findRelevantTopics(query, 2) // Limit to 2 topics
+
+  const featureSection = queryType !== 'inventory' && relevantTopics.length > 0
+    ? `\n## Relevant Features\n${formatRelevantTopics(relevantTopics)}`
+    : ''
+
+  return `You are Zoe, StockZip's AI inventory assistant.
+
+${featureSection}
+## Data
+${context}
+
+Guidelines:
+- Use COMPLETE counts for totals (marked in Overview)
+- Be specific with names, numbers, dates
+- Keep responses under 150 words
+- Use markdown for clarity
+- Reference /help/* for feature details
+
+Query: ${query}`
+}
+
+/**
+ * Build extended prompt (complex queries)
+ * ~1000-1500 tokens
+ */
+function buildExtendedPrompt(
+  query: string,
+  context: string,
+  queryType: QueryType
+): string {
+  const relevantTopics = findRelevantTopics(query, 3)
+
+  const featureSection = queryType !== 'inventory'
+    ? `\n## StockZip Features\n${FEATURE_SUMMARY}\n${relevantTopics.length > 0 ? `\nRelevant: ${formatRelevantTopics(relevantTopics)}` : ''}`
+    : `\nHelp: ${getHelpTopicList()}`
+
+  return `You are Zoe, an intelligent AI assistant for StockZip inventory management.
+
+${featureSection}
+
+## Your Knowledge Base
+**Overview sections = COMPLETE counts (use for totals)**
+**Samples = representative items (not full list)**
+
+${context}
+
+## Guidelines
+1. Use aggregates for totals - they're complete
+2. Be specific with names, numbers, dates
+3. Connect related data (who did what, when, where)
+4. Suggest actions when appropriate
+5. Reference /help/* for features
+6. Keep responses under 300 words
+7. Use markdown formatting
+
+Query Type: ${queryType}
+User: ${query}`
+}
+
+/**
+ * OPTIMIZED: Chat with compressed context and managed history
+ * Uses tiered prompts based on query complexity
+ */
+export async function inventoryChatOptimized(
+  query: string,
+  compressedContext: string,
+  managedHistory: ManagedHistory,
+  queryType: QueryType = 'mixed'
+): Promise<string> {
+  const genAI = getGeminiClient()
+  const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+
+  const tier = selectPromptTier(query, queryType)
+
+  // Build prompt based on tier
+  let systemPrompt: string
+  let maxTokens: number
+
+  switch (tier) {
+    case 'minimal':
+      systemPrompt = buildMinimalPrompt() + `\n\nUser: ${query}`
+      maxTokens = 500
+      break
+    case 'extended':
+      systemPrompt = buildExtendedPrompt(query, compressedContext, queryType)
+      maxTokens = 1500
+      break
+    default:
+      systemPrompt = buildStandardPrompt(query, compressedContext, queryType)
+      maxTokens = 1000
+  }
+
+  // Add conversation summary if exists
+  if (managedHistory.summary) {
+    systemPrompt = `[Earlier context: ${managedHistory.summary}]\n\n${systemPrompt}`
+  }
+
+  try {
+    // Build conversation history for chat
+    const historyMessages = managedHistory.recentMessages.map(msg => ({
+      role: msg.role as 'user' | 'model',
+      parts: [{ text: msg.content }]
+    }))
+
+    const chat = model.startChat({
+      history: historyMessages,
+      generationConfig: {
+        maxOutputTokens: maxTokens,
+      }
+    })
+
+    const result = await chat.sendMessage(systemPrompt)
+    return result.response.text()
+  } catch (error) {
+    console.error('Error in optimized inventory chat:', error)
+    return 'I apologize, but I encountered an error processing your request. Please try again.'
   }
 }
