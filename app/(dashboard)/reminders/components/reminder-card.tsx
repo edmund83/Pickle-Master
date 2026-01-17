@@ -140,7 +140,7 @@ export function ReminderCard({ reminder, onDeleted, onToggled, onEdit }: Reminde
 
               <div className="mt-1 flex items-center gap-2 text-sm text-neutral-500">
                 {reminder.source_type === 'folder' ? (
-                  <FolderOpen className="h-4 w-4 text-neutral-400" />
+                  <FolderOpen className="h-4 w-4 text-accent" fill="oklch(95% 0.08 85.79)" />
                 ) : (
                   <Package className="h-4 w-4 text-neutral-400" />
                 )}

@@ -270,7 +270,7 @@ export function NewReminderModal({
                         : 'border-neutral-200 text-neutral-600 hover:border-neutral-300'
                     )}
                   >
-                    <FolderOpen className="h-5 w-5" />
+                    <FolderOpen className="h-5 w-5 text-accent" fill="oklch(95% 0.08 85.79)" />
                     Entire Folder
                   </button>
                 </div>
@@ -337,7 +337,7 @@ export function NewReminderModal({
                           onChange={() => setSelectedFolderId(folder.id)}
                           className="h-4 w-4 border-neutral-300 text-primary focus:ring-primary"
                         />
-                        <FolderOpen className="h-4 w-4 text-neutral-400" />
+                        <FolderOpen className="h-4 w-4 text-accent" fill="oklch(95% 0.08 85.79)" />
                         <span className="text-sm text-neutral-700 truncate flex-1">
                           {folder.name}
                         </span>

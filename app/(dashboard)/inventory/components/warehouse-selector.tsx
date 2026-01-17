@@ -45,8 +45,9 @@ export function WarehouseSelector({
           )}
         >
           <FolderIcon
-            className="h-4 w-4 flex-shrink-0"
-            style={displayColor ? { color: displayColor } : { color: '#0EA5FF' }}
+            className={cn("h-4 w-4 flex-shrink-0", !displayColor && "text-accent")}
+            style={displayColor ? { color: displayColor } : undefined}
+            fill={displayColor ? undefined : 'oklch(95% 0.08 85.79)'}
           />
           <span className="text-sm font-medium text-neutral-700 truncate max-w-[120px]">
             {displayName}
@@ -126,7 +127,7 @@ export function WarehouseSelector({
         {/* Empty state */}
         {warehouses.length === 0 && (
           <div className="px-4 py-6 text-center">
-            <FolderIcon className="h-8 w-8 text-neutral-300 mx-auto mb-2" />
+            <FolderIcon className="h-8 w-8 text-accent mx-auto mb-2" fill="oklch(95% 0.08 85.79)" />
             <p className="text-sm text-neutral-500">No folders yet</p>
             <p className="text-xs text-neutral-400 mt-1">
               Create a folder to organize your items

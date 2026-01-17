@@ -157,12 +157,12 @@ export default function StockMovementPage() {
                       {movement.action_type === 'move' && movement.from_folder_name && movement.to_folder_name ? (
                         <>
                           <span className="flex items-center gap-1">
-                            <FolderOpen className="h-3 w-3" />
+                            <FolderOpen className="h-3 w-3 text-accent" fill="oklch(95% 0.08 85.79)" />
                             {movement.from_folder_name}
                           </span>
                           <ArrowRight className="h-3 w-3" />
                           <span className="flex items-center gap-1">
-                            <FolderOpen className="h-3 w-3" />
+                            <FolderOpen className="h-3 w-3 text-accent" fill="oklch(95% 0.08 85.79)" />
                             {movement.to_folder_name}
                           </span>
                         </>

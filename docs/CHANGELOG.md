@@ -9,6 +9,35 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Added
+
+#### Per-User AI Usage Cost Tracking
+Cost-based usage limits for AI features to control spending:
+
+**Database** (Migration: `00082_ai_usage_cost_tracking.sql`):
+- `ai_usage_tracking` table - Logs every AI request with token counts and USD cost
+- `ai_usage_limits` table - Per-user monthly limits (default $0.05/month)
+- `check_ai_usage_limit()` RPC - Pre-request validation
+- `track_ai_usage()` RPC - Post-request logging with model-specific pricing
+- `get_ai_usage_summary()` RPC - Usage dashboard data
+- `set_user_ai_limit()` RPC - Admin function to adjust user limits
+- Auto-creates limits for new users via trigger
+
+**TypeScript** (`lib/ai/usage-tracking.ts`):
+- `checkAiUsageLimit()` - Server-side pre-check
+- `trackAiUsage()` - Server-side usage logging
+- `estimateCost()` - Token-to-cost estimation
+- Client-side variants for UI display
+
+**API Routes Updated**:
+- `/api/ai/chat` - Checks limit before AI call, tracks usage after
+- `/api/ai/insights` - Checks limit before AI call, tracks usage after
+
+**Pricing**:
+- Default limit: $0.05/month (~100-160 questions with Gemini Flash)
+- Model-specific rates: Gemini Flash ($0.075/$0.30 per 1M tokens), GPT-4o, Claude, etc.
+- 80% warning threshold before limit reached
+
 ### Changed
 
 #### Ask Zoe AI Assistant Optimization

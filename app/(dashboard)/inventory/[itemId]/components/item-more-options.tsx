@@ -55,7 +55,7 @@ export function ItemMoreOptions({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           <DropdownMenuItem onClick={() => setOpenModal('move')}>
-            <FolderOpen className="h-4 w-4 text-neutral-500" />
+            <FolderOpen className="h-4 w-4 text-accent" fill="oklch(95% 0.08 85.79)" />
             Move to Folder
           </DropdownMenuItem>
           <DropdownMenuItem onClick={handleDuplicate}>

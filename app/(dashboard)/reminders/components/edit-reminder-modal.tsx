@@ -174,7 +174,7 @@ export function EditReminderModal({
               </label>
               <div className="flex items-center gap-3 rounded-lg border border-neutral-200 bg-neutral-50 p-3">
                 {reminder.source_type === 'folder' ? (
-                  <FolderOpen className="h-5 w-5 text-neutral-400" />
+                  <FolderOpen className="h-5 w-5 text-accent" fill="oklch(95% 0.08 85.79)" />
                 ) : (
                   <Package className="h-5 w-5 text-neutral-400" />
                 )}

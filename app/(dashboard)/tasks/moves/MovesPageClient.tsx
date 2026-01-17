@@ -268,8 +268,8 @@ export function MovesPageClient({ initialData }: MovesPageClientProps) {
           )}
           {!hasChildren && <span className="w-5" />}
           <FolderIcon
-            className="h-5 w-5 flex-shrink-0 text-neutral-400"
-            fill="#e5e5e5"
+            className="h-5 w-5 flex-shrink-0 text-accent"
+            fill="oklch(95% 0.08 85.79)"
             strokeWidth={1.5}
           />
           <span className="font-medium text-neutral-900 truncate">{folder.name}</span>
@@ -514,7 +514,7 @@ export function MovesPageClient({ initialData }: MovesPageClientProps) {
                       : 'border-neutral-200 hover:bg-neutral-50'
                   )}
                 >
-                  <FolderOpen className="h-5 w-5 text-neutral-400" />
+                  <FolderOpen className="h-5 w-5 text-accent" fill="oklch(95% 0.08 85.79)" />
                   <span className="font-medium text-neutral-900">Root (No Folder)</span>
                 </button>
 

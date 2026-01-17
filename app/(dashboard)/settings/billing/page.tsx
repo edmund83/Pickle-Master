@@ -402,8 +402,8 @@ export default function BillingPage() {
             {/* Folders Usage */}
             <div className="rounded-xl border border-neutral-200 bg-neutral-50/50 p-4">
               <div className="flex items-center gap-3 mb-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-100 text-purple-600">
-                  <FolderOpen className="h-4 w-4" />
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-accent/20">
+                  <FolderOpen className="h-4 w-4 text-accent" fill="oklch(95% 0.08 85.79)" />
                 </div>
                 <div>
                   <p className="text-sm font-medium text-neutral-600">Folders</p>

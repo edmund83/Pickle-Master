@@ -226,7 +226,7 @@ export function WizardStepScope({
             </div>
           ) : (
             <div className="p-6 text-center border border-neutral-200 rounded-xl bg-neutral-50">
-              <FolderOpen className="h-8 w-8 text-neutral-300 mx-auto mb-2" />
+              <FolderOpen className="h-8 w-8 text-accent mx-auto mb-2" fill="oklch(95% 0.08 85.79)" />
               <p className="text-sm text-neutral-500">
                 No folders found. Create folders in your inventory first.
               </p>

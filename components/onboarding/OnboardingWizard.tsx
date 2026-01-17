@@ -305,13 +305,13 @@ export default function OnboardingWizard({ onComplete, isModal = true }: Onboard
               </p>
               <div className="space-y-3">
                 <div className="flex items-center gap-3 text-primary font-semibold text-sm">
-                  <FolderOpen className="h-4 w-4" />
+                  <FolderOpen className="h-4 w-4 text-accent" fill="oklch(95% 0.08 85.79)" />
                   <span>All Items</span>
                 </div>
                 <div className="ml-6 space-y-2 border-l-2 border-neutral-200 pl-4">
                   {folders.filter(f => f.name.trim()).map((folder, index) => (
                     <div key={index} className="flex items-center gap-2 text-neutral-500 text-sm">
-                      <FolderOpen className="h-3 w-3" />
+                      <FolderOpen className="h-3 w-3 text-accent" fill="oklch(95% 0.08 85.79)" />
                       <span>{folder.name}</span>
                     </div>
                   ))}

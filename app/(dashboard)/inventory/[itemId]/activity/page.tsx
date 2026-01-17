@@ -150,14 +150,14 @@ export default async function ActivityHistoryPage({ params }: PageProps) {
                           {log.action_type === 'move' && (log.from_folder_name !== null || log.to_folder_name !== null) && (
                             <div className="mt-2 flex items-center gap-2 text-xs text-neutral-600">
                               <div className="flex items-center gap-1">
-                                <Folder className="h-3 w-3 text-neutral-400" />
+                                <Folder className="h-3 w-3 text-accent" fill="oklch(95% 0.08 85.79)" />
                                 <span className="text-neutral-500">
                                   {log.from_folder_name || 'No Folder'}
                                 </span>
                               </div>
                               <ArrowRight className="h-3 w-3 text-orange-500" />
                               <div className="flex items-center gap-1">
-                                <Folder className="h-3 w-3 text-neutral-400" />
+                                <Folder className="h-3 w-3 text-accent" fill="oklch(95% 0.08 85.79)" />
                                 <span className="font-medium text-neutral-700">
                                   {log.to_folder_name || 'No Folder'}
                                 </span>
