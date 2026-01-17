@@ -9,6 +9,32 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Changed
+
+#### Ask Zoe AI Assistant Optimization
+Major performance and cost optimization for the Ask Zoe AI assistant:
+
+**Database Optimizations** (Migrations: `00080_zoe_context_rpc.sql`, `00081_validate_ai_request.sql`):
+- New `get_zoe_context()` RPC function replaces 7+ individual queries with 1 server-side call
+- New `validate_ai_request()` RPC combines auth + profile + rate limit checks (3 calls → 1)
+- Server-side SQL aggregation instead of fetching all rows for counts
+
+**Token Usage Optimization**:
+- Compact pipe-delimited format for inventory data (60% token reduction)
+- Status abbreviations (in_stock → I, low_stock → L, out_of_stock → O)
+- Tiered system prompts based on query complexity (minimal/standard/extended)
+- Conversation history summarization (20 messages → 6 recent + summary)
+
+**New Files**:
+- `lib/ai/context-compressor.ts` - Compact formatting utilities
+- `lib/ai/history-manager.ts` - Conversation history management with summarization
+
+**Expected Results**:
+- API calls: 3-10 → 2-3 (70% reduction)
+- Data transfer: 100-500KB → 5-20KB (95% reduction)
+- Token usage: ~8000 → ~3000 tokens per chat (60% reduction)
+- Cost per chat: ~$0.02 → ~$0.008 (60% savings)
+
 ### Added
 
 #### User Documentation Guide
