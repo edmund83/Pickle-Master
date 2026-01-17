@@ -12,6 +12,7 @@ import {
   HelpTable,
   HelpTip,
   HelpSteps,
+  HelpFolderTree,
 } from '../components/HelpArticleLayout'
 
 export default function FoldersHelp() {
@@ -78,45 +79,51 @@ export default function FoldersHelp() {
         <HelpParagraph>
           If you have items in different places, organize by where they are:
         </HelpParagraph>
-        <div className="mb-4 rounded-lg bg-neutral-50 p-4 font-mono text-sm text-neutral-700">
-          <div>📁 Main Warehouse</div>
-          <div className="ml-4">📁 Aisle A</div>
-          <div className="ml-8">📁 Shelf 1</div>
-          <div className="ml-8">📁 Shelf 2</div>
-          <div className="ml-4">📁 Aisle B</div>
-          <div>📁 Retail Store</div>
-          <div className="ml-4">📁 Display Cases</div>
-          <div className="ml-4">📁 Back Stock</div>
-          <div>📁 Service Vans</div>
-          <div className="ml-4">📁 Van 1</div>
-          <div className="ml-4">📁 Van 2</div>
-        </div>
+        <HelpFolderTree
+          items={[
+            { name: 'Main Warehouse', level: 0 },
+            { name: 'Aisle A', level: 1 },
+            { name: 'Shelf 1', level: 2 },
+            { name: 'Shelf 2', level: 2 },
+            { name: 'Aisle B', level: 1 },
+            { name: 'Retail Store', level: 0 },
+            { name: 'Display Cases', level: 1 },
+            { name: 'Back Stock', level: 1 },
+            { name: 'Service Vans', level: 0 },
+            { name: 'Van 1', level: 1 },
+            { name: 'Van 2', level: 1 },
+          ]}
+        />
 
         <HelpSubheading>By Category</HelpSubheading>
         <HelpParagraph>
           If location doesn&apos;t matter as much, organize by what things are:
         </HelpParagraph>
-        <div className="mb-4 rounded-lg bg-neutral-50 p-4 font-mono text-sm text-neutral-700">
-          <div>📁 Electronics</div>
-          <div className="ml-4">📁 Cables</div>
-          <div className="ml-4">📁 Adapters</div>
-          <div>📁 Office Supplies</div>
-          <div>📁 Cleaning Supplies</div>
-          <div>📁 Tools</div>
-        </div>
+        <HelpFolderTree
+          items={[
+            { name: 'Electronics', level: 0 },
+            { name: 'Cables', level: 1 },
+            { name: 'Adapters', level: 1 },
+            { name: 'Office Supplies', level: 0 },
+            { name: 'Cleaning Supplies', level: 0 },
+            { name: 'Tools', level: 0 },
+          ]}
+        />
 
         <HelpSubheading>Combination (Most Common)</HelpSubheading>
         <HelpParagraph>
           Most businesses use a mix - locations at the top level, then categories inside:
         </HelpParagraph>
-        <div className="mb-4 rounded-lg bg-neutral-50 p-4 font-mono text-sm text-neutral-700">
-          <div>📁 New York Office</div>
-          <div className="ml-4">📁 IT Closet</div>
-          <div className="ml-4">📁 Supply Room</div>
-          <div>📁 Chicago Office</div>
-          <div className="ml-4">📁 IT Closet</div>
-          <div className="ml-4">📁 Supply Room</div>
-        </div>
+        <HelpFolderTree
+          items={[
+            { name: 'New York Office', level: 0 },
+            { name: 'IT Closet', level: 1 },
+            { name: 'Supply Room', level: 1 },
+            { name: 'Chicago Office', level: 0 },
+            { name: 'IT Closet', level: 1 },
+            { name: 'Supply Room', level: 1 },
+          ]}
+        />
 
         <HelpTip>
           Start simple! You can always add more folders later. It&apos;s easier to start with a few
