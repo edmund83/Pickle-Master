@@ -6,6 +6,7 @@ import { Minus, Plus, AlertCircle, AlertTriangle, TrendingDown } from 'lucide-re
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
+import { useFormatting } from '@/hooks/useFormatting'
 
 interface ReorderItemRowProps {
     item: {
@@ -58,6 +59,7 @@ export function ReorderItemRow({
     showVendorSku = true,
     disabled = false,
 }: ReorderItemRowProps) {
+    const { formatCurrency } = useFormatting()
     const [isEditing, setIsEditing] = useState(false)
     const [inputValue, setInputValue] = useState(quantity.toString())
 
@@ -226,10 +228,10 @@ export function ReorderItemRow({
             {lineTotal !== null && (
                 <div className="text-right min-w-[80px]">
                     <div className="text-sm font-medium text-neutral-900">
-                        RM {lineTotal.toFixed(2)}
+                        {formatCurrency(lineTotal)}
                     </div>
                     <div className="text-xs text-neutral-500">
-                        @ RM {item.unit_cost?.toFixed(2)}
+                        @ {formatCurrency(item.unit_cost)}
                     </div>
                 </div>
             )}

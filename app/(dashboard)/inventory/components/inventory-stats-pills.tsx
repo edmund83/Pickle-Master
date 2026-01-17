@@ -2,6 +2,7 @@
 
 import { Folder, Package, Hash, DollarSign, TrendingUp, TrendingDown, Minus } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { useFormatting } from '@/hooks/useFormatting'
 
 interface InventoryStatsCardsProps {
   folderCount: number
@@ -9,7 +10,6 @@ interface InventoryStatsCardsProps {
   totalQuantity: number
   totalValue: number
   todayNetMovement?: number | null // positive = net in, negative = net out, null = loading
-  currency?: string
   className?: string
 }
 
@@ -19,16 +19,10 @@ export function InventoryStatsCards({
   totalQuantity,
   totalValue,
   todayNetMovement,
-  currency = 'RM',
   className,
 }: InventoryStatsCardsProps) {
+  const { formatCurrency } = useFormatting()
   const formatNumber = (num: number) => num.toLocaleString()
-
-  const formatCurrency = (num: number) =>
-    `${currency} ${num.toLocaleString(undefined, {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })}`
 
   // Determine movement display
   const getMovementDisplay = () => {

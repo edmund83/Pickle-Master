@@ -28,11 +28,13 @@ import {
     type ReorderSuggestion,
 } from '@/app/actions/reorder-suggestions'
 import { cn } from '@/lib/utils'
+import { useFormatting } from '@/hooks/useFormatting'
 
 type ViewMode = 'vendor' | 'all'
 
 export default function ReorderSuggestionsPage() {
     const router = useRouter()
+    const { formatCurrency } = useFormatting()
     const [viewMode, setViewMode] = useState<ViewMode>('vendor')
     const [loading, setLoading] = useState(true)
     const [refreshing, setRefreshing] = useState(false)
@@ -286,7 +288,7 @@ export default function ReorderSuggestionsPage() {
                                         </div>
                                         <div>
                                             <p className="text-2xl font-bold text-neutral-900">
-                                                RM {totalEstimate.toFixed(0)}
+                                                {formatCurrency(totalEstimate)}
                                             </p>
                                             <p className="text-xs text-neutral-500">Est. Total</p>
                                         </div>

@@ -1,6 +1,7 @@
 'use client'
 
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts'
+import { useState, useEffect, useRef } from 'react'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Cell } from 'recharts'
 import { useFormatting } from '@/hooks/useFormatting'
 
 interface InventoryValueChartProps {
@@ -12,6 +13,34 @@ interface InventoryValueChartProps {
 
 export function InventoryValueChart({ data }: InventoryValueChartProps) {
     const { formatCurrency, currencySymbol } = useFormatting()
+    const containerRef = useRef<HTMLDivElement>(null)
+    const [dimensions, setDimensions] = useState<{ width: number; height: number } | null>(null)
+
+    // Only render chart when container is visible and has dimensions
+    useEffect(() => {
+        const container = containerRef.current
+        if (!container) return
+
+        // Check initial dimensions
+        const rect = container.getBoundingClientRect()
+        if (rect.width > 0 && rect.height > 0) {
+            setDimensions({ width: rect.width, height: rect.height })
+        }
+
+        const observer = new ResizeObserver((entries) => {
+            for (const entry of entries) {
+                const { width, height } = entry.contentRect
+                if (width > 0 && height > 0) {
+                    setDimensions({ width, height })
+                } else {
+                    setDimensions(null)
+                }
+            }
+        })
+
+        observer.observe(container)
+        return () => observer.disconnect()
+    }, [])
 
     if (data.length === 0 || data.every(d => d.value === 0)) {
         return (
@@ -25,9 +54,11 @@ export function InventoryValueChart({ data }: InventoryValueChartProps) {
     const chartData = [...data].sort((a, b) => b.value - a.value).slice(0, 5)
 
     return (
-        <div className="h-[300px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
+        <div ref={containerRef} className="h-[300px] w-full">
+            {dimensions && (
                 <BarChart
+                    width={dimensions.width}
+                    height={dimensions.height}
                     data={chartData}
                     margin={{
                         top: 20,
@@ -57,11 +88,11 @@ export function InventoryValueChart({ data }: InventoryValueChartProps) {
                     />
                     <Bar dataKey="value" radius={[4, 4, 0, 0]} barSize={40}>
                         {chartData.map((_, index) => (
-                            <Cell key={`cell-${index}`} fill="#10B981" /> /* StockZip Green */
+                            <Cell key={`cell-${index}`} fill="#10B981" />
                         ))}
                     </Bar>
                 </BarChart>
-            </ResponsiveContainer>
+            )}
         </div>
     )
 }

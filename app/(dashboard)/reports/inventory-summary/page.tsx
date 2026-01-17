@@ -5,6 +5,7 @@ import { ArrowLeft, Package, Folder } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { InventoryItem, Folder as FolderType } from '@/types/database.types'
+import { formatCurrency, TenantSettings, DEFAULT_TENANT_SETTINGS } from '@/lib/formatting'
 
 interface SummaryData {
   items: InventoryItem[]
@@ -16,6 +17,7 @@ interface SummaryData {
     low_stock: number
     out_of_stock: number
   }
+  settings: Partial<TenantSettings>
 }
 
 async function getSummaryData(): Promise<SummaryData> {
@@ -38,8 +40,19 @@ async function getSummaryData(): Promise<SummaryData> {
       totalItems: 0,
       totalValue: 0,
       byStatus: { in_stock: 0, low_stock: 0, out_of_stock: 0 },
+      settings: DEFAULT_TENANT_SETTINGS,
     }
   }
+
+  // Fetch tenant settings for currency formatting
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: tenant } = await (supabase as any)
+    .from('tenants')
+    .select('settings')
+    .eq('id', profile.tenant_id)
+    .single()
+
+  const settings = tenant?.settings || DEFAULT_TENANT_SETTINGS
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: items } = await (supabase as any)
@@ -67,6 +80,7 @@ async function getSummaryData(): Promise<SummaryData> {
       low_stock: itemsList.filter((i) => i.status === 'low_stock').length,
       out_of_stock: itemsList.filter((i) => i.status === 'out_of_stock').length,
     },
+    settings,
   }
 }
 
@@ -115,7 +129,7 @@ export default async function InventorySummaryPage() {
             <CardContent className="p-6">
               <p className="text-sm text-neutral-500">Total Value</p>
               <p className="text-2xl font-semibold text-neutral-900">
-                RM {data.totalValue.toLocaleString('en-MY', { minimumFractionDigits: 2 })}
+                {formatCurrency(data.totalValue, data.settings)}
               </p>
             </CardContent>
           </Card>
@@ -157,7 +171,7 @@ export default async function InventorySummaryPage() {
                     </div>
                   </div>
                   <p className="font-medium text-neutral-900">
-                    RM {value.toLocaleString('en-MY', { minimumFractionDigits: 2 })}
+                    {formatCurrency(value, data.settings)}
                   </p>
                 </div>
               ))}
@@ -173,7 +187,7 @@ export default async function InventorySummaryPage() {
                     </div>
                   </div>
                   <p className="font-medium text-neutral-900">
-                    RM {uncategorizedValue.toLocaleString('en-MY', { minimumFractionDigits: 2 })}
+                    {formatCurrency(uncategorizedValue, data.settings)}
                   </p>
                 </div>
               )}

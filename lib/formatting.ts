@@ -209,7 +209,7 @@ export function formatCurrency(
     maximumFractionDigits: decimals,
   })
 
-  return `${symbol} ${formatted}`
+  return `${symbol}\u00A0${formatted}`
 }
 
 /**

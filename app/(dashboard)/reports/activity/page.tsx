@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Activity, Filter, Download, Loader2, User, Package, FolderOpen, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useFormatting } from '@/hooks/useFormatting'
 import type { ActivityLog } from '@/types/database.types'
 
 const ACTION_ICONS: Record<string, React.ElementType> = {
@@ -35,6 +36,7 @@ export default function ActivityReportPage() {
     dateRange: '7', // days
   })
   const [showFilters, setShowFilters] = useState(false)
+  const { formatDateTime } = useFormatting()
 
   useEffect(() => {
     loadActivities()
@@ -88,7 +90,7 @@ export default function ActivityReportPage() {
   function exportCSV() {
     const headers = ['Date', 'User', 'Action', 'Entity Type', 'Entity Name', 'Details']
     const rows = activities.map(a => [
-      a.created_at ? new Date(a.created_at).toLocaleString() : '',
+      a.created_at ? formatDateTime(a.created_at) : '',
       a.user_name || 'System',
       a.action_type,
       a.entity_type,
@@ -233,7 +235,7 @@ export default function ActivityReportPage() {
                           </div>
                         </div>
                         <span className="flex-shrink-0 text-xs text-neutral-400">
-                          {activity.created_at ? new Date(activity.created_at).toLocaleString() : ''}
+                          {activity.created_at ? formatDateTime(activity.created_at) : ''}
                         </span>
                       </div>
                     </div>
