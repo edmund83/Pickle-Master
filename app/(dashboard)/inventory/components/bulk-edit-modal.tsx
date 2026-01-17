@@ -261,7 +261,7 @@ export function BulkEditModal({
               onClick={() => setAction('move')}
             >
               <div className="flex items-center gap-3">
-                <FolderOpen className="h-5 w-5 text-neutral-500" />
+                <FolderOpen className="h-5 w-5 text-accent" fill="oklch(95% 0.08 85.79)" />
                 <div className="flex-1">
                   <p className="font-medium text-neutral-900">Move to Folder</p>
                   <p className="text-sm text-neutral-500">

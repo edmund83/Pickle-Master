@@ -158,8 +158,8 @@ export function RemindersClient({
           </div>
           <div className="rounded-xl bg-white p-4 shadow-sm">
             <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-orange-100">
-                <FolderOpen className="h-5 w-5 text-orange-600" />
+              <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-accent/20">
+                <FolderOpen className="h-5 w-5 text-accent" fill="oklch(95% 0.08 85.79)" />
               </div>
               <div>
                 <p className="text-2xl font-bold text-neutral-900">

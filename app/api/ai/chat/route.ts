@@ -17,6 +17,11 @@ import {
   manageHistory,
   ChatMessage as HistoryChatMessage,
 } from '@/lib/ai/history-manager'
+import {
+  checkAiUsageLimit,
+  trackAiUsage,
+  estimateCost,
+} from '@/lib/ai/usage-tracking'
 
 interface ChatMessage {
   role: 'user' | 'model' | 'assistant'
@@ -53,6 +58,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: validation.error || 'Request not allowed', remaining: 0 },
         { status: validation.status }
+      )
+    }
+
+    // Check cost-based usage limit ($0.05/month per user)
+    const estimatedCostUsd = estimateCost(1000, 500, 'gemini-1.5-flash')
+    const usageCheck = await checkAiUsageLimit(estimatedCostUsd)
+
+    if (!usageCheck.allowed) {
+      return NextResponse.json(
+        {
+          error: usageCheck.error || 'Monthly AI usage limit reached',
+          usage: usageCheck.usage,
+        },
+        { status: usageCheck.status }
       )
     }
 
@@ -247,9 +266,23 @@ To enable full AI capabilities, add an \`OPENROUTER_API_KEY\` or \`GOOGLE_AI_API
       }
     }
 
+    // Track usage after successful AI call
+    // Estimate tokens: ~1000 input (prompt + context), ~500 output (response)
+    // These are estimates since Gemini doesn't always return exact token counts
+    const inputTokensEstimate = Math.ceil(message.length / 4) + 800 // user message + system prompt
+    const outputTokensEstimate = Math.ceil(response.length / 4)
+    const modelName = hasGeminiKey ? 'gemini-1.5-flash' : 'openrouter'
+
+    // Track usage asynchronously (don't block response)
+    trackAiUsage(inputTokensEstimate, outputTokensEstimate, modelName, 'ai_chat').catch(
+      (err) => console.error('Failed to track AI usage:', err)
+    )
+
     return NextResponse.json({
       response,
       remaining: validation.remaining,
+      usage: usageCheck.usage,
+      warning: usageCheck.warning,
     })
   } catch (error) {
     console.error('AI Chat error:', error)

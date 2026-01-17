@@ -242,8 +242,8 @@ function FolderTreeItem({
 
         {/* Folder Icon */}
         <FolderIcon
-          className="mr-1.5 h-4 w-4 flex-shrink-0 text-neutral-400"
-          fill="#e5e5e5"
+          className="mr-1.5 h-4 w-4 flex-shrink-0 text-accent"
+          fill="oklch(95% 0.08 85.79)"
           strokeWidth={1.5}
         />
 

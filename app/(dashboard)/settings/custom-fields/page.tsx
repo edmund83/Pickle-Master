@@ -560,7 +560,7 @@ export default function CustomFieldsPage() {
                             </p>
                             {/* Folder chips */}
                             <div className="mt-1 flex items-center gap-1 text-xs text-neutral-400">
-                              <FolderIcon className="h-3 w-3" />
+                              <FolderIcon className="h-3 w-3 text-accent" fill="oklch(95% 0.08 85.79)" />
                               {fieldFolders[field.id]?.length > 0 ? (
                                 <span>
                                   {fieldFolders[field.id]
@@ -788,7 +788,7 @@ function FieldForm({
                   }}
                   className="h-4 w-4 rounded border-neutral-300 text-primary focus:ring-primary"
                 />
-                <FolderIcon className="h-4 w-4 text-neutral-400" />
+                <FolderIcon className="h-4 w-4 text-accent" fill="oklch(95% 0.08 85.79)" />
                 <span className="text-sm text-neutral-700">{folder.name}</span>
               </label>
             ))}

@@ -266,7 +266,7 @@ export function ValueByFolderRow({
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           {isRoot ? (
-            <FolderOpen className="h-4 w-4 text-neutral-400" />
+            <FolderOpen className="h-4 w-4 text-accent" fill="oklch(95% 0.08 85.79)" />
           ) : (
             <div
               className="h-4 w-4 rounded-full"

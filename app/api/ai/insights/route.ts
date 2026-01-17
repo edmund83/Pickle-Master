@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/lib/supabase/server'
 import { analyzeInventory, InventoryItem } from '@/lib/ai/gemini'
 import { checkRateLimit, RATE_LIMITED_OPERATIONS } from '@/lib/rate-limit'
+import {
+  checkAiUsageLimit,
+  trackAiUsage,
+  estimateCost,
+} from '@/lib/ai/usage-tracking'
 
 export async function POST(request: NextRequest) {
   try {
@@ -31,6 +36,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: rateLimitResult.error || 'Rate limit exceeded', remaining: 0 },
         { status: 429 }
+      )
+    }
+
+    // Check cost-based usage limit ($0.05/month per user)
+    // Insights use more tokens (~1500 input for inventory data, ~300 output)
+    const estimatedCostUsd = estimateCost(1500, 300, 'gemini-1.5-flash')
+    const usageCheck = await checkAiUsageLimit(estimatedCostUsd)
+
+    if (!usageCheck.allowed) {
+      return NextResponse.json(
+        {
+          error: usageCheck.error || 'Monthly AI usage limit reached',
+          usage: usageCheck.usage,
+        },
+        { status: usageCheck.status }
       )
     }
 
@@ -113,7 +133,17 @@ export async function POST(request: NextRequest) {
     // Analyze inventory with AI
     const insights = await analyzeInventory(inventoryItems)
 
-    return NextResponse.json({ insights })
+    // Track usage after successful AI call
+    // Estimate: ~1500 input tokens (inventory data), ~300 output tokens (3 insights)
+    trackAiUsage(1500, 300, 'gemini-1.5-flash', 'ai_insights').catch((err) =>
+      console.error('Failed to track AI usage:', err)
+    )
+
+    return NextResponse.json({
+      insights,
+      usage: usageCheck.usage,
+      warning: usageCheck.warning,
+    })
   } catch (error) {
     console.error('AI Insights error:', error)
     return NextResponse.json(
