@@ -138,13 +138,7 @@ export default function FoldersHelp() {
           There are several ways to move items from one folder to another:
         </HelpParagraph>
 
-        <HelpSubheading>Drag and Drop (Desktop)</HelpSubheading>
-        <HelpParagraph>
-          On a computer, you can drag an item and drop it onto a folder in the sidebar.
-          Just like moving files on your computer!
-        </HelpParagraph>
-
-        <HelpSubheading>Manual Move (Any Device)</HelpSubheading>
+        <HelpSubheading>From the Item Detail Page</HelpSubheading>
         <HelpSteps
           steps={[
             {
