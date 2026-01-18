@@ -52,7 +52,7 @@ export default function PartnersVendorsPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -64,13 +64,13 @@ export default function PartnersVendorsPage() {
 
       // Fetch vendors and payment terms in parallel
       const [vendorsResult, paymentTermsResult] = await Promise.all([
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         (supabase as any)
           .from('vendors')
           .select('*')
           .eq('tenant_id', profile.tenant_id)
           .order('name', { ascending: true }),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         (supabase as any)
           .from('payment_terms')
           .select('id, name')
@@ -113,7 +113,7 @@ export default function PartnersVendorsPage() {
 
       if (editingVendor) {
         // Update existing vendor
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { error: updateError } = await (supabase as any)
           .from('vendors')
           .update({
@@ -135,7 +135,7 @@ export default function PartnersVendorsPage() {
         setMessage({ type: 'success', text: 'Vendor updated successfully' })
       } else {
         // Create new vendor
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { error: insertError } = await (supabase as any)
           .from('vendors')
           .insert({
@@ -180,7 +180,7 @@ export default function PartnersVendorsPage() {
 
     const supabase = createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error: deleteError } = await (supabase as any)
       .from('vendors')
       .delete()
@@ -200,7 +200,7 @@ export default function PartnersVendorsPage() {
     const supabase = createClient()
     const ids = vendorsToDelete.map((v) => v.id)
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error: deleteError } = await (supabase as any)
       .from('vendors')
       .delete()

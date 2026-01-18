@@ -107,7 +107,7 @@ export const useAuthStore = create<AuthState>()(
           }
 
           // Get profile with tenant_id
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           const { data: profile, error: profileError } = await (supabase as any)
             .from('profiles')
             .select('tenant_id, email, role')

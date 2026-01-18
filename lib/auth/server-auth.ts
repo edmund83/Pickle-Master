@@ -37,7 +37,7 @@ export async function getAuthContext(): Promise<AuthResult> {
     return { success: false, error: 'Unauthorized: Not authenticated' }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: profile, error: profileError } = await (supabase as any)
     .from('profiles')
     .select('tenant_id, role, full_name')
@@ -110,7 +110,7 @@ export async function verifyTenantOwnership(
 ): Promise<{ success: true; record: Record<string, unknown> } | { success: false; error: string }> {
   const supabase = await createClient()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: record, error } = await (supabase as any)
     .from(tableName)
     .select('tenant_id')
@@ -139,7 +139,7 @@ export async function verifyRelatedTenantOwnership(
 ): Promise<{ success: true } | { success: false; error: string }> {
   const supabase = await createClient()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: record, error } = await (supabase as any)
     .from(tableName)
     .select('id')

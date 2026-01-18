@@ -110,7 +110,7 @@ export default function CustomFieldsPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -121,7 +121,7 @@ export default function CustomFieldsPage() {
       setTenantId(profile.tenant_id)
 
       // Load custom fields, folders, and field-folder associations in parallel
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const [fieldsResult, foldersResult, fieldFoldersResult] = await Promise.all([
         (supabase as any)
           .from('custom_field_definitions')
@@ -178,7 +178,7 @@ export default function CustomFieldsPage() {
         ? Math.max(...fields.map(f => f.sort_order || 0))
         : 0
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: newField, error: insertError } = await (supabase as any)
         .from('custom_field_definitions')
         .insert({
@@ -201,7 +201,7 @@ export default function CustomFieldsPage() {
           folder_id: folderId,
           tenant_id: tenantId,
         }))
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any)
           .from('custom_field_folders')
           .insert(folderAssociations)
@@ -228,7 +228,7 @@ export default function CustomFieldsPage() {
     try {
       const supabase = createClient()
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { error: updateError } = await (supabase as any)
         .from('custom_field_definitions')
         .update({
@@ -242,7 +242,7 @@ export default function CustomFieldsPage() {
       if (updateError) throw updateError
 
       // Update folder associations: delete existing and insert new
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       await (supabase as any)
         .from('custom_field_folders')
         .delete()
@@ -254,7 +254,7 @@ export default function CustomFieldsPage() {
           folder_id: folderId,
           tenant_id: tenantId,
         }))
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any)
           .from('custom_field_folders')
           .insert(folderAssociations)
@@ -275,7 +275,7 @@ export default function CustomFieldsPage() {
   const handleDelete = async (id: string) => {
     const supabase = createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error: deleteError } = await (supabase as any)
       .from('custom_field_definitions')
       .delete()
@@ -313,7 +313,7 @@ export default function CustomFieldsPage() {
         ? Math.max(...fields.map(f => f.sort_order || 0))
         : 0
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { error: insertError } = await (supabase as any)
         .from('custom_field_definitions')
         .insert({

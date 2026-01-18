@@ -150,7 +150,7 @@ export default function OnboardingWizard({ onComplete, isModal = true }: Onboard
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -162,7 +162,7 @@ export default function OnboardingWizard({ onComplete, isModal = true }: Onboard
       // Create folders
       const validFolders = folders.filter(f => f.name.trim())
       if (validFolders.length > 0) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any)
           .from('folders')
           .insert(validFolders.map(folder => ({
@@ -173,7 +173,7 @@ export default function OnboardingWizard({ onComplete, isModal = true }: Onboard
       }
 
       // Get created folders to get their IDs
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: createdFolders } = await (supabase as any)
         .from('folders')
         .select('id, name')
@@ -184,7 +184,7 @@ export default function OnboardingWizard({ onComplete, isModal = true }: Onboard
       // Create items
       const validItems = items.filter(item => item.name.trim())
       if (validItems.length > 0) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any)
           .from('inventory_items')
           .insert(validItems.map(item => ({
@@ -197,7 +197,7 @@ export default function OnboardingWizard({ onComplete, isModal = true }: Onboard
       }
 
       // Mark onboarding as complete (update profile or tenant)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       await (supabase as any)
         .from('profiles')
         .update({ onboarding_completed: true })

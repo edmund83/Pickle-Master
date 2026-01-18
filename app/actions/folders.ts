@@ -37,7 +37,7 @@ export async function createFolder(
   }
 
   // Get user's tenant_id
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: profile } = await (supabase as any)
     .from('profiles')
     .select('tenant_id')
@@ -53,7 +53,7 @@ export async function createFolder(
   let depth = 0
 
   if (input.parentId) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: parent } = await (supabase as any)
       .from('folders')
       .select('path, depth')
@@ -67,7 +67,7 @@ export async function createFolder(
   }
 
   // Get next sort_order for siblings
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: siblings } = await (supabase as any)
     .from('folders')
     .select('sort_order')
@@ -81,7 +81,7 @@ export async function createFolder(
     : 0
 
   // Insert folder
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: folder, error: insertError } = await (supabase as any)
     .from('folders')
     .insert({
@@ -102,7 +102,7 @@ export async function createFolder(
   }
 
   // Log activity (fire-and-forget)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   (supabase as any).from('activity_logs').insert({
     tenant_id: profile.tenant_id,
     user_id: user.id,
@@ -143,7 +143,7 @@ export async function updateFolder(
   }
 
   // Get current folder for logging
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: folder, error: fetchError } = await (supabase as any)
     .from('folders')
     .select('*')
@@ -155,7 +155,7 @@ export async function updateFolder(
   }
 
   // Build update object
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const updates: Record<string, any> = {
     updated_at: new Date().toISOString(),
   }
@@ -179,7 +179,7 @@ export async function updateFolder(
 
     if (input.parentId) {
       // Prevent moving folder into its own descendants
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: newParent } = await (supabase as any)
         .from('folders')
         .select('path, depth')
@@ -204,7 +204,7 @@ export async function updateFolder(
   }
 
   // Update folder
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { error: updateError } = await (supabase as any)
     .from('folders')
     .update(updates)
@@ -215,7 +215,7 @@ export async function updateFolder(
   }
 
   // Log activity (fire-and-forget)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   (supabase as any).from('activity_logs').insert({
     tenant_id: folder.tenant_id,
     user_id: user.id,
@@ -251,7 +251,7 @@ export async function deleteFolder(
   }
 
   // Get folder for logging
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: folder, error: fetchError } = await (supabase as any)
     .from('folders')
     .select('*')
@@ -263,7 +263,7 @@ export async function deleteFolder(
   }
 
   // Check if folder has items
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { count: itemCount } = await (supabase as any)
     .from('inventory_items')
     .select('id', { count: 'exact', head: true })
@@ -278,7 +278,7 @@ export async function deleteFolder(
   }
 
   // Check if folder has subfolders
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { count: subfolderCount } = await (supabase as any)
     .from('folders')
     .select('id', { count: 'exact', head: true })
@@ -292,7 +292,7 @@ export async function deleteFolder(
   }
 
   // Delete folder
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { error: deleteError } = await (supabase as any)
     .from('folders')
     .delete()
@@ -303,7 +303,7 @@ export async function deleteFolder(
   }
 
   // Log activity (fire-and-forget)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   (supabase as any).from('activity_logs').insert({
     tenant_id: folder.tenant_id,
     user_id: user.id,

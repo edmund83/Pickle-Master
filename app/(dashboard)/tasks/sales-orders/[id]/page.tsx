@@ -142,7 +142,7 @@ async function getSalesOrderWithDetails(id: string): Promise<(SalesOrderWithDeta
   if (!user) redirect('/login')
 
   // Get SO with customer, items, pick list, and creator/assigned profiles
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data, error } = await (supabase as any)
     .from('sales_orders')
     .select(`
@@ -188,7 +188,7 @@ async function getTeamMembers(): Promise<TeamMember[]> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: profile } = await (supabase as any)
     .from('profiles')
     .select('tenant_id')
@@ -197,7 +197,7 @@ async function getTeamMembers(): Promise<TeamMember[]> {
 
   if (!profile?.tenant_id) return []
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data } = await (supabase as any)
     .from('profiles')
     .select('id, full_name, email')
@@ -213,7 +213,7 @@ async function getCustomersList(): Promise<Customer[]> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: profile } = await (supabase as any)
     .from('profiles')
     .select('tenant_id')
@@ -222,7 +222,7 @@ async function getCustomersList(): Promise<Customer[]> {
 
   if (!profile?.tenant_id) return []
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data } = await (supabase as any)
     .from('customers')
     .select(`
@@ -243,7 +243,7 @@ async function getLocationsList(): Promise<Location[]> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: profile } = await (supabase as any)
     .from('profiles')
     .select('tenant_id')
@@ -252,7 +252,7 @@ async function getLocationsList(): Promise<Location[]> {
 
   if (!profile?.tenant_id) return []
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data } = await (supabase as any)
     .from('folders')
     .select('id, name')

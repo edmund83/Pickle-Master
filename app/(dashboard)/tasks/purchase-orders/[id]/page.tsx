@@ -97,7 +97,7 @@ async function getPurchaseOrderWithDetails(id: string): Promise<(PurchaseOrderWi
   if (!user) redirect('/login')
 
   // Get PO with vendor, items, and creator profile - consolidates separate getCreatorName query
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data, error } = await (supabase as any)
     .from('purchase_orders')
     .select(`
@@ -137,7 +137,7 @@ async function getTeamMembers(): Promise<TeamMember[]> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: profile } = await (supabase as any)
     .from('profiles')
     .select('tenant_id')
@@ -146,7 +146,7 @@ async function getTeamMembers(): Promise<TeamMember[]> {
 
   if (!profile?.tenant_id) return []
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data } = await (supabase as any)
     .from('profiles')
     .select('id, full_name, email')
@@ -162,7 +162,7 @@ async function getVendorsList(): Promise<Vendor[]> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: profile } = await (supabase as any)
     .from('profiles')
     .select('tenant_id')
@@ -171,7 +171,7 @@ async function getVendorsList(): Promise<Vendor[]> {
 
   if (!profile?.tenant_id) return []
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data } = await (supabase as any)
     .from('vendors')
     .select('id, name, contact_name, email, phone, address_line1, address_line2, city, state, postal_code, country, payment_terms')

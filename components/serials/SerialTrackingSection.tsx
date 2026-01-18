@@ -83,7 +83,7 @@ export function SerialTrackingSection({
     const supabase = createClient()
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data, error: rpcError } = await (supabase as any)
         .rpc('get_item_serials', { p_item_id: itemId, p_include_unavailable: true })
 
@@ -120,7 +120,7 @@ export function SerialTrackingSection({
     const supabase = createClient()
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data, error: rpcError } = await (supabase as any)
         .rpc('upsert_item_serials', {
           p_item_id: itemId,

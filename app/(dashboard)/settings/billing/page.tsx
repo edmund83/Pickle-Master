@@ -141,7 +141,7 @@ export default function BillingPage() {
       setUserEmail(user.email || '')
 
       // Get profile and tenant info
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -151,7 +151,7 @@ export default function BillingPage() {
       if (!profile?.tenant_id) return
 
       // Get tenant subscription info
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: tenant } = await (supabase as any)
         .from('tenants')
         .select('id, subscription_tier, subscription_status, trial_ends_at, max_items, max_users, max_folders, stripe_customer_id')
@@ -163,7 +163,7 @@ export default function BillingPage() {
       }
 
       // Get usage counts
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const [{ count: itemCount }, { count: userCount }, { count: folderCount }] = await Promise.all([
         (supabase as any)
           .from('inventory_items')

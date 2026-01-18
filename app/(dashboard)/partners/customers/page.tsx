@@ -59,7 +59,7 @@ export default function CustomersPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -70,7 +70,7 @@ export default function CustomersPage() {
       setTenantId(profile.tenant_id)
 
       // Build customers query
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       let customersQuery = (supabase as any)
         .from('customers')
         .select(`
@@ -98,7 +98,7 @@ export default function CustomersPage() {
       // Fetch customers and payment terms in parallel
       const [customersResult, paymentTermsResult] = await Promise.all([
         customersQuery,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         (supabase as any)
           .from('payment_terms')
           .select('id, name')

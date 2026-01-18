@@ -11,7 +11,7 @@ async function getTeamData() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: profile } = await (supabase as any)
     .from('profiles')
     .select('tenant_id, role')
@@ -20,7 +20,7 @@ async function getTeamData() {
 
   if (!profile?.tenant_id) return { members: [], isOwner: false, currentUserId: user.id }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: members } = await (supabase as any)
     .from('profiles')
     .select('*')

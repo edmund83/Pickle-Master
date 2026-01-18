@@ -70,7 +70,7 @@ export default function SearchPage() {
       const supabase = createClient()
 
       try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data } = await (supabase as any).rpc('get_saved_searches')
 
         if (data && Array.isArray(data)) {
@@ -92,7 +92,7 @@ export default function SearchPage() {
     const supabase = createClient()
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data, error } = await (supabase as any).rpc('save_search', {
         p_name: saveSearchName.trim(),
         p_query: query || null,
@@ -105,7 +105,7 @@ export default function SearchPage() {
 
       if (data?.success) {
         // Reload saved searches
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: refreshedSearches } = await (supabase as any).rpc('get_saved_searches')
         if (refreshedSearches) {
           setSavedSearches(refreshedSearches as SavedSearch[])
@@ -130,7 +130,7 @@ export default function SearchPage() {
     // Record usage for sorting by most used
     const supabase = createClient()
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       await (supabase as any).rpc('use_saved_search', { p_search_id: search.id })
     } catch (err) {
       // Ignore errors for usage tracking
@@ -142,7 +142,7 @@ export default function SearchPage() {
     const supabase = createClient()
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data, error } = await (supabase as any).rpc('delete_saved_search', {
         p_search_id: id,
       })
@@ -168,7 +168,7 @@ export default function SearchPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -179,9 +179,9 @@ export default function SearchPage() {
 
       // Load folders and tags in parallel
       const [foldersResult, tagsResult] = await Promise.all([
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         (supabase as any).from('folders').select('*').eq('tenant_id', profile.tenant_id),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         (supabase as any).from('tags').select('*').eq('tenant_id', profile.tenant_id),
       ])
 
@@ -205,7 +205,7 @@ export default function SearchPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -215,7 +215,7 @@ export default function SearchPage() {
       if (!profile?.tenant_id) return
 
       // Build query
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       let searchQuery = (supabase as any)
         .from('inventory_items')
         .select('*')
@@ -237,7 +237,7 @@ export default function SearchPage() {
 
       // Apply tag filter - get items that have this tag via item_tags junction table
       if (filters.tagId) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: taggedItemIds } = await (supabase as any)
           .from('item_tags')
           .select('item_id')

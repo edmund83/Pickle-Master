@@ -103,12 +103,12 @@ export default function TransfersDashboardPage() {
 
     try {
       // Get pending transfers
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: transfers } = await (supabase as any)
         .rpc('get_pending_transfers')
 
       // Get AI suggestions
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: suggs } = await (supabase as any)
         .rpc('get_transfer_suggestions')
 
@@ -128,7 +128,7 @@ export default function TransfersDashboardPage() {
     const supabase = createClient()
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data, error: rpcError } = await (supabase as any)
         .rpc('execute_transfer', { p_transfer_id: transferId })
 
@@ -152,7 +152,7 @@ export default function TransfersDashboardPage() {
     const supabase = createClient()
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data, error: rpcError } = await (supabase as any)
         .rpc('cancel_transfer', { p_transfer_id: transferId })
 
@@ -174,7 +174,7 @@ export default function TransfersDashboardPage() {
     const supabase = createClient()
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data, error: rpcError } = await (supabase as any)
         .rpc('request_transfer', {
           p_item_id: suggestion.item_id,

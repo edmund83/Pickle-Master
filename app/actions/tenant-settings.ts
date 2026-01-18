@@ -100,7 +100,7 @@ export async function updateTenantSettings(
     }
 
     // Get user's tenant_id from profile
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: profile, error: profileError } = await (supabase as any)
       .from('profiles')
       .select('tenant_id, role')
@@ -117,7 +117,7 @@ export async function updateTenantSettings(
     }
 
     // Get existing tenant data to preserve other settings
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: existingTenant } = await (supabase as any)
       .from('tenants')
       .select('settings')
@@ -129,7 +129,7 @@ export async function updateTenantSettings(
       : {}
 
     // Update tenant with validated settings
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error: updateError } = await (supabase as any)
       .from('tenants')
       .update({
@@ -174,7 +174,7 @@ export async function getTaxInclusiveSetting(): Promise<{ pricesIncludeTax: bool
       return { pricesIncludeTax: false, error: 'Not authenticated' }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: profile } = await (supabase as any)
       .from('profiles')
       .select('tenant_id')
@@ -185,7 +185,7 @@ export async function getTaxInclusiveSetting(): Promise<{ pricesIncludeTax: bool
       return { pricesIncludeTax: false, error: 'No tenant found' }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: tenant } = await (supabase as any)
       .from('tenants')
       .select('prices_include_tax')
@@ -211,7 +211,7 @@ export async function updateTaxInclusiveSetting(pricesIncludeTax: boolean): Prom
       return { error: 'Not authenticated' }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: profile } = await (supabase as any)
       .from('profiles')
       .select('tenant_id, role')
@@ -226,7 +226,7 @@ export async function updateTaxInclusiveSetting(pricesIncludeTax: boolean): Prom
       return { error: 'Permission denied' }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error: updateError } = await (supabase as any)
       .from('tenants')
       .update({

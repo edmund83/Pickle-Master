@@ -68,7 +68,7 @@ export async function getTaskSummary(): Promise<TaskSummary> {
             assignedStockCounts,
         ] = await Promise.all([
             // Draft POs
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             (supabase as any)
                 .from('purchase_orders')
                 .select('id, display_id, order_number, updated_at')
@@ -78,7 +78,7 @@ export async function getTaskSummary(): Promise<TaskSummary> {
                 .limit(5),
 
             // Draft Receives
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             (supabase as any)
                 .from('receives')
                 .select('id, display_id, delivery_note_number, updated_at')
@@ -88,7 +88,7 @@ export async function getTaskSummary(): Promise<TaskSummary> {
                 .limit(5),
 
             // Draft Pick Lists
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             (supabase as any)
                 .from('pick_lists')
                 .select('id, display_id, name, updated_at')
@@ -98,7 +98,7 @@ export async function getTaskSummary(): Promise<TaskSummary> {
                 .limit(5),
 
             // Draft Stock Counts
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             (supabase as any)
                 .from('stock_counts')
                 .select('id, display_id, name, updated_at')
@@ -108,7 +108,7 @@ export async function getTaskSummary(): Promise<TaskSummary> {
                 .limit(5),
 
             // Assigned Pick Lists (to current user)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             (supabase as any)
                 .from('pick_lists')
                 .select('id, display_id, name, status, due_date')
@@ -119,7 +119,7 @@ export async function getTaskSummary(): Promise<TaskSummary> {
                 .limit(10),
 
             // Assigned Stock Counts (to current user)
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             (supabase as any)
                 .from('stock_counts')
                 .select('id, display_id, name, status, due_date')

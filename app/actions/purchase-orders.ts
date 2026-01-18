@@ -194,7 +194,7 @@ export async function getVendors() {
     if (!user) return []
 
     // Get user's tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -204,7 +204,7 @@ export async function getVendors() {
     if (!profile?.tenant_id) return []
 
     // Get vendors
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data } = await (supabase as any)
         .from('vendors')
         .select('id, name, contact_name, email, phone')
@@ -232,7 +232,7 @@ export async function createVendor(input: CreateVendorInput): Promise<PurchaseOr
 
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any)
         .from('vendors')
         .insert({
@@ -260,7 +260,7 @@ export async function createVendor(input: CreateVendorInput): Promise<PurchaseOr
 
     // Log activity
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any).from('activity_logs').insert({
             tenant_id: context.tenantId,
             user_id: context.userId,
@@ -293,7 +293,7 @@ export async function createDraftPurchaseOrder(): Promise<PurchaseOrderResult> {
     const supabase = await createClient()
 
     // Use the new RPC function for atomic creation with display_id
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('create_purchase_order_v2', {
         p_vendor_id: null,
         p_expected_date: null,
@@ -327,7 +327,7 @@ export async function createDraftPurchaseOrder(): Promise<PurchaseOrderResult> {
 
     // Log activity
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any).from('activity_logs').insert({
             tenant_id: context.tenantId,
             user_id: context.userId,
@@ -349,7 +349,7 @@ export async function createDraftPurchaseOrder(): Promise<PurchaseOrderResult> {
 // Generate display ID using RPC (concurrency-safe)
 // Format: PO-{ORG_CODE}-{5-digit-number} e.g., PO-ACM01-00001
 async function generateDisplayId(supabase: ReturnType<typeof createClient> extends Promise<infer T> ? T : never): Promise<string> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('generate_display_id_for_current_user', {
         p_entity_type: 'purchase_order'
     })
@@ -371,7 +371,7 @@ export async function createPurchaseOrder(input: CreatePurchaseOrderInput): Prom
     if (!user) return { success: false, error: 'Unauthorized' }
 
     // Use the new RPC function for atomic creation with display_id
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('create_purchase_order_v2', {
         p_vendor_id: input.vendor_id || null,
         p_expected_date: input.expected_date || null,
@@ -423,7 +423,7 @@ export async function getPurchaseOrder(purchaseOrderId: string) {
     const supabase = await createClient()
 
     // 2. Fetch with tenant filter for defense-in-depth
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data } = await (supabase as any)
         .from('purchase_orders')
         .select(`
@@ -478,11 +478,11 @@ export async function updatePurchaseOrder(
     const supabase = await createClient()
 
     // Exclude display_id from updates - it is immutable once set
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     
     const { display_id, ...safeUpdates } = validatedUpdates as Record<string, unknown>
 
     // Get PO current state for logging
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: currentPO } = await (supabase as any)
         .from('purchase_orders')
         .select('display_id, status, vendor_id')
@@ -490,7 +490,7 @@ export async function updatePurchaseOrder(
         .eq('tenant_id', context.tenantId)
         .single()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('purchase_orders')
         .update({
@@ -507,7 +507,7 @@ export async function updatePurchaseOrder(
 
     // Log activity
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any).from('activity_logs').insert({
             tenant_id: context.tenantId,
             user_id: context.userId,
@@ -559,7 +559,7 @@ export async function updatePurchaseOrderStatus(
     const supabase = await createClient()
 
     // Get current state for validation and logging
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: currentPO } = await (supabase as any)
         .from('purchase_orders')
         .select('display_id, status, vendor_id, created_by, submitted_by')
@@ -588,7 +588,7 @@ export async function updatePurchaseOrderStatus(
 
     // 7. Check for items when submitting
     if (validatedStatus === 'submitted' || validatedStatus === 'pending_approval') {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { count: itemCount } = await (supabase as any)
             .from('purchase_order_items')
             .select('*', { count: 'exact', head: true })
@@ -621,7 +621,7 @@ export async function updatePurchaseOrderStatus(
         updates.received_date = new Date().toISOString().split('T')[0]
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('purchase_orders')
         .update(updates)
@@ -635,7 +635,7 @@ export async function updatePurchaseOrderStatus(
 
     // Log activity for status change
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any).from('activity_logs').insert({
             tenant_id: context.tenantId,
             user_id: context.userId,
@@ -657,7 +657,7 @@ export async function updatePurchaseOrderStatus(
     try {
         // Notify admins when submitted for approval
         if (validatedStatus === 'submitted' || validatedStatus === 'pending_approval') {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             await (supabase as any).rpc('notify_admins_pending_approval', {
                 p_tenant_id: context.tenantId,
                 p_entity_type: 'purchase_order',
@@ -670,7 +670,7 @@ export async function updatePurchaseOrderStatus(
 
         // Notify submitter when approved or rejected
         if (validatedStatus === 'confirmed' && currentPO.submitted_by && currentPO.submitted_by !== context.userId) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             await (supabase as any).rpc('notify_approval', {
                 p_tenant_id: context.tenantId,
                 p_user_id: currentPO.submitted_by,
@@ -685,7 +685,7 @@ export async function updatePurchaseOrderStatus(
 
         // Notify submitter when rejected (sent back to draft)
         if (validatedStatus === 'draft' && (previousStatus === 'submitted' || previousStatus === 'pending_approval') && currentPO.submitted_by && currentPO.submitted_by !== context.userId) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             await (supabase as any).rpc('notify_approval', {
                 p_tenant_id: context.tenantId,
                 p_user_id: currentPO.submitted_by,
@@ -750,7 +750,7 @@ export async function addPurchaseOrderItem(
 
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('purchase_order_items')
         .insert({
@@ -790,7 +790,7 @@ export async function removePurchaseOrderItem(purchaseOrderItemId: string): Prom
     const supabase = await createClient()
 
     // 3. Get PO item and verify the parent PO belongs to user's tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: poItem, error: fetchError } = await (supabase as any)
         .from('purchase_order_items')
         .select('purchase_order_id, purchase_orders!inner(tenant_id)')
@@ -805,7 +805,7 @@ export async function removePurchaseOrderItem(purchaseOrderItemId: string): Prom
         return { success: false, error: 'Unauthorized: Access denied' }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('purchase_order_items')
         .delete()
@@ -853,7 +853,7 @@ export async function updatePurchaseOrderItem(
     const supabase = await createClient()
 
     // 4. Get PO item and verify the parent PO belongs to user's tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: poItem, error: fetchError } = await (supabase as any)
         .from('purchase_order_items')
         .select('purchase_order_id, purchase_orders!inner(tenant_id)')
@@ -868,7 +868,7 @@ export async function updatePurchaseOrderItem(
         return { success: false, error: 'Unauthorized: Access denied' }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('purchase_order_items')
         .update(validatedUpdates)
@@ -892,7 +892,7 @@ async function recalculatePurchaseOrderTotals(
     supabase: ReturnType<typeof createClient> extends Promise<infer T> ? T : never,
     purchaseOrderId: string
 ) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: items } = await (supabase as any)
         .from('purchase_order_items')
         .select('ordered_quantity, unit_price')
@@ -902,7 +902,7 @@ async function recalculatePurchaseOrderTotals(
         const subtotal = items.reduce((sum: number, item: { ordered_quantity: number; unit_price: number }) =>
             sum + (item.ordered_quantity * item.unit_price), 0)
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any)
             .from('purchase_orders')
             .update({
@@ -928,7 +928,7 @@ export async function deletePurchaseOrder(purchaseOrderId: string): Promise<Purc
     const supabase = await createClient()
 
     // 3. Check if PO exists, belongs to tenant, and is in draft status
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: po, error: fetchError } = await (supabase as any)
         .from('purchase_orders')
         .select('status, tenant_id, display_id')
@@ -948,14 +948,14 @@ export async function deletePurchaseOrder(purchaseOrderId: string): Promise<Purc
     }
 
     // Delete items first (cascade should handle this, but being explicit)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     await (supabase as any)
         .from('purchase_order_items')
         .delete()
         .eq('purchase_order_id', purchaseOrderId)
 
     // Delete PO with tenant check
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('purchase_orders')
         .delete()
@@ -969,7 +969,7 @@ export async function deletePurchaseOrder(purchaseOrderId: string): Promise<Purc
 
     // Log activity for delete
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any).from('activity_logs').insert({
             tenant_id: context.tenantId,
             user_id: context.userId,
@@ -996,7 +996,7 @@ export async function searchInventoryItemsForPO(query: string, lowStockOnly: boo
     if (!user) return []
 
     // Get user's tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -1006,7 +1006,7 @@ export async function searchInventoryItemsForPO(query: string, lowStockOnly: boo
     if (!profile?.tenant_id) return []
 
     // Search items (don't filter by quantity for POs - we're ordering new stock)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     let queryBuilder = (supabase as any)
         .from('inventory_items')
         .select('id, name, sku, quantity, min_quantity, image_urls, unit, price')
@@ -1117,14 +1117,14 @@ export async function getPaginatedPurchaseOrders(
     const supabase = await createClient()
 
     // Build query for count
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     let countQuery = (supabase as any)
         .from('purchase_orders')
         .select('*', { count: 'exact', head: true })
         .eq('tenant_id', context.tenantId)
 
     // Build query for data
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     let dataQuery = (supabase as any)
         .from('purchase_orders')
         .select(`

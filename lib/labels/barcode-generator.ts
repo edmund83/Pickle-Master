@@ -46,7 +46,7 @@ export async function generateScannableBarcode(
     const canvas = document.createElement('canvas')
 
     // Build options object - bwip-js doesn't accept undefined values
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const bwipOptions: any = {
       bcid: bcidMap[format],
       text: data,

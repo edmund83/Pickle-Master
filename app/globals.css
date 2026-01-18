@@ -254,6 +254,22 @@
   animation: pulse-soft 2s ease-in-out infinite;
 }
 
+/* More visible icon pulse animation */
+@keyframes icon-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.1);
+  }
+}
+
+.animate-icon-pulse {
+  animation: icon-pulse 2s ease-in-out infinite;
+}
+
 .animate-confetti {
   animation: confetti 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
 }

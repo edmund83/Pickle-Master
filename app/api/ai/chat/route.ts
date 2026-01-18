@@ -188,7 +188,7 @@ To enable full AI capabilities, add an \`OPENROUTER_API_KEY\` or \`GOOGLE_AI_API
       }))
 
       if (useExtendedContext) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const zoeContext = await fetchZoeContext(
           supabase as any,
           validation.tenantId!,
@@ -213,7 +213,7 @@ To enable full AI capabilities, add an \`OPENROUTER_API_KEY\` or \`GOOGLE_AI_API
           )
         }
       } else {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: items } = await (supabase as any)
           .from('inventory_items')
           .select(

@@ -43,7 +43,7 @@ export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
       }
 
       // Get profile and tenant info
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -56,7 +56,7 @@ export function SubscriptionGuard({ children }: SubscriptionGuardProps) {
       }
 
       // Get tenant subscription info
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: tenantData } = await (supabase as any)
         .from('tenants')
         .select('id, subscription_tier, subscription_status, trial_ends_at, max_users, max_items, stripe_customer_id')

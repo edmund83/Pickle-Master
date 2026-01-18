@@ -57,7 +57,7 @@ export default function PaymentTermsSettingsPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -68,14 +68,14 @@ export default function PaymentTermsSettingsPage() {
       setTenantId(profile.tenant_id)
 
       // Call the database function to get payment terms with usage count
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: termsData, error } = await (supabase as any)
         .rpc('get_payment_terms_with_usage')
 
       if (error) {
         console.error('Error loading payment terms:', error)
         // Fallback: direct query without usage count
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: fallbackData } = await (supabase as any)
           .from('payment_terms')
           .select('id, name, description, days, sort_order, is_default')
@@ -109,7 +109,7 @@ export default function PaymentTermsSettingsPage() {
     const supabase = createClient()
 
     // Get current max sort_order
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: maxSortData } = await (supabase as any)
       .from('payment_terms')
       .select('sort_order')
@@ -119,7 +119,7 @@ export default function PaymentTermsSettingsPage() {
 
     const nextSortOrder = (maxSortData?.[0]?.sort_order || 0) + 1
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error: insertError } = await (supabase as any)
       .from('payment_terms')
       .insert({
@@ -141,7 +141,7 @@ export default function PaymentTermsSettingsPage() {
 
     const supabase = createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error: updateError } = await (supabase as any)
       .from('payment_terms')
       .update({
@@ -163,7 +163,7 @@ export default function PaymentTermsSettingsPage() {
 
     const supabase = createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error: deleteError } = await (supabase as any)
       .from('payment_terms')
       .delete()
@@ -185,7 +185,7 @@ export default function PaymentTermsSettingsPage() {
     try {
       const ids = selectedTerms.map(t => t.id)
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { error: deleteError } = await (supabase as any)
         .from('payment_terms')
         .delete()

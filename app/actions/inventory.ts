@@ -57,7 +57,7 @@ export async function updateItemQuantity(
     const supabase = await createClient()
 
     // 5. Get current item for checks (with tenant filter)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: item, error: fetchError } = await (supabase as any)
         .from('inventory_items')
         .select('*')
@@ -82,7 +82,7 @@ export async function updateItemQuantity(
     }
 
     // 7. Update Item (with tenant filter for safety)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error: updateError } = await (supabase as any)
         .from('inventory_items')
         .update({
@@ -100,7 +100,7 @@ export async function updateItemQuantity(
 
     // 8. Log Activity (awaited for reliability)
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any).from('activity_logs').insert({
             tenant_id: context.tenantId,
             user_id: context.userId,
@@ -122,7 +122,7 @@ export async function updateItemQuantity(
     if (status === 'low_stock' || status === 'out_of_stock') {
         // Create in-app notification
         try {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             await (supabase as any).from('notifications').insert({
                 tenant_id: context.tenantId,
                 user_id: context.userId,
@@ -195,7 +195,7 @@ export async function updateItemField(
     const supabase = await createClient()
 
     // 5. Get current item to check previous state (with tenant filter)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: item, error: fetchError } = await (supabase as any)
         .from('inventory_items')
         .select('*')
@@ -208,7 +208,7 @@ export async function updateItemField(
         return { success: false, error: 'Item not found' }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const updates: Record<string, any> = {
         [validatedInput.field]: validatedInput.value,
         updated_at: new Date().toISOString(),
@@ -232,7 +232,7 @@ export async function updateItemField(
     }
 
     // 7. Update Item (with tenant filter)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error: updateError } = await (supabase as any)
         .from('inventory_items')
         .update(updates)
@@ -245,7 +245,7 @@ export async function updateItemField(
 
     // 8. Log Activity (awaited for reliability)
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any).from('activity_logs').insert({
             tenant_id: context.tenantId,
             user_id: context.userId,
@@ -263,7 +263,7 @@ export async function updateItemField(
     // 9. Trigger Alerts if status changed to low/out of stock
     if ((validatedInput.field === 'quantity' || validatedInput.field === 'min_quantity') && (status === 'low_stock' || status === 'out_of_stock')) {
         try {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             await (supabase as any).from('notifications').insert({
                 tenant_id: context.tenantId,
                 user_id: context.userId,
@@ -311,7 +311,7 @@ export async function deleteItem(itemId: string): Promise<ActionResult<void>> {
     const supabase = await createClient()
 
     // 5. Get item first for activity log (with tenant filter)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: item, error: fetchError } = await (supabase as any)
         .from('inventory_items')
         .select('*')
@@ -325,7 +325,7 @@ export async function deleteItem(itemId: string): Promise<ActionResult<void>> {
     }
 
     // 6. Soft delete by setting deleted_at (with tenant filter)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error: deleteError } = await (supabase as any)
         .from('inventory_items')
         .update({
@@ -342,7 +342,7 @@ export async function deleteItem(itemId: string): Promise<ActionResult<void>> {
 
     // 7. Log activity (awaited)
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any).from('activity_logs').insert({
             tenant_id: context.tenantId,
             user_id: context.userId,
@@ -398,7 +398,7 @@ export async function updateItemTags(
     const supabase = await createClient()
 
     // 5. Get item first for name (with tenant filter)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: item, error: fetchError } = await (supabase as any)
         .from('inventory_items')
         .select('name')
@@ -412,7 +412,7 @@ export async function updateItemTags(
     }
 
     // 6. Delete existing item_tags for this item (RLS handles tenant isolation)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     await (supabase as any)
         .from('item_tags')
         .delete()
@@ -426,7 +426,7 @@ export async function updateItemTags(
             tenant_id: context.tenantId
         }))
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { error: insertError } = await (supabase as any)
             .from('item_tags')
             .insert(tagInserts)
@@ -438,7 +438,7 @@ export async function updateItemTags(
 
     // 8. Log activity (awaited)
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any).from('activity_logs').insert({
             tenant_id: context.tenantId,
             user_id: context.userId,
@@ -505,7 +505,7 @@ export async function moveItemToFolder(
     const supabase = await createClient()
 
     // 6. Get current item with folder info (with tenant filter)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: item, error: fetchError } = await (supabase as any)
         .from('inventory_items')
         .select('*, folder:folders(id, name)')
@@ -524,7 +524,7 @@ export async function moveItemToFolder(
     // 7. Get target folder name if not null (with tenant filter)
     let toFolderName: string | null = null
     if (validatedInput.targetFolderId) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: targetFolder } = await (supabase as any)
             .from('folders')
             .select('name')
@@ -535,7 +535,7 @@ export async function moveItemToFolder(
     }
 
     // 8. Update item folder_id (with tenant filter)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error: updateError } = await (supabase as any)
         .from('inventory_items')
         .update({
@@ -552,7 +552,7 @@ export async function moveItemToFolder(
 
     // 9. Log activity with folder move details (awaited)
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any).from('activity_logs').insert({
             tenant_id: context.tenantId,
             user_id: context.userId,
@@ -606,7 +606,7 @@ export async function duplicateItem(
     const supabase = await createClient()
 
     // 5. Get original item with all fields (with tenant filter)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: item, error: fetchError } = await (supabase as any)
         .from('inventory_items')
         .select('*')
@@ -651,7 +651,7 @@ export async function duplicateItem(
     }
 
     // 7. Insert new item
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: newItem, error: insertError } = await (supabase as any)
         .from('inventory_items')
         .insert(newItemData)
@@ -663,7 +663,7 @@ export async function duplicateItem(
     }
 
     // 8. Copy item tags (RLS handles tenant isolation)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: itemTags } = await (supabase as any)
         .from('item_tags')
         .select('tag_id')
@@ -676,7 +676,7 @@ export async function duplicateItem(
             tenant_id: context.tenantId
         }))
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any)
             .from('item_tags')
             .insert(tagInserts)
@@ -684,7 +684,7 @@ export async function duplicateItem(
 
     // 9. Log activity (awaited)
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any).from('activity_logs').insert({
             tenant_id: context.tenantId,
             user_id: context.userId,
@@ -748,7 +748,7 @@ export async function bulkMoveItemsToFolder(
     // 5. Get target folder name for logging
     let toFolderName: string | null = null
     if (validatedInput.targetFolderId) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: targetFolder } = await (supabase as any)
             .from('folders')
             .select('name')
@@ -759,7 +759,7 @@ export async function bulkMoveItemsToFolder(
     }
 
     // 6. Verify all items belong to user's tenant and get their current state
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: items, error: itemsError } = await (supabase as any)
         .from('inventory_items')
         .select('id, name, folder_id, folders(name)')
@@ -781,7 +781,7 @@ export async function bulkMoveItemsToFolder(
     }
 
     // 7. Bulk update items (with tenant filter)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error: updateError } = await (supabase as any)
         .from('inventory_items')
         .update({
@@ -813,7 +813,7 @@ export async function bulkMoveItemsToFolder(
             changes: { source: 'bulk_move', batch_size: items.length }
         }))
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any).from('activity_logs').insert(activityLogs)
     } catch (logError) {
         console.error('Activity log error:', logError)
@@ -890,7 +890,7 @@ export async function getMovePageData(
     const supabase = await createClient()
 
     // Build count query
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     let countQuery = (supabase as any)
         .from('inventory_items')
         .select('*', { count: 'exact', head: true })
@@ -898,7 +898,7 @@ export async function getMovePageData(
         .is('deleted_at', null)
 
     // Build data query
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     let dataQuery = (supabase as any)
         .from('inventory_items')
         .select(`
@@ -947,7 +947,7 @@ export async function getMovePageData(
     }
 
     // Get folders for the tenant (always needed for target selection)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const foldersQuery = (supabase as any)
         .from('folders')
         .select('id, name, parent_id, color')

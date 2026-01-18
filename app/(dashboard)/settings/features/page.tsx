@@ -55,7 +55,7 @@ export default function FeaturesSettingsPage() {
 
       if (!user) return
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -63,7 +63,7 @@ export default function FeaturesSettingsPage() {
         .single()
 
       if (profile?.tenant_id) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: tenantData } = await (supabase as any)
           .from('tenants')
           .select('*')
@@ -99,7 +99,7 @@ export default function FeaturesSettingsPage() {
         ? tenant.settings as Record<string, unknown>
         : {}
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data, error } = await (supabase as any)
         .from('tenants')
         .update({

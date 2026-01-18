@@ -90,7 +90,7 @@ async function getItemDetails(itemId: string): Promise<ItemWithRelations | null>
   if (!user) redirect('/login')
 
   // Get profile for tenant_id
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: profileData } = await (supabase as any)
     .from('profiles')
     .select('tenant_id')
@@ -104,7 +104,7 @@ async function getItemDetails(itemId: string): Promise<ItemWithRelations | null>
   }
 
   // Get item details
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: item, error } = await (supabase as any)
     .from('inventory_items')
     .select('*')
@@ -122,7 +122,7 @@ async function getItemDetails(itemId: string): Promise<ItemWithRelations | null>
   // Get folder if item has one
   let folder: Folder | null = null
   if (typedItem.folder_id) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: folderData } = await (supabase as any)
       .from('folders')
       .select('*')
@@ -132,12 +132,12 @@ async function getItemDetails(itemId: string): Promise<ItemWithRelations | null>
   }
 
   // Get tags for the item using RPC
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: itemTags } = await (supabase as any)
     .rpc('get_item_tags', { p_item_id: itemId })
 
   // Get recent activity logs for this item
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: activityLogs } = await (supabase as any)
     .rpc('get_activity_logs', {
       p_entity_id: itemId,
@@ -146,7 +146,7 @@ async function getItemDetails(itemId: string): Promise<ItemWithRelations | null>
     })
 
   // Get tenant settings for feature flags and logo
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: tenant } = await (supabase as any)
     .from('tenants')
     .select('settings, logo_url')
@@ -163,7 +163,7 @@ async function getItemDetails(itemId: string): Promise<ItemWithRelations | null>
 
   if (typedItem.tracking_mode === 'serialized') {
     // Get serial number stats by status
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: serialData } = await (supabase as any)
       .from('serial_numbers')
       .select('status')
@@ -191,7 +191,7 @@ async function getItemDetails(itemId: string): Promise<ItemWithRelations | null>
 
   if (typedItem.tracking_mode === 'lot_expiry') {
     // Get lots for this item using RPC
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: lotsData } = await (supabase as any)
       .rpc('get_item_lots', { p_item_id: itemId, p_include_depleted: false })
 

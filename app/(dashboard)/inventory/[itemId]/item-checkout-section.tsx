@@ -51,7 +51,7 @@ export function ItemCheckoutStatusCard({ item }: ItemCheckoutSectionProps) {
     const supabase = createClient()
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: checkoutData } = await (supabase as any)
         .from('checkouts')
         .select('*')

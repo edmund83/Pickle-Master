@@ -20,7 +20,7 @@ export type RateLimitResult = {
 export async function checkRateLimit(operation: string): Promise<RateLimitResult> {
     try {
         const supabase = await createClient()
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data, error } = await (supabase as any).rpc('check_rate_limit', {
             p_operation: operation
         })

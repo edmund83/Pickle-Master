@@ -155,7 +155,7 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}) {
           const payload = change.payload as QuantityAdjustPayload
 
           // Update the item quantity
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           const updatedAt = new Date().toISOString()
           let updateQuery = (supabase as any)
             .from('inventory_items')
@@ -188,7 +188,7 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}) {
           )
 
           // Log activity
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+           
           const { error: activityError } = await (supabase as any).from('activity_logs').insert({
             tenant_id: scope.tenantId,
             user_id: scope.userId ?? null,

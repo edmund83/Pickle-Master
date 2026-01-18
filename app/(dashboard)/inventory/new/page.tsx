@@ -57,7 +57,7 @@ export default function NewItemPage() {
         return
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -77,7 +77,7 @@ export default function NewItemPage() {
       }
 
       // Create the item
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { error: insertError } = await (supabase as any)
         .from('inventory_items')
         .insert({

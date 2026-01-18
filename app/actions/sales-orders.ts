@@ -137,7 +137,7 @@ export async function createDraftSalesOrder(): Promise<SalesOrderResult> {
 
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('create_sales_order', {
         p_customer_id: null,
         p_order_number: null,
@@ -193,7 +193,7 @@ export async function createSalesOrder(input: CreateSalesOrderInput): Promise<Sa
 
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('create_sales_order', {
         p_customer_id: validatedInput.customer_id || null,
         p_order_number: validatedInput.order_number || null,
@@ -231,7 +231,7 @@ export async function getSalesOrder(salesOrderId: string) {
 
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data } = await (supabase as any)
         .from('sales_orders')
         .select(`
@@ -259,7 +259,7 @@ export async function getSalesOrderWithDetails(salesOrderId: string) {
 
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('get_sales_order_with_details', {
         p_sales_order_id: salesOrderId
     })
@@ -305,7 +305,7 @@ export async function updateSalesOrder(
     const supabase = await createClient()
 
     // Get current SO for logging
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: currentSO } = await (supabase as any)
         .from('sales_orders')
         .select('display_id, status, customer_id')
@@ -318,7 +318,7 @@ export async function updateSalesOrder(
         return { success: false, error: 'Cannot update sales order after confirmation' }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('sales_orders')
         .update({
@@ -335,7 +335,7 @@ export async function updateSalesOrder(
 
     // Log activity
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any).from('activity_logs').insert({
             tenant_id: context.tenantId,
             user_id: context.userId,
@@ -376,7 +376,7 @@ export async function updateSalesOrderStatus(
     const supabase = await createClient()
 
     // Get current status
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: currentSO, error: fetchError } = await (supabase as any)
         .from('sales_orders')
         .select('status, tenant_id, display_id, customer_id')
@@ -403,7 +403,7 @@ export async function updateSalesOrderStatus(
 
     // Check items when submitting
     if (newStatus === 'submitted') {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { count: itemCount } = await (supabase as any)
             .from('sales_order_items')
             .select('*', { count: 'exact', head: true })
@@ -417,7 +417,7 @@ export async function updateSalesOrderStatus(
     // Handle special transitions
     if (newStatus === 'picking') {
         // Auto-generate pick list via RPC
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: pickListId, error: rpcError } = await (supabase as any).rpc(
             'generate_pick_list_from_sales_order',
             { p_sales_order_id: salesOrderId }
@@ -453,7 +453,7 @@ export async function updateSalesOrderStatus(
         updateData.cancellation_reason = cancellationReason || null
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error: updateError } = await (supabase as any)
         .from('sales_orders')
         .update(updateData)
@@ -467,7 +467,7 @@ export async function updateSalesOrderStatus(
 
     // Log activity
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any).from('activity_logs').insert({
             tenant_id: context.tenantId,
             user_id: context.userId,
@@ -524,7 +524,7 @@ export async function addSalesOrderItem(
     const supabase = await createClient()
 
     // Check SO status
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: so } = await (supabase as any)
         .from('sales_orders')
         .select('status')
@@ -541,7 +541,7 @@ export async function addSalesOrderItem(
     const discountAmount = baseAmount * (validatedItem.discount_percent || 0) / 100
     const lineTotal = baseAmount - discountAmount
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('sales_order_items')
         .insert({
@@ -583,7 +583,7 @@ export async function updateSalesOrderItem(
     const supabase = await createClient()
 
     // Get item and verify parent SO belongs to tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: soItem, error: fetchError } = await (supabase as any)
         .from('sales_order_items')
         .select('sales_order_id, sales_orders!inner(tenant_id, status)')
@@ -605,7 +605,7 @@ export async function updateSalesOrderItem(
     // Calculate new line total if quantity or price changed
     const updateData: Record<string, unknown> = { ...updates }
     if (updates.quantity_ordered !== undefined || updates.unit_price !== undefined) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: currentItem } = await (supabase as any)
             .from('sales_order_items')
             .select('quantity_ordered, unit_price, discount_percent')
@@ -622,7 +622,7 @@ export async function updateSalesOrderItem(
         updateData.line_total = baseAmount - discountAmount
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('sales_order_items')
         .update(updateData)
@@ -649,7 +649,7 @@ export async function removeSalesOrderItem(itemId: string): Promise<SalesOrderRe
     const supabase = await createClient()
 
     // Get item and verify parent SO belongs to tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: soItem, error: fetchError } = await (supabase as any)
         .from('sales_order_items')
         .select('sales_order_id, sales_orders!inner(tenant_id, status)')
@@ -668,7 +668,7 @@ export async function removeSalesOrderItem(itemId: string): Promise<SalesOrderRe
         return { success: false, error: 'Cannot remove items after sales order is confirmed' }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('sales_order_items')
         .delete()
@@ -695,7 +695,7 @@ export async function deleteSalesOrder(salesOrderId: string): Promise<SalesOrder
     const supabase = await createClient()
 
     // Check status and ownership
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: so, error: fetchError } = await (supabase as any)
         .from('sales_orders')
         .select('status, tenant_id, display_id')
@@ -715,14 +715,14 @@ export async function deleteSalesOrder(salesOrderId: string): Promise<SalesOrder
     }
 
     // Delete items first
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     await (supabase as any)
         .from('sales_order_items')
         .delete()
         .eq('sales_order_id', salesOrderId)
 
     // Delete SO
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('sales_orders')
         .delete()
@@ -736,7 +736,7 @@ export async function deleteSalesOrder(salesOrderId: string): Promise<SalesOrder
 
     // Log activity
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any).from('activity_logs').insert({
             tenant_id: context.tenantId,
             user_id: context.userId,
@@ -833,14 +833,14 @@ export async function getPaginatedSalesOrders(
     const supabase = await createClient()
 
     // Build query for count
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     let countQuery = (supabase as any)
         .from('sales_orders')
         .select('*', { count: 'exact', head: true })
         .eq('tenant_id', context.tenantId)
 
     // Build query for data
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     let dataQuery = (supabase as any)
         .from('sales_orders')
         .select(`
@@ -938,7 +938,7 @@ export async function searchInventoryItemsForSO(query: string) {
 
     if (!user) return []
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -947,7 +947,7 @@ export async function searchInventoryItemsForSO(query: string) {
 
     if (!profile?.tenant_id) return []
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     let queryBuilder = (supabase as any)
         .from('inventory_items')
         .select('id, name, sku, quantity, unit, price, image_urls')
@@ -980,7 +980,7 @@ export async function setSalesOrderItemTax(
     const supabase = await createClient()
 
     // Get item and verify parent SO belongs to tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: soItem, error: fetchError } = await (supabase as any)
         .from('sales_order_items')
         .select('sales_order_id, line_total, sales_orders!inner(tenant_id, status)')
@@ -1001,7 +1001,7 @@ export async function setSalesOrderItemTax(
 
     // If taxRateId is null, remove all taxes for this item
     if (!taxRateId) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { error: deleteError } = await (supabase as any)
             .from('line_item_taxes')
             .delete()
@@ -1013,7 +1013,7 @@ export async function setSalesOrderItemTax(
         }
 
         // Also clear the legacy tax_rate field
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any)
             .from('sales_order_items')
             .update({ tax_rate: null, tax_amount: null })
@@ -1024,7 +1024,7 @@ export async function setSalesOrderItemTax(
     }
 
     // Verify tax rate belongs to tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: taxRate, error: taxError } = await (supabase as any)
         .from('tax_rates')
         .select('id, name, code, tax_type, rate, is_compound, tenant_id')
@@ -1040,7 +1040,7 @@ export async function setSalesOrderItemTax(
     }
 
     // Call the recalculate function with a single tax rate
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error: rpcError } = await (supabase as any)
         .rpc('recalculate_line_item_taxes', {
             p_item_type: 'sales_order_item',
@@ -1055,7 +1055,7 @@ export async function setSalesOrderItemTax(
     }
 
     // Also update the legacy tax_rate field for backward compatibility
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     await (supabase as any)
         .from('sales_order_items')
         .update({

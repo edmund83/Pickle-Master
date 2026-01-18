@@ -35,7 +35,7 @@ export function CustomFieldsSection({ values, onChange, disabled, folderId }: Cu
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: profile } = await (supabase as any)
           .from('profiles')
           .select('tenant_id')
@@ -45,7 +45,7 @@ export function CustomFieldsSection({ values, onChange, disabled, folderId }: Cu
         if (!profile?.tenant_id) return
 
         // Load custom fields and field-folder associations in parallel
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const [fieldsResult, fieldFoldersResult] = await Promise.all([
           (supabase as any)
             .from('custom_field_definitions')

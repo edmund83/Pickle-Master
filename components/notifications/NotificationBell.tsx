@@ -53,7 +53,7 @@ export function NotificationBell({ className, variant = 'default', isExpanded = 
       if (!currentUserId) return
 
       // Fetch unread_notification_count from profile (single row, no count: exact needed)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('unread_notification_count')
@@ -61,7 +61,7 @@ export function NotificationBell({ className, variant = 'default', isExpanded = 
         .single()
 
       // Get recent unread notifications with explicit columns (limit 5 for dropdown)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data } = await (supabase as any)
         .from('notifications')
         .select(NOTIFICATION_COLUMNS)
@@ -144,7 +144,7 @@ export function NotificationBell({ className, variant = 'default', isExpanded = 
 
     const supabase = createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     await (supabase as any)
       .from('notifications')
       .update({ is_read: true })
@@ -167,7 +167,7 @@ export function NotificationBell({ className, variant = 'default', isExpanded = 
 
     const supabase = createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     await (supabase as any)
       .from('notifications')
       .update({ is_read: true })

@@ -131,7 +131,7 @@ export async function createDeliveryOrder(input: CreateDeliveryOrderInput): Prom
     const supabase = await createClient()
 
     // Get sales order details to copy shipping address
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: so, error: soError } = await (supabase as any)
         .from('sales_orders')
         .select(`
@@ -150,14 +150,14 @@ export async function createDeliveryOrder(input: CreateDeliveryOrderInput): Prom
     }
 
     // Generate display ID
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: displayId } = await (supabase as any).rpc(
         'generate_display_id_for_current_user',
         { p_entity_type: 'delivery_order' }
     )
 
     // Create delivery order
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any)
         .from('delivery_orders')
         .insert({
@@ -210,7 +210,7 @@ export async function createDeliveryOrderFromSO(salesOrderId: string): Promise<D
     const supabase = await createClient()
 
     // Get SO with items that have been picked
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: so, error: soError } = await (supabase as any)
         .from('sales_orders')
         .select(`
@@ -245,14 +245,14 @@ export async function createDeliveryOrderFromSO(salesOrderId: string): Promise<D
     }
 
     // Generate display ID
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: displayId } = await (supabase as any).rpc(
         'generate_display_id_for_current_user',
         { p_entity_type: 'delivery_order' }
     )
 
     // Create delivery order
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: doData, error: doError } = await (supabase as any)
         .from('delivery_orders')
         .insert({
@@ -296,7 +296,7 @@ export async function createDeliveryOrderFromSO(salesOrderId: string): Promise<D
         quantity_shipped: item.quantity_picked - item.quantity_shipped,
     }))
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error: itemsError } = await (supabase as any)
         .from('delivery_order_items')
         .insert(doItems)
@@ -304,7 +304,7 @@ export async function createDeliveryOrderFromSO(salesOrderId: string): Promise<D
     if (itemsError) {
         console.error('Create DO items error:', itemsError)
         // Rollback DO creation
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any).from('delivery_orders').delete().eq('id', doData.id)
         return { success: false, error: itemsError.message }
     }
@@ -322,7 +322,7 @@ export async function getDeliveryOrder(deliveryOrderId: string) {
 
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data } = await (supabase as any)
         .from('delivery_orders')
         .select(`
@@ -365,7 +365,7 @@ export async function updateDeliveryOrder(
     const supabase = await createClient()
 
     // Check status allows updates
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: currentDO } = await (supabase as any)
         .from('delivery_orders')
         .select('status')
@@ -377,7 +377,7 @@ export async function updateDeliveryOrder(
         return { success: false, error: 'Cannot update delivery order after dispatch' }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('delivery_orders')
         .update({
@@ -419,7 +419,7 @@ export async function updateDeliveryOrderStatus(
     const supabase = await createClient()
 
     // Get current status
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: currentDO, error: fetchError } = await (supabase as any)
         .from('delivery_orders')
         .select('status, sales_order_id, display_id')
@@ -460,7 +460,7 @@ export async function updateDeliveryOrderStatus(
         }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error: updateError } = await (supabase as any)
         .from('delivery_orders')
         .update(updateData)
@@ -475,7 +475,7 @@ export async function updateDeliveryOrderStatus(
     // If delivered, update SO item shipped quantities
     if (newStatus === 'delivered') {
         // Get DO items
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: doItems } = await (supabase as any)
             .from('delivery_order_items')
             .select('sales_order_item_id, quantity_shipped')
@@ -483,7 +483,7 @@ export async function updateDeliveryOrderStatus(
 
         // Update each SO item's shipped quantity
         for (const item of doItems || []) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             await (supabase as any).rpc('increment_so_item_shipped', {
                 p_so_item_id: item.sales_order_item_id,
                 p_quantity: item.quantity_shipped
@@ -491,7 +491,7 @@ export async function updateDeliveryOrderStatus(
         }
 
         // Check if all items are shipped to update SO status
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: soItems } = await (supabase as any)
             .from('sales_order_items')
             .select('quantity_ordered, quantity_shipped')
@@ -503,13 +503,13 @@ export async function updateDeliveryOrderStatus(
         )
 
         if (allShipped) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             await (supabase as any)
                 .from('sales_orders')
                 .update({ status: 'shipped', updated_at: new Date().toISOString() })
                 .eq('id', currentDO.sales_order_id)
         } else {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             await (supabase as any)
                 .from('sales_orders')
                 .update({ status: 'partial_shipped', updated_at: new Date().toISOString() })
@@ -545,7 +545,7 @@ export async function addDeliveryOrderItem(
     const supabase = await createClient()
 
     // Check DO status
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: doData } = await (supabase as any)
         .from('delivery_orders')
         .select('status')
@@ -557,7 +557,7 @@ export async function addDeliveryOrderItem(
         return { success: false, error: 'Cannot add items after dispatch' }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('delivery_order_items')
         .insert({
@@ -595,7 +595,7 @@ export async function updateDeliveryOrderItem(
     const supabase = await createClient()
 
     // Get item and verify parent DO belongs to tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: doItem, error: fetchError } = await (supabase as any)
         .from('delivery_order_items')
         .select('delivery_order_id, delivery_orders!inner(tenant_id, status)')
@@ -614,7 +614,7 @@ export async function updateDeliveryOrderItem(
         return { success: false, error: 'Cannot update items after dispatch' }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('delivery_order_items')
         .update(updates)
@@ -641,7 +641,7 @@ export async function removeDeliveryOrderItem(itemId: string): Promise<DeliveryO
     const supabase = await createClient()
 
     // Get item and verify parent DO belongs to tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: doItem, error: fetchError } = await (supabase as any)
         .from('delivery_order_items')
         .select('delivery_order_id, delivery_orders!inner(tenant_id, status)')
@@ -660,7 +660,7 @@ export async function removeDeliveryOrderItem(itemId: string): Promise<DeliveryO
         return { success: false, error: 'Cannot remove items after dispatch' }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('delivery_order_items')
         .delete()
@@ -687,7 +687,7 @@ export async function deleteDeliveryOrder(deliveryOrderId: string): Promise<Deli
     const supabase = await createClient()
 
     // Check status and ownership
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: doData, error: fetchError } = await (supabase as any)
         .from('delivery_orders')
         .select('status, tenant_id, display_id, sales_order_id')
@@ -707,14 +707,14 @@ export async function deleteDeliveryOrder(deliveryOrderId: string): Promise<Deli
     }
 
     // Delete items first
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     await (supabase as any)
         .from('delivery_order_items')
         .delete()
         .eq('delivery_order_id', deliveryOrderId)
 
     // Delete DO
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('delivery_orders')
         .delete()
@@ -805,14 +805,14 @@ export async function getPaginatedDeliveryOrders(
     const supabase = await createClient()
 
     // Build query for count
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     let countQuery = (supabase as any)
         .from('delivery_orders')
         .select('*', { count: 'exact', head: true })
         .eq('tenant_id', context.tenantId)
 
     // Build query for data
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     let dataQuery = (supabase as any)
         .from('delivery_orders')
         .select(`

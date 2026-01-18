@@ -34,8 +34,8 @@ export function InterfaceShowcase() {
                   Scan barcodes with your phone camera. Find items, adjust stock, or add new — in seconds.
                 </p>
               </div>
-              <div className="rounded-box border-primary bg-primary/20 text-primary flex size-[3.875rem] shrink-0 items-center justify-center border">
-                <span className="icon-[tabler--scan] size-8 animate-pulse-soft"></span>
+              <div className="rounded-box border-primary bg-primary/20 text-primary flex size-[3.875rem] shrink-0 items-center justify-center border transition-transform duration-200 hover:scale-110">
+                <span className="icon-[tabler--scan] size-8"></span>
               </div>
             </div>
             <div className="intersect-once intersect:motion-preset-slide-right-md intersect:motion-duration-800 intersect:motion-opacity-in-0 intersect:motion-delay-600 flex items-center gap-4 p-6">
@@ -45,8 +45,8 @@ export function InterfaceShowcase() {
                   Green, yellow, red at a glance. Large numbers you can read across the room.
                 </p>
               </div>
-              <div className="rounded-box border-primary bg-primary/20 text-primary flex size-[3.875rem] shrink-0 items-center justify-center border">
-                <span className="icon-[tabler--eye] size-8 animate-pulse-soft"></span>
+              <div className="rounded-box border-primary bg-primary/20 text-primary flex size-[3.875rem] shrink-0 items-center justify-center border transition-transform duration-200 hover:scale-110">
+                <span className="icon-[tabler--eye] size-8"></span>
               </div>
             </div>
             <div className="intersect-once intersect:motion-preset-slide-right-md intersect:motion-duration-800 intersect:motion-opacity-in-0 intersect:motion-delay-[900ms] flex items-center gap-4 p-6">
@@ -56,8 +56,8 @@ export function InterfaceShowcase() {
                   Set thresholds, get notified before you run out. Email, push, or in-app notifications.
                 </p>
               </div>
-              <div className="rounded-box border-primary bg-primary/20 text-primary flex size-[3.875rem] shrink-0 items-center justify-center border">
-                <span className="icon-[tabler--bell-ringing] size-8 animate-pulse-soft"></span>
+              <div className="rounded-box border-primary bg-primary/20 text-primary flex size-[3.875rem] shrink-0 items-center justify-center border transition-transform duration-200 hover:scale-110">
+                <span className="icon-[tabler--bell-ringing] size-8"></span>
               </div>
             </div>
           </div>
@@ -77,8 +77,8 @@ export function InterfaceShowcase() {
           {/* Feature Right */}
           <div className="space-y-9">
             <div className="intersect-once intersect:motion-preset-slide-left-md intersect:motion-duration-800 intersect:motion-opacity-in-0 intersect:motion-delay-300 flex items-center gap-4 p-6">
-              <div className="rounded-box border-primary bg-primary/20 text-primary flex size-[3.875rem] shrink-0 items-center justify-center border">
-                <span className="icon-[tabler--device-mobile] size-8 animate-pulse-soft"></span>
+              <div className="rounded-box border-primary bg-primary/20 text-primary flex size-[3.875rem] shrink-0 items-center justify-center border transition-transform duration-200 hover:scale-110">
+                <span className="icon-[tabler--device-mobile] size-8"></span>
               </div>
               <div className="flex flex-col gap-2">
                 <h5 className="text-base-content text-lg font-semibold">Mobile-First Design</h5>
@@ -88,8 +88,8 @@ export function InterfaceShowcase() {
               </div>
             </div>
             <div className="intersect-once intersect:motion-preset-slide-left-md intersect:motion-duration-800 intersect:motion-opacity-in-0 intersect:motion-delay-600 flex items-center gap-4 p-6">
-              <div className="rounded-box border-primary bg-primary/20 text-primary flex size-[3.875rem] shrink-0 items-center justify-center border">
-                <span className="icon-[tabler--users-group] size-8 animate-pulse-soft"></span>
+              <div className="rounded-box border-primary bg-primary/20 text-primary flex size-[3.875rem] shrink-0 items-center justify-center border transition-transform duration-200 hover:scale-110">
+                <span className="icon-[tabler--users-group] size-8"></span>
               </div>
               <div className="flex flex-col gap-2">
                 <h5 className="text-base-content text-lg font-semibold">Team Sync</h5>
@@ -99,8 +99,8 @@ export function InterfaceShowcase() {
               </div>
             </div>
             <div className="intersect-once intersect:motion-preset-slide-left-md intersect:motion-duration-800 intersect:motion-opacity-in-0 intersect:motion-delay-[900ms] flex items-center gap-4 p-6">
-              <div className="rounded-box border-primary bg-primary/20 text-primary flex size-[3.875rem] shrink-0 items-center justify-center border">
-                <span className="icon-[tabler--wifi-off] size-8 animate-pulse-soft"></span>
+              <div className="rounded-box border-primary bg-primary/20 text-primary flex size-[3.875rem] shrink-0 items-center justify-center border transition-transform duration-200 hover:scale-110">
+                <span className="icon-[tabler--wifi-off] size-8"></span>
               </div>
               <div className="flex flex-col gap-2">
                 <h5 className="text-base-content text-lg font-semibold">Offline-First</h5>

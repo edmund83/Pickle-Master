@@ -36,6 +36,9 @@ export function HomeHero() {
       <div className="bg-primary">
         <main className="pb-10 pt-32 md:pt-36">
           <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 text-center sm:px-6 lg:gap-4 lg:px-8">
+            <span className="text-white/90 text-base font-medium tracking-wider uppercase">
+              Inventory Management System
+            </span>
             <div className="bg-white/10 border-white/20 flex w-fit items-center gap-2.5 rounded-full border px-3 py-2">
               <span className="badge bg-white text-primary border-0 shrink-0 rounded-full">Simple</span>
               <span className="text-white/80">Trusted by 10,000+ businesses</span>
@@ -107,6 +110,12 @@ export function HomeHero() {
           initial="hidden"
           animate="visible"
         >
+          <motion.span
+            className="text-white/90 text-base font-medium tracking-wider uppercase"
+            variants={itemVariants}
+          >
+            Inventory Management System
+          </motion.span>
           <motion.div
             className="bg-white/10 border-white/20 flex w-fit items-center gap-2.5 rounded-full border px-3 py-2"
             variants={itemVariants}

@@ -61,7 +61,7 @@ export default function ProfileSettingsPage() {
 
       if (!user) return
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data } = await (supabase as any)
         .from('profiles')
         .select('*')
@@ -120,7 +120,7 @@ export default function ProfileSettingsPage() {
         .getPublicUrl(fileName)
 
       // Update profile
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { error: updateError } = await (supabase as any)
         .from('profiles')
         .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
@@ -148,7 +148,7 @@ export default function ProfileSettingsPage() {
 
       if (!user) throw new Error('Not authenticated')
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { error } = await (supabase as any)
         .from('profiles')
         .update({

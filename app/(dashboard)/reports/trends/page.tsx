@@ -38,7 +38,7 @@ async function getTrendsData() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: profile } = await (supabase as any)
     .from('profiles')
     .select('tenant_id')
@@ -66,7 +66,7 @@ async function getTrendsData() {
     weeklyComparisonResult,
   ] = await Promise.all([
     // Get inventory status counts (only id and status needed)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     (supabase as any)
       .from('inventory_items')
       .select('id, status')
@@ -74,21 +74,21 @@ async function getTrendsData() {
       .is('deleted_at', null),
 
     // Get activity by day for last 7 days via RPC
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     (supabase as any).rpc('get_activity_by_day', {
       p_tenant_id: tenantId,
       p_days: 7,
     }),
 
     // Get action breakdown for last 30 days via RPC
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     (supabase as any).rpc('get_action_breakdown', {
       p_tenant_id: tenantId,
       p_days: 30,
     }),
 
     // Get most active items for last 30 days via RPC
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     (supabase as any).rpc('get_most_active_items', {
       p_tenant_id: tenantId,
       p_days: 30,
@@ -96,7 +96,7 @@ async function getTrendsData() {
     }),
 
     // Get weekly comparison via RPC
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     (supabase as any).rpc('get_weekly_comparison', {
       p_tenant_id: tenantId,
     }),

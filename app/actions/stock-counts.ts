@@ -68,7 +68,7 @@ export async function getStockCounts(): Promise<StockCountWithRelations[]> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: profile } = await (supabase as any)
     .from('profiles')
     .select('tenant_id')
@@ -77,7 +77,7 @@ export async function getStockCounts(): Promise<StockCountWithRelations[]> {
 
   if (!profile?.tenant_id) return []
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data, error } = await (supabase as any)
     .from('stock_counts')
     .select(`
@@ -110,7 +110,7 @@ export async function getStockCount(id: string): Promise<{
 
   const supabase = await createClient()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data, error } = await (supabase as any).rpc('get_stock_count_with_items', {
     p_stock_count_id: id,
   })
@@ -149,7 +149,7 @@ export async function createStockCount(input: {
 
   const supabase = await createClient()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data, error } = await (supabase as any).rpc('create_stock_count', {
     p_name: input.name || null,
     p_description: input.description || null,
@@ -184,7 +184,7 @@ export async function startStockCount(id: string): Promise<{ success: boolean; e
 
   const supabase = await createClient()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data, error } = await (supabase as any).rpc('start_stock_count', {
     p_stock_count_id: id,
   })
@@ -218,7 +218,7 @@ export async function recordCount(
 
   const supabase = await createClient()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data, error } = await (supabase as any).rpc('record_stock_count', {
     p_stock_count_item_id: stockCountItemId,
     p_counted_quantity: countedQuantity,
@@ -249,7 +249,7 @@ export async function submitForReview(id: string): Promise<{ success: boolean; e
 
   const supabase = await createClient()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data, error } = await (supabase as any).rpc('submit_stock_count_for_review', {
     p_stock_count_id: id,
   })
@@ -282,7 +282,7 @@ export async function completeStockCount(
 
   const supabase = await createClient()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data, error } = await (supabase as any).rpc('complete_stock_count', {
     p_stock_count_id: id,
     p_apply_adjustments: applyAdjustments,
@@ -314,7 +314,7 @@ export async function cancelStockCount(id: string): Promise<{ success: boolean; 
 
   const supabase = await createClient()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data, error } = await (supabase as any).rpc('cancel_stock_count', {
     p_stock_count_id: id,
   })
@@ -351,7 +351,7 @@ export async function approveStockCount(
   const supabase = await createClient()
 
   // Get the stock count to check status and get display_id
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: stockCount, error: fetchError } = await (supabase as any)
     .from('stock_counts')
     .select('id, display_id, status, submitted_by, tenant_id')
@@ -368,7 +368,7 @@ export async function approveStockCount(
   }
 
   // Complete the stock count with optional adjustments
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data, error } = await (supabase as any).rpc('complete_stock_count', {
     p_stock_count_id: id,
     p_apply_adjustments: applyAdjustments,
@@ -380,7 +380,7 @@ export async function approveStockCount(
   }
 
   // Update approved_by and approved_at
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   await (supabase as any)
     .from('stock_counts')
     .update({
@@ -393,7 +393,7 @@ export async function approveStockCount(
   // Notify submitter of approval
   if (stockCount.submitted_by && stockCount.submitted_by !== context.userId) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       await (supabase as any).rpc('notify_approval', {
         p_tenant_id: context.tenantId,
         p_user_id: stockCount.submitted_by,
@@ -411,7 +411,7 @@ export async function approveStockCount(
 
   // Log activity
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     await (supabase as any).from('activity_logs').insert({
       tenant_id: context.tenantId,
       user_id: context.userId,
@@ -454,7 +454,7 @@ export async function rejectStockCount(
   const supabase = await createClient()
 
   // Get the stock count
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: stockCount, error: fetchError } = await (supabase as any)
     .from('stock_counts')
     .select('id, display_id, status, submitted_by, tenant_id')
@@ -471,7 +471,7 @@ export async function rejectStockCount(
   }
 
   // Update status back to in_progress
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { error } = await (supabase as any)
     .from('stock_counts')
     .update({
@@ -490,7 +490,7 @@ export async function rejectStockCount(
   // Notify submitter of rejection
   if (stockCount.submitted_by && stockCount.submitted_by !== context.userId) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       await (supabase as any).rpc('notify_approval', {
         p_tenant_id: context.tenantId,
         p_user_id: stockCount.submitted_by,
@@ -508,7 +508,7 @@ export async function rejectStockCount(
 
   // Log activity
   try {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     await (supabase as any).from('activity_logs').insert({
       tenant_id: context.tenantId,
       user_id: context.userId,
@@ -560,7 +560,7 @@ export async function batchRecordCounts(
   // Process each count sequentially to avoid race conditions
   for (const count of counts) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data, error } = await (supabase as any).rpc('record_stock_count', {
         p_stock_count_item_id: count.stockCountItemId,
         p_counted_quantity: count.countedQuantity,
@@ -679,14 +679,14 @@ export async function getPaginatedStockCounts(
     const supabase = await createClient()
 
     // Build query for count
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     let countQuery = (supabase as any)
         .from('stock_counts')
         .select('*', { count: 'exact', head: true })
         .eq('tenant_id', context.tenantId)
 
     // Build query for data
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     let dataQuery = (supabase as any)
         .from('stock_counts')
         .select(`

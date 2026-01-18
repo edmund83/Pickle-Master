@@ -16,7 +16,7 @@ async function getInventoryValueData() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: profile } = await (supabase as any)
     .from('profiles')
     .select('tenant_id')
@@ -28,13 +28,13 @@ async function getInventoryValueData() {
   }
 
   const [itemsResult, foldersResult] = await Promise.all([
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     (supabase as any)
       .from('inventory_items')
       .select('id, name, sku, quantity, price, folder_id')
       .eq('tenant_id', profile.tenant_id)
       .is('deleted_at', null),
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     (supabase as any)
       .from('folders')
       .select('*')

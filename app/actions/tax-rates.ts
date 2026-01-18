@@ -85,7 +85,7 @@ export async function getTaxRates(): Promise<TaxRate[]> {
     if (!user) return []
 
     // Get user's tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -95,7 +95,7 @@ export async function getTaxRates(): Promise<TaxRate[]> {
     if (!profile?.tenant_id) return []
 
     // Get tax rates
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data } = await (supabase as any)
         .from('tax_rates')
         .select('*')
@@ -114,7 +114,7 @@ export async function getAllTaxRates(): Promise<TaxRate[]> {
 
     if (!user) return []
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -123,7 +123,7 @@ export async function getAllTaxRates(): Promise<TaxRate[]> {
 
     if (!profile?.tenant_id) return []
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data } = await (supabase as any)
         .from('tax_rates')
         .select('*')
@@ -142,7 +142,7 @@ export async function getTaxRate(taxRateId: string): Promise<TaxRate | null> {
 
     if (!user) return null
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data } = await (supabase as any)
         .from('tax_rates')
         .select('*')
@@ -159,7 +159,7 @@ export async function getDefaultTaxRate(): Promise<TaxRate | null> {
 
     if (!user) return null
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -168,7 +168,7 @@ export async function getDefaultTaxRate(): Promise<TaxRate | null> {
 
     if (!profile?.tenant_id) return null
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data } = await (supabase as any)
         .from('tax_rates')
         .select('*')
@@ -201,7 +201,7 @@ export async function createTaxRate(input: CreateTaxRateInput): Promise<TaxRateR
         const supabase = await createClient()
 
         // Check for duplicate name
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: existing } = await (supabase as any)
             .from('tax_rates')
             .select('id')
@@ -214,7 +214,7 @@ export async function createTaxRate(input: CreateTaxRateInput): Promise<TaxRateR
         }
 
         // Insert tax rate
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data, error } = await (supabase as any)
             .from('tax_rates')
             .insert({
@@ -281,7 +281,7 @@ export async function updateTaxRate(
 
         // Check for duplicate name if name is being changed
         if (validated.data.name) {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             const { data: existing } = await (supabase as any)
                 .from('tax_rates')
                 .select('id')
@@ -296,7 +296,7 @@ export async function updateTaxRate(
         }
 
         // Update tax rate
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { error } = await (supabase as any)
             .from('tax_rates')
             .update({
@@ -343,7 +343,7 @@ export async function deleteTaxRate(taxRateId: string): Promise<TaxRateResult> {
         }
 
         // Check if tax rate is in use
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { count: lineItemCount } = await (supabase as any)
             .from('line_item_taxes')
             .select('*', { count: 'exact', head: true })
@@ -351,7 +351,7 @@ export async function deleteTaxRate(taxRateId: string): Promise<TaxRateResult> {
 
         if (lineItemCount && lineItemCount > 0) {
             // Soft delete by deactivating instead
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             const { error } = await (supabase as any)
                 .from('tax_rates')
                 .update({ is_active: false, updated_at: new Date().toISOString() })
@@ -368,7 +368,7 @@ export async function deleteTaxRate(taxRateId: string): Promise<TaxRateResult> {
         }
 
         // Hard delete if not in use
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { error } = await (supabase as any)
             .from('tax_rates')
             .delete()
@@ -410,7 +410,7 @@ export async function setDefaultTaxRate(taxRateId: string): Promise<TaxRateResul
         }
 
         // The database trigger will handle unsetting other defaults
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { error } = await (supabase as any)
             .from('tax_rates')
             .update({ is_default: true, updated_at: new Date().toISOString() })
@@ -446,7 +446,7 @@ export async function toggleTaxRateActive(taxRateId: string): Promise<TaxRateRes
         const supabase = await createClient()
 
         // Verify ownership and get current status
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: taxRate, error: fetchError } = await (supabase as any)
             .from('tax_rates')
             .select('is_active, tenant_id')
@@ -462,7 +462,7 @@ export async function toggleTaxRateActive(taxRateId: string): Promise<TaxRateRes
         }
 
         // Toggle active status
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { error } = await (supabase as any)
             .from('tax_rates')
             .update({
@@ -495,7 +495,7 @@ export async function getTaxRatesByRegion(
 
     if (!user) return []
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -504,7 +504,7 @@ export async function getTaxRatesByRegion(
 
     if (!profile?.tenant_id) return []
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     let query = (supabase as any)
         .from('tax_rates')
         .select('*')
