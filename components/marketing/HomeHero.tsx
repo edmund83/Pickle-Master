@@ -35,50 +35,23 @@ export function HomeHero() {
     return (
       <div className="bg-primary">
         <main className="pb-10 pt-32 md:pt-36">
-          <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 text-center sm:px-6 lg:gap-4 lg:px-8">
-            <span className="text-white/90 text-base font-medium tracking-wider uppercase">
-              Inventory Management System
-            </span>
-            <div className="bg-white/10 border-white/20 flex w-fit items-center gap-2.5 rounded-full border px-3 py-2">
-              <span className="badge bg-white text-primary border-0 shrink-0 rounded-full">Simple</span>
-              <span className="text-white/80">Trusted by 10,000+ businesses</span>
-            </div>
+          <div className="mx-auto flex max-w-7xl flex-col items-center gap-4 px-4 text-center sm:px-6 lg:gap-5 lg:px-8">
+            <Link
+              href="/ai-assistant"
+              className="bg-white/10 border-white/20 text-white/90 hover:bg-white/15 hover:border-white/30 flex w-fit items-center gap-2 rounded-full border px-3 py-2 text-sm transition-colors"
+            >
+              <span className="icon-[tabler--sparkles] size-4"></span>
+              <span className="font-medium">Now with Ask Zoe AI assistant</span>
+              <span className="icon-[tabler--arrow-right] size-4 rtl:rotate-180"></span>
+            </Link>
 
-            <h1 className="text-white relative z-1 text-5xl leading-[1.15] font-bold max-md:text-2xl md:max-w-4xl md:text-balance">
-              <span>Inventory tracking so simple, your team uses it on day one</span>
-              <svg
-                width="223"
-                height="12"
-                viewBox="0 0 223 12"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="absolute -bottom-1.5 left-10 -z-1 max-lg:left-4 max-md:hidden"
-              >
-                <path
-                  d="M1.30466 10.7431C39.971 5.28788 76.0949 3.02 115.082 2.30401C143.893 1.77489 175.871 0.628649 204.399 3.63102C210.113 3.92052 215.332 4.91391 221.722 6.06058"
-                  stroke="url(#paint0_linear_10365_68643)"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                />
-                <defs>
-                  <linearGradient
-                    id="paint0_linear_10365_68643"
-                    x1="19.0416"
-                    y1="4.03539"
-                    x2="42.8362"
-                    y2="66.9459"
-                    gradientUnits="userSpaceOnUse"
-                  >
-                    <stop offset="0.2" stopColor="var(--color-primary)" />
-                    <stop offset="1" stopColor="var(--color-primary-content)" />
-                  </linearGradient>
-                </defs>
-              </svg>
+            <h1 className="text-white text-5xl leading-[1.15] font-bold max-md:text-3xl md:max-w-4xl md:text-balance">
+              Inventory management with barcode scanning
             </h1>
 
-            <p className="text-white/80 max-w-3xl">
-              Scan barcodes from your phone. See stock levels at a glance. Get alerts before you run out.
-              Works offline, syncs instantly — no spreadsheets, no training, no surprises.
+            <p className="text-white/80 max-w-3xl text-lg">
+              Built for small business teams. Scan on mobile, get low-stock alerts, and track check-in/check-out —
+              works offline and syncs when you're back online.
             </p>
 
             <div className="flex flex-col items-center gap-3 sm:flex-row">
@@ -86,14 +59,14 @@ export function HomeHero() {
                 Start Free Trial
                 <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
               </Link>
-              <Link href="/ai-assistant" className="btn btn-outline btn-lg border-white text-white hover:bg-accent hover:border-accent hover:text-accent-content">
-                Meet Zoe, Your AI Assistant
-                <span className="icon-[tabler--sparkles] size-5"></span>
+              <Link href="/demo" className="btn btn-outline btn-lg border-white text-white hover:bg-accent hover:border-accent hover:text-accent-content">
+                Watch demo
+                <span className="icon-[tabler--player-play] size-5"></span>
               </Link>
             </div>
 
             <p className="text-white/70 text-sm">
-              Free 14-day trial • No credit card • Import from Excel in minutes
+              No credit card • Cancel anytime • Import Excel/CSV in minutes
             </p>
           </div>
         </main>
@@ -105,63 +78,32 @@ export function HomeHero() {
     <div className="bg-primary">
       <main className="pb-10 pt-32 md:pt-36">
         <motion.div
-          className="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 text-center sm:px-6 lg:gap-4 lg:px-8"
+          className="mx-auto flex max-w-7xl flex-col items-center gap-4 px-4 text-center sm:px-6 lg:gap-5 lg:px-8"
           variants={containerVariants}
           initial="hidden"
           animate="visible"
         >
-          <motion.span
-            className="text-white/90 text-base font-medium tracking-wider uppercase"
-            variants={itemVariants}
-          >
-            Inventory Management System
-          </motion.span>
-          <motion.div
-            className="bg-white/10 border-white/20 flex w-fit items-center gap-2.5 rounded-full border px-3 py-2"
-            variants={itemVariants}
-          >
-            <span className="badge bg-white text-primary border-0 shrink-0 rounded-full">Simple</span>
-            <span className="text-white/80">Trusted by 10,000+ businesses</span>
+          <motion.div variants={itemVariants}>
+            <Link
+              href="/ai-assistant"
+              className="bg-white/10 border-white/20 text-white/90 hover:bg-white/15 hover:border-white/30 flex w-fit items-center gap-2 rounded-full border px-3 py-2 text-sm transition-colors"
+            >
+              <span className="icon-[tabler--sparkles] size-4"></span>
+              <span className="font-medium">Now with Ask Zoe AI assistant</span>
+              <span className="icon-[tabler--arrow-right] size-4 rtl:rotate-180"></span>
+            </Link>
           </motion.div>
 
           <motion.h1
-            className="text-white relative z-1 text-5xl leading-[1.15] font-bold max-md:text-2xl md:max-w-4xl md:text-balance"
+            className="text-white text-5xl leading-[1.15] font-bold max-md:text-3xl md:max-w-4xl md:text-balance"
             variants={itemVariants}
           >
-            <span>Inventory tracking so simple, your team uses it on day one</span>
-            <svg
-              width="223"
-              height="12"
-              viewBox="0 0 223 12"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="absolute -bottom-1.5 left-10 -z-1 max-lg:left-4 max-md:hidden"
-            >
-              <path
-                d="M1.30466 10.7431C39.971 5.28788 76.0949 3.02 115.082 2.30401C143.893 1.77489 175.871 0.628649 204.399 3.63102C210.113 3.92052 215.332 4.91391 221.722 6.06058"
-                stroke="url(#paint0_linear_10365_68643)"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
-              <defs>
-                <linearGradient
-                  id="paint0_linear_10365_68643"
-                  x1="19.0416"
-                  y1="4.03539"
-                  x2="42.8362"
-                  y2="66.9459"
-                  gradientUnits="userSpaceOnUse"
-                >
-                  <stop offset="0.2" stopColor="var(--color-primary)" />
-                  <stop offset="1" stopColor="var(--color-primary-content)" />
-                </linearGradient>
-              </defs>
-            </svg>
+            Inventory management with barcode scanning
           </motion.h1>
 
-          <motion.p className="text-white/80 max-w-3xl" variants={itemVariants}>
-            Scan barcodes from your phone. See stock levels at a glance. Get alerts before you run out.
-            Works offline, syncs instantly — no spreadsheets, no training, no surprises.
+          <motion.p className="text-white/80 max-w-3xl text-lg" variants={itemVariants}>
+            Built for small business teams. Scan on mobile, get low-stock alerts, and track check-in/check-out —
+            works offline and syncs when you're back online.
           </motion.p>
 
           <motion.div className="flex flex-col items-center gap-3 sm:flex-row" variants={itemVariants}>
@@ -169,14 +111,14 @@ export function HomeHero() {
               Start Free Trial
               <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
             </Link>
-            <Link href="/ai-assistant" className="btn btn-outline btn-lg border-white text-white hover:bg-accent hover:border-accent hover:text-accent-content">
-              Meet Zoe, Your AI Assistant
-              <span className="icon-[tabler--sparkles] size-5"></span>
+            <Link href="/demo" className="btn btn-outline btn-lg border-white text-white hover:bg-accent hover:border-accent hover:text-accent-content">
+              Watch demo
+              <span className="icon-[tabler--player-play] size-5"></span>
             </Link>
           </motion.div>
 
           <motion.p className="text-white/70 text-sm" variants={itemVariants}>
-            Free 14-day trial • No credit card • Import from Excel in minutes
+            No credit card • Cancel anytime • Import Excel/CSV in minutes
           </motion.p>
         </motion.div>
       </main>
