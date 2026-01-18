@@ -5,11 +5,16 @@ export function MarketingNavbar() {
     <nav className="navbar px-0 bg-transparent">
       <div className="mx-auto w-full max-w-7xl px-4 py-4 sm:px-6 md:flex md:items-center md:gap-2 lg:px-8">
         <div className="navbar-start w-max items-center justify-between max-md:w-full">
-          <Link className="text-white flex items-center gap-3 text-xl font-bold" href="/">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white">
-              <span className="text-base font-bold text-primary">S</span>
-            </div>
-            StockZip
+          <Link className="text-white flex items-center gap-2 text-xl font-bold" href="/">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/logo.png"
+              alt="StockZip"
+              width={32}
+              height={32}
+              className="h-8 w-8 object-contain"
+            />
+            StockZip<span className="text-[10px] font-light align-super opacity-70">™</span>
           </Link>
           <div className="md:hidden">
             <button
