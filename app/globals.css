@@ -1,4 +1,6 @@
 @import "tailwindcss";
+@plugin "tailwindcss-motion";
+@import "tailwindcss-intersect";
 
 /* Custom StockZip theme - Primary Blue #0EA5FF, Accent Yellow #FFC83D */
 @plugin "flyonui/theme" {

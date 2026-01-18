@@ -37,12 +37,12 @@ export function HomeHero() {
         <main className="pb-10 pt-32 md:pt-36">
           <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 text-center sm:px-6 lg:gap-4 lg:px-8">
             <div className="bg-white/10 border-white/20 flex w-fit items-center gap-2.5 rounded-full border px-3 py-2">
-              <span className="badge bg-white text-primary border-0 shrink-0 rounded-full">Barcode + Offline</span>
-              <span className="text-white/80">Inventory that works in the real world</span>
+              <span className="badge bg-white text-primary border-0 shrink-0 rounded-full">AI-Powered</span>
+              <span className="text-white/80">Your inventory assistant, Zoe, is ready</span>
             </div>
 
             <h1 className="text-white relative z-1 text-5xl leading-[1.15] font-bold max-md:text-2xl md:max-w-4xl md:text-balance">
-              <span>Inventory management with barcode scanning — built for small teams</span>
+              <span>The Excel replacement your team will actually use — powered by AI</span>
               <svg
                 width="223"
                 height="12"
@@ -74,8 +74,8 @@ export function HomeHero() {
             </h1>
 
             <p className="text-white/80 max-w-3xl">
-              Scan, count, and track stock across locations. Check items in/out to staff. Works offline on mobile.
-              Trust-first pricing with no surprise tier jumps.
+              Scan barcodes, see stock levels at a glance, and ask Zoe — your AI assistant — for instant answers.
+              Works offline on mobile. No training required. Predictable pricing that won't triple overnight.
             </p>
 
             <div className="flex flex-col items-center gap-3 sm:flex-row">
@@ -83,14 +83,14 @@ export function HomeHero() {
                 Start Free Trial
                 <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
               </Link>
-              <Link href="/demo" className="btn btn-outline btn-lg border-white text-white hover:bg-accent hover:border-accent hover:text-accent-content">
-                Watch 90-second demo
-                <span className="icon-[tabler--player-play] size-5"></span>
+              <Link href="/ai-assistant" className="btn btn-outline btn-lg border-white text-white hover:bg-accent hover:border-accent hover:text-accent-content">
+                Meet Zoe, Your AI Assistant
+                <span className="icon-[tabler--sparkles] size-5"></span>
               </Link>
             </div>
 
             <p className="text-white/70 text-sm">
-              No credit card • Cancel anytime • Import from CSV/Sortly
+              No credit card • No training required • Import from Excel/Sortly in minutes
             </p>
           </div>
         </main>
@@ -111,15 +111,15 @@ export function HomeHero() {
             className="bg-white/10 border-white/20 flex w-fit items-center gap-2.5 rounded-full border px-3 py-2"
             variants={itemVariants}
           >
-            <span className="badge bg-white text-primary border-0 shrink-0 rounded-full">Barcode + Offline</span>
-            <span className="text-white/80">Inventory that works in the real world</span>
+            <span className="badge bg-white text-primary border-0 shrink-0 rounded-full">AI-Powered</span>
+            <span className="text-white/80">Your inventory assistant, Zoe, is ready</span>
           </motion.div>
 
           <motion.h1
             className="text-white relative z-1 text-5xl leading-[1.15] font-bold max-md:text-2xl md:max-w-4xl md:text-balance"
             variants={itemVariants}
           >
-            <span>Inventory management with barcode scanning — built for small teams</span>
+            <span>The Excel replacement your team will actually use — powered by AI</span>
             <svg
               width="223"
               height="12"
@@ -151,8 +151,8 @@ export function HomeHero() {
           </motion.h1>
 
           <motion.p className="text-white/80 max-w-3xl" variants={itemVariants}>
-            Scan, count, and track stock across locations. Check items in/out to staff. Works offline on mobile.
-            Trust-first pricing with no surprise tier jumps.
+            Scan barcodes, see stock levels at a glance, and ask Zoe — your AI assistant — for instant answers.
+            Works offline on mobile. No training required. Predictable pricing that won't triple overnight.
           </motion.p>
 
           <motion.div className="flex flex-col items-center gap-3 sm:flex-row" variants={itemVariants}>
@@ -160,14 +160,14 @@ export function HomeHero() {
               Start Free Trial
               <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
             </Link>
-            <Link href="/demo" className="btn btn-outline btn-lg border-white text-white hover:bg-accent hover:border-accent hover:text-accent-content">
-              Watch 90-second demo
-              <span className="icon-[tabler--player-play] size-5"></span>
+            <Link href="/ai-assistant" className="btn btn-outline btn-lg border-white text-white hover:bg-accent hover:border-accent hover:text-accent-content">
+              Meet Zoe, Your AI Assistant
+              <span className="icon-[tabler--sparkles] size-5"></span>
             </Link>
           </motion.div>
 
           <motion.p className="text-white/70 text-sm" variants={itemVariants}>
-            No credit card • Cancel anytime • Import from CSV/Sortly
+            No credit card • No training required • Import from Excel/Sortly in minutes
           </motion.p>
         </motion.div>
       </main>
