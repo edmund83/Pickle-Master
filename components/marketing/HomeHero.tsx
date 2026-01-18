@@ -92,32 +92,6 @@ export function HomeHero() {
             <p className="text-white/70 text-sm">
               No credit card • Cancel anytime • Import from CSV/Sortly
             </p>
-
-            {/* Computer Screen Showcase Placeholder */}
-            <div className="mt-4 w-full max-w-3xl lg:max-w-4xl">
-              <div className="relative mx-auto shadow-2xl rounded-lg overflow-hidden">
-                {/* Browser Chrome / Window Frame */}
-                <div className="bg-neutral-800 px-3 py-1.5">
-                  <div className="flex items-center gap-2">
-                    <div className="flex gap-1">
-                      <span className="size-2 rounded-full bg-red-500"></span>
-                      <span className="size-2 rounded-full bg-yellow-500"></span>
-                      <span className="size-2 rounded-full bg-green-500"></span>
-                    </div>
-                    <div className="ml-2 flex-1 rounded bg-neutral-700 px-2 py-0.5 text-xs text-neutral-400">
-                      app.stockzip.com
-                    </div>
-                  </div>
-                </div>
-                {/* Screen Content Placeholder */}
-                <div className="aspect-video w-full bg-neutral-100 flex items-center justify-center">
-                  <div className="text-center text-neutral-400">
-                    <span className="icon-[tabler--photo] size-10 mb-1 block mx-auto"></span>
-                    <p className="text-sm font-medium">Interface Screenshot</p>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </main>
       </div>
@@ -195,32 +169,6 @@ export function HomeHero() {
           <motion.p className="text-white/70 text-sm" variants={itemVariants}>
             No credit card • Cancel anytime • Import from CSV/Sortly
           </motion.p>
-
-          {/* Computer Screen Showcase Placeholder */}
-          <motion.div className="mt-4 w-full max-w-3xl lg:max-w-4xl" variants={itemVariants}>
-            <div className="relative mx-auto shadow-2xl rounded-lg overflow-hidden">
-              {/* Browser Chrome / Window Frame */}
-              <div className="bg-neutral-800 px-3 py-1.5">
-                <div className="flex items-center gap-2">
-                  <div className="flex gap-1">
-                    <span className="size-2 rounded-full bg-red-500"></span>
-                    <span className="size-2 rounded-full bg-yellow-500"></span>
-                    <span className="size-2 rounded-full bg-green-500"></span>
-                  </div>
-                  <div className="ml-2 flex-1 rounded bg-neutral-700 px-2 py-0.5 text-xs text-neutral-400">
-                    app.stockzip.com
-                  </div>
-                </div>
-              </div>
-              {/* Screen Content Placeholder */}
-              <div className="aspect-video w-full bg-neutral-100 flex items-center justify-center">
-                <div className="text-center text-neutral-400">
-                  <span className="icon-[tabler--photo] size-10 mb-1 block mx-auto"></span>
-                  <p className="text-sm font-medium">Interface Screenshot</p>
-                </div>
-              </div>
-            </div>
-          </motion.div>
         </motion.div>
       </main>
     </div>
