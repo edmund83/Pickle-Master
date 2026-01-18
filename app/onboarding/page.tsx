@@ -35,7 +35,7 @@ export default function OnboardingPage() {
         return
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('onboarding_completed')
@@ -60,7 +60,7 @@ export default function OnboardingPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -68,7 +68,7 @@ export default function OnboardingPage() {
         .single()
 
       if (profile?.tenant_id) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any)
           .from('tenants')
           .update({
@@ -93,7 +93,7 @@ export default function OnboardingPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -101,7 +101,7 @@ export default function OnboardingPage() {
         .single()
 
       if (profile?.tenant_id && categoryName) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any)
           .from('folders')
           .insert({
@@ -126,7 +126,7 @@ export default function OnboardingPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       await (supabase as any)
         .from('profiles')
         .update({ onboarding_completed: true })

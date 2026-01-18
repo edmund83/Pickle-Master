@@ -179,7 +179,7 @@ export function MoveToFolderModal({
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: profile } = await (supabase as any)
           .from('profiles')
           .select('tenant_id')
@@ -188,7 +188,7 @@ export function MoveToFolderModal({
 
         if (!profile?.tenant_id) return
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data } = await (supabase as any)
           .from('folders')
           .select('id, name, parent_id, color, depth')

@@ -65,7 +65,7 @@ export function AdjustLotModal({
     const reasonText = notes ? `${reason}: ${notes}` : reason
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data, error: rpcError } = await (supabase as any)
         .rpc('adjust_lot_quantity', {
           p_lot_id: lotId,

@@ -50,7 +50,7 @@ export default function ActivityReportPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -64,7 +64,7 @@ export default function ActivityReportPage() {
       startDate.setDate(startDate.getDate() - parseInt(filter.dateRange))
 
       // Build query
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       let query = (supabase as any)
         .from('activity_logs')
         .select('*')

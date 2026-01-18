@@ -95,7 +95,7 @@ export async function getNotifications(
 
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('get_user_notifications', {
         p_limit: limit,
         p_offset: offset,
@@ -122,7 +122,7 @@ export async function getUnreadNotificationCount(): Promise<{ success: boolean; 
 
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('get_unread_notification_count')
 
     if (error) {
@@ -150,7 +150,7 @@ export async function markNotificationsAsRead(
 
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any).rpc('mark_notifications_read', {
         p_notification_ids: notificationIds
     })
@@ -174,7 +174,7 @@ export async function markAllNotificationsAsRead(): Promise<{ success: boolean; 
 
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('notifications')
         .update({ read: true, read_at: new Date().toISOString() })
@@ -204,7 +204,7 @@ export async function getNotificationPreferences(): Promise<{
 
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any)
         .from('notification_preferences')
         .select('*')
@@ -269,7 +269,7 @@ export async function updateNotificationPreferences(
     const supabase = await createClient()
 
     // Check if preferences exist
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: existing } = await (supabase as any)
         .from('notification_preferences')
         .select('id')
@@ -278,7 +278,7 @@ export async function updateNotificationPreferences(
 
     if (existing) {
         // Update existing preferences
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { error } = await (supabase as any)
             .from('notification_preferences')
             .update({
@@ -293,7 +293,7 @@ export async function updateNotificationPreferences(
         }
     } else {
         // Insert new preferences
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { error } = await (supabase as any)
             .from('notification_preferences')
             .insert({
@@ -328,7 +328,7 @@ export async function deleteNotification(notificationId: string): Promise<{ succ
 
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('notifications')
         .delete()
@@ -354,7 +354,7 @@ export async function clearAllNotifications(): Promise<{ success: boolean; error
 
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('notifications')
         .delete()

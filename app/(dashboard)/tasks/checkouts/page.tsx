@@ -18,7 +18,7 @@ async function getCheckouts(): Promise<{
   if (!user) redirect('/login')
 
   // Get all checkouts
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data } = await (supabase as any).rpc('get_checkouts', {
     p_limit: 100
   })

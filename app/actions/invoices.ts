@@ -158,7 +158,7 @@ export async function createInvoice(input: CreateInvoiceInput): Promise<InvoiceR
     const supabase = await createClient()
 
     // Get customer details for billing address defaults
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: customer } = await (supabase as any)
         .from('customers')
         .select('name, billing_address1, billing_address2, billing_city, billing_state, billing_postal_code, billing_country')
@@ -167,14 +167,14 @@ export async function createInvoice(input: CreateInvoiceInput): Promise<InvoiceR
         .single()
 
     // Generate display ID
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: displayId } = await (supabase as any).rpc(
         'generate_display_id_for_current_user',
         { p_entity_type: 'invoice' }
     )
 
     // Create invoice
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any)
         .from('invoices')
         .insert({
@@ -226,7 +226,7 @@ export async function createInvoiceFromSO(salesOrderId: string): Promise<Invoice
     const supabase = await createClient()
 
     // Get SO with items
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: so, error: soError } = await (supabase as any)
         .from('sales_orders')
         .select(`
@@ -252,7 +252,7 @@ export async function createInvoiceFromSO(salesOrderId: string): Promise<Invoice
     }
 
     // Check no invoice already exists for this SO
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: existingInvoice } = await (supabase as any)
         .from('invoices')
         .select('id, display_id')
@@ -267,14 +267,14 @@ export async function createInvoiceFromSO(salesOrderId: string): Promise<Invoice
     }
 
     // Generate display ID
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: displayId } = await (supabase as any).rpc(
         'generate_display_id_for_current_user',
         { p_entity_type: 'invoice' }
     )
 
     // Create invoice
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: invoiceData, error: invoiceError } = await (supabase as any)
         .from('invoices')
         .insert({
@@ -326,7 +326,7 @@ export async function createInvoiceFromSO(salesOrderId: string): Promise<Invoice
     })
 
     if (invoiceItems.length > 0) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { error: itemsError } = await (supabase as any)
             .from('invoice_items')
             .insert(invoiceItems)
@@ -334,7 +334,7 @@ export async function createInvoiceFromSO(salesOrderId: string): Promise<Invoice
         if (itemsError) {
             console.error('Create invoice items error:', itemsError)
             // Rollback invoice creation
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             await (supabase as any).from('invoices').delete().eq('id', invoiceData.id)
             return { success: false, error: itemsError.message }
         }
@@ -353,7 +353,7 @@ export async function getInvoice(invoiceId: string) {
 
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data } = await (supabase as any)
         .from('invoices')
         .select(`
@@ -399,7 +399,7 @@ export async function updateInvoice(
     const supabase = await createClient()
 
     // Check status allows updates
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: currentInvoice } = await (supabase as any)
         .from('invoices')
         .select('status')
@@ -411,7 +411,7 @@ export async function updateInvoice(
         return { success: false, error: 'Cannot update invoice after it has been sent' }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('invoices')
         .update({
@@ -452,7 +452,7 @@ export async function updateInvoiceStatus(
     const supabase = await createClient()
 
     // Get current status
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: currentInvoice, error: fetchError } = await (supabase as any)
         .from('invoices')
         .select('status, display_id, total, balance_due')
@@ -495,7 +495,7 @@ export async function updateInvoiceStatus(
         updateData.cancelled_at = new Date().toISOString()
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error: updateError } = await (supabase as any)
         .from('invoices')
         .update(updateData)
@@ -534,7 +534,7 @@ export async function addInvoiceItem(
     const supabase = await createClient()
 
     // Check invoice status
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: invoiceData } = await (supabase as any)
         .from('invoices')
         .select('status')
@@ -553,7 +553,7 @@ export async function addInvoiceItem(
     const taxAmt = afterDiscount * (validatedItem.tax_rate || 0) / 100
     const lineTotal = afterDiscount + taxAmt
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('invoice_items')
         .insert({
@@ -598,7 +598,7 @@ export async function updateInvoiceItem(
     const supabase = await createClient()
 
     // Get item and verify parent invoice belongs to tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: invoiceItem, error: fetchError } = await (supabase as any)
         .from('invoice_items')
         .select('invoice_id, quantity, unit_price, invoices!inner(tenant_id, status)')
@@ -626,7 +626,7 @@ export async function updateInvoiceItem(
     const taxAmt = afterDiscount * (updates.tax_rate || 0) / 100
     const lineTotal = afterDiscount + taxAmt
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('invoice_items')
         .update({
@@ -658,7 +658,7 @@ export async function removeInvoiceItem(itemId: string): Promise<InvoiceResult> 
     const supabase = await createClient()
 
     // Get item and verify parent invoice belongs to tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: invoiceItem, error: fetchError } = await (supabase as any)
         .from('invoice_items')
         .select('invoice_id, invoices!inner(tenant_id, status)')
@@ -677,7 +677,7 @@ export async function removeInvoiceItem(itemId: string): Promise<InvoiceResult> 
         return { success: false, error: 'Cannot remove items after invoice has been sent' }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('invoice_items')
         .delete()
@@ -714,7 +714,7 @@ export async function recordPayment(
     const supabase = await createClient()
 
     // Get current invoice
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: invoice, error: fetchError } = await (supabase as any)
         .from('invoices')
         .select('status, total, amount_paid, balance_due')
@@ -737,7 +737,7 @@ export async function recordPayment(
     }
 
     // Insert payment record
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error: paymentError } = await (supabase as any)
         .from('invoice_payments')
         .insert({
@@ -761,7 +761,7 @@ export async function recordPayment(
     const newBalanceDue = Number(invoice.total) - newAmountPaid
     const newStatus = newBalanceDue <= 0 ? 'paid' : 'partial'
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error: updateError } = await (supabase as any)
         .from('invoices')
         .update({
@@ -796,7 +796,7 @@ export async function deleteInvoice(invoiceId: string): Promise<InvoiceResult> {
     const supabase = await createClient()
 
     // Check status and ownership
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: invoiceData, error: fetchError } = await (supabase as any)
         .from('invoices')
         .select('status, tenant_id, display_id')
@@ -816,14 +816,14 @@ export async function deleteInvoice(invoiceId: string): Promise<InvoiceResult> {
     }
 
     // Delete items first (should cascade, but explicit is safer)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     await (supabase as any)
         .from('invoice_items')
         .delete()
         .eq('invoice_id', invoiceId)
 
     // Delete invoice
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('invoices')
         .delete()
@@ -918,14 +918,14 @@ export async function getPaginatedInvoices(
     const supabase = await createClient()
 
     // Build query for count
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     let countQuery = (supabase as any)
         .from('invoices')
         .select('*', { count: 'exact', head: true })
         .eq('tenant_id', context.tenantId)
 
     // Build query for data
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     let dataQuery = (supabase as any)
         .from('invoices')
         .select(`
@@ -1037,7 +1037,7 @@ export async function setInvoiceItemTax(
     const supabase = await createClient()
 
     // Get item and verify parent invoice belongs to tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: invItem, error: fetchError } = await (supabase as any)
         .from('invoice_items')
         .select('invoice_id, line_total, invoices!inner(tenant_id, status)')
@@ -1058,7 +1058,7 @@ export async function setInvoiceItemTax(
 
     // If taxRateId is null, remove all taxes for this item
     if (!taxRateId) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { error: deleteError } = await (supabase as any)
             .from('line_item_taxes')
             .delete()
@@ -1070,7 +1070,7 @@ export async function setInvoiceItemTax(
         }
 
         // Also clear the legacy tax_rate field
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any)
             .from('invoice_items')
             .update({ tax_rate: null, tax_amount: null })
@@ -1081,7 +1081,7 @@ export async function setInvoiceItemTax(
     }
 
     // Verify tax rate belongs to tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: taxRate, error: taxError } = await (supabase as any)
         .from('tax_rates')
         .select('id, name, code, tax_type, rate, is_compound, tenant_id')
@@ -1097,7 +1097,7 @@ export async function setInvoiceItemTax(
     }
 
     // Call the recalculate function with a single tax rate
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error: rpcError } = await (supabase as any)
         .rpc('recalculate_line_item_taxes', {
             p_item_type: 'invoice_item',
@@ -1112,7 +1112,7 @@ export async function setInvoiceItemTax(
     }
 
     // Also update the legacy tax_rate field for backward compatibility
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     await (supabase as any)
         .from('invoice_items')
         .update({

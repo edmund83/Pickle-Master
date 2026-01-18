@@ -24,7 +24,7 @@ export async function getItemReminders(
 ): Promise<ItemReminderWithDetails[]> {
   const supabase = await createClient()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data, error } = await (supabase as any).rpc('get_item_reminders', {
     p_item_id: itemId,
   })
@@ -45,7 +45,7 @@ export async function createItemReminder(
 ): Promise<{ success: boolean; error?: string; reminderId?: string }> {
   const supabase = await createClient()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data, error } = await (supabase as any).rpc('create_item_reminder', {
     p_item_id: input.itemId,
     p_reminder_type: input.reminderType,
@@ -98,7 +98,7 @@ export async function updateItemReminder(
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data, error } = await (supabase as any).rpc('update_item_reminder', {
     p_reminder_id: reminderId,
     p_title: updates.title,
@@ -137,7 +137,7 @@ export async function deleteItemReminder(
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data, error } = await (supabase as any).rpc('delete_item_reminder', {
     p_reminder_id: reminderId,
   })
@@ -166,7 +166,7 @@ export async function toggleReminderStatus(
 ): Promise<{ success: boolean; error?: string; newStatus?: string }> {
   const supabase = await createClient()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data, error } = await (supabase as any).rpc('toggle_reminder_status', {
     p_reminder_id: reminderId,
   })
@@ -198,7 +198,7 @@ export async function getTeamMembers(): Promise<Profile[]> {
   if (!user) return []
 
   // Get user's tenant_id
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: profile } = await (supabase as any)
     .from('profiles')
     .select('tenant_id')
@@ -208,7 +208,7 @@ export async function getTeamMembers(): Promise<Profile[]> {
   if (!profile?.tenant_id) return []
 
   // Get all team members in the tenant
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: members, error } = await (supabase as any)
     .from('profiles')
     .select('id, email, full_name, role, avatar_url')

@@ -73,7 +73,7 @@ export async function getAllReminders(
 ): Promise<GetAllRemindersResult> {
   const supabase = await createClient()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data, error } = await (supabase as any).rpc('get_all_reminders', {
     p_type: type || null,
     p_status: status || null,
@@ -95,7 +95,7 @@ export async function getAllReminders(
 export async function getReminderStats(): Promise<ReminderStats> {
   const supabase = await createClient()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data, error } = await (supabase as any).rpc('get_reminder_stats')
 
   if (error) {
@@ -131,7 +131,7 @@ export async function createFolderReminder(input: {
 }): Promise<{ success: boolean; error?: string; reminderId?: string }> {
   const supabase = await createClient()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data, error } = await (supabase as any).rpc('create_folder_reminder', {
     p_folder_id: input.folderId,
     p_reminder_type: input.reminderType,
@@ -183,7 +183,7 @@ export async function createBulkItemReminders(input: {
 }): Promise<{ success: boolean; error?: string; created?: number; skipped?: number }> {
   const supabase = await createClient()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data, error } = await (supabase as any).rpc('create_bulk_item_reminders', {
     p_item_ids: input.itemIds,
     p_reminder_type: input.reminderType,
@@ -224,7 +224,7 @@ export async function deleteReminder(
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data, error } = await (supabase as any).rpc('delete_reminder', {
     p_reminder_id: reminderId,
     p_source_type: sourceType,
@@ -266,7 +266,7 @@ export async function updateReminder(
 ): Promise<{ success: boolean; error?: string }> {
   const supabase = await createClient()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data, error } = await (supabase as any).rpc('update_reminder', {
     p_reminder_id: reminderId,
     p_source_type: sourceType,
@@ -306,7 +306,7 @@ export async function toggleReminder(
 ): Promise<{ success: boolean; error?: string; newStatus?: string }> {
   const supabase = await createClient()
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data, error } = await (supabase as any).rpc('toggle_reminder', {
     p_reminder_id: reminderId,
     p_source_type: sourceType,
@@ -340,7 +340,7 @@ export async function getItemsForSelection(): Promise<
   } = await supabase.auth.getUser()
   if (!user) return []
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: profile } = await (supabase as any)
     .from('profiles')
     .select('tenant_id')
@@ -349,7 +349,7 @@ export async function getItemsForSelection(): Promise<
 
   if (!profile?.tenant_id) return []
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: items, error } = await (supabase as any)
     .from('inventory_items')
     .select('id, name, folder_id')
@@ -379,7 +379,7 @@ export async function getFoldersForSelection(): Promise<
   } = await supabase.auth.getUser()
   if (!user) return []
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: profile } = await (supabase as any)
     .from('profiles')
     .select('tenant_id')
@@ -389,7 +389,7 @@ export async function getFoldersForSelection(): Promise<
   if (!profile?.tenant_id) return []
 
   // Get folders with item counts
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: folders, error } = await (supabase as any)
     .from('folders')
     .select(`
@@ -426,7 +426,7 @@ export async function getTeamMembers(): Promise<Profile[]> {
   } = await supabase.auth.getUser()
   if (!user) return []
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: profile } = await (supabase as any)
     .from('profiles')
     .select('tenant_id')
@@ -435,7 +435,7 @@ export async function getTeamMembers(): Promise<Profile[]> {
 
   if (!profile?.tenant_id) return []
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: members, error } = await (supabase as any)
     .from('profiles')
     .select('id, email, full_name, role, avatar_url')

@@ -30,7 +30,7 @@ const BATCH_SIZE = 100
 /**
  * Transform a database item to an OfflineItem for caching
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 function transformToOfflineItem(item: any, scope: OfflineScope): OfflineItem {
   const quantity = item.quantity ?? 0
   const minQuantity = item.min_quantity ?? 0
@@ -106,7 +106,7 @@ export async function syncItemCache(
 
     // Fetch items updated since last sync to update cache or remove stale entries
     while (hasMore) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data, error } = await (supabase as any)
         .from('inventory_items')
         .select(

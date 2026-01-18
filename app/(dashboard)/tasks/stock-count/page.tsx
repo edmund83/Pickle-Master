@@ -31,7 +31,7 @@ async function getTeamMembers(): Promise<TeamMember[]> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: profile } = await (supabase as any)
     .from('profiles')
     .select('tenant_id')
@@ -40,7 +40,7 @@ async function getTeamMembers(): Promise<TeamMember[]> {
 
   if (!profile?.tenant_id) return []
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data } = await (supabase as any)
     .from('profiles')
     .select('id, full_name, email')
@@ -56,7 +56,7 @@ async function getFolders(): Promise<Folder[]> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: profile } = await (supabase as any)
     .from('profiles')
     .select('tenant_id')
@@ -65,7 +65,7 @@ async function getFolders(): Promise<Folder[]> {
 
   if (!profile?.tenant_id) return []
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data } = await (supabase as any)
     .from('folders')
     .select('id, name, color, parent_id')
@@ -81,7 +81,7 @@ async function getTotalItemCount(): Promise<number> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return 0
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: profile } = await (supabase as any)
     .from('profiles')
     .select('tenant_id')
@@ -90,7 +90,7 @@ async function getTotalItemCount(): Promise<number> {
 
   if (!profile?.tenant_id) return 0
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { count } = await (supabase as any)
     .from('inventory_items')
     .select('*', { count: 'exact', head: true })

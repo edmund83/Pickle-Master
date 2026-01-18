@@ -73,7 +73,7 @@ export async function checkAiUsageLimit(
 ): Promise<UsageCheckResult> {
   try {
     const supabase = await createClient()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('check_ai_usage_limit', {
       p_estimated_cost: estimatedCost,
     })
@@ -102,7 +102,7 @@ export async function trackAiUsage(
 ): Promise<TrackUsageResult> {
   try {
     const supabase = await createClient()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('track_ai_usage', {
       p_input_tokens: inputTokens,
       p_output_tokens: outputTokens,
@@ -128,7 +128,7 @@ export async function trackAiUsage(
 export async function getAiUsageSummary(): Promise<UsageSummary | null> {
   try {
     const supabase = await createClient()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('get_ai_usage_summary')
 
     if (error) {
@@ -153,7 +153,7 @@ export async function getAiUsageSummary(): Promise<UsageSummary | null> {
 export async function getAiUsageSummaryClient(): Promise<UsageSummary | null> {
   try {
     const supabase = createClientBrowser()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('get_ai_usage_summary')
 
     if (error) {
@@ -174,7 +174,7 @@ export async function getAiUsageSummaryClient(): Promise<UsageSummary | null> {
 export async function checkAiUsageLimitClient(): Promise<UsageCheckResult> {
   try {
     const supabase = createClientBrowser()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('check_ai_usage_limit', {
       p_estimated_cost: 0.0003,
     })

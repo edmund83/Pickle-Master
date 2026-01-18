@@ -223,7 +223,7 @@ export async function createReceive(input: CreateReceiveInput): Promise<ReceiveR
     const supabase = await createClient()
 
     // Use the RPC function that pre-populates items from PO
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('create_receive_with_items', {
         p_purchase_order_id: validatedInput.purchase_order_id,
         p_delivery_note_number: validatedInput.delivery_note_number || null,
@@ -244,7 +244,7 @@ export async function createReceive(input: CreateReceiveInput): Promise<ReceiveR
 
     // Log activity for receive creation
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any).from('activity_logs').insert({
             tenant_id: context.tenantId,
             user_id: context.userId,
@@ -291,7 +291,7 @@ export async function getReceive(receiveId: string): Promise<ReceiveWithDetails 
     const supabase = await createClient()
 
     // Use the RPC function to get receive with items
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('get_receive_with_items', {
         p_receive_id: receiveId
     })
@@ -347,7 +347,7 @@ export async function getPOReceives(purchaseOrderId: string): Promise<ReceiveSum
     const supabase = await createClient()
 
     // Use the RPC function
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('get_po_receives', {
         p_purchase_order_id: purchaseOrderId
     })
@@ -373,7 +373,7 @@ export async function getReceives(options?: {
     const supabase = await createClient()
 
     // Build query with tenant filter
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     let query = (supabase as any)
         .from('receives')
         .select(`
@@ -449,7 +449,7 @@ export async function addReceiveItem(
     const supabase = await createClient()
 
     // Use the RPC function
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('add_receive_item', {
         p_receive_id: receiveId,
         p_purchase_order_item_id: validatedInput.purchase_order_item_id,
@@ -502,7 +502,7 @@ export async function updateReceiveItem(
     const supabase = await createClient()
 
     // 5. Verify receive item belongs to user's tenant (via the parent receive)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: receiveItem, error: fetchError } = await (supabase as any)
         .from('receive_items')
         .select('receive_id, receives!inner(tenant_id)')
@@ -529,7 +529,7 @@ export async function updateReceiveItem(
     }
 
     // Use the RPC function
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('update_receive_item', {
         p_receive_item_id: receiveItemId,
         p_quantity_received: validatedUpdates.quantity_received || null,
@@ -573,7 +573,7 @@ export async function removeReceiveItem(receiveItemId: string): Promise<ReceiveR
     const supabase = await createClient()
 
     // 4. Verify receive item belongs to user's tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: receiveItem, error: fetchError } = await (supabase as any)
         .from('receive_items')
         .select('receive_id, receives!inner(tenant_id)')
@@ -589,7 +589,7 @@ export async function removeReceiveItem(receiveItemId: string): Promise<ReceiveR
     }
 
     // Use the RPC function
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('remove_receive_item', {
         p_receive_item_id: receiveItemId
     })
@@ -629,7 +629,7 @@ export async function completeReceive(receiveId: string): Promise<ReceiveResult>
     const supabase = await createClient()
 
     // Get receive info for logging
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: receive } = await (supabase as any)
         .from('receives')
         .select('display_id, status')
@@ -638,7 +638,7 @@ export async function completeReceive(receiveId: string): Promise<ReceiveResult>
         .single()
 
     // Use the RPC function
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('complete_receive', {
         p_receive_id: receiveId
     })
@@ -654,7 +654,7 @@ export async function completeReceive(receiveId: string): Promise<ReceiveResult>
 
     // Log activity for receive completion
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any).from('activity_logs').insert({
             tenant_id: context.tenantId,
             user_id: context.userId,
@@ -677,7 +677,7 @@ export async function completeReceive(receiveId: string): Promise<ReceiveResult>
 
     // Trigger notification for receive completion
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any).rpc('notify_receive_completed', {
             p_tenant_id: context.tenantId,
             p_receive_id: receiveId,
@@ -722,7 +722,7 @@ export async function cancelReceive(receiveId: string): Promise<ReceiveResult> {
     const supabase = await createClient()
 
     // Get receive info for logging
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: receive } = await (supabase as any)
         .from('receives')
         .select('display_id, status')
@@ -731,7 +731,7 @@ export async function cancelReceive(receiveId: string): Promise<ReceiveResult> {
         .single()
 
     // Use the RPC function
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('cancel_receive', {
         p_receive_id: receiveId
     })
@@ -747,7 +747,7 @@ export async function cancelReceive(receiveId: string): Promise<ReceiveResult> {
 
     // Log activity for receive cancellation
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any).from('activity_logs').insert({
             tenant_id: context.tenantId,
             user_id: context.userId,
@@ -795,7 +795,7 @@ export async function updateReceive(
     const supabase = await createClient()
 
     // 5. Check if receive exists, belongs to tenant, and is in draft status
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: receive, error: fetchError } = await (supabase as any)
         .from('receives')
         .select('status, tenant_id')
@@ -826,7 +826,7 @@ export async function updateReceive(
     }
 
     // Update the receive
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('receives')
         .update({
@@ -860,7 +860,7 @@ export async function getLocations() {
     const supabase = await createClient()
 
     // Get locations with tenant filter
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data } = await (supabase as any)
         .from('locations')
         .select('id, name, type')
@@ -881,7 +881,7 @@ export async function getPendingPurchaseOrders() {
     const supabase = await createClient()
 
     // Get POs that can be received (submitted, confirmed, or partial)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data } = await (supabase as any)
         .from('purchase_orders')
         .select(`
@@ -934,7 +934,7 @@ export async function addReceiveItemSerial(
     const supabase = await createClient()
 
     // 4. Verify receive item belongs to user's tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: receiveItem, error: fetchError } = await (supabase as any)
         .from('receive_items')
         .select('receive_id, receives!inner(tenant_id, status)')
@@ -954,7 +954,7 @@ export async function addReceiveItemSerial(
     }
 
     // Insert the serial number
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any)
         .from('receive_item_serials')
         .insert({
@@ -996,7 +996,7 @@ export async function removeReceiveItemSerial(
     const supabase = await createClient()
 
     // 4. Verify serial belongs to user's tenant (via receive_items -> receives)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: serial, error: fetchError } = await (supabase as any)
         .from('receive_item_serials')
         .select('id, receive_items!inner(receives!inner(tenant_id, status))')
@@ -1016,7 +1016,7 @@ export async function removeReceiveItemSerial(
     }
 
     // Delete the serial number
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('receive_item_serials')
         .delete()
@@ -1070,7 +1070,7 @@ export async function bulkAddReceiveItemSerials(
     const supabase = await createClient()
 
     // 5. Verify receive item belongs to user's tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: receiveItem, error: fetchError } = await (supabase as any)
         .from('receive_items')
         .select('receive_id, receives!inner(tenant_id, status)')
@@ -1094,7 +1094,7 @@ export async function bulkAddReceiveItemSerials(
     const inputDuplicates = cleanSerials.length - uniqueSerials.length
 
     // Get existing serials for this receive item
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: existingSerials } = await (supabase as any)
         .from('receive_item_serials')
         .select('serial_number')
@@ -1116,7 +1116,7 @@ export async function bulkAddReceiveItemSerials(
     }
 
     // Insert new serials
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('receive_item_serials')
         .insert(newSerials.map(serial_number => ({
@@ -1217,14 +1217,14 @@ export async function getPaginatedReceives(
     const supabase = await createClient()
 
     // Build query for count
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     let countQuery = (supabase as any)
         .from('receives')
         .select('*', { count: 'exact', head: true })
         .eq('tenant_id', context.tenantId)
 
     // Build query for data
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     let dataQuery = (supabase as any)
         .from('receives')
         .select(`
@@ -1330,7 +1330,7 @@ export async function getReceiveItemSerials(
     const supabase = await createClient()
 
     // 3. Verify receive item belongs to user's tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: receiveItem, error: fetchError } = await (supabase as any)
         .from('receive_items')
         .select('receive_id, receives!inner(tenant_id)')
@@ -1345,7 +1345,7 @@ export async function getReceiveItemSerials(
         return []
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any)
         .from('receive_item_serials')
         .select('*')

@@ -76,7 +76,7 @@ export async function checkoutItem(
     const supabase = await createClient()
 
     // 5. Use atomic RPC function that handles checkout + inventory update in single transaction
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('perform_checkout', {
         p_item_id: validatedInput.itemId,
         p_quantity: validatedInput.quantity,
@@ -121,7 +121,7 @@ export async function returnItem(
     const supabase = await createClient()
 
     // 4. Get checkout item_id for revalidation (before atomic operation)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: checkoutInfo } = await (supabase as any)
         .from('checkouts')
         .select('item_id')
@@ -130,7 +130,7 @@ export async function returnItem(
         .single()
 
     // 5. Use atomic RPC function that handles return + inventory update in single transaction
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('return_item_atomic', {
         p_checkout_id: validatedInput.checkoutId,
         p_notes: validatedInput.notes || null,
@@ -201,7 +201,7 @@ export async function checkoutWithSerials(
     const supabase = await createClient()
 
     // 5. Verify all serial IDs belong to the item and tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: serials, error: serialFetchError } = await (supabase as any)
         .from('serial_numbers')
         .select('id, item_id')
@@ -217,7 +217,7 @@ export async function checkoutWithSerials(
     }
 
     // 6. Call the RPC function that handles everything atomically
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('checkout_with_serials', {
         p_item_id: validatedInput.itemId,
         p_serial_ids: validatedInput.serialIds,
@@ -273,7 +273,7 @@ export async function returnCheckoutSerials(
     const supabase = await createClient()
 
     // 4. Verify checkout belongs to user's tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: checkout, error: fetchError } = await (supabase as any)
         .from('checkouts')
         .select('item_id, tenant_id')
@@ -289,7 +289,7 @@ export async function returnCheckoutSerials(
     }
 
     // 5. Call the RPC function
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('return_checkout_serials', {
         p_checkout_id: validatedInput.checkoutId,
         p_serial_returns: JSON.stringify(validatedInput.serialReturns),
@@ -329,7 +329,7 @@ export async function getCheckoutSerials(checkoutId: string) {
     const supabase = await createClient()
 
     // 3. Verify checkout belongs to user's tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: checkout, error: fetchError } = await (supabase as any)
         .from('checkouts')
         .select('tenant_id')
@@ -345,7 +345,7 @@ export async function getCheckoutSerials(checkoutId: string) {
     }
 
     // 4. Get serials
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('get_checkout_serials', {
         p_checkout_id: checkoutId
     })

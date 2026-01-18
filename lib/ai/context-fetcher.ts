@@ -4,7 +4,7 @@ import {
   ZoeContextRPCResponse,
 } from './context-compressor'
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type AnySupabaseClient = SupabaseClient<any, any, any>
 
 /**
@@ -335,7 +335,7 @@ export async function fetchZoeContext(
   // Map additional results to context
   for (let i = 3; i < results.length; i++) {
     const contextKey = contextKeys[i]
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     ;(context as any)[contextKey] = results[i]
   }
 
@@ -418,7 +418,7 @@ async function fetchTenantAggregates(
   let outOfStockCount = 0
   let inStockCount = 0
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   for (const item of items as any[]) {
     totalQuantity += item.quantity || 0
     totalValue += (item.quantity || 0) * (item.price || 0)
@@ -429,7 +429,7 @@ async function fetchTenantAggregates(
 
   // Calculate folder breakdown
   const folderMap = new Map<string, number>()
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   for (const item of (folderCounts.data || []) as any[]) {
     const folderName = item.folders?.name || 'Uncategorized'
     folderMap.set(folderName, (folderMap.get(folderName) || 0) + 1)
@@ -442,41 +442,41 @@ async function fetchTenantAggregates(
   // Calculate PO aggregates
   const pos = poStats.data || []
   const pendingPOs = pos.filter(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     (po: any) => ['draft', 'submitted', 'approved'].includes(po.status)
   )
   const pendingPOValue = pendingPOs.reduce(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     (sum: number, po: any) => sum + (po.total_amount || 0),
     0
   )
 
   // Calculate pick list aggregates
   const pickLists = pickListStats.data || []
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const pendingPickLists = pickLists.filter((pl: any) => pl.status === 'pending').length
 
   // Calculate checkout aggregates
   const checkouts = checkoutStats.data || []
   const overdueCheckouts = checkouts.filter(
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     (c: any) => c.due_date && c.due_date < today
   ).length
 
   // Calculate task aggregates
   const tasks = taskStats.data || []
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const pendingTasks = tasks.filter((t: any) =>
     ['pending', 'in_progress'].includes(t.status)
   ).length
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const overdueTasks = tasks.filter((t: any) =>
     ['pending', 'in_progress'].includes(t.status) && t.end_date && t.end_date < today
   ).length
 
   // Calculate team aggregates
   const activityLogs = teamStats.data || []
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const uniqueUsers = new Set(activityLogs.map((l: any) => l.user_id))
 
   return {
@@ -534,7 +534,7 @@ async function searchInventoryItems(
     .or(`name.ilike.%${keywords[0]}%,sku.ilike.%${keywords[0]}%`)
     .limit(limit)
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   return (data || []).map((item: any) => ({
     id: item.id,
     name: item.name,
@@ -571,7 +571,7 @@ async function fetchInventory(
     .order('updated_at', { ascending: false })
     .limit(limit)
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   return (data || []).map((item: any) => ({
     id: item.id,
     name: item.name,
@@ -608,7 +608,7 @@ async function fetchMovements(
     .order('created_at', { ascending: false })
     .limit(limit)
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   return (data || []).map((log: any) => ({
     user_name: log.user_name || 'Unknown',
     action_type: log.action_type,
@@ -644,7 +644,7 @@ async function fetchPurchaseOrders(
     .order('created_at', { ascending: false })
     .limit(limit)
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   return (data || []).map((po: any) => ({
     order_number: po.order_number,
     display_id: po.display_id,
@@ -679,7 +679,7 @@ async function fetchPickLists(
     .order('created_at', { ascending: false })
     .limit(limit)
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   return (data || []).map((pl: any) => ({
     name: pl.name,
     display_id: pl.display_id,
@@ -711,7 +711,7 @@ async function fetchCheckouts(
     .order('checked_out_at', { ascending: false })
     .limit(limit)
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   return (data || []).map((c: any) => ({
     item_name: c.inventory_items?.name || 'Unknown',
     quantity: c.quantity,
@@ -743,7 +743,7 @@ async function fetchTasks(
     .order('created_at', { ascending: false })
     .limit(limit)
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   return (data || []).map((job: any) => ({
     name: job.name,
     description: job.description,

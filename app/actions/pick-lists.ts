@@ -97,7 +97,7 @@ export interface CreatePickListInput {
 // Generate display ID using RPC (concurrency-safe)
 // Format: PL-{ORG_CODE}-{5-digit-number} e.g., PL-ACM01-00001
 async function generateDisplayId(supabase: ReturnType<typeof createClient> extends Promise<infer T> ? T : never): Promise<string> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('generate_display_id_for_current_user', {
         p_entity_type: 'pick_list'
     })
@@ -149,7 +149,7 @@ export async function createPickList(input: CreatePickListInput): Promise<PickLi
 
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('create_pick_list_with_items', {
         p_name: validatedInput.name,
         p_assigned_to: validatedInput.assigned_to || null,
@@ -194,7 +194,7 @@ export async function createDraftPickList(): Promise<PickListResult> {
     const supabase = await createClient()
 
     // Use the new RPC function for atomic creation with display_id
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('create_pick_list_v2', {
         p_name: null, // Will default to display_id
         p_assigned_to: null,
@@ -222,7 +222,7 @@ export async function createDraftPickList(): Promise<PickListResult> {
 
     // Log activity for pick list creation
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any).from('activity_logs').insert({
             tenant_id: context.tenantId,
             user_id: context.userId,
@@ -277,7 +277,7 @@ export async function updatePickList(
     const supabase = await createClient()
 
     // Get current pick list to check if assignment is changing
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: currentPickList } = await (supabase as any)
         .from('pick_lists')
         .select('display_id, assigned_to')
@@ -286,10 +286,10 @@ export async function updatePickList(
         .single()
 
     // Exclude display_id from updates - it is immutable once set
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+     
     const { display_id, ...safeUpdates } = validatedUpdates as Record<string, unknown>
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('pick_lists')
         .update({
@@ -308,7 +308,7 @@ export async function updatePickList(
     const newAssignedTo = validatedUpdates.assigned_to
     if (newAssignedTo && newAssignedTo !== currentPickList?.assigned_to && newAssignedTo !== context.userId) {
         try {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             await (supabase as any).rpc('notify_assignment', {
                 p_tenant_id: context.tenantId,
                 p_user_id: newAssignedTo,
@@ -341,7 +341,7 @@ export async function deletePickList(pickListId: string): Promise<PickListResult
 
     // 3. Verify pick list belongs to user's tenant and check status
     const supabase = await createClient()
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: pickList, error: fetchError } = await (supabase as any)
         .from('pick_lists')
         .select('status, tenant_id')
@@ -361,7 +361,7 @@ export async function deletePickList(pickListId: string): Promise<PickListResult
         return { success: false, error: 'Only draft or cancelled pick lists can be deleted' }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('pick_lists')
         .delete()
@@ -410,7 +410,7 @@ export async function addPickListItem(
 
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('pick_list_items')
         .insert({
@@ -441,7 +441,7 @@ export async function removePickListItem(pickListItemId: string): Promise<PickLi
     const supabase = await createClient()
 
     // 3. Get pick list item and verify the parent pick list belongs to user's tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: plItem, error: fetchError } = await (supabase as any)
         .from('pick_list_items')
         .select('pick_list_id, pick_lists!inner(tenant_id)')
@@ -456,7 +456,7 @@ export async function removePickListItem(pickListItemId: string): Promise<PickLi
         return { success: false, error: 'Unauthorized: Access denied' }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('pick_list_items')
         .delete()
@@ -495,7 +495,7 @@ export async function updatePickListItem(
     const supabase = await createClient()
 
     // 4. Get pick list item and verify the parent pick list belongs to user's tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: plItem, error: fetchError } = await (supabase as any)
         .from('pick_list_items')
         .select('pick_list_id, pick_lists!inner(tenant_id)')
@@ -510,7 +510,7 @@ export async function updatePickListItem(
         return { success: false, error: 'Unauthorized: Access denied' }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('pick_list_items')
         .update({ requested_quantity: requestedQuantity })
@@ -549,7 +549,7 @@ export async function pickItem(
     const supabase = await createClient()
 
     // 4. Verify the pick list item belongs to user's tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: plItem, error: fetchError } = await (supabase as any)
         .from('pick_list_items')
         .select('pick_list_id, pick_lists!inner(tenant_id)')
@@ -564,7 +564,7 @@ export async function pickItem(
         return { success: false, error: 'Unauthorized: Access denied' }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('pick_pick_list_item', {
         p_pick_list_item_id: pickListItemId,
         p_picked_quantity: pickedQuantity
@@ -600,7 +600,7 @@ export async function completePickList(pickListId: string): Promise<PickListResu
     const supabase = await createClient()
 
     // Get pick list info for logging
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: pickList } = await (supabase as any)
         .from('pick_lists')
         .select('display_id, status, name')
@@ -608,7 +608,7 @@ export async function completePickList(pickListId: string): Promise<PickListResu
         .eq('tenant_id', context.tenantId)
         .single()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('complete_pick_list', {
         p_pick_list_id: pickListId
     })
@@ -624,7 +624,7 @@ export async function completePickList(pickListId: string): Promise<PickListResu
 
     // Log activity for pick list completion
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any).from('activity_logs').insert({
             tenant_id: context.tenantId,
             user_id: context.userId,
@@ -664,7 +664,7 @@ export async function startPickList(pickListId: string): Promise<PickListResult>
     const supabase = await createClient()
 
     // Get pick list info for logging
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: pickList } = await (supabase as any)
         .from('pick_lists')
         .select('display_id, status, name')
@@ -672,7 +672,7 @@ export async function startPickList(pickListId: string): Promise<PickListResult>
         .eq('tenant_id', context.tenantId)
         .single()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('pick_lists')
         .update({ status: 'in_progress' })
@@ -686,7 +686,7 @@ export async function startPickList(pickListId: string): Promise<PickListResult>
 
     // Log activity for pick list start
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any).from('activity_logs').insert({
             tenant_id: context.tenantId,
             user_id: context.userId,
@@ -726,7 +726,7 @@ export async function cancelPickList(pickListId: string): Promise<PickListResult
     const supabase = await createClient()
 
     // Get pick list info for logging
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: pickList } = await (supabase as any)
         .from('pick_lists')
         .select('display_id, status, name')
@@ -734,7 +734,7 @@ export async function cancelPickList(pickListId: string): Promise<PickListResult
         .eq('tenant_id', context.tenantId)
         .single()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('pick_lists')
         .update({ status: 'cancelled' })
@@ -748,7 +748,7 @@ export async function cancelPickList(pickListId: string): Promise<PickListResult
 
     // Log activity for pick list cancellation
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any).from('activity_logs').insert({
             tenant_id: context.tenantId,
             user_id: context.userId,
@@ -780,7 +780,7 @@ export async function getTeamMembers() {
     const supabase = await createClient()
 
     // Get team members with tenant filter
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data } = await (supabase as any)
         .from('profiles')
         .select('id, full_name, email')
@@ -870,14 +870,14 @@ export async function getPaginatedPickLists(
     const supabase = await createClient()
 
     // Build query for count
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     let countQuery = (supabase as any)
         .from('pick_lists')
         .select('*', { count: 'exact', head: true })
         .eq('tenant_id', context.tenantId)
 
     // Build query for data - note: we'll get item_count separately
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     let dataQuery = (supabase as any)
         .from('pick_lists')
         .select(`
@@ -977,7 +977,7 @@ export async function searchInventoryItems(query: string) {
     const supabase = await createClient()
 
     // Search items with tenant filter
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     let queryBuilder = (supabase as any)
         .from('inventory_items')
         .select('id, name, sku, quantity, image_urls, unit')

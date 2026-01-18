@@ -185,7 +185,7 @@ export default function ScanPage() {
 
       // If online, try server
       if (isOnline) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data, error } = await (supabase as any)
           .from('inventory_items')
           .select(
@@ -210,7 +210,7 @@ export default function ScanPage() {
 
         if (error || !data) return null
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const item = data as any
 
         return {

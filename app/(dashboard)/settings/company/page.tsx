@@ -286,7 +286,7 @@ export default function CompanySettingsPage() {
 
       if (!user) return
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -294,7 +294,7 @@ export default function CompanySettingsPage() {
         .single()
 
       if (profile?.tenant_id) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: tenantData } = await (supabase as any)
           .from('tenants')
           .select('*')
@@ -358,7 +358,7 @@ export default function CompanySettingsPage() {
         .getPublicUrl(fileName)
 
       // Update tenant with logo URL
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { error: updateError } = await (supabase as any)
         .from('tenants')
         .update({ logo_url: publicUrl, updated_at: new Date().toISOString() })
@@ -387,7 +387,7 @@ export default function CompanySettingsPage() {
     try {
       const supabase = createClient()
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { error } = await (supabase as any)
         .from('tenants')
         .update({ logo_url: null, updated_at: new Date().toISOString() })

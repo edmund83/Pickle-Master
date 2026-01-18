@@ -51,7 +51,7 @@ export default function AlertsSettingsPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -61,7 +61,7 @@ export default function AlertsSettingsPage() {
       if (!profile?.tenant_id) return
       setTenantId(profile.tenant_id)
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: tenant } = await (supabase as any)
         .from('tenants')
         .select('settings')
@@ -77,7 +77,7 @@ export default function AlertsSettingsPage() {
         })
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data } = await (supabase as any)
         .from('alerts')
         .select('*')
@@ -98,7 +98,7 @@ export default function AlertsSettingsPage() {
     const supabase = createClient()
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: tenant } = await (supabase as any)
         .from('tenants')
         .select('settings')
@@ -111,7 +111,7 @@ export default function AlertsSettingsPage() {
         alert_preferences: preferences,
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { error } = await (supabase as any)
         .from('tenants')
         .update({ settings: updatedSettings })
@@ -135,7 +135,7 @@ export default function AlertsSettingsPage() {
     const supabase = createClient()
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { error: insertError } = await (supabase as any)
         .from('alerts')
         .insert({
@@ -163,7 +163,7 @@ export default function AlertsSettingsPage() {
   async function toggleAlert(id: string, isActive: boolean) {
     const supabase = createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     await (supabase as any)
       .from('alerts')
       .update({ is_active: !isActive })
@@ -177,7 +177,7 @@ export default function AlertsSettingsPage() {
 
     const supabase = createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     await (supabase as any)
       .from('alerts')
       .delete()

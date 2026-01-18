@@ -13,7 +13,7 @@ async function getInventoryData(query?: string): Promise<{
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: profileData } = await (supabase as any)
     .from('profiles')
     .select('tenant_id')
@@ -27,7 +27,7 @@ async function getInventoryData(query?: string): Promise<{
   }
 
   // Use items_with_tags view to get tag details
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   let queryBuilder = (supabase as any)
     .from('items_with_tags')
     .select('*')
@@ -41,7 +41,7 @@ async function getInventoryData(query?: string): Promise<{
 
   const { data: items } = await queryBuilder
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: folders } = await (supabase as any)
     .from('folders')
     .select('*')

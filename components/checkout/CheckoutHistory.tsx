@@ -79,7 +79,7 @@ export function CheckoutHistory({ itemId, limit = 10 }: CheckoutHistoryProps) {
 
     try {
       // Use RPC function that includes linked serials
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: historyData } = await (supabase as any)
         .rpc('get_item_checkout_history', {
           p_item_id: itemId,

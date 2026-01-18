@@ -111,7 +111,7 @@ export async function getCustomers() {
     if (!user) return []
 
     // Get user's tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -121,7 +121,7 @@ export async function getCustomers() {
     if (!profile?.tenant_id) return []
 
     // Get customers
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data } = await (supabase as any)
         .from('customers')
         .select('id, name, customer_code, contact_name, email, phone, is_active')
@@ -139,7 +139,7 @@ export async function getAllCustomers() {
 
     if (!user) return []
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -148,7 +148,7 @@ export async function getAllCustomers() {
 
     if (!profile?.tenant_id) return []
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data } = await (supabase as any)
         .from('customers')
         .select(`
@@ -178,7 +178,7 @@ export async function getCustomer(customerId: string) {
 
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data } = await (supabase as any)
         .from('customers')
         .select(`
@@ -212,7 +212,7 @@ export async function createCustomer(input: CreateCustomerInput): Promise<Custom
 
     // If payment_term_id is provided, verify it belongs to the tenant
     if (validatedInput.payment_term_id) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: paymentTerm } = await (supabase as any)
             .from('payment_terms')
             .select('id')
@@ -227,7 +227,7 @@ export async function createCustomer(input: CreateCustomerInput): Promise<Custom
 
     // If default_tax_rate_id is provided, verify it belongs to the tenant
     if (validatedInput.default_tax_rate_id) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: taxRate } = await (supabase as any)
             .from('tax_rates')
             .select('id')
@@ -241,7 +241,7 @@ export async function createCustomer(input: CreateCustomerInput): Promise<Custom
     }
 
     // Generate display_id
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: displayId, error: displayIdError } = await (supabase as any).rpc('generate_display_id_for_current_user', {
         p_entity_type: 'customer'
     })
@@ -252,7 +252,7 @@ export async function createCustomer(input: CreateCustomerInput): Promise<Custom
     }
 
     // Create customer
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any)
         .from('customers')
         .insert({
@@ -305,7 +305,7 @@ export async function createCustomer(input: CreateCustomerInput): Promise<Custom
 
     // Log activity
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any).from('activity_logs').insert({
             tenant_id: context.tenantId,
             user_id: context.userId,
@@ -351,7 +351,7 @@ export async function updateCustomer(
 
     // If payment_term_id is provided, verify it belongs to the tenant
     if (validatedUpdates.payment_term_id) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: paymentTerm } = await (supabase as any)
             .from('payment_terms')
             .select('id')
@@ -366,7 +366,7 @@ export async function updateCustomer(
 
     // If default_tax_rate_id is provided, verify it belongs to the tenant
     if (validatedUpdates.default_tax_rate_id) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: taxRate } = await (supabase as any)
             .from('tax_rates')
             .select('id')
@@ -380,7 +380,7 @@ export async function updateCustomer(
     }
 
     // Get current customer for logging
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: currentCustomer } = await (supabase as any)
         .from('customers')
         .select('name, email, is_active')
@@ -403,7 +403,7 @@ export async function updateCustomer(
         updateData.shipping_country = validatedUpdates.billing_country || null
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('customers')
         .update(updateData)
@@ -425,7 +425,7 @@ export async function updateCustomer(
 
     // Log activity
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any).from('activity_logs').insert({
             tenant_id: context.tenantId,
             user_id: context.userId,
@@ -463,7 +463,7 @@ export async function deleteCustomer(customerId: string): Promise<CustomerResult
     const supabase = await createClient()
 
     // 3. Check if customer exists and belongs to tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: customer, error: fetchError } = await (supabase as any)
         .from('customers')
         .select('name, tenant_id')
@@ -479,7 +479,7 @@ export async function deleteCustomer(customerId: string): Promise<CustomerResult
     }
 
     // 4. Check if customer has any sales orders
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { count: salesOrderCount } = await (supabase as any)
         .from('sales_orders')
         .select('*', { count: 'exact', head: true })
@@ -487,7 +487,7 @@ export async function deleteCustomer(customerId: string): Promise<CustomerResult
 
     if (salesOrderCount && salesOrderCount > 0) {
         // Soft delete - just deactivate
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { error } = await (supabase as any)
             .from('customers')
             .update({
@@ -504,7 +504,7 @@ export async function deleteCustomer(customerId: string): Promise<CustomerResult
 
         // Log activity
         try {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             await (supabase as any).from('activity_logs').insert({
                 tenant_id: context.tenantId,
                 user_id: context.userId,
@@ -520,7 +520,7 @@ export async function deleteCustomer(customerId: string): Promise<CustomerResult
         }
     } else {
         // Hard delete if no sales orders
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { error } = await (supabase as any)
             .from('customers')
             .delete()
@@ -534,7 +534,7 @@ export async function deleteCustomer(customerId: string): Promise<CustomerResult
 
         // Log activity
         try {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             await (supabase as any).from('activity_logs').insert({
                 tenant_id: context.tenantId,
                 user_id: context.userId,
@@ -571,7 +571,7 @@ export async function reactivateCustomer(customerId: string): Promise<CustomerRe
 
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: customer } = await (supabase as any)
         .from('customers')
         .select('name')
@@ -579,7 +579,7 @@ export async function reactivateCustomer(customerId: string): Promise<CustomerRe
         .eq('tenant_id', context.tenantId)
         .single()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('customers')
         .update({
@@ -596,7 +596,7 @@ export async function reactivateCustomer(customerId: string): Promise<CustomerRe
 
     // Log activity
     try {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await (supabase as any).from('activity_logs').insert({
             tenant_id: context.tenantId,
             user_id: context.userId,
@@ -622,7 +622,7 @@ export async function searchCustomers(query: string, activeOnly: boolean = true)
 
     if (!user) return []
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -631,7 +631,7 @@ export async function searchCustomers(query: string, activeOnly: boolean = true)
 
     if (!profile?.tenant_id) return []
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     let queryBuilder = (supabase as any)
         .from('customers')
         .select('id, name, customer_code, contact_name, email, phone, is_active')
@@ -726,14 +726,14 @@ export async function getPaginatedCustomers(
     const supabase = await createClient()
 
     // Build query for count
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     let countQuery = (supabase as any)
         .from('customers')
         .select('*', { count: 'exact', head: true })
         .eq('tenant_id', context.tenantId)
 
     // Build query for data
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     let dataQuery = (supabase as any)
         .from('customers')
         .select(`
@@ -823,7 +823,7 @@ export async function getCustomerStats(customerId: string) {
     const supabase = await createClient()
 
     // Verify ownership
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: customer } = await (supabase as any)
         .from('customers')
         .select('id, name')
@@ -834,7 +834,7 @@ export async function getCustomerStats(customerId: string) {
     if (!customer) return null
 
     // Get sales order stats
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: soStats } = await (supabase as any)
         .from('sales_orders')
         .select('status, total')
@@ -842,7 +842,7 @@ export async function getCustomerStats(customerId: string) {
         .eq('tenant_id', context.tenantId)
 
     // Get invoice stats
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: invoiceStats } = await (supabase as any)
         .from('invoices')
         .select('status, total, balance_due')

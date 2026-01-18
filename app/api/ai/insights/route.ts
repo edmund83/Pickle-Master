@@ -19,7 +19,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get user's tenant
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: profile } = await (supabase as any)
       .from('profiles')
       .select('tenant_id')
@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch inventory items for analysis
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: items, error: itemsError } = await (supabase as any)
       .from('inventory_items')
       .select(`

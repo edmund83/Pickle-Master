@@ -30,7 +30,7 @@ async function getDashboardData(): Promise<DashboardData> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: profileData } = await (supabase as any)
     .from('profiles')
     .select('*')
@@ -49,7 +49,7 @@ async function getDashboardData(): Promise<DashboardData> {
   }
 
   // Get inventory stats
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: items } = await (supabase as any)
     .from('inventory_items')
     .select('id, quantity, status, price, cost_price, folder_id')
@@ -59,7 +59,7 @@ async function getDashboardData(): Promise<DashboardData> {
   const itemsList = (items || []) as Pick<InventoryItem, 'id' | 'quantity' | 'status' | 'price' | 'cost_price' | 'folder_id'>[]
 
   // Get folders for mapping
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: folders } = await (supabase as any)
     .from('folders')
     .select('id, name')
@@ -110,7 +110,7 @@ async function getDashboardData(): Promise<DashboardData> {
   const valueByFolder = Array.from(valueByFolderMap.entries()).map(([name, value]) => ({ name, value }))
 
   // Get recent activity
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: recentActivity } = await (supabase as any)
     .from('activity_logs')
     .select('*')

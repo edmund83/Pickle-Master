@@ -53,7 +53,7 @@ async function getActivityData(itemId: string) {
   if (!user) redirect('/login')
 
   // Get item details
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: item, error: itemError } = await (supabase as any)
     .from('inventory_items')
     .select('id, name, tenant_id')
@@ -65,7 +65,7 @@ async function getActivityData(itemId: string) {
   }
 
   // Get all activity logs for this item (no limit)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: activityLogs } = await (supabase as any)
     .rpc('get_activity_logs', {
       p_entity_id: itemId,

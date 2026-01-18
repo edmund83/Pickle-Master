@@ -74,7 +74,7 @@ export default function EditItemPage() {
           return
         }
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: profile } = await (supabase as any)
           .from('profiles')
           .select('tenant_id')
@@ -86,7 +86,7 @@ export default function EditItemPage() {
         }
 
         // Load tenant features
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: tenant } = await (supabase as any)
           .from('tenants')
           .select('settings')
@@ -97,7 +97,7 @@ export default function EditItemPage() {
         const enabledFeatures = settings?.features_enabled as FeaturesEnabled | undefined
         setFeatures(enabledFeatures || {})
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data, error: fetchError } = await (supabase as any)
           .from('inventory_items')
           .select('*')
@@ -190,7 +190,7 @@ export default function EditItemPage() {
         status = 'low_stock'
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { error: updateError } = await (supabase as any)
         .from('inventory_items')
         .update({

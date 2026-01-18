@@ -203,7 +203,7 @@ export default function SettingsLayout({
       } = await supabase.auth.getUser()
 
       if (user) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data } = await (supabase as any)
           .from('profiles')
           .select('full_name, email, role, avatar_url')

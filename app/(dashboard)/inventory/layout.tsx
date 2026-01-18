@@ -23,7 +23,7 @@ async function getLayoutData(): Promise<{
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: profileData } = await (supabase as any)
     .from('profiles')
     .select('tenant_id')
@@ -37,7 +37,7 @@ async function getLayoutData(): Promise<{
   }
 
   // Fetch folders
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: folders } = await (supabase as any)
     .from('folders')
     .select('*')
@@ -45,7 +45,7 @@ async function getLayoutData(): Promise<{
     .order('sort_order', { ascending: true })
 
   // Fetch folder stats using RPC function
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: folderStatsData } = await (supabase as any)
     .rpc('get_folder_stats')
 
@@ -60,7 +60,7 @@ async function getLayoutData(): Promise<{
   })
 
   // Get total item count
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { count } = await (supabase as any)
     .from('inventory_items')
     .select('*', { count: 'exact', head: true })

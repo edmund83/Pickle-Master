@@ -35,7 +35,7 @@ async function getExpiringItems() {
   if (!user) redirect('/login')
 
   // Check if user has tenant
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: profile } = await (supabase as any)
     .from('profiles')
     .select('tenant_id')
@@ -52,7 +52,7 @@ async function getExpiringItems() {
   }
 
   // Get tenant settings for formatting
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: tenant } = await (supabase as any)
     .from('tenants')
     .select('settings')
@@ -70,12 +70,12 @@ async function getExpiringItems() {
 
   // Use the proper RPC functions that query the lots table
   // Get all lots expiring within 30 days (includes expired ones)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: allExpiringData } = await (supabase as any)
     .rpc('get_expiring_lots', { p_days: 30 })
 
   // Get the summary statistics
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: summaryData } = await (supabase as any)
     .rpc('get_expiring_lots_summary')
 

@@ -51,7 +51,7 @@ export function CreateLotModal({
     const supabase = createClient()
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data } = await (supabase as any)
         .rpc('get_locations', { p_include_inactive: false })
 
@@ -78,7 +78,7 @@ export function CreateLotModal({
     const supabase = createClient()
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data, error: rpcError } = await (supabase as any)
         .rpc('create_lot', {
           p_item_id: itemId,

@@ -14,7 +14,7 @@ function getStripe() {
   })
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+ 
 type SupabaseAdmin = SupabaseClient<any, 'public', any>
 
 function getSupabaseAdmin(): SupabaseAdmin {

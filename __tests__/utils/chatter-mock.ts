@@ -247,9 +247,9 @@ export interface MockChatterSupabaseClient {
     auth: {
         getUser: ReturnType<typeof vi.fn>
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     from: ReturnType<typeof vi.fn> & ((table: string) => any)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     rpc: ReturnType<typeof vi.fn> & ((fn: string, params?: any) => any)
 }
 

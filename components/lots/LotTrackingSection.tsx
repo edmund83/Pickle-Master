@@ -70,7 +70,7 @@ export function LotTrackingSection({ itemId, onTotalChange }: LotTrackingSection
     const supabase = createClient()
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data, error: rpcError } = await (supabase as any)
         .rpc('get_item_lots', { p_item_id: itemId, p_include_depleted: false })
 
@@ -111,7 +111,7 @@ export function LotTrackingSection({ itemId, onTotalChange }: LotTrackingSection
     const supabase = createClient()
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data, error: rpcError } = await (supabase as any)
         .rpc('create_lot', {
           p_item_id: itemId,
@@ -145,7 +145,7 @@ export function LotTrackingSection({ itemId, onTotalChange }: LotTrackingSection
     const supabase = createClient()
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { error: deleteError } = await (supabase as any)
         .from('lots')
         .delete()

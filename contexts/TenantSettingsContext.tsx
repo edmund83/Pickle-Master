@@ -45,7 +45,7 @@ export function TenantSettingsProvider({ children }: TenantSettingsProviderProps
       }
 
       // Get user's tenant_id from profile
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -58,7 +58,7 @@ export function TenantSettingsProvider({ children }: TenantSettingsProviderProps
       }
 
       // Get tenant settings and name
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: tenant, error: tenantError } = await (supabase as any)
         .from('tenants')
         .select('name, settings')

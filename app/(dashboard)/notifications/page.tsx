@@ -27,7 +27,7 @@ export default function NotificationsPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data } = await (supabase as any)
         .from('notifications')
         .select('*')
@@ -44,7 +44,7 @@ export default function NotificationsPage() {
   async function markAsRead(id: string) {
     const supabase = createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     await (supabase as any)
       .from('notifications')
       .update({ is_read: true })
@@ -60,7 +60,7 @@ export default function NotificationsPage() {
     const { data: { user } } = await supabase.auth.getUser()
     if (!user) return
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     await (supabase as any)
       .from('notifications')
       .update({ is_read: true })
@@ -73,7 +73,7 @@ export default function NotificationsPage() {
   async function deleteNotification(id: string) {
     const supabase = createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     await (supabase as any)
       .from('notifications')
       .delete()

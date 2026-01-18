@@ -75,7 +75,7 @@ async function getDeliveryOrderWithDetails(id: string): Promise<(DeliveryOrderWi
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data, error } = await (supabase as any)
     .from('delivery_orders')
     .select(`

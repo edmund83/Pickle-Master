@@ -50,7 +50,7 @@ export function BulkEditModal({
 
       if (action === 'move') {
         // Get original folder IDs before moving
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { data: originalItems } = await (supabase as any)
           .from('inventory_items')
           .select('id, folder_id')
@@ -63,7 +63,7 @@ export function BulkEditModal({
 
         // Move items to folder
         const newFolderId = targetFolderId === 'root' ? null : targetFolderId
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { error: updateError } = await (supabase as any)
           .from('inventory_items')
           .update({ folder_id: newFolderId })
@@ -79,7 +79,7 @@ export function BulkEditModal({
             // Restore original folder IDs
             const supabaseClient = createClient()
             for (const [itemId, folderId] of originalFolderIds) {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+               
               await (supabaseClient as any)
                 .from('inventory_items')
                 .update({ folder_id: folderId })
@@ -95,7 +95,7 @@ export function BulkEditModal({
           tag_id: targetTagId,
         }))
 
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { error: tagError } = await (supabase as any)
           .from('item_tags')
           .upsert(tagInserts, { onConflict: 'item_id,tag_id', ignoreDuplicates: true })
@@ -111,7 +111,7 @@ export function BulkEditModal({
             // Remove the tag from items
             const supabaseClient = createClient()
             for (const itemId of selectedItemIds) {
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+               
               await (supabaseClient as any)
                 .from('item_tags')
                 .delete()
@@ -125,7 +125,7 @@ export function BulkEditModal({
         // Note: We cannot use .select() here because once deleted_at is set,
         // the RLS SELECT policy (which requires deleted_at IS NULL) blocks returning the row
         const deletedAt = new Date().toISOString()
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { error: deleteError } = await (supabase as any)
           .from('inventory_items')
           .update({ deleted_at: deletedAt })
@@ -140,7 +140,7 @@ export function BulkEditModal({
           async () => {
             // Restore deleted items
             const supabaseClient = createClient()
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+             
             await (supabaseClient as any)
               .from('inventory_items')
               .update({ deleted_at: null })

@@ -116,7 +116,7 @@ async function getInvoiceWithDetails(id: string): Promise<(InvoiceWithDetails & 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data, error } = await (supabase as any)
     .from('invoices')
     .select(`

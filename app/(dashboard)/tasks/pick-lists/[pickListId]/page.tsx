@@ -59,7 +59,7 @@ async function getPickListWithItems(pickListId: string): Promise<PickListWithIte
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data, error } = await (supabase as any).rpc('get_pick_list_with_items', {
     p_pick_list_id: pickListId
   })
@@ -71,7 +71,7 @@ async function getPickListWithItems(pickListId: string): Promise<PickListWithIte
 
   // Get the created_by user name if we have the pick list
   if (data?.pick_list?.created_by) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: creator } = await (supabase as any)
       .from('profiles')
       .select('full_name')
@@ -90,7 +90,7 @@ async function getTeamMembers(): Promise<TeamMember[]> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return []
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: profile } = await (supabase as any)
     .from('profiles')
     .select('tenant_id')
@@ -99,7 +99,7 @@ async function getTeamMembers(): Promise<TeamMember[]> {
 
   if (!profile?.tenant_id) return []
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data } = await (supabase as any)
     .from('profiles')
     .select('id, full_name, email')

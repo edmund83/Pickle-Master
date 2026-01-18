@@ -26,7 +26,7 @@ async function getSummaryData(): Promise<SummaryData> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: profile } = await (supabase as any)
     .from('profiles')
     .select('tenant_id')
@@ -45,7 +45,7 @@ async function getSummaryData(): Promise<SummaryData> {
   }
 
   // Fetch tenant settings for currency formatting
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: tenant } = await (supabase as any)
     .from('tenants')
     .select('settings')
@@ -54,14 +54,14 @@ async function getSummaryData(): Promise<SummaryData> {
 
   const settings = tenant?.settings || DEFAULT_TENANT_SETTINGS
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: items } = await (supabase as any)
     .from('inventory_items')
     .select('*')
     .eq('tenant_id', profile.tenant_id)
     .is('deleted_at', null)
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: folders } = await (supabase as any)
     .from('folders')
     .select('*')

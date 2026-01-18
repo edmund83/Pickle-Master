@@ -117,7 +117,7 @@ export function GlobalSearchModal() {
       }
 
       // Single Supabase call with explicit columns (no auth.getUser, no profile query)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: items } = await (supabase as any)
         .from('inventory_items')
         .select(SEARCH_COLUMNS)

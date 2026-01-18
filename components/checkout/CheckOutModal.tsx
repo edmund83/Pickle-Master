@@ -95,7 +95,7 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
     const supabase = createClient()
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data } = await (supabase as any).rpc('get_item_serials', {
         p_item_id: item.id,
         p_include_unavailable: false,
@@ -143,7 +143,7 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
 
     try {
       // Load team members (profiles)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: profiles } = await (supabase as any)
         .from('profiles')
         .select('id, full_name, email')
@@ -159,7 +159,7 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
       }
 
       // Load jobs
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: jobsData } = await (supabase as any)
         .from('jobs')
         .select('id, name')
@@ -176,7 +176,7 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
       }
 
       // Load locations (folders)
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: folders } = await (supabase as any)
         .from('folders')
         .select('id, name')
@@ -226,7 +226,7 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
     const supabase = createClient()
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data, error } = await (supabase as any)
         .from('jobs')
         .insert({ name: newJobName.trim(), status: 'active' })

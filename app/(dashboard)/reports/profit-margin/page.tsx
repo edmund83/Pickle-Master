@@ -23,7 +23,7 @@ async function getProfitMarginData() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: profile } = await (supabase as any)
     .from('profiles')
     .select('tenant_id')
@@ -34,7 +34,7 @@ async function getProfitMarginData() {
     return { items: [], itemsWithCost: [], itemsWithoutCost: [] }
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data, error } = await (supabase as any)
     .from('inventory_items')
     .select('id, name, sku, quantity, price, cost_price')

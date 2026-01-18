@@ -59,7 +59,7 @@ export default function LabelsSettingsPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -70,7 +70,7 @@ export default function LabelsSettingsPage() {
       setTenantId(profile.tenant_id)
 
       // Fetch labels with usage count
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: tagsData } = await (supabase as any)
         .from('tags')
         .select('id, name, color, created_at')
@@ -83,7 +83,7 @@ export default function LabelsSettingsPage() {
       }
 
       // Fetch usage counts for all tags
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: usageData } = await (supabase as any)
         .from('item_tags')
         .select('tag_id')
@@ -119,7 +119,7 @@ export default function LabelsSettingsPage() {
 
     const supabase = createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error: insertError } = await (supabase as any)
       .from('tags')
       .insert({
@@ -139,7 +139,7 @@ export default function LabelsSettingsPage() {
 
     const supabase = createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error: updateError } = await (supabase as any)
       .from('tags')
       .update({
@@ -160,7 +160,7 @@ export default function LabelsSettingsPage() {
 
     const supabase = createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error: deleteError } = await (supabase as any)
       .from('tags')
       .delete()
@@ -182,7 +182,7 @@ export default function LabelsSettingsPage() {
     try {
       const ids = selectedLabels.map(l => l.id)
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { error: deleteError } = await (supabase as any)
         .from('tags')
         .delete()
@@ -205,7 +205,7 @@ export default function LabelsSettingsPage() {
 
     const supabase = createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error: insertError } = await (supabase as any)
       .from('tags')
       .insert({

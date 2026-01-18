@@ -247,7 +247,7 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
       }
 
       if (field === 'item_outcome') {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         await updatePickList(pickList.id, { item_outcome: value } as any)
       } else if (Object.keys(updates).length > 0) {
         await updatePickList(pickList.id, updates)

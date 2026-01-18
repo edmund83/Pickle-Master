@@ -111,7 +111,7 @@ export async function getReorderSuggestions(
 ): Promise<ReorderSuggestion[]> {
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any)
         .rpc('get_reorder_suggestions', {
             p_include_without_vendor: includeWithoutVendor
@@ -132,7 +132,7 @@ export async function getReorderSuggestions(
 export async function getReorderSuggestionsByVendor(): Promise<VendorSuggestionGroup[]> {
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any)
         .rpc('get_reorder_suggestions_by_vendor')
 
@@ -151,7 +151,7 @@ export async function getReorderSuggestionsByVendor(): Promise<VendorSuggestionG
 export async function getReorderSuggestionsCount(): Promise<number> {
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any)
         .rpc('get_reorder_suggestions_count')
 
@@ -172,7 +172,7 @@ export async function createPOFromSuggestions(
 ): Promise<ReorderResult> {
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any)
         .rpc('create_po_from_suggestions', {
             p_vendor_id: input.vendor_id,
@@ -201,7 +201,7 @@ export async function createPOFromSuggestions(
 export async function getItemVendors(itemId: string): Promise<ItemVendor[]> {
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any)
         .rpc('get_item_vendors', {
             p_item_id: itemId
@@ -224,7 +224,7 @@ export async function linkItemToVendor(
 ): Promise<{ success: boolean; error?: string; item_vendor_id?: string }> {
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any)
         .rpc('link_item_to_vendor', {
             p_item_id: input.item_id,
@@ -262,7 +262,7 @@ export async function updateItemVendor(
 ): Promise<{ success: boolean; error?: string }> {
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('item_vendors')
         .update({
@@ -295,7 +295,7 @@ export async function unlinkItemFromVendor(
 ): Promise<{ success: boolean; error?: string }> {
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('item_vendors')
         .delete()
@@ -321,14 +321,14 @@ export async function setPreferredVendor(
     const supabase = await createClient()
 
     // First, unset all preferred vendors for this item
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     await (supabase as any)
         .from('item_vendors')
         .update({ is_preferred: false })
         .eq('item_id', itemId)
 
     // Then set the new preferred vendor
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('item_vendors')
         .update({ is_preferred: true, updated_at: new Date().toISOString() })
@@ -357,7 +357,7 @@ export async function updateItemReorderSettings(
 ): Promise<{ success: boolean; error?: string }> {
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('inventory_items')
         .update({

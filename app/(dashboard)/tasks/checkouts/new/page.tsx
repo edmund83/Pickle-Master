@@ -97,7 +97,7 @@ export default function NewCheckoutPage() {
       } = await supabase.auth.getUser()
       if (!user) return
 
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -108,7 +108,7 @@ export default function NewCheckoutPage() {
 
       // Load items and assignee options in parallel
       const [itemsRes, profilesRes, jobsRes, foldersRes] = await Promise.all([
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         (supabase as any)
           .from('inventory_items')
           .select('*, folders(name, color)')
@@ -116,11 +116,11 @@ export default function NewCheckoutPage() {
           .is('deleted_at', null)
           .gt('quantity', 0)
           .order('name', { ascending: true }),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         (supabase as any).from('profiles').select('id, full_name, email').order('full_name'),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         (supabase as any).from('jobs').select('id, name').eq('status', 'active').order('name'),
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         (supabase as any)
           .from('folders')
           .select('id, name')
@@ -282,7 +282,7 @@ export default function NewCheckoutPage() {
     const supabase = createClient()
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+       
       const { data, error } = await (supabase as any)
         .from('jobs')
         .insert({ name: newJobName.trim(), status: 'active' })

@@ -69,7 +69,7 @@ export async function getEntityMessages(
 ): Promise<ActionResult<ChatterMessage[]>> {
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('get_entity_messages', {
         p_entity_type: entityType,
         p_entity_id: entityId,
@@ -121,7 +121,7 @@ export async function getMessageReplies(
 ): Promise<ActionResult<ChatterReply[]>> {
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('get_message_replies', {
         p_message_id: messageId,
         p_limit: limit
@@ -171,7 +171,7 @@ export async function postMessage(
 ): Promise<ActionResult<string>> {
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('post_chatter_message', {
         p_entity_type: entityType,
         p_entity_id: entityId,
@@ -207,7 +207,7 @@ export async function editMessage(
         return { success: false, error: 'Unauthorized' }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('chatter_messages')
         .update({
@@ -236,7 +236,7 @@ export async function deleteMessage(
         return { success: false, error: 'Unauthorized' }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('chatter_messages')
         .update({ deleted_at: new Date().toISOString() })
@@ -258,7 +258,7 @@ export async function getEntityFollowers(
 ): Promise<ActionResult<ChatterFollower[]>> {
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('get_entity_followers', {
         p_entity_type: entityType,
         p_entity_id: entityId
@@ -308,7 +308,7 @@ export async function followEntity(
     }
 
     // Get tenant_id from profile
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -319,7 +319,7 @@ export async function followEntity(
         return { success: false, error: 'Profile not found' }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('entity_followers')
         .upsert({
@@ -354,7 +354,7 @@ export async function unfollowEntity(
         return { success: false, error: 'Unauthorized' }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('entity_followers')
         .delete()
@@ -377,7 +377,7 @@ export async function isFollowingEntity(
 ): Promise<boolean> {
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('is_following_entity', {
         p_entity_type: entityType,
         p_entity_id: entityId
@@ -408,7 +408,7 @@ export async function updateFollowPreferences(
         return { success: false, error: 'Unauthorized' }
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { error } = await (supabase as any)
         .from('entity_followers')
         .update(preferences)
@@ -430,7 +430,7 @@ export async function getTeamMembersForMention(
 ): Promise<ActionResult<TeamMember[]>> {
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('get_team_members_for_mention', {
         p_search_query: searchQuery || null,
         p_limit: 10
@@ -460,7 +460,7 @@ export async function getTeamMembersForMention(
 export async function getUnreadMentionsCount(): Promise<number> {
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('get_unread_mentions_count')
 
     if (error) {
@@ -477,7 +477,7 @@ export async function markMentionsRead(
 ): Promise<ActionResult<number>> {
     const supabase = await createClient()
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data, error } = await (supabase as any).rpc('mark_mentions_read', {
         p_message_ids: messageIds
     })
@@ -542,7 +542,7 @@ async function getEntityName(
     const table = tableMap[entityType]
     const nameField = nameFieldMap[entityType]
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data } = await (supabase as any)
         .from(table)
         .select(nameField)
@@ -565,7 +565,7 @@ async function dispatchChatterNotifications(
     if (!user) return
 
     // Get author info
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('full_name, email, tenant_id')
@@ -578,7 +578,7 @@ async function dispatchChatterNotifications(
     const entityName = await getEntityName(supabase, entityType, entityId)
 
     // Get all followers except the author
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+     
     const { data: followers } = await (supabase as any)
         .from('entity_followers')
         .select('user_id, notify_email, notify_in_app')
@@ -632,7 +632,7 @@ async function dispatchChatterNotifications(
     const allNotifications = [...mentionNotifications, ...filteredFollowerNotifs]
 
     if (allNotifications.length > 0) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+         
         const { error } = await (supabase as any)
             .from('notifications')
             .insert(allNotifications)

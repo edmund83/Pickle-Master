@@ -12,7 +12,7 @@ async function getLowStockItems(): Promise<InventoryItem[]> {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data: profile } = await (supabase as any)
     .from('profiles')
     .select('tenant_id')
@@ -21,7 +21,7 @@ async function getLowStockItems(): Promise<InventoryItem[]> {
 
   if (!profile?.tenant_id) return []
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+   
   const { data } = await (supabase as any)
     .from('inventory_items')
     .select('*')
