@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { FeatureGrid } from '@/components/marketing/FeatureGrid'
 import { FeaturesShowcase } from '@/components/marketing/FeaturesShowcase'
 import { HomeHero } from '@/components/marketing/HomeHero'
+import { InterfaceShowcase } from '@/components/marketing/InterfaceShowcase'
 import { PricingSection } from '@/components/marketing/PricingSection'
 import { FaqBlock } from '@/components/marketing/FaqBlock'
 import { TestimonialGrid } from '@/components/marketing/TestimonialGrid'
@@ -38,6 +39,7 @@ export default function MarketingHomePage() {
       <JsonLd data={faqPageJsonLd(DEFAULT_FAQS)} />
 
       <HomeHero />
+      <InterfaceShowcase />
       <FeaturesShowcase />
       <FeatureGrid />
       <StatsSection />
