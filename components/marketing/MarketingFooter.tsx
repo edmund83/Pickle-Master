@@ -9,11 +9,16 @@ export function MarketingFooter() {
             {/* Newsletter section */}
             <div className="col-span-2 mb-8 flex flex-col justify-between gap-6 sm:mb-16 lg:mb-0 lg:gap-12">
               <div>
-                <Link title="StockZip" className="text-base-content flex items-center gap-3 text-xl font-bold" href="/">
-                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary">
-                    <span className="text-base font-bold text-white">S</span>
-                  </div>
-                  <span>StockZip</span>
+                <Link title="StockZip" className="text-base-content flex items-center gap-2 text-xl font-bold" href="/">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src="/images/logo.png"
+                    alt="StockZip"
+                    width={32}
+                    height={32}
+                    className="h-8 w-8 object-contain"
+                  />
+                  <span>StockZip<span className="text-[10px] font-light align-super opacity-70">™</span></span>
                 </Link>
                 <p className="text-base-content/80 mt-4 text-balance lg:max-w-md">
                   Simple, mobile-first inventory management for small teams — barcode scanning, offline reliability, and
