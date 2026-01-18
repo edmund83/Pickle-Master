@@ -29,27 +29,16 @@ export function InterfaceShowcase() {
           <div className="flex flex-col items-center space-y-9 md:items-end">
             <div className="intersect-once intersect:motion-preset-slide-right-md intersect:motion-duration-800 intersect:motion-opacity-in-0 intersect:motion-delay-300 flex items-center gap-4 p-6">
               <div className="flex flex-col gap-2 text-end">
-                <h5 className="text-base-content text-lg font-semibold">Ask Zoe AI</h5>
-                <p className="text-base-content/80">
-                  Natural language questions about your inventory. "What's running low?" "Show me items at Location A."
-                </p>
-              </div>
-              <div className="rounded-box border-primary bg-primary/20 text-primary flex size-[3.875rem] shrink-0 items-center justify-center border">
-                <span className="icon-[tabler--sparkles] size-8"></span>
-              </div>
-            </div>
-            <div className="intersect-once intersect:motion-preset-slide-right-md intersect:motion-duration-800 intersect:motion-opacity-in-0 intersect:motion-delay-600 flex items-center gap-4 p-6">
-              <div className="flex flex-col gap-2 text-end">
                 <h5 className="text-base-content text-lg font-semibold">One-Tap Scanning</h5>
                 <p className="text-base-content/80">
                   Scan barcodes with your phone camera. Find items, adjust stock, or add new — in seconds.
                 </p>
               </div>
               <div className="rounded-box border-primary bg-primary/20 text-primary flex size-[3.875rem] shrink-0 items-center justify-center border">
-                <span className="icon-[tabler--scan] size-8"></span>
+                <span className="icon-[tabler--scan] size-8 animate-pulse-soft"></span>
               </div>
             </div>
-            <div className="intersect-once intersect:motion-preset-slide-right-md intersect:motion-duration-800 intersect:motion-opacity-in-0 intersect:motion-delay-[900ms] flex items-center gap-4 p-6">
+            <div className="intersect-once intersect:motion-preset-slide-right-md intersect:motion-duration-800 intersect:motion-opacity-in-0 intersect:motion-delay-600 flex items-center gap-4 p-6">
               <div className="flex flex-col gap-2 text-end">
                 <h5 className="text-base-content text-lg font-semibold">Clear Stock Status</h5>
                 <p className="text-base-content/80">
@@ -57,7 +46,18 @@ export function InterfaceShowcase() {
                 </p>
               </div>
               <div className="rounded-box border-primary bg-primary/20 text-primary flex size-[3.875rem] shrink-0 items-center justify-center border">
-                <span className="icon-[tabler--eye] size-8"></span>
+                <span className="icon-[tabler--eye] size-8 animate-pulse-soft"></span>
+              </div>
+            </div>
+            <div className="intersect-once intersect:motion-preset-slide-right-md intersect:motion-duration-800 intersect:motion-opacity-in-0 intersect:motion-delay-[900ms] flex items-center gap-4 p-6">
+              <div className="flex flex-col gap-2 text-end">
+                <h5 className="text-base-content text-lg font-semibold">Low-Stock Alerts</h5>
+                <p className="text-base-content/80">
+                  Set thresholds, get notified before you run out. Email, push, or in-app notifications.
+                </p>
+              </div>
+              <div className="rounded-box border-primary bg-primary/20 text-primary flex size-[3.875rem] shrink-0 items-center justify-center border">
+                <span className="icon-[tabler--bell-ringing] size-8 animate-pulse-soft"></span>
               </div>
             </div>
           </div>
@@ -78,34 +78,34 @@ export function InterfaceShowcase() {
           <div className="space-y-9">
             <div className="intersect-once intersect:motion-preset-slide-left-md intersect:motion-duration-800 intersect:motion-opacity-in-0 intersect:motion-delay-300 flex items-center gap-4 p-6">
               <div className="rounded-box border-primary bg-primary/20 text-primary flex size-[3.875rem] shrink-0 items-center justify-center border">
-                <span className="icon-[tabler--device-mobile] size-8"></span>
+                <span className="icon-[tabler--device-mobile] size-8 animate-pulse-soft"></span>
               </div>
               <div className="flex flex-col gap-2">
                 <h5 className="text-base-content text-lg font-semibold">Mobile-First Design</h5>
                 <p className="text-base-content/80">
-                  Large buttons, one-handed use, works fully offline. Built for the warehouse floor.
+                  Large buttons, one-handed use. Built for the warehouse floor, not the desk.
                 </p>
               </div>
             </div>
             <div className="intersect-once intersect:motion-preset-slide-left-md intersect:motion-duration-800 intersect:motion-opacity-in-0 intersect:motion-delay-600 flex items-center gap-4 p-6">
               <div className="rounded-box border-primary bg-primary/20 text-primary flex size-[3.875rem] shrink-0 items-center justify-center border">
-                <span className="icon-[tabler--bell-ringing] size-8"></span>
-              </div>
-              <div className="flex flex-col gap-2">
-                <h5 className="text-base-content text-lg font-semibold">Low-Stock Alerts</h5>
-                <p className="text-base-content/80">
-                  Set thresholds, get notified before you run out. Email, push, or ask Zoe.
-                </p>
-              </div>
-            </div>
-            <div className="intersect-once intersect:motion-preset-slide-left-md intersect:motion-duration-800 intersect:motion-opacity-in-0 intersect:motion-delay-[900ms] flex items-center gap-4 p-6">
-              <div className="rounded-box border-primary bg-primary/20 text-primary flex size-[3.875rem] shrink-0 items-center justify-center border">
-                <span className="icon-[tabler--users-group] size-8"></span>
+                <span className="icon-[tabler--users-group] size-8 animate-pulse-soft"></span>
               </div>
               <div className="flex flex-col gap-2">
                 <h5 className="text-base-content text-lg font-semibold">Team Sync</h5>
                 <p className="text-base-content/80">
                   Everyone sees changes instantly. No file locking, no version conflicts, no training.
+                </p>
+              </div>
+            </div>
+            <div className="intersect-once intersect:motion-preset-slide-left-md intersect:motion-duration-800 intersect:motion-opacity-in-0 intersect:motion-delay-[900ms] flex items-center gap-4 p-6">
+              <div className="rounded-box border-primary bg-primary/20 text-primary flex size-[3.875rem] shrink-0 items-center justify-center border">
+                <span className="icon-[tabler--wifi-off] size-8 animate-pulse-soft"></span>
+              </div>
+              <div className="flex flex-col gap-2">
+                <h5 className="text-base-content text-lg font-semibold">Offline-First</h5>
+                <p className="text-base-content/80">
+                  Works without WiFi. Queue changes offline, sync automatically when connected.
                 </p>
               </div>
             </div>
