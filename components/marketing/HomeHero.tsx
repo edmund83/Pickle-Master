@@ -37,12 +37,12 @@ export function HomeHero() {
         <main className="pb-10 pt-32 md:pt-36">
           <div className="mx-auto flex max-w-7xl flex-col items-center gap-3 px-4 text-center sm:px-6 lg:gap-4 lg:px-8">
             <div className="bg-white/10 border-white/20 flex w-fit items-center gap-2.5 rounded-full border px-3 py-2">
-              <span className="badge bg-white text-primary border-0 shrink-0 rounded-full">AI-Powered</span>
-              <span className="text-white/80">Your inventory assistant, Zoe, is ready</span>
+              <span className="badge bg-white text-primary border-0 shrink-0 rounded-full">Simple</span>
+              <span className="text-white/80">Trusted by 10,000+ businesses</span>
             </div>
 
             <h1 className="text-white relative z-1 text-5xl leading-[1.15] font-bold max-md:text-2xl md:max-w-4xl md:text-balance">
-              <span>The Excel replacement your team will actually use — powered by AI</span>
+              <span>Inventory tracking so simple, your team uses it on day one</span>
               <svg
                 width="223"
                 height="12"
@@ -74,8 +74,8 @@ export function HomeHero() {
             </h1>
 
             <p className="text-white/80 max-w-3xl">
-              Scan barcodes, see stock levels at a glance, and ask Zoe — your AI assistant — for instant answers.
-              Works offline on mobile. No training required. Predictable pricing that won't triple overnight.
+              Scan barcodes from your phone. See stock levels at a glance. Get alerts before you run out.
+              Works offline, syncs instantly — no spreadsheets, no training, no surprises.
             </p>
 
             <div className="flex flex-col items-center gap-3 sm:flex-row">
@@ -90,7 +90,7 @@ export function HomeHero() {
             </div>
 
             <p className="text-white/70 text-sm">
-              No credit card • No training required • Import from Excel/Sortly in minutes
+              Free 14-day trial • No credit card • Import from Excel in minutes
             </p>
           </div>
         </main>
@@ -111,15 +111,15 @@ export function HomeHero() {
             className="bg-white/10 border-white/20 flex w-fit items-center gap-2.5 rounded-full border px-3 py-2"
             variants={itemVariants}
           >
-            <span className="badge bg-white text-primary border-0 shrink-0 rounded-full">AI-Powered</span>
-            <span className="text-white/80">Your inventory assistant, Zoe, is ready</span>
+            <span className="badge bg-white text-primary border-0 shrink-0 rounded-full">Simple</span>
+            <span className="text-white/80">Trusted by 10,000+ businesses</span>
           </motion.div>
 
           <motion.h1
             className="text-white relative z-1 text-5xl leading-[1.15] font-bold max-md:text-2xl md:max-w-4xl md:text-balance"
             variants={itemVariants}
           >
-            <span>The Excel replacement your team will actually use — powered by AI</span>
+            <span>Inventory tracking so simple, your team uses it on day one</span>
             <svg
               width="223"
               height="12"
@@ -151,8 +151,8 @@ export function HomeHero() {
           </motion.h1>
 
           <motion.p className="text-white/80 max-w-3xl" variants={itemVariants}>
-            Scan barcodes, see stock levels at a glance, and ask Zoe — your AI assistant — for instant answers.
-            Works offline on mobile. No training required. Predictable pricing that won't triple overnight.
+            Scan barcodes from your phone. See stock levels at a glance. Get alerts before you run out.
+            Works offline, syncs instantly — no spreadsheets, no training, no surprises.
           </motion.p>
 
           <motion.div className="flex flex-col items-center gap-3 sm:flex-row" variants={itemVariants}>
@@ -167,7 +167,7 @@ export function HomeHero() {
           </motion.div>
 
           <motion.p className="text-white/70 text-sm" variants={itemVariants}>
-            No credit card • No training required • Import from Excel/Sortly in minutes
+            Free 14-day trial • No credit card • Import from Excel in minutes
           </motion.p>
         </motion.div>
       </main>
