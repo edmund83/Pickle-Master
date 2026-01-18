@@ -1,71 +1,116 @@
 'use client'
 
-import { motion, useReducedMotion } from 'motion/react'
-import { ANIMATION_CONFIG } from '@/lib/marketing/animations'
+import Image from 'next/image'
 
 export function InterfaceShowcase() {
-  const prefersReducedMotion = useReducedMotion()
-
-  const fadeInVariants = {
-    hidden: { opacity: 0, y: 30 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      transition: {
-        duration: ANIMATION_CONFIG.duration.slow,
-        ease: ANIMATION_CONFIG.ease.default,
-      },
-    },
-  }
-
-  // Browser frame content - shared between animated and static versions
-  const BrowserFrame = () => (
-    <div className="relative mx-auto shadow-2xl rounded-xl overflow-hidden">
-      {/* Browser Chrome / Window Frame */}
-      <div className="bg-neutral-800 px-4 py-2.5">
-        <div className="flex items-center gap-3">
-          <div className="flex gap-1.5">
-            <span className="size-3 rounded-full bg-red-500"></span>
-            <span className="size-3 rounded-full bg-yellow-500"></span>
-            <span className="size-3 rounded-full bg-green-500"></span>
-          </div>
-          <div className="ml-2 flex-1 max-w-md rounded-md bg-neutral-700 px-3 py-1 text-sm text-neutral-400">
-            app.stockzip.com
-          </div>
-        </div>
-      </div>
-      {/* Screen Content Placeholder */}
-      <div className="aspect-video w-full bg-neutral-100 flex items-center justify-center">
-        <div className="text-center text-neutral-400">
-          <span className="icon-[tabler--photo] size-12 mb-2 block mx-auto"></span>
-          <p className="text-base font-medium">Interface Screenshot</p>
-        </div>
-      </div>
-    </div>
-  )
-
-  // If reduced motion preferred, render without animations
-  if (prefersReducedMotion) {
-    return (
-      <section className="bg-base-200 py-12 lg:py-16">
-        <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <BrowserFrame />
-        </div>
-      </section>
-    )
-  }
-
   return (
-    <section className="bg-base-200 py-12 lg:py-16">
-      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-        <motion.div
-          variants={fadeInVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.3 }}
-        >
-          <BrowserFrame />
-        </motion.div>
+    <section className="bg-base-200 py-8 sm:py-16 lg:py-24">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        {/* Hero Section */}
+        <div className="mb-12 space-y-4 text-center sm:mb-16 lg:mb-24">
+          <h2 className="text-base-content text-2xl font-semibold md:text-3xl lg:text-4xl">
+            Everything your team needs —
+            <span className="relative z-[1] font-bold">
+              {' '}nothing they don't
+              <span
+                className="from-primary absolute start-0 bottom-0 -z-[1] h-0.5 w-full bg-gradient-to-r to-transparent to-100% max-sm:hidden"
+                aria-hidden="true"
+              ></span>
+            </span>
+          </h2>
+          <p className="text-base-content/80 text-xl">
+            Built for speed and clarity. Your team is productive on day one — no training required.
+          </p>
+        </div>
+
+        {/* Feature Section */}
+        <div className="grid items-center gap-15 xl:grid-cols-3">
+          {/* Feature Left */}
+          <div className="flex flex-col items-center space-y-9 md:items-end">
+            <div className="intersect-once intersect:motion-preset-slide-right-md intersect:motion-duration-800 intersect:motion-opacity-in-0 intersect:motion-delay-300 flex items-center gap-4 p-6">
+              <div className="flex flex-col gap-2 text-end">
+                <h5 className="text-base-content text-lg font-semibold">Ask Zoe AI</h5>
+                <p className="text-base-content/80">
+                  Natural language questions about your inventory. "What's running low?" "Show me items at Location A."
+                </p>
+              </div>
+              <div className="rounded-box border-primary bg-primary/20 text-primary flex size-[3.875rem] shrink-0 items-center justify-center border">
+                <span className="icon-[tabler--sparkles] size-8"></span>
+              </div>
+            </div>
+            <div className="intersect-once intersect:motion-preset-slide-right-md intersect:motion-duration-800 intersect:motion-opacity-in-0 intersect:motion-delay-600 flex items-center gap-4 p-6">
+              <div className="flex flex-col gap-2 text-end">
+                <h5 className="text-base-content text-lg font-semibold">One-Tap Scanning</h5>
+                <p className="text-base-content/80">
+                  Scan barcodes with your phone camera. Find items, adjust stock, or add new — in seconds.
+                </p>
+              </div>
+              <div className="rounded-box border-primary bg-primary/20 text-primary flex size-[3.875rem] shrink-0 items-center justify-center border">
+                <span className="icon-[tabler--scan] size-8"></span>
+              </div>
+            </div>
+            <div className="intersect-once intersect:motion-preset-slide-right-md intersect:motion-duration-800 intersect:motion-opacity-in-0 intersect:motion-delay-[900ms] flex items-center gap-4 p-6">
+              <div className="flex flex-col gap-2 text-end">
+                <h5 className="text-base-content text-lg font-semibold">Clear Stock Status</h5>
+                <p className="text-base-content/80">
+                  Green, yellow, red at a glance. Large numbers you can read across the room.
+                </p>
+              </div>
+              <div className="rounded-box border-primary bg-primary/20 text-primary flex size-[3.875rem] shrink-0 items-center justify-center border">
+                <span className="icon-[tabler--eye] size-8"></span>
+              </div>
+            </div>
+          </div>
+
+          {/* Feature Center - App Screenshot */}
+          <div className="intersect-once intersect:motion-preset-expand intersect:motion-duration-[900ms] intersect:motion-opacity-in-0">
+            <Image
+              src="/images/Mobile Inventory Management.png"
+              alt="StockZip Inventory Management System"
+              width={332}
+              height={670}
+              className="mx-auto object-cover"
+              priority
+            />
+          </div>
+
+          {/* Feature Right */}
+          <div className="space-y-9">
+            <div className="intersect-once intersect:motion-preset-slide-left-md intersect:motion-duration-800 intersect:motion-opacity-in-0 intersect:motion-delay-300 flex items-center gap-4 p-6">
+              <div className="rounded-box border-primary bg-primary/20 text-primary flex size-[3.875rem] shrink-0 items-center justify-center border">
+                <span className="icon-[tabler--device-mobile] size-8"></span>
+              </div>
+              <div className="flex flex-col gap-2">
+                <h5 className="text-base-content text-lg font-semibold">Mobile-First Design</h5>
+                <p className="text-base-content/80">
+                  Large buttons, one-handed use, works fully offline. Built for the warehouse floor.
+                </p>
+              </div>
+            </div>
+            <div className="intersect-once intersect:motion-preset-slide-left-md intersect:motion-duration-800 intersect:motion-opacity-in-0 intersect:motion-delay-600 flex items-center gap-4 p-6">
+              <div className="rounded-box border-primary bg-primary/20 text-primary flex size-[3.875rem] shrink-0 items-center justify-center border">
+                <span className="icon-[tabler--bell-ringing] size-8"></span>
+              </div>
+              <div className="flex flex-col gap-2">
+                <h5 className="text-base-content text-lg font-semibold">Low-Stock Alerts</h5>
+                <p className="text-base-content/80">
+                  Set thresholds, get notified before you run out. Email, push, or ask Zoe.
+                </p>
+              </div>
+            </div>
+            <div className="intersect-once intersect:motion-preset-slide-left-md intersect:motion-duration-800 intersect:motion-opacity-in-0 intersect:motion-delay-[900ms] flex items-center gap-4 p-6">
+              <div className="rounded-box border-primary bg-primary/20 text-primary flex size-[3.875rem] shrink-0 items-center justify-center border">
+                <span className="icon-[tabler--users-group] size-8"></span>
+              </div>
+              <div className="flex flex-col gap-2">
+                <h5 className="text-base-content text-lg font-semibold">Team Sync</h5>
+                <p className="text-base-content/80">
+                  Everyone sees changes instantly. No file locking, no version conflicts, no training.
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   )

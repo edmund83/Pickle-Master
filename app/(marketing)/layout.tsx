@@ -52,6 +52,10 @@ export default function MarketingLayout({
       <Script id="flyonui-globals" strategy="beforeInteractive">
         {flyonuiGlobalsScript}
       </Script>
+      <Script
+        src="https://unpkg.com/tailwindcss-intersect@2.x.x/dist/observer.min.js"
+        strategy="afterInteractive"
+      />
       <FlyonUIInit />
       <div className="fixed top-0 z-10 w-full">
         {/* Announcement Banner */}
