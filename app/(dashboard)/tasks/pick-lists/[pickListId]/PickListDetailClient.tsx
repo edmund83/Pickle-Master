@@ -25,7 +25,8 @@ import {
   Zap,
   FileText,
   AlertCircle,
-  Download
+  Download,
+  Truck
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -43,6 +44,7 @@ import {
   updatePickListItem,
   searchInventoryItems
 } from '@/app/actions/pick-lists'
+import { createDeliveryOrderFromSO } from '@/app/actions/delivery-orders'
 import { BarcodeScanner } from '@/components/scanner/BarcodeScanner'
 import type { ScanResult } from '@/lib/scanner/useBarcodeScanner'
 import { ChatterPanel } from '@/components/chatter'
@@ -79,6 +81,8 @@ interface PickListWithItems {
     created_by: string | null
     updated_at: string | null
     completed_at: string | null
+    source_entity_type: string | null
+    source_entity_id: string | null
   }
   items: Array<{
     id: string
@@ -179,6 +183,9 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
   const [searchResults, setSearchResults] = useState<SearchResult[]>([])
   const [isSearching, setIsSearching] = useState(false)
   const [isScannerOpen, setIsScannerOpen] = useState(false)
+
+  // Delivery order creation state
+  const [isCreatingDO, setIsCreatingDO] = useState(false)
 
   const pickList = data.pick_list
   const items = data.items
@@ -453,6 +460,26 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
       feedback.error('Failed to generate PDF')
     } finally {
       setActionLoading(null)
+    }
+  }
+
+  async function handleCreateDeliveryOrder() {
+    if (!pickList.source_entity_id || pickList.source_entity_type !== 'sales_order') return
+
+    setIsCreatingDO(true)
+    try {
+      const result = await createDeliveryOrderFromSO(pickList.source_entity_id)
+      if (result.success && result.delivery_order_id) {
+        feedback.success(`Delivery Order ${result.display_id || ''} created`)
+        router.push(`/tasks/delivery-orders/${result.delivery_order_id}`)
+      } else {
+        feedback.error(result.error || 'Failed to create delivery order')
+      }
+    } catch (err) {
+      console.error('Failed to create delivery order:', err)
+      feedback.error('Failed to create delivery order')
+    } finally {
+      setIsCreatingDO(false)
     }
   }
 
@@ -1004,6 +1031,21 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
               </Button>
             </>
           )}
+          {pickList.status === 'completed' &&
+            pickList.source_entity_type === 'sales_order' &&
+            pickList.source_entity_id && (
+              <Button
+                onClick={handleCreateDeliveryOrder}
+                disabled={isCreatingDO}
+              >
+                {isCreatingDO ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Truck className="mr-2 h-4 w-4" />
+                )}
+                {isCreatingDO ? 'Creating...' : 'Create Delivery Order'}
+              </Button>
+            )}
         </div>
       </div>
 

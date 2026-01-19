@@ -30,6 +30,8 @@ interface PickListWithItems {
     created_by: string | null
     updated_at: string | null
     completed_at: string | null
+    source_entity_type: string | null
+    source_entity_id: string | null
   }
   items: Array<{
     id: string
@@ -71,7 +73,7 @@ async function getPickListWithItems(pickListId: string): Promise<PickListWithIte
 
   // Get the created_by user name if we have the pick list
   if (data?.pick_list?.created_by) {
-     
+
     const { data: creator } = await (supabase as any)
       .from('profiles')
       .select('full_name')
@@ -79,6 +81,20 @@ async function getPickListWithItems(pickListId: string): Promise<PickListWithIte
       .single()
 
     data.created_by_name = creator?.full_name || null
+  }
+
+  // Fetch source entity fields (not included in RPC)
+  if (data?.pick_list?.id) {
+    const { data: sourceData } = await (supabase as any)
+      .from('pick_lists')
+      .select('source_entity_type, source_entity_id')
+      .eq('id', data.pick_list.id)
+      .single()
+
+    if (sourceData) {
+      data.pick_list.source_entity_type = sourceData.source_entity_type
+      data.pick_list.source_entity_id = sourceData.source_entity_id
+    }
   }
 
   return data
