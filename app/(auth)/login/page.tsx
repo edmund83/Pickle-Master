@@ -127,10 +127,15 @@ function LoginForm() {
         <div className="bg-base-100 shadow-base-300/20 z-10 w-full space-y-6 rounded-xl p-6 shadow-md sm:min-w-md lg:p-8">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <span className="text-lg font-bold text-white">S</span>
-            </div>
-            <h2 className="text-base-content text-xl font-bold">StockZip</h2>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/logo.png"
+              alt="StockZip"
+              width={32}
+              height={32}
+              className="h-8 w-8 object-contain"
+            />
+            <h2 className="text-base-content text-xl font-bold">StockZip<span className="text-[8px] font-light align-super opacity-70">™</span></h2>
           </div>
 
           {/* Header */}

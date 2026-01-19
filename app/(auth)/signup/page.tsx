@@ -144,10 +144,15 @@ function SignupForm() {
         <div className="flex w-full flex-col space-y-6 max-sm:px-6 sm:max-w-md">
           {/* Logo */}
           <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-              <span className="text-lg font-bold text-white">S</span>
-            </div>
-            <h2 className="text-base-content text-xl font-bold">StockZip</h2>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/images/logo.png"
+              alt="StockZip"
+              width={32}
+              height={32}
+              className="h-8 w-8 object-contain"
+            />
+            <h2 className="text-base-content text-xl font-bold">StockZip<span className="text-[8px] font-light align-super opacity-70">™</span></h2>
           </div>
 
           {/* Header */}
@@ -391,9 +396,14 @@ function SignupForm() {
 
             <div className="flex items-center justify-between">
               <p className="text-3xl font-bold">Join thousands of businesses using StockZip</p>
-              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary">
-                <span className="text-lg font-bold text-white">S</span>
-              </div>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/logo.png"
+                alt="StockZip"
+                width={40}
+                height={40}
+                className="h-10 w-10 object-contain"
+              />
             </div>
 
             <p className="mb-5 text-lg">

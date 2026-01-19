@@ -69,9 +69,14 @@ export function MobileHeader() {
       <div className="flex items-center justify-between h-14">
         {/* Logo / Brand / Title */}
         <div className="flex items-center gap-3 min-w-0">
-          <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary flex-shrink-0">
-            <span className="text-white font-bold text-lg">S</span>
-          </div>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/logo.png"
+            alt="StockZip"
+            width={40}
+            height={40}
+            className="w-10 h-10 object-contain flex-shrink-0"
+          />
           <div className="min-w-0">
             <h1 className="text-lg font-semibold text-neutral-900 truncate">
               {title}
