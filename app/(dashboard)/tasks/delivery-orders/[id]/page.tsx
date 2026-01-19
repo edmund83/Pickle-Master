@@ -6,7 +6,8 @@ export interface DeliveryOrderWithDetails {
   id: string
   tenant_id: string
   display_id: string | null
-  sales_order_id: string
+  sales_order_id: string | null
+  customer_id: string | null
   pick_list_id: string | null
   status: string | null
   carrier: string | null
@@ -47,6 +48,13 @@ export interface DeliveryOrderWithDetails {
       phone: string | null
     } | null
   } | null
+  // Direct customer for standalone DOs
+  customers: {
+    id: string
+    name: string
+    email: string | null
+    phone: string | null
+  } | null
   pick_list: {
     id: string
     display_id: string | null
@@ -75,12 +83,12 @@ async function getDeliveryOrderWithDetails(id: string): Promise<(DeliveryOrderWi
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-   
   const { data, error } = await (supabase as any)
     .from('delivery_orders')
     .select(`
       *,
       sales_orders(id, display_id, customer_id, customers(id, name, email, phone)),
+      customers(id, name, email, phone),
       pick_lists(id, display_id),
       delivery_order_items(
         *,
@@ -102,6 +110,7 @@ async function getDeliveryOrderWithDetails(id: string): Promise<(DeliveryOrderWi
   return {
     ...data,
     sales_order: data.sales_orders || null,
+    customers: data.customers || null,
     pick_list: data.pick_lists || null,
     items: (data.delivery_order_items || []).map((item: Record<string, unknown>) => ({
       ...item,

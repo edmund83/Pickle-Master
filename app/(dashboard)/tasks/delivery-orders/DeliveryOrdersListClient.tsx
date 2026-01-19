@@ -3,7 +3,7 @@
 import { useState, useCallback, useTransition } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Loader2, Search, Filter, X, Truck } from 'lucide-react'
+import { ArrowLeft, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Loader2, Search, Filter, X, Truck, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -153,6 +153,12 @@ export function DeliveryOrdersListClient({
               </p>
             </div>
           </div>
+          <Link href="/tasks/delivery-orders/new">
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              New Delivery Order
+            </Button>
+          </Link>
         </div>
 
         {/* Filters */}
@@ -298,7 +304,13 @@ export function DeliveryOrdersListClient({
                     <FormattedShortDate date={doItem.updated_at} />
                   </td>
                   <td className="px-4 py-3 text-neutral-600 hidden md:table-cell">
-                    {doItem.sales_order_display_id || '—'}
+                    {doItem.sales_order_display_id ? (
+                      doItem.sales_order_display_id
+                    ) : doItem.is_standalone ? (
+                      <span className="text-xs text-neutral-400 bg-neutral-100 px-2 py-0.5 rounded">Direct</span>
+                    ) : (
+                      '—'
+                    )}
                   </td>
                   <td className="px-4 py-3 text-neutral-600 hidden md:table-cell">
                     <div>

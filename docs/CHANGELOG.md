@@ -11,6 +11,34 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Added
 
+#### Standalone Delivery Orders (Flexible Workflow)
+Enable creating Delivery Orders without requiring a Sales Order - for direct shipments, samples, returns, etc.
+
+**Database** (Migration: `00083_delivery_orders_standalone.sql`):
+- Made `sales_order_id` nullable on `delivery_orders` table
+- Added `customer_id` column for direct customer reference
+- Added CHECK constraint requiring either `sales_order_id` OR `customer_id`
+- Made `sales_order_item_id` nullable on `delivery_order_items` for manual item entry
+- Backfilled existing records with customer_id from linked sales orders
+
+**Server Actions** (`app/actions/delivery-orders.ts`):
+- Updated `createDeliveryOrder()` to accept either sales_order_id or customer_id
+- Updated validation schemas and interfaces for optional SO link
+- Added `is_standalone` flag to list queries
+- Updated status change handlers to handle null sales_order_id
+
+**UI Changes**:
+- New "New Delivery Order" button on Delivery Orders list page
+- New standalone creation form (`/tasks/delivery-orders/new`)
+- Customer dropdown with address auto-fill option
+- "Direct" badge shown in list for standalone DOs
+- "Direct Delivery" indicator on detail page
+- Customer info card shows direct customer for standalone DOs
+
+**Workflow**:
+- Chained: Sales Order → Pick List → Delivery Order → Invoice (unchanged)
+- Standalone: Delivery Orders → New → Select Customer → Add Items → Ship
+
 #### Per-User AI Usage Cost Tracking
 Cost-based usage limits for AI features to control spending:
 
