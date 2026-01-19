@@ -11,18 +11,18 @@ export function HomeHero() {
       x: [0, 4, 0],
       transition: {
         duration: 1.2,
-        ease: 'easeInOut',
+        ease: 'easeInOut' as const,
         repeat: Infinity,
         repeatDelay: 1.5,
       },
     },
     hover: {
       x: 6,
-      transition: { type: 'spring', stiffness: 700, damping: 30 },
+      transition: { type: 'spring' as const, stiffness: 700, damping: 30 },
     },
     tap: {
       x: 2,
-      transition: { type: 'spring', stiffness: 700, damping: 30 },
+      transition: { type: 'spring' as const, stiffness: 700, damping: 30 },
     },
   }
 
