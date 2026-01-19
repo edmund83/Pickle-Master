@@ -41,6 +41,11 @@ Cost-based usage limits for AI features to control spending:
 #### PDF Downloads for Task Documents
 - Added Download PDF actions for Purchase Orders, Pick Lists, Sales Orders, Delivery Orders, and Invoices.
 
+#### Create Delivery Order from Completed Pick List
+- Added "Create Delivery Order" button on completed Pick Lists that are linked to Sales Orders
+- Button appears only when Pick List is completed and originated from a Sales Order
+- Automatically creates a Delivery Order with all picked items ready to ship
+
 ### Changed
 
 #### Ask Zoe AI Assistant Optimization
