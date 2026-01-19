@@ -21,7 +21,7 @@ export default function DashboardLayout({
           <SubscriptionGuard>
             <GlobalSearchProvider>
               <ZoeProvider>
-                <div className="flex min-h-screen flex-col">
+                <div className="h-screen overflow-hidden">
                   <MobileLayoutWrapper>
                     {children}
                   </MobileLayoutWrapper>

@@ -78,7 +78,7 @@ export function PrimarySidebar({ isExpanded = false, onToggle }: PrimarySidebarP
   }
 
   return (
-    <div className="relative">
+    <div className="relative h-full">
       <div
         className={cn(
           'flex h-full flex-col bg-primary transition-all duration-200 ease-out',
