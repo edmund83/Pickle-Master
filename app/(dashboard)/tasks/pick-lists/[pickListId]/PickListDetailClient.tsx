@@ -24,7 +24,8 @@ import {
   MoreVertical,
   Zap,
   FileText,
-  AlertCircle
+  AlertCircle,
+  Download
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -46,6 +47,8 @@ import { BarcodeScanner } from '@/components/scanner/BarcodeScanner'
 import type { ScanResult } from '@/lib/scanner/useBarcodeScanner'
 import { ChatterPanel } from '@/components/chatter'
 import { useFeedback } from '@/components/feedback/FeedbackProvider'
+import { useFormatting } from '@/hooks/useFormatting'
+import { downloadPdfBlob, generatePickListPDF } from '@/lib/documents/pdf-generator'
 
 interface TeamMember {
   id: string
@@ -143,6 +146,7 @@ const itemOutcomeOptions = [
 export function PickListDetailClient({ data, teamMembers, currentUserId }: PickListDetailClientProps) {
   const router = useRouter()
   const feedback = useFeedback()
+  const { formatCurrency, formatDate, formatShortDate } = useFormatting()
   const [pickingItemId, setPickingItemId] = useState<string | null>(null)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
@@ -180,6 +184,7 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
   const totalRequested = items.reduce((sum, item) => sum + item.requested_quantity, 0)
   const totalPicked = items.reduce((sum, item) => sum + item.picked_quantity, 0)
   const allPicked = items.every((item) => item.picked_quantity >= item.requested_quantity)
+  const canDownloadPdf = items.length > 0
 
   // Validation for draft mode
   const isValid = assignedTo && itemOutcome
@@ -421,6 +426,26 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
     }
   }
 
+  async function handleDownloadPDF() {
+    if (!canDownloadPdf) return
+    setActionLoading('download-pdf')
+    try {
+      const pdfBlob = generatePickListPDF(data, {
+        formatCurrency,
+        formatDate,
+        formatShortDate,
+      })
+      const baseName = pickList.display_id || pickList.pick_list_number || pickList.name || pickList.id
+      const safeName = baseName.replace(/\s+/g, '-').toLowerCase()
+      downloadPdfBlob(pdfBlob, `pick-list-${safeName}.pdf`)
+    } catch (err) {
+      console.error('Failed to generate pick list PDF:', err)
+      feedback.error('Failed to generate PDF')
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
   // Computed values for draft mode
   const hasNotesData = Boolean(notes)
   const missingFields: string[] = []
@@ -447,6 +472,14 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
               </span>
             </div>
             <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={handleDownloadPDF}
+                disabled={!canDownloadPdf || actionLoading !== null}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Download PDF
+              </Button>
               {/* More menu with Delete option */}
               <div className="relative">
                 <Button
@@ -926,6 +959,14 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
 
         {/* Actions */}
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            onClick={handleDownloadPDF}
+            disabled={!canDownloadPdf || actionLoading !== null}
+          >
+            <Download className="mr-2 h-4 w-4" />
+            Download PDF
+          </Button>
           {pickList.status === 'in_progress' && (
             <>
               <Button

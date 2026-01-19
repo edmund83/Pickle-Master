@@ -23,7 +23,8 @@ import {
   Trash2,
   ExternalLink,
   User,
-  Hash
+  Hash,
+  Download
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -40,6 +41,7 @@ import { ItemThumbnail } from '@/components/ui/item-thumbnail'
 import { useFeedback } from '@/components/feedback/FeedbackProvider'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Input } from '@/components/ui/input'
+import { downloadPdfBlob, generateDeliveryOrderPDF } from '@/lib/documents/pdf-generator'
 
 interface DeliveryOrderDetailClientProps {
   deliveryOrder: DeliveryOrderWithDetails
@@ -68,6 +70,7 @@ export function DeliveryOrderDetailClient({
 }: DeliveryOrderDetailClientProps) {
   const router = useRouter()
   const feedback = useFeedback()
+  const { formatCurrency, formatDate, formatShortDate } = useFormatting()
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -78,6 +81,7 @@ export function DeliveryOrderDetailClient({
   const [scheduledDate, setScheduledDate] = useState(deliveryOrder.scheduled_date || '')
   const [totalPackages, setTotalPackages] = useState(deliveryOrder.total_packages || 1)
   const [notes, setNotes] = useState(deliveryOrder.notes || '')
+  const canDownloadPdf = deliveryOrder.items.length > 0
 
   // Delivery confirmation state
   const [receivedBy, setReceivedBy] = useState('')
@@ -158,6 +162,26 @@ export function DeliveryOrderDetailClient({
     }
   }
 
+  async function handleDownloadPDF() {
+    if (!canDownloadPdf) return
+    setActionLoading('download-pdf')
+    try {
+      const pdfBlob = generateDeliveryOrderPDF(deliveryOrder, {
+        formatCurrency,
+        formatDate,
+        formatShortDate,
+      })
+      const baseName = deliveryOrder.display_id || deliveryOrder.sales_order?.display_id || deliveryOrder.id
+      const safeName = baseName.replace(/\s+/g, '-').toLowerCase()
+      downloadPdfBlob(pdfBlob, `delivery-order-${safeName}.pdf`)
+    } catch (err) {
+      console.error('Failed to generate delivery order PDF:', err)
+      feedback.error('Failed to generate PDF')
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
   async function handleConfirmDelivery() {
     setShowDeliveryConfirm(false)
     await handleStatusChange('delivered', {
@@ -204,6 +228,14 @@ export function DeliveryOrderDetailClient({
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={handleDownloadPDF}
+              disabled={!canDownloadPdf || actionLoading !== null}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Download PDF
+            </Button>
             {canEdit && (
               <Button
                 variant="outline"

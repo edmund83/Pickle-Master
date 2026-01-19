@@ -22,11 +22,13 @@ import {
   CreditCard,
   Plus,
   User,
-  Building2
+  Building2,
+  Download
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FormattedShortDate, FormattedDateTime } from '@/components/formatting/FormattedDate'
+import { useFormatting } from '@/hooks/useFormatting'
 import {
   updateInvoice,
   updateInvoiceStatus,
@@ -43,6 +45,7 @@ import { useFeedback } from '@/components/feedback/FeedbackProvider'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Input } from '@/components/ui/input'
 import { TaxRateDropdown } from '@/components/tax/TaxRateSelector'
+import { downloadPdfBlob, generateInvoicePDF } from '@/lib/documents/pdf-generator'
 
 interface InvoiceDetailClientProps {
   invoice: InvoiceWithDetails
@@ -80,6 +83,7 @@ export function InvoiceDetailClient({
 }: InvoiceDetailClientProps) {
   const router = useRouter()
   const feedback = useFeedback()
+  const { formatCurrency: formatCurrencyTenant, formatDate, formatShortDate } = useFormatting()
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -110,6 +114,7 @@ export function InvoiceDetailClient({
   const isPending = status === 'pending'
   const canEdit = ['draft', 'pending'].includes(status)
   const canRecordPayment = ['sent', 'partial', 'overdue'].includes(status)
+  const canDownloadPdf = invoice.items.length > 0
 
   const StatusIcon = statusConfig[status]?.icon || Clock
 
@@ -210,6 +215,26 @@ export function InvoiceDetailClient({
     setActionLoading(null)
   }
 
+  async function handleDownloadPDF() {
+    if (!canDownloadPdf) return
+    setActionLoading('download-pdf')
+    try {
+      const pdfBlob = generateInvoicePDF(invoice, {
+        formatCurrency: formatCurrencyTenant,
+        formatDate,
+        formatShortDate,
+      })
+      const baseName = invoice.display_id || invoice.invoice_number || invoice.id
+      const safeName = baseName.replace(/\s+/g, '-').toLowerCase()
+      downloadPdfBlob(pdfBlob, `invoice-${safeName}.pdf`)
+    } catch (err) {
+      console.error('Failed to generate invoice PDF:', err)
+      feedback.error('Failed to generate PDF')
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
   async function handleUpdateItemTax(itemId: string, taxRateId: string | null) {
     setActionLoading(`tax-${itemId}`)
     setError(null)
@@ -262,6 +287,14 @@ export function InvoiceDetailClient({
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={handleDownloadPDF}
+              disabled={!canDownloadPdf || actionLoading !== null}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Download PDF
+            </Button>
             {canEdit && (
               <Button
                 variant="outline"

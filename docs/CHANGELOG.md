@@ -38,6 +38,9 @@ Cost-based usage limits for AI features to control spending:
 - Model-specific rates: Gemini Flash ($0.075/$0.30 per 1M tokens), GPT-4o, Claude, etc.
 - 80% warning threshold before limit reached
 
+#### PDF Downloads for Task Documents
+- Added Download PDF actions for Purchase Orders, Pick Lists, Sales Orders, Delivery Orders, and Invoices.
+
 ### Changed
 
 #### Ask Zoe AI Assistant Optimization
@@ -73,6 +76,11 @@ Major performance and cost optimization for the Ask Zoe AI assistant:
   - Tables and formatting for easy reference
   - Troubleshooting & FAQ section
   - Getting Started checklist for new users
+
+### Changed
+
+#### Pricing Plan Notes
+- **Pricing plan** (`docs/pricingplan.md`) now calls out PDF downloads for document workflows.
 
 ### Removed
 

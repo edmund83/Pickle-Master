@@ -29,7 +29,8 @@ import {
   Zap,
   ClipboardList,
   Flag,
-  ExternalLink
+  ExternalLink,
+  Download
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -56,6 +57,7 @@ import { ItemThumbnail } from '@/components/ui/item-thumbnail'
 import { useFeedback } from '@/components/feedback/FeedbackProvider'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { TaxRateDropdown } from '@/components/tax/TaxRateSelector'
+import { downloadPdfBlob, generateSalesOrderPDF } from '@/lib/documents/pdf-generator'
 
 interface SalesOrderDetailClientProps {
   salesOrder: SalesOrderWithDetails
@@ -97,7 +99,7 @@ export function SalesOrderDetailClient({
   currentUserId
 }: SalesOrderDetailClientProps) {
   const router = useRouter()
-  const { formatCurrency } = useFormatting()
+  const { formatCurrency, formatDate, formatShortDate } = useFormatting()
   const feedback = useFeedback()
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -176,6 +178,7 @@ export function SalesOrderDetailClient({
   const isDraft = status === 'draft'
   const isSubmitted = status === 'submitted'
   const canEdit = ['draft', 'submitted'].includes(status)
+  const canDownloadPdf = salesOrder.items.length > 0
 
   // Filter customers based on search query
   const filteredCustomers = customerSearchQuery.trim()
@@ -568,6 +571,32 @@ export function SalesOrderDetailClient({
     await handleStatusChange('cancelled')
   }
 
+  async function handleDownloadPDF() {
+    if (!canDownloadPdf) return
+    setActionLoading('download-pdf')
+    try {
+      const pdfBlob = generateSalesOrderPDF(
+        {
+          ...salesOrder,
+          assigned_to_name: assignedToName,
+        },
+        {
+          formatCurrency,
+          formatDate,
+          formatShortDate,
+        }
+      )
+      const baseName = salesOrder.display_id || salesOrder.order_number || salesOrder.id
+      const safeName = baseName.replace(/\s+/g, '-').toLowerCase()
+      downloadPdfBlob(pdfBlob, `sales-order-${safeName}.pdf`)
+    } catch (err) {
+      console.error('Failed to generate sales order PDF:', err)
+      feedback.error('Failed to generate PDF')
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
   // Validation for draft mode
   const isValid = customerId && salesOrder.items.length > 0
   const missingFields: string[] = []
@@ -605,6 +634,14 @@ export function SalesOrderDetailClient({
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={handleDownloadPDF}
+                disabled={!canDownloadPdf || actionLoading !== null}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Download PDF
+              </Button>
               {/* More menu */}
               <div className="relative">
                 <Button
@@ -1368,6 +1405,14 @@ export function SalesOrderDetailClient({
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={handleDownloadPDF}
+              disabled={!canDownloadPdf || actionLoading !== null}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Download PDF
+            </Button>
             {status === 'confirmed' && (
               <Button
                 onClick={() => handleStatusChange('picking')}

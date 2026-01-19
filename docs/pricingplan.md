@@ -69,6 +69,7 @@
 
 ## Notes (for Pricing Page)
 
+- **PDF downloads** are available for document workflows (Purchase Orders, Pick Lists, Sales Orders, Delivery Orders, Invoices) wherever those features are enabled.
 - **Starter** is intentionally limited to **single location** to keep entry pricing simple.
 - **Growth** is the best plan for most small businesses (multi-location + operations features).
 - **Scale** is for owners/managers who need controls (audit/approvals/permissions) and higher limits.
