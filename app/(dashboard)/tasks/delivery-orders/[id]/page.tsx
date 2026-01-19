@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { DeliveryOrderDetailClient } from './DeliveryOrderDetailClient'
+import { getCustomers, type Customer } from '@/app/actions/customers'
 
 export interface DeliveryOrderWithDetails {
   id: string
@@ -133,9 +134,10 @@ export default async function DeliveryOrderDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [deliveryOrder, userId] = await Promise.all([
+  const [deliveryOrder, userId, customers] = await Promise.all([
     getDeliveryOrderWithDetails(id),
-    getCurrentUserId()
+    getCurrentUserId(),
+    getCustomers()
   ])
 
   if (!deliveryOrder) {
@@ -148,6 +150,7 @@ export default async function DeliveryOrderDetailPage({
       createdByName={deliveryOrder.created_by_name}
       dispatchedByName={deliveryOrder.dispatched_by_name}
       currentUserId={userId}
+      customers={customers}
     />
   )
 }

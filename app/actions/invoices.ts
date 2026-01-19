@@ -1124,3 +1124,34 @@ export async function setInvoiceItemTax(
     revalidatePath(`/tasks/invoices/${invItem.invoice_id}`)
     return { success: true }
 }
+
+// Search inventory items for invoices
+export async function searchInventoryItemsForInvoice(query: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) return []
+
+    const { data: profile } = await (supabase as any)
+        .from('profiles')
+        .select('tenant_id')
+        .eq('id', user.id)
+        .single()
+
+    if (!profile?.tenant_id) return []
+
+    let queryBuilder = (supabase as any)
+        .from('inventory_items')
+        .select('id, name, sku, quantity, unit, price, image_urls')
+        .eq('tenant_id', profile.tenant_id)
+        .is('deleted_at', null)
+        .order('name')
+        .limit(20)
+
+    if (query) {
+        queryBuilder = queryBuilder.or(`name.ilike.%${query}%,sku.ilike.%${query}%`)
+    }
+
+    const { data } = await queryBuilder
+    return data || []
+}

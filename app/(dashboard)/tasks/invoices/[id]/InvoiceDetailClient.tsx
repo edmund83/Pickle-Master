@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
@@ -23,7 +23,13 @@ import {
   Plus,
   User,
   Building2,
-  Download
+  Download,
+  Mail,
+  Phone,
+  Users,
+  Camera,
+  X,
+  Zap
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -38,7 +44,9 @@ import {
   removeInvoiceItem,
   recordPayment,
   setInvoiceItemTax,
+  searchInventoryItemsForInvoice,
 } from '@/app/actions/invoices'
+import { BarcodeScanner, type ScanResult } from '@/components/scanner/BarcodeScanner'
 import type { InvoiceWithDetails, Customer } from './page'
 import { ChatterPanel } from '@/components/chatter'
 import { ItemThumbnail } from '@/components/ui/item-thumbnail'
@@ -113,6 +121,20 @@ export function InvoiceDetailClient({
   const [showSendConfirm, setShowSendConfirm] = useState(false)
   const [sendToEmail, setSendToEmail] = useState(invoice.customer?.email || '')
 
+  // Item search state
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<Array<{
+    id: string
+    name: string
+    sku: string | null
+    quantity: number
+    image_urls: string[] | null
+    unit: string | null
+    price: number | null
+  }>>([])
+  const [isSearching, setIsSearching] = useState(false)
+  const [isScannerOpen, setIsScannerOpen] = useState(false)
+
   const status = invoice.status || 'draft'
   const isDraft = status === 'draft'
   const isPending = status === 'pending'
@@ -120,7 +142,94 @@ export function InvoiceDetailClient({
   const canRecordPayment = ['sent', 'partial', 'overdue'].includes(status)
   const canDownloadPdf = invoice.items.length > 0
 
+  // Validation for draft/pending invoices
+  const missingFields: string[] = []
+  if (!invoice.customer_id) missingFields.push('Customer')
+  if (invoice.items.length === 0) missingFields.push('Line items')
+  const isValid = missingFields.length === 0
+
   const StatusIcon = statusConfig[status]?.icon || Clock
+
+  // Item search handler
+  const handleSearch = useCallback(async (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([])
+      return
+    }
+    setIsSearching(true)
+    try {
+      const results = await searchInventoryItemsForInvoice(query)
+      // Filter out items already in the invoice
+      const existingIds = new Set(invoice.items.filter(i => i.item_id).map(i => i.item_id))
+      setSearchResults(results.filter((item: { id: string }) => !existingIds.has(item.id)))
+    } catch (err) {
+      console.error('Search error:', err)
+    } finally {
+      setIsSearching(false)
+    }
+  }, [invoice.items])
+
+  // Debounced search
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (searchQuery) {
+        handleSearch(searchQuery)
+      } else {
+        setSearchResults([])
+      }
+    }, 300)
+    return () => clearTimeout(timer)
+  }, [searchQuery, handleSearch])
+
+  // Add item handler
+  async function handleAddItem(item: { id: string; name: string; sku: string | null; price: number | null }) {
+    setActionLoading('add-item')
+    try {
+      const result = await addInvoiceItem(invoice.id, {
+        item_id: item.id,
+        item_name: item.name,
+        sku: item.sku,
+        quantity: 1,
+        unit_price: item.price || 0
+      })
+
+      if (result.success) {
+        feedback.success('Item added')
+        router.refresh()
+        setSearchQuery('')
+        setSearchResults([])
+      } else {
+        const errorMsg = result.error || 'Failed to add item'
+        setError(errorMsg)
+        feedback.error(errorMsg)
+      }
+    } catch (err) {
+      console.error('Add item error:', err)
+      feedback.error('Failed to add item')
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
+  // Barcode scan handler
+  async function handleBarcodeScan(result: ScanResult) {
+    setIsScannerOpen(false)
+
+    const foundItems = await searchInventoryItemsForInvoice(result.code)
+    const existingIds = new Set(invoice.items.filter(i => i.item_id).map(i => i.item_id))
+    const filtered = foundItems.filter((item: { id: string }) => !existingIds.has(item.id))
+
+    if (filtered.length === 1) {
+      await handleAddItem(filtered[0])
+    } else if (filtered.length > 1) {
+      setSearchQuery(result.code)
+      setSearchResults(filtered)
+    } else if (foundItems.length > 0) {
+      feedback.warning(`Item with barcode "${result.code}" is already on this invoice`)
+    } else {
+      feedback.warning(`No item found with barcode: ${result.code}`)
+    }
+  }
 
   async function handleSave() {
     setActionLoading('save')
@@ -487,11 +596,76 @@ export function InvoiceDetailClient({
             </Card>
 
             {/* Line Items Card */}
-            <Card>
+            <Card className={`border-2 ${isDraft && invoice.items.length === 0 ? 'border-amber-200' : 'border-transparent'}`}>
               <CardHeader>
-                <CardTitle>Line Items ({invoice.items.length})</CardTitle>
+                <CardTitle>Line Items ({invoice.items.length}) {invoice.items.length === 0 && <span className="text-red-500">*</span>}</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="space-y-4">
+                {/* Item Search - only show when editable */}
+                {canEdit && (
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <div className="relative flex-1">
+                        <Zap className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-500" />
+                        <input
+                          type="text"
+                          value={searchQuery}
+                          onChange={(e) => setSearchQuery(e.target.value)}
+                          placeholder="Search items to add..."
+                          className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-neutral-200 bg-white text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all"
+                        />
+                        {isSearching ? (
+                          <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-neutral-400" />
+                        ) : searchQuery && (
+                          <button
+                            onClick={() => { setSearchQuery(''); setSearchResults([]) }}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 rounded-full bg-neutral-200 hover:bg-neutral-300 flex items-center justify-center transition-colors"
+                          >
+                            <X className="h-3 w-3 text-neutral-600" />
+                          </button>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => setIsScannerOpen(true)}
+                        className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-primary text-white hover:bg-primary/90 transition-colors shadow-sm"
+                        title="Scan barcode"
+                      >
+                        <Camera className="h-5 w-5" />
+                        <span className="hidden sm:inline">Scan</span>
+                      </button>
+                    </div>
+
+                    {/* Search Results */}
+                    {searchResults.length > 0 && (
+                      <div className="bg-white rounded-lg border border-neutral-200 shadow-lg max-h-48 overflow-y-auto">
+                        {searchResults.map((item) => (
+                          <button
+                            key={item.id}
+                            onClick={() => handleAddItem(item)}
+                            disabled={actionLoading === 'add-item'}
+                            className="w-full flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 text-left border-b border-neutral-100 last:border-0 disabled:opacity-50"
+                          >
+                            <ItemThumbnail
+                              src={item.image_urls?.[0]}
+                              alt={item.name}
+                              size="sm"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <p className="text-sm font-medium text-neutral-900 truncate">{item.name}</p>
+                              {item.sku && <p className="text-xs text-neutral-500">SKU: {item.sku}</p>}
+                            </div>
+                            <span className="text-xs text-neutral-500">{item.quantity} {item.unit || 'pcs'}</span>
+                            {item.price !== null && (
+                              <span className="text-xs font-medium text-neutral-700">{formatCurrency(item.price)}</span>
+                            )}
+                            <Plus className="h-4 w-4 text-primary" />
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
                 {invoice.items.length > 0 ? (
                   <div className="rounded-lg border border-neutral-200 overflow-hidden">
                     <table className="w-full text-sm">
@@ -716,6 +890,17 @@ export function InvoiceDetailClient({
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Validation Alert (for draft invoices) */}
+            {isDraft && !isValid && (
+              <div className="flex items-start gap-2 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3">
+                <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-amber-800">Required to mark pending:</p>
+                  <p className="text-sm text-amber-700">{missingFields.join(', ')}</p>
+                </div>
+              </div>
+            )}
+
             {/* Bill To Address */}
             <Card>
               <CardHeader>
@@ -742,42 +927,49 @@ export function InvoiceDetailClient({
             </Card>
 
             {/* Customer Info */}
-            {invoice.customer && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Building2 className="h-4 w-4" />
-                    Customer
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
+            <Card className={`border-2 ${!invoice.customer_id && isDraft ? 'border-amber-200 bg-gradient-to-br from-white to-amber-50/30' : 'border-transparent'}`}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Customer <span className="text-red-500">*</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {invoice.customer ? (
                   <div className="space-y-3">
-                    <Link
-                      href={`/partners/customers/${invoice.customer_id}`}
-                      className="font-medium text-neutral-900 hover:text-primary"
-                    >
-                      {invoice.customer.name}
-                    </Link>
-                    {invoice.customer.email && (
-                      <div className="flex items-center gap-2 text-sm text-neutral-600">
-                        <span className="text-neutral-400">Email:</span>
-                        <a href={`mailto:${invoice.customer.email}`} className="hover:text-primary">
-                          {invoice.customer.email}
-                        </a>
+                    <div className="flex items-center gap-3">
+                      <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <Users className="h-5 w-5 text-primary" />
                       </div>
-                    )}
-                    {invoice.customer.phone && (
-                      <div className="flex items-center gap-2 text-sm text-neutral-600">
-                        <span className="text-neutral-400">Phone:</span>
-                        <a href={`tel:${invoice.customer.phone}`} className="hover:text-primary">
-                          {invoice.customer.phone}
-                        </a>
+                      <div className="min-w-0 flex-1">
+                        <Link
+                          href={`/partners/customers/${invoice.customer_id}`}
+                          className="font-medium text-neutral-900 hover:text-primary"
+                        >
+                          {invoice.customer.name}
+                        </Link>
+                        <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-neutral-500">
+                          {invoice.customer.email && (
+                            <span className="flex items-center gap-1">
+                              <Mail className="h-3 w-3" />
+                              {invoice.customer.email}
+                            </span>
+                          )}
+                          {invoice.customer.phone && (
+                            <span className="flex items-center gap-1">
+                              <Phone className="h-3 w-3" />
+                              {invoice.customer.phone}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                    )}
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
-            )}
+                ) : (
+                  <p className="text-sm text-neutral-500">No customer assigned</p>
+                )}
+              </CardContent>
+            </Card>
 
             {/* Related Documents */}
             {(invoice.sales_order || invoice.delivery_order) && (
@@ -890,6 +1082,55 @@ export function InvoiceDetailClient({
             currentUserId={currentUserId}
             className="mt-6"
           />
+        )}
+
+        {/* Sticky Footer - Action Bar */}
+        {canEdit && (
+          <div className="sticky bottom-0 border-t border-neutral-200 bg-white px-6 py-4 -mx-6 mt-6">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                {invoice.items.length === 0 ? (
+                  <div className="flex items-center gap-1.5 text-amber-600">
+                    <AlertTriangle className="h-4 w-4" />
+                    <span className="text-sm">Add line items to continue</span>
+                  </div>
+                ) : (
+                  <span className="text-sm text-neutral-600">
+                    <span className="font-medium">{invoice.items.length}</span> item{invoice.items.length !== 1 ? 's' : ''}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="text-right">
+                  <p className="text-xs text-neutral-500">Total</p>
+                  <p className="text-lg font-semibold text-neutral-900">{formatCurrency(invoice.total)}</p>
+                </div>
+                {isDraft && (
+                  <Button
+                    variant="outline"
+                    onClick={() => handleStatusChange('pending')}
+                    disabled={actionLoading !== null}
+                  >
+                    {actionLoading === 'status' ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Clock className="mr-2 h-4 w-4" />
+                    )}
+                    Mark Pending
+                  </Button>
+                )}
+                {isPending && (
+                  <Button
+                    onClick={() => setShowSendConfirm(true)}
+                    disabled={actionLoading !== null || invoice.items.length === 0}
+                  >
+                    <Send className="mr-2 h-4 w-4" />
+                    Send Invoice
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
         )}
       </div>
 
@@ -1014,6 +1255,14 @@ export function InvoiceDetailClient({
             </div>
           </div>
         </div>
+      )}
+
+      {/* Barcode Scanner Modal */}
+      {isScannerOpen && (
+        <BarcodeScanner
+          onScan={handleBarcodeScan}
+          onClose={() => setIsScannerOpen(false)}
+        />
       )}
     </div>
   )
