@@ -34,9 +34,42 @@ const VALID_COUNTRIES = [
   'MY', 'SG', 'US', 'GB', 'AU', 'JP', 'CN', 'IN', 'TH', 'ID', 'PH', 'VN',
 ]
 
+const MAX_ADDRESS_LENGTH = 200
+const MAX_CITY_LENGTH = 100
+const MAX_STATE_LENGTH = 100
+const MAX_POSTAL_LENGTH = 20
+const MAX_COUNTRY_LENGTH = 100
+const MAX_PHONE_LENGTH = 50
+const MAX_EMAIL_LENGTH = 120
+const MAX_TAX_LABEL_LENGTH = 30
+const MAX_TAX_ID_LENGTH = 50
+
+function trimOrNull(value: string | null | undefined): string | null {
+  if (!value) return null
+  const trimmed = value.trim()
+  return trimmed.length > 0 ? trimmed : null
+}
+
+function isValidEmail(value: string): boolean {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)
+}
+
 interface UpdateTenantSettingsInput {
   name: string
-  settings: TenantSettings
+  settings: TenantSettings & CompanySettings
+}
+
+interface CompanySettings {
+  company_address1?: string | null
+  company_address2?: string | null
+  company_city?: string | null
+  company_state?: string | null
+  company_postal_code?: string | null
+  company_country?: string | null
+  company_phone?: string | null
+  company_email?: string | null
+  tax_id_label?: string | null
+  company_tax_id?: string | null
 }
 
 interface ActionResult {
@@ -88,6 +121,53 @@ export async function updateTenantSettings(
   // Validate country
   if (!VALID_COUNTRIES.includes(settings.country)) {
     return { error: `Invalid country: ${settings.country}` }
+  }
+
+  const companyAddress1 = trimOrNull(settings.company_address1)
+  const companyAddress2 = trimOrNull(settings.company_address2)
+  const companyCity = trimOrNull(settings.company_city)
+  const companyState = trimOrNull(settings.company_state)
+  const companyPostalCode = trimOrNull(settings.company_postal_code)
+  const companyCountry = trimOrNull(settings.company_country)
+  const companyPhone = trimOrNull(settings.company_phone)
+  const companyEmail = trimOrNull(settings.company_email)
+  const taxIdLabel = trimOrNull(settings.tax_id_label)
+  const companyTaxId = trimOrNull(settings.company_tax_id)
+
+  if (companyAddress1 && companyAddress1.length > MAX_ADDRESS_LENGTH) {
+    return { error: 'Company address line 1 is too long' }
+  }
+  if (companyAddress2 && companyAddress2.length > MAX_ADDRESS_LENGTH) {
+    return { error: 'Company address line 2 is too long' }
+  }
+  if (companyCity && companyCity.length > MAX_CITY_LENGTH) {
+    return { error: 'Company city is too long' }
+  }
+  if (companyState && companyState.length > MAX_STATE_LENGTH) {
+    return { error: 'Company state is too long' }
+  }
+  if (companyPostalCode && companyPostalCode.length > MAX_POSTAL_LENGTH) {
+    return { error: 'Company postal code is too long' }
+  }
+  if (companyCountry && companyCountry.length > MAX_COUNTRY_LENGTH) {
+    return { error: 'Company country is too long' }
+  }
+  if (companyPhone && companyPhone.length > MAX_PHONE_LENGTH) {
+    return { error: 'Company phone is too long' }
+  }
+  if (companyEmail) {
+    if (companyEmail.length > MAX_EMAIL_LENGTH) {
+      return { error: 'Company email is too long' }
+    }
+    if (!isValidEmail(companyEmail)) {
+      return { error: 'Company email format is invalid' }
+    }
+  }
+  if (taxIdLabel && taxIdLabel.length > MAX_TAX_LABEL_LENGTH) {
+    return { error: 'Tax ID label is too long' }
+  }
+  if (companyTaxId && companyTaxId.length > MAX_TAX_ID_LENGTH) {
+    return { error: 'Company tax ID is too long' }
   }
 
   try {
@@ -142,6 +222,16 @@ export async function updateTenantSettings(
           time_format: settings.time_format,
           decimal_precision: settings.decimal_precision,
           country: settings.country,
+          company_address1: companyAddress1,
+          company_address2: companyAddress2,
+          company_city: companyCity,
+          company_state: companyState,
+          company_postal_code: companyPostalCode,
+          company_country: companyCountry,
+          company_phone: companyPhone,
+          company_email: companyEmail,
+          tax_id_label: taxIdLabel,
+          company_tax_id: companyTaxId,
         },
         updated_at: new Date().toISOString(),
       })

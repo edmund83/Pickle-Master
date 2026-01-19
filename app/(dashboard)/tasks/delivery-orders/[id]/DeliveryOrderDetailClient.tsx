@@ -30,6 +30,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FormattedShortDate, FormattedDateTime } from '@/components/formatting/FormattedDate'
 import { useFormatting } from '@/hooks/useFormatting'
+import { useTenantCompanyDetails, useTenantName, useTenantLogoUrl } from '@/contexts/TenantSettingsContext'
 import {
   updateDeliveryOrder,
   updateDeliveryOrderStatus,
@@ -41,7 +42,7 @@ import { ItemThumbnail } from '@/components/ui/item-thumbnail'
 import { useFeedback } from '@/components/feedback/FeedbackProvider'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Input } from '@/components/ui/input'
-import { downloadPdfBlob, generateDeliveryOrderPDF } from '@/lib/documents/pdf-generator'
+import { buildCompanyBranding, downloadPdfBlob, fetchImageDataUrl, generateDeliveryOrderPDF } from '@/lib/documents/pdf-generator'
 
 interface DeliveryOrderDetailClientProps {
   deliveryOrder: DeliveryOrderWithDetails
@@ -71,6 +72,9 @@ export function DeliveryOrderDetailClient({
   const router = useRouter()
   const feedback = useFeedback()
   const { formatCurrency, formatDate, formatShortDate } = useFormatting()
+  const tenantName = useTenantName()
+  const tenantLogoUrl = useTenantLogoUrl()
+  const companyDetails = useTenantCompanyDetails()
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -166,11 +170,17 @@ export function DeliveryOrderDetailClient({
     if (!canDownloadPdf) return
     setActionLoading('download-pdf')
     try {
-      const pdfBlob = generateDeliveryOrderPDF(deliveryOrder, {
-        formatCurrency,
-        formatDate,
-        formatShortDate,
-      })
+      const logoDataUrl = tenantLogoUrl ? await fetchImageDataUrl(tenantLogoUrl) : null
+      const branding = buildCompanyBranding(tenantName, logoDataUrl, companyDetails)
+      const pdfBlob = generateDeliveryOrderPDF(
+        deliveryOrder,
+        {
+          formatCurrency,
+          formatDate,
+          formatShortDate,
+        },
+        branding
+      )
       const baseName = deliveryOrder.display_id || deliveryOrder.sales_order?.display_id || deliveryOrder.id
       const safeName = baseName.replace(/\s+/g, '-').toLowerCase()
       downloadPdfBlob(pdfBlob, `delivery-order-${safeName}.pdf`)

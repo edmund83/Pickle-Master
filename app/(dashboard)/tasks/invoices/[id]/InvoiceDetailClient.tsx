@@ -29,6 +29,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { FormattedShortDate, FormattedDateTime } from '@/components/formatting/FormattedDate'
 import { useFormatting } from '@/hooks/useFormatting'
+import { useTenantCompanyDetails, useTenantName, useTenantLogoUrl } from '@/contexts/TenantSettingsContext'
 import {
   updateInvoice,
   updateInvoiceStatus,
@@ -45,7 +46,7 @@ import { useFeedback } from '@/components/feedback/FeedbackProvider'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Input } from '@/components/ui/input'
 import { TaxRateDropdown } from '@/components/tax/TaxRateSelector'
-import { downloadPdfBlob, generateInvoicePDF } from '@/lib/documents/pdf-generator'
+import { buildCompanyBranding, downloadPdfBlob, fetchImageDataUrl, generateInvoicePDF } from '@/lib/documents/pdf-generator'
 
 interface InvoiceDetailClientProps {
   invoice: InvoiceWithDetails
@@ -84,6 +85,9 @@ export function InvoiceDetailClient({
   const router = useRouter()
   const feedback = useFeedback()
   const { formatCurrency: formatCurrencyTenant, formatDate, formatShortDate } = useFormatting()
+  const tenantName = useTenantName()
+  const tenantLogoUrl = useTenantLogoUrl()
+  const companyDetails = useTenantCompanyDetails()
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
 
@@ -219,11 +223,17 @@ export function InvoiceDetailClient({
     if (!canDownloadPdf) return
     setActionLoading('download-pdf')
     try {
-      const pdfBlob = generateInvoicePDF(invoice, {
-        formatCurrency: formatCurrencyTenant,
-        formatDate,
-        formatShortDate,
-      })
+      const logoDataUrl = tenantLogoUrl ? await fetchImageDataUrl(tenantLogoUrl) : null
+      const branding = buildCompanyBranding(tenantName, logoDataUrl, companyDetails)
+      const pdfBlob = generateInvoicePDF(
+        invoice,
+        {
+          formatCurrency: formatCurrencyTenant,
+          formatDate,
+          formatShortDate,
+        },
+        branding
+      )
       const baseName = invoice.display_id || invoice.invoice_number || invoice.id
       const safeName = baseName.replace(/\s+/g, '-').toLowerCase()
       downloadPdfBlob(pdfBlob, `invoice-${safeName}.pdf`)
