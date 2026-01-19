@@ -10,9 +10,9 @@ export function MarketingNavbar() {
             <img
               src="/images/logo.png"
               alt="StockZip"
-              width={32}
-              height={32}
-              className="h-8 w-8 object-contain"
+              width={48}
+              height={48}
+              className="h-12 w-12 object-contain"
             />
             StockZip<span className="text-[10px] font-light align-super opacity-70">™</span>
           </Link>
@@ -120,7 +120,7 @@ export function MarketingNavbar() {
             <Link href="/login" className="btn btn-text text-white hover:text-accent max-md:hidden">
               Sign in
             </Link>
-            <Link href="/signup" className="btn bg-white text-primary hover:bg-accent hover:text-accent-content max-md:w-full">
+            <Link href="/signup" className="btn border-0 bg-white text-primary hover:bg-accent hover:text-accent-content max-md:w-full">
               Start Free Trial
             </Link>
           </div>

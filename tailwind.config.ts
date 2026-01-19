@@ -7,7 +7,17 @@ const config: Config = {
     './node_modules/flyonui/dist/js/*.js',
   ],
   theme: {
-    extend: {},
+    extend: {
+      animation: {
+        'arrow-nudge': 'arrow-nudge 1.5s ease-in-out infinite',
+      },
+      keyframes: {
+        'arrow-nudge': {
+          '0%, 100%': { transform: 'translateX(0)' },
+          '50%': { transform: 'translateX(4px)' },
+        },
+      },
+    },
   },
   plugins: [],
   // FlyonUI config - using module augmentation for type safety

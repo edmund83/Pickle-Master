@@ -6,6 +6,25 @@ import { ANIMATION_CONFIG } from '@/lib/marketing/animations'
 
 export function HomeHero() {
   const prefersReducedMotion = useReducedMotion()
+  const arrowVariants = {
+    idle: {
+      x: [0, 4, 0],
+      transition: {
+        duration: 1.2,
+        ease: 'easeInOut',
+        repeat: Infinity,
+        repeatDelay: 1.5,
+      },
+    },
+    hover: {
+      x: 6,
+      transition: { type: 'spring', stiffness: 700, damping: 30 },
+    },
+    tap: {
+      x: 2,
+      transition: { type: 'spring', stiffness: 700, damping: 30 },
+    },
+  }
 
   // Animation variants for staggered children
   const containerVariants = {
@@ -51,11 +70,11 @@ export function HomeHero() {
 
             <p className="text-white/80 max-w-3xl text-lg">
               Built for small business teams. Scan on mobile, get low-stock alerts, and track check-in/check-out —
-              works offline and syncs when you're back online.
+              works offline and syncs when you&apos;re back online.
             </p>
 
             <div className="flex flex-col items-center gap-3 sm:flex-row">
-              <Link href="/signup" className="btn btn-lg bg-white text-primary border-0 hover:bg-accent hover:border-0 hover:text-accent-content">
+              <Link href="/signup" className="btn btn-lg bg-white text-primary border-0 hover:bg-accent hover:border-0 hover:text-accent-content group">
                 Start Free Trial
                 <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
               </Link>
@@ -112,14 +131,28 @@ export function HomeHero() {
 
           <motion.p className="text-white/80 max-w-3xl text-lg" variants={itemVariants}>
             Built for small business teams. Scan on mobile, get low-stock alerts, and track check-in/check-out —
-            works offline and syncs when you're back online.
+            works offline and syncs when you&apos;re back online.
           </motion.p>
 
           <motion.div className="flex flex-col items-center gap-3 sm:flex-row" variants={itemVariants}>
-            <Link href="/signup" className="btn btn-lg bg-white text-primary border-0 hover:bg-accent hover:border-0 hover:text-accent-content">
-              Start Free Trial
-              <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
-            </Link>
+            <motion.div
+              className="inline-flex"
+              initial="idle"
+              animate="idle"
+              whileHover="hover"
+              whileTap="tap"
+            >
+              <Link href="/signup" className="btn btn-lg bg-white text-primary border-0 hover:bg-accent hover:border-0 hover:text-accent-content group">
+                Start Free Trial
+                <motion.span
+                  aria-hidden
+                  className="inline-flex"
+                  variants={arrowVariants}
+                >
+                  <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
+                </motion.span>
+              </Link>
+            </motion.div>
             <Link href="/demo" className="btn btn-outline btn-lg border-white text-white hover:bg-accent hover:border-accent hover:text-accent-content">
               Watch demo
               <span className="icon-[tabler--player-play] size-5"></span>
