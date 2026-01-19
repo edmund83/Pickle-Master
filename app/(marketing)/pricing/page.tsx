@@ -32,7 +32,7 @@ const PRICING_FAQS: FaqItem[] = [
   {
     question: 'How does StockZip pricing work?',
     answer:
-      'Simple monthly pricing based on your needs. Starter ($18/mo) gives you 1,200 items and 3 users. Growth ($39/mo) bumps that to 3,000 items, 5 users, and multi-location support. Scale ($79/mo) offers 8,000 items, 8 users, and advanced controls. All plans include barcode scanning, mobile app, and offline mode.',
+      'Simple monthly pricing based on your needs. Starter ($18/mo) gives you 1,200 items and 3 users. Growth ($39/mo) bumps that to 3,000 items, 5 users, and multi-location support. Scale ($89/mo) offers 8,000 items, 8 users, and advanced controls. All plans include barcode scanning, mobile app, and offline mode.',
   },
   {
     question: 'What are the item and user limits?',
@@ -262,7 +262,7 @@ export default function PricingPage() {
                   <p className="text-base-content/70">For teams needing control & compliance.</p>
                 </div>
                 <div className="text-base-content text-4xl font-semibold">
-                  $79 <span className="text-base-content/50 text-base font-normal">/month</span>
+                  $89 <span className="text-base-content/50 text-base font-normal">/month</span>
                 </div>
                 {/* Plan limits */}
                 <div className="bg-base-200/50 -mx-2 rounded-lg px-3 py-2">
@@ -353,138 +353,143 @@ export default function PricingPage() {
             </p>
           </div>
 
-          <div className="mt-10 overflow-x-auto">
-            <table className="table w-full">
-              <thead>
-                <tr>
-                  <th className="text-base-content">Feature</th>
-                  <th className="text-base-content text-center">Starter</th>
-                  <th className="text-base-content text-center">
-                    <span className="flex items-center justify-center gap-1">
-                      Growth <span className="icon-[tabler--star-filled] text-primary size-4"></span>
-                    </span>
-                  </th>
-                  <th className="text-base-content text-center">Scale</th>
-                </tr>
-              </thead>
-              <tbody>
-                {/* Limits */}
-                <tr>
-                  <td className="text-base-content font-medium">Items</td>
-                  <td className="text-base-content/80 text-center">1,200</td>
-                  <td className="text-base-content/80 text-center">3,000</td>
-                  <td className="text-base-content/80 text-center">8,000</td>
-                </tr>
-                <tr>
-                  <td className="text-base-content font-medium">Users</td>
-                  <td className="text-base-content/80 text-center">3</td>
-                  <td className="text-base-content/80 text-center">5</td>
-                  <td className="text-base-content/80 text-center">8</td>
-                </tr>
-                <tr>
-                  <td className="text-base-content font-medium">Locations</td>
-                  <td className="text-base-content/80 text-center">Single</td>
-                  <td className="text-base-content/80 text-center">Multi</td>
-                  <td className="text-base-content/80 text-center">Multi</td>
-                </tr>
-                <tr>
-                  <td className="text-base-content font-medium">
-                    <span className="flex items-center gap-1">
-                      <span className="icon-[tabler--sparkles] text-primary size-4"></span>
-                      AskZoe AI questions/mo
-                    </span>
-                  </td>
-                  <td className="text-base-content/60 text-center text-sm">50 trial*</td>
-                  <td className="text-base-content/80 text-center">100</td>
-                  <td className="text-base-content/80 text-center">500</td>
-                </tr>
-                {/* Core features */}
-                <tr>
-                  <td className="text-base-content font-medium">Barcode & QR scanning</td>
-                  <td className="text-center">
-                    <span className="icon-[tabler--check] text-success size-5"></span>
-                  </td>
-                  <td className="text-center">
-                    <span className="icon-[tabler--check] text-success size-5"></span>
-                  </td>
-                  <td className="text-center">
-                    <span className="icon-[tabler--check] text-success size-5"></span>
-                  </td>
-                </tr>
-                <tr>
-                  <td className="text-base-content font-medium">Mobile app + offline</td>
-                  <td className="text-center">
-                    <span className="icon-[tabler--check] text-success size-5"></span>
-                  </td>
-                  <td className="text-center">
-                    <span className="icon-[tabler--check] text-success size-5"></span>
-                  </td>
-                  <td className="text-center">
-                    <span className="icon-[tabler--check] text-success size-5"></span>
-                  </td>
-                </tr>
-                <tr>
-                  <td className="text-base-content font-medium">Purchase orders</td>
-                  <td className="text-center">
-                    <span className="icon-[tabler--x] text-base-content/30 size-5"></span>
-                  </td>
-                  <td className="text-center">
-                    <span className="icon-[tabler--check] text-success size-5"></span>
-                  </td>
-                  <td className="text-center">
-                    <span className="icon-[tabler--check] text-success size-5"></span>
-                  </td>
-                </tr>
-                <tr>
-                  <td className="text-base-content font-medium">Check-in / check-out</td>
-                  <td className="text-center">
-                    <span className="icon-[tabler--x] text-base-content/30 size-5"></span>
-                  </td>
-                  <td className="text-center">
-                    <span className="icon-[tabler--check] text-success size-5"></span>
-                  </td>
-                  <td className="text-center">
-                    <span className="icon-[tabler--check] text-success size-5"></span>
-                  </td>
-                </tr>
-                <tr>
-                  <td className="text-base-content font-medium">Lot & serial tracking</td>
-                  <td className="text-center">
-                    <span className="icon-[tabler--x] text-base-content/30 size-5"></span>
-                  </td>
-                  <td className="text-center">
-                    <span className="icon-[tabler--x] text-base-content/30 size-5"></span>
-                  </td>
-                  <td className="text-center">
-                    <span className="icon-[tabler--check] text-success size-5"></span>
-                  </td>
-                </tr>
-                <tr>
-                  <td className="text-base-content font-medium">Audit trail & approvals</td>
-                  <td className="text-center">
-                    <span className="icon-[tabler--x] text-base-content/30 size-5"></span>
-                  </td>
-                  <td className="text-center">
-                    <span className="icon-[tabler--x] text-base-content/30 size-5"></span>
-                  </td>
-                  <td className="text-center">
-                    <span className="icon-[tabler--check] text-success size-5"></span>
-                  </td>
-                </tr>
-                <tr>
-                  <td className="text-base-content font-medium">Priority support</td>
-                  <td className="text-center">
-                    <span className="icon-[tabler--x] text-base-content/30 size-5"></span>
-                  </td>
-                  <td className="text-center">
-                    <span className="icon-[tabler--x] text-base-content/30 size-5"></span>
-                  </td>
-                  <td className="text-center">
-                    <span className="icon-[tabler--check] text-success size-5"></span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+          <div className="mt-10 overflow-visible pt-6">
+            <div className="overflow-x-auto">
+              <table className="table w-full border-separate border-spacing-0">
+                <thead>
+                  <tr>
+                    <th className="text-base-content">Feature</th>
+                    <th className="text-base-content text-center">Starter</th>
+                    <th className="bg-primary/10 text-primary text-center relative border-x-2 border-t-2 border-primary first:rounded-tl-xl last:rounded-tr-xl rounded-t-xl">
+                      <span className="absolute -top-5 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-md whitespace-nowrap z-10">
+                        Most Popular
+                      </span>
+                      <span className="flex items-center justify-center gap-1 pt-4 pb-1 text-lg font-bold">
+                        Growth <span className="icon-[tabler--star-filled] text-primary size-5"></span>
+                      </span>
+                    </th>
+                    <th className="text-base-content text-center">Scale</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {/* Limits */}
+                  <tr>
+                    <td className="text-base-content font-medium">Items</td>
+                    <td className="text-base-content/80 text-center">1,200</td>
+                    <td className="bg-primary/[0.06] text-primary font-semibold text-center border-x-2 border-primary">3,000</td>
+                    <td className="text-base-content/80 text-center">8,000</td>
+                  </tr>
+                  <tr>
+                    <td className="text-base-content font-medium">Users</td>
+                    <td className="text-base-content/80 text-center">3</td>
+                    <td className="bg-primary/[0.06] text-primary font-semibold text-center border-x-2 border-primary">5</td>
+                    <td className="text-base-content/80 text-center">8</td>
+                  </tr>
+                  <tr>
+                    <td className="text-base-content font-medium">Locations</td>
+                    <td className="text-base-content/80 text-center">Single</td>
+                    <td className="bg-primary/[0.06] text-primary font-semibold text-center border-x-2 border-primary">Multi</td>
+                    <td className="text-base-content/80 text-center">Multi</td>
+                  </tr>
+                  <tr>
+                    <td className="text-base-content font-medium">
+                      <span className="flex items-center gap-1">
+                        <span className="icon-[tabler--sparkles] text-primary size-4"></span>
+                        AskZoe AI questions/mo
+                      </span>
+                    </td>
+                    <td className="text-base-content/60 text-center text-sm">50 trial*</td>
+                    <td className="bg-primary/[0.06] text-primary font-semibold text-center border-x-2 border-primary">100</td>
+                    <td className="text-base-content/80 text-center">500</td>
+                  </tr>
+                  {/* Core features */}
+                  <tr>
+                    <td className="text-base-content font-medium">Barcode & QR scanning</td>
+                    <td className="text-center">
+                      <span className="icon-[tabler--check] text-success size-5"></span>
+                    </td>
+                    <td className="bg-primary/[0.06] text-center border-x-2 border-primary">
+                      <span className="icon-[tabler--check] text-success size-5"></span>
+                    </td>
+                    <td className="text-center">
+                      <span className="icon-[tabler--check] text-success size-5"></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="text-base-content font-medium">Mobile app + offline</td>
+                    <td className="text-center">
+                      <span className="icon-[tabler--check] text-success size-5"></span>
+                    </td>
+                    <td className="bg-primary/[0.06] text-center border-x-2 border-primary">
+                      <span className="icon-[tabler--check] text-success size-5"></span>
+                    </td>
+                    <td className="text-center">
+                      <span className="icon-[tabler--check] text-success size-5"></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="text-base-content font-medium">Purchase orders</td>
+                    <td className="text-center">
+                      <span className="icon-[tabler--x] text-base-content/30 size-5"></span>
+                    </td>
+                    <td className="bg-primary/[0.06] text-center border-x-2 border-primary">
+                      <span className="icon-[tabler--check] text-success size-5"></span>
+                    </td>
+                    <td className="text-center">
+                      <span className="icon-[tabler--check] text-success size-5"></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="text-base-content font-medium">Check-in / check-out</td>
+                    <td className="text-center">
+                      <span className="icon-[tabler--x] text-base-content/30 size-5"></span>
+                    </td>
+                    <td className="bg-primary/[0.06] text-center border-x-2 border-primary">
+                      <span className="icon-[tabler--check] text-success size-5"></span>
+                    </td>
+                    <td className="text-center">
+                      <span className="icon-[tabler--check] text-success size-5"></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="text-base-content font-medium">Lot & serial tracking</td>
+                    <td className="text-center">
+                      <span className="icon-[tabler--x] text-base-content/30 size-5"></span>
+                    </td>
+                    <td className="bg-primary/[0.06] text-center border-x-2 border-primary">
+                      <span className="icon-[tabler--x] text-base-content/30 size-5"></span>
+                    </td>
+                    <td className="text-center">
+                      <span className="icon-[tabler--check] text-success size-5"></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="text-base-content font-medium">Audit trail & approvals</td>
+                    <td className="text-center">
+                      <span className="icon-[tabler--x] text-base-content/30 size-5"></span>
+                    </td>
+                    <td className="bg-primary/[0.06] text-center border-x-2 border-primary">
+                      <span className="icon-[tabler--x] text-base-content/30 size-5"></span>
+                    </td>
+                    <td className="text-center">
+                      <span className="icon-[tabler--check] text-success size-5"></span>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td className="text-base-content font-medium">Priority support</td>
+                    <td className="text-center">
+                      <span className="icon-[tabler--x] text-base-content/30 size-5"></span>
+                    </td>
+                    <td className="bg-primary/[0.06] text-center border-x-2 border-b-2 border-primary rounded-b-xl">
+                      <span className="icon-[tabler--x] text-base-content/30 size-5"></span>
+                    </td>
+                    <td className="text-center">
+                      <span className="icon-[tabler--check] text-success size-5"></span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
             <p className="text-base-content/50 mt-3 text-center text-xs">
               *Starter plan includes 50 AskZoe AI questions during the first 7 days
             </p>

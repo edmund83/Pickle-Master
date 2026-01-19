@@ -17,7 +17,7 @@
 |---|---:|---:|---:|---:|---:|
 | **Starter** | **$18** | **1,200** | **3** | **Single location** | **0** *(Trial bonus: 50 questions in first 7 days)* |
 | **Growth ⭐ Recommended** | **$39** | **3,000** | **5** | **Multi-location** | **100** |
-| **Scale** | **$79** | **8,000** | **8** | **Multi-location** | **500** |
+| **Scale** | **$89** | **8,000** | **8** | **Multi-location** | **500** |
 
 ---
 
