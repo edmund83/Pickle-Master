@@ -41,9 +41,10 @@ function isValidStatusTransition(currentStatus: string, newStatus: string): bool
     return allowedTransitions.includes(newStatus)
 }
 
-// Validation schemas
-const createDeliveryOrderSchema = z.object({
-    sales_order_id: z.string().uuid(),
+// Validation schemas - base object for partial/omit operations
+const deliveryOrderBaseSchema = z.object({
+    sales_order_id: optionalUuidSchema,
+    customer_id: optionalUuidSchema,
     pick_list_id: optionalUuidSchema,
     carrier: optionalStringSchema,
     tracking_number: optionalStringSchema,
@@ -63,10 +64,17 @@ const createDeliveryOrderSchema = z.object({
     notes: z.string().max(2000).nullable().optional(),
 })
 
-const updateDeliveryOrderSchema = createDeliveryOrderSchema.partial().omit({ sales_order_id: true })
+// Create schema with refinement for required source
+const createDeliveryOrderSchema = deliveryOrderBaseSchema.refine(
+    data => data.sales_order_id || data.customer_id,
+    { message: 'Either sales_order_id or customer_id is required' }
+)
+
+// Update schema - use base object for partial/omit (no refinement needed for updates)
+const updateDeliveryOrderSchema = deliveryOrderBaseSchema.partial().omit({ sales_order_id: true })
 
 const deliveryOrderItemSchema = z.object({
-    sales_order_item_id: z.string().uuid(),
+    sales_order_item_id: optionalUuidSchema,
     pick_list_item_id: optionalUuidSchema,
     item_id: optionalUuidSchema,
     item_name: z.string().min(1).max(500),
@@ -76,7 +84,8 @@ const deliveryOrderItemSchema = z.object({
 })
 
 export interface CreateDeliveryOrderInput {
-    sales_order_id: string
+    sales_order_id?: string | null
+    customer_id?: string | null
     pick_list_id?: string | null
     carrier?: string | null
     tracking_number?: string | null
@@ -97,7 +106,7 @@ export interface CreateDeliveryOrderInput {
 }
 
 export interface DeliveryOrderItemInput {
-    sales_order_item_id: string
+    sales_order_item_id?: string | null
     pick_list_item_id?: string | null
     item_id?: string | null
     item_name: string
@@ -106,7 +115,7 @@ export interface DeliveryOrderItemInput {
     notes?: string | null
 }
 
-// Create delivery order from a sales order
+// Create delivery order (linked to SO or standalone with customer)
 export async function createDeliveryOrder(input: CreateDeliveryOrderInput): Promise<DeliveryOrderResult> {
     const authResult = await getAuthContext()
     if (!authResult.success) return { success: false, error: authResult.error }
@@ -119,65 +128,111 @@ export async function createDeliveryOrder(input: CreateDeliveryOrderInput): Prom
     if (!validation.success) return { success: false, error: validation.error }
     const validatedInput = validation.data
 
-    // Verify sales order belongs to tenant
-    const soCheck = await verifyRelatedTenantOwnership(
-        'sales_orders',
-        validatedInput.sales_order_id,
-        context.tenantId,
-        'Sales Order'
-    )
-    if (!soCheck.success) return { success: false, error: soCheck.error }
-
     const supabase = await createClient()
+    let shippingDefaults: Record<string, string | null> = {}
+    let customerId: string | null = null
 
-    // Get sales order details to copy shipping address
-     
-    const { data: so, error: soError } = await (supabase as any)
-        .from('sales_orders')
-        .select(`
-            ship_to_name, ship_to_address1, ship_to_address2,
-            ship_to_city, ship_to_state, ship_to_postal_code,
-            ship_to_country, ship_to_phone,
-            customers(name)
-        `)
-        .eq('id', validatedInput.sales_order_id)
-        .eq('tenant_id', context.tenantId)
-        .single()
+    // If linked to sales order, verify and get shipping defaults
+    if (validatedInput.sales_order_id) {
+        const soCheck = await verifyRelatedTenantOwnership(
+            'sales_orders',
+            validatedInput.sales_order_id,
+            context.tenantId,
+            'Sales Order'
+        )
+        if (!soCheck.success) return { success: false, error: soCheck.error }
 
-    if (soError) {
-        console.error('Get SO error:', soError)
-        return { success: false, error: soError.message }
+        const { data: so, error: soError } = await (supabase as any)
+            .from('sales_orders')
+            .select(`
+                customer_id,
+                ship_to_name, ship_to_address1, ship_to_address2,
+                ship_to_city, ship_to_state, ship_to_postal_code,
+                ship_to_country, ship_to_phone,
+                customers(name)
+            `)
+            .eq('id', validatedInput.sales_order_id)
+            .eq('tenant_id', context.tenantId)
+            .single()
+
+        if (soError) {
+            console.error('Get SO error:', soError)
+            return { success: false, error: soError.message }
+        }
+
+        customerId = so?.customer_id || null
+        shippingDefaults = {
+            ship_to_name: so?.ship_to_name || so?.customers?.name || null,
+            ship_to_address1: so?.ship_to_address1 || null,
+            ship_to_address2: so?.ship_to_address2 || null,
+            ship_to_city: so?.ship_to_city || null,
+            ship_to_state: so?.ship_to_state || null,
+            ship_to_postal_code: so?.ship_to_postal_code || null,
+            ship_to_country: so?.ship_to_country || null,
+            ship_to_phone: so?.ship_to_phone || null,
+        }
+    }
+    // If standalone with customer, verify customer and get defaults
+    else if (validatedInput.customer_id) {
+        const custCheck = await verifyRelatedTenantOwnership(
+            'customers',
+            validatedInput.customer_id,
+            context.tenantId,
+            'Customer'
+        )
+        if (!custCheck.success) return { success: false, error: custCheck.error }
+
+        customerId = validatedInput.customer_id
+
+        const { data: customer } = await (supabase as any)
+            .from('customers')
+            .select('name, shipping_address1, shipping_address2, shipping_city, shipping_state, shipping_postal_code, shipping_country, phone')
+            .eq('id', validatedInput.customer_id)
+            .eq('tenant_id', context.tenantId)
+            .single()
+
+        if (customer) {
+            shippingDefaults = {
+                ship_to_name: customer.name || null,
+                ship_to_address1: customer.shipping_address1 || null,
+                ship_to_address2: customer.shipping_address2 || null,
+                ship_to_city: customer.shipping_city || null,
+                ship_to_state: customer.shipping_state || null,
+                ship_to_postal_code: customer.shipping_postal_code || null,
+                ship_to_country: customer.shipping_country || null,
+                ship_to_phone: customer.phone || null,
+            }
+        }
     }
 
     // Generate display ID
-     
     const { data: displayId } = await (supabase as any).rpc(
         'generate_display_id_for_current_user',
         { p_entity_type: 'delivery_order' }
     )
 
     // Create delivery order
-     
     const { data, error } = await (supabase as any)
         .from('delivery_orders')
         .insert({
             tenant_id: context.tenantId,
             display_id: displayId,
-            sales_order_id: validatedInput.sales_order_id,
+            sales_order_id: validatedInput.sales_order_id || null,
+            customer_id: customerId,
             pick_list_id: validatedInput.pick_list_id || null,
             carrier: validatedInput.carrier || null,
             tracking_number: validatedInput.tracking_number || null,
             shipping_method: validatedInput.shipping_method || null,
             scheduled_date: validatedInput.scheduled_date || null,
-            // Copy shipping address from SO or use provided
-            ship_to_name: validatedInput.ship_to_name || so?.ship_to_name || so?.customers?.name || null,
-            ship_to_address1: validatedInput.ship_to_address1 || so?.ship_to_address1 || null,
-            ship_to_address2: validatedInput.ship_to_address2 || so?.ship_to_address2 || null,
-            ship_to_city: validatedInput.ship_to_city || so?.ship_to_city || null,
-            ship_to_state: validatedInput.ship_to_state || so?.ship_to_state || null,
-            ship_to_postal_code: validatedInput.ship_to_postal_code || so?.ship_to_postal_code || null,
-            ship_to_country: validatedInput.ship_to_country || so?.ship_to_country || null,
-            ship_to_phone: validatedInput.ship_to_phone || so?.ship_to_phone || null,
+            // Use provided address or defaults
+            ship_to_name: validatedInput.ship_to_name || shippingDefaults.ship_to_name || null,
+            ship_to_address1: validatedInput.ship_to_address1 || shippingDefaults.ship_to_address1 || null,
+            ship_to_address2: validatedInput.ship_to_address2 || shippingDefaults.ship_to_address2 || null,
+            ship_to_city: validatedInput.ship_to_city || shippingDefaults.ship_to_city || null,
+            ship_to_state: validatedInput.ship_to_state || shippingDefaults.ship_to_state || null,
+            ship_to_postal_code: validatedInput.ship_to_postal_code || shippingDefaults.ship_to_postal_code || null,
+            ship_to_country: validatedInput.ship_to_country || shippingDefaults.ship_to_country || null,
+            ship_to_phone: validatedInput.ship_to_phone || shippingDefaults.ship_to_phone || null,
             total_packages: validatedInput.total_packages || 1,
             total_weight: validatedInput.total_weight || null,
             weight_unit: validatedInput.weight_unit || 'kg',
@@ -194,7 +249,9 @@ export async function createDeliveryOrder(input: CreateDeliveryOrderInput): Prom
     }
 
     revalidatePath('/tasks/delivery-orders')
-    revalidatePath(`/tasks/sales-orders/${validatedInput.sales_order_id}`)
+    if (validatedInput.sales_order_id) {
+        revalidatePath(`/tasks/sales-orders/${validatedInput.sales_order_id}`)
+    }
     return { success: true, delivery_order_id: data.id, display_id: data.display_id }
 }
 
@@ -322,12 +379,12 @@ export async function getDeliveryOrder(deliveryOrderId: string) {
 
     const supabase = await createClient()
 
-     
     const { data } = await (supabase as any)
         .from('delivery_orders')
         .select(`
             *,
             sales_orders(id, display_id, customer_id, customers(id, name, email, phone)),
+            customers(id, name, email, phone),
             pick_lists(id, display_id),
             delivery_order_items(
                 *,
@@ -472,26 +529,26 @@ export async function updateDeliveryOrderStatus(
         return { success: false, error: updateError.message }
     }
 
-    // If delivered, update SO item shipped quantities
-    if (newStatus === 'delivered') {
-        // Get DO items
-         
+    // If delivered and linked to SO, update SO item shipped quantities
+    if (newStatus === 'delivered' && currentDO.sales_order_id) {
+        // Get DO items that have SO item links
         const { data: doItems } = await (supabase as any)
             .from('delivery_order_items')
             .select('sales_order_item_id, quantity_shipped')
             .eq('delivery_order_id', deliveryOrderId)
+            .not('sales_order_item_id', 'is', null)
 
         // Update each SO item's shipped quantity
         for (const item of doItems || []) {
-             
-            await (supabase as any).rpc('increment_so_item_shipped', {
-                p_so_item_id: item.sales_order_item_id,
-                p_quantity: item.quantity_shipped
-            })
+            if (item.sales_order_item_id) {
+                await (supabase as any).rpc('increment_so_item_shipped', {
+                    p_so_item_id: item.sales_order_item_id,
+                    p_quantity: item.quantity_shipped
+                })
+            }
         }
 
         // Check if all items are shipped to update SO status
-         
         const { data: soItems } = await (supabase as any)
             .from('sales_order_items')
             .select('quantity_ordered, quantity_shipped')
@@ -503,13 +560,11 @@ export async function updateDeliveryOrderStatus(
         )
 
         if (allShipped) {
-             
             await (supabase as any)
                 .from('sales_orders')
                 .update({ status: 'shipped', updated_at: new Date().toISOString() })
                 .eq('id', currentDO.sales_order_id)
         } else {
-             
             await (supabase as any)
                 .from('sales_orders')
                 .update({ status: 'partial_shipped', updated_at: new Date().toISOString() })
@@ -519,7 +574,9 @@ export async function updateDeliveryOrderStatus(
 
     revalidatePath('/tasks/delivery-orders')
     revalidatePath(`/tasks/delivery-orders/${deliveryOrderId}`)
-    revalidatePath(`/tasks/sales-orders/${currentDO.sales_order_id}`)
+    if (currentDO.sales_order_id) {
+        revalidatePath(`/tasks/sales-orders/${currentDO.sales_order_id}`)
+    }
     return { success: true }
 }
 
@@ -557,12 +614,11 @@ export async function addDeliveryOrderItem(
         return { success: false, error: 'Cannot add items after dispatch' }
     }
 
-     
     const { error } = await (supabase as any)
         .from('delivery_order_items')
         .insert({
             delivery_order_id: deliveryOrderId,
-            sales_order_item_id: validatedItem.sales_order_item_id,
+            sales_order_item_id: validatedItem.sales_order_item_id || null,
             pick_list_item_id: validatedItem.pick_list_item_id || null,
             item_id: validatedItem.item_id || null,
             item_name: validatedItem.item_name,
@@ -727,7 +783,9 @@ export async function deleteDeliveryOrder(deliveryOrderId: string): Promise<Deli
     }
 
     revalidatePath('/tasks/delivery-orders')
-    revalidatePath(`/tasks/sales-orders/${doData.sales_order_id}`)
+    if (doData.sales_order_id) {
+        revalidatePath(`/tasks/sales-orders/${doData.sales_order_id}`)
+    }
     return { success: true }
 }
 
@@ -755,6 +813,7 @@ export interface DeliveryOrderListItem {
     sales_order_display_id: string | null
     customer_name: string | null
     ship_to_city: string | null
+    is_standalone: boolean
 }
 
 export interface DeliveryOrdersQueryParams {
@@ -812,7 +871,6 @@ export async function getPaginatedDeliveryOrders(
         .eq('tenant_id', context.tenantId)
 
     // Build query for data
-     
     let dataQuery = (supabase as any)
         .from('delivery_orders')
         .select(`
@@ -828,7 +886,9 @@ export async function getPaginatedDeliveryOrders(
             ship_to_city,
             created_at,
             updated_at,
-            sales_orders(display_id, customers(name))
+            sales_order_id,
+            sales_orders(display_id, customers(name)),
+            customers(name)
         `)
         .eq('tenant_id', context.tenantId)
         .order(dbSortColumn, { ascending })
@@ -872,7 +932,9 @@ export async function getPaginatedDeliveryOrders(
         ship_to_city: string | null
         created_at: string
         updated_at: string
+        sales_order_id: string | null
         sales_orders: { display_id: string | null; customers: { name: string } | null } | null
+        customers: { name: string } | null
     }) => ({
         id: doItem.id,
         display_id: doItem.display_id,
@@ -887,7 +949,8 @@ export async function getPaginatedDeliveryOrders(
         created_at: doItem.created_at,
         updated_at: doItem.updated_at,
         sales_order_display_id: doItem.sales_orders?.display_id || null,
-        customer_name: doItem.sales_orders?.customers?.name || null,
+        customer_name: doItem.sales_orders?.customers?.name || doItem.customers?.name || null,
+        is_standalone: !doItem.sales_order_id,
     }))
 
     return {

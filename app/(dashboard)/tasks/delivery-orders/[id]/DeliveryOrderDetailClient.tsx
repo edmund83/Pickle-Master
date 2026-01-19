@@ -224,12 +224,16 @@ export function DeliveryOrderDetailClient({
               </div>
               <p className="text-sm text-neutral-500">
                 Created {deliveryOrder.created_at && <FormattedShortDate date={deliveryOrder.created_at} />}
-                {deliveryOrder.sales_order?.display_id && (
+                {deliveryOrder.sales_order?.display_id ? (
                   <span className="ml-2">
                     · From{' '}
                     <Link href={`/tasks/sales-orders/${deliveryOrder.sales_order_id}`} className="text-primary hover:underline">
                       {deliveryOrder.sales_order.display_id}
                     </Link>
+                  </span>
+                ) : (
+                  <span className="ml-2 inline-flex items-center gap-1 text-xs bg-neutral-100 text-neutral-500 px-2 py-0.5 rounded">
+                    Direct Delivery
                   </span>
                 )}
               </p>
@@ -612,7 +616,7 @@ export function DeliveryOrderDetailClient({
             </Card>
 
             {/* Customer Info */}
-            {deliveryOrder.sales_order?.customers && (
+            {(deliveryOrder.sales_order?.customers || deliveryOrder.customers) && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -621,25 +625,31 @@ export function DeliveryOrderDetailClient({
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    <p className="font-medium text-neutral-900">{deliveryOrder.sales_order.customers.name}</p>
-                    {deliveryOrder.sales_order.customers.email && (
-                      <div className="flex items-center gap-2 text-sm text-neutral-600">
-                        <Mail className="h-4 w-4 text-neutral-400" />
-                        <a href={`mailto:${deliveryOrder.sales_order.customers.email}`} className="hover:text-primary">
-                          {deliveryOrder.sales_order.customers.email}
-                        </a>
+                  {(() => {
+                    const customer = deliveryOrder.sales_order?.customers || deliveryOrder.customers
+                    if (!customer) return null
+                    return (
+                      <div className="space-y-3">
+                        <p className="font-medium text-neutral-900">{customer.name}</p>
+                        {customer.email && (
+                          <div className="flex items-center gap-2 text-sm text-neutral-600">
+                            <Mail className="h-4 w-4 text-neutral-400" />
+                            <a href={`mailto:${customer.email}`} className="hover:text-primary">
+                              {customer.email}
+                            </a>
+                          </div>
+                        )}
+                        {customer.phone && (
+                          <div className="flex items-center gap-2 text-sm text-neutral-600">
+                            <Phone className="h-4 w-4 text-neutral-400" />
+                            <a href={`tel:${customer.phone}`} className="hover:text-primary">
+                              {customer.phone}
+                            </a>
+                          </div>
+                        )}
                       </div>
-                    )}
-                    {deliveryOrder.sales_order.customers.phone && (
-                      <div className="flex items-center gap-2 text-sm text-neutral-600">
-                        <Phone className="h-4 w-4 text-neutral-400" />
-                        <a href={`tel:${deliveryOrder.sales_order.customers.phone}`} className="hover:text-primary">
-                          {deliveryOrder.sales_order.customers.phone}
-                        </a>
-                      </div>
-                    )}
-                  </div>
+                    )
+                  })()}
                 </CardContent>
               </Card>
             )}
@@ -653,7 +663,7 @@ export function DeliveryOrderDetailClient({
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                {deliveryOrder.sales_order && (
+                {deliveryOrder.sales_order ? (
                   <Link
                     href={`/tasks/sales-orders/${deliveryOrder.sales_order_id}`}
                     className="flex items-center justify-between p-2 rounded-lg border border-neutral-200 hover:bg-neutral-50"
@@ -663,6 +673,11 @@ export function DeliveryOrderDetailClient({
                     </span>
                     <ExternalLink className="h-4 w-4 text-neutral-400" />
                   </Link>
+                ) : (
+                  <div className="flex items-center gap-2 p-2 rounded-lg bg-neutral-50 text-sm text-neutral-500">
+                    <Truck className="h-4 w-4" />
+                    Direct Delivery (no sales order)
+                  </div>
                 )}
                 {deliveryOrder.pick_list && (
                   <Link
