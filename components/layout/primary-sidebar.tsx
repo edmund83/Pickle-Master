@@ -92,18 +92,30 @@ export function PrimarySidebar({ isExpanded = false, onToggle }: PrimarySidebarP
           href="/dashboard"
           className={cn(
             'flex items-center gap-3',
-            !isExpanded && 'h-10 w-10 justify-center rounded-xl bg-white/20'
+            !isExpanded && 'h-10 w-10 justify-center'
           )}
         >
           {isExpanded ? (
             <>
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/20">
-                <span className="text-xl font-bold text-white">S</span>
-              </div>
-              <span className="text-lg font-bold text-white">StockZip</span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/images/logo.png"
+                alt="StockZip"
+                width={40}
+                height={40}
+                className="h-10 w-10 shrink-0 object-contain"
+              />
+              <span className="text-lg font-bold text-white">StockZip<span className="text-[8px] font-light align-super opacity-70">™</span></span>
             </>
           ) : (
-            <span className="text-xl font-bold text-white">S</span>
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src="/images/logo.png"
+              alt="StockZip"
+              width={40}
+              height={40}
+              className="h-10 w-10 object-contain"
+            />
           )}
         </Link>
       </div>

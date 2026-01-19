@@ -346,154 +346,203 @@ export default function PricingPage() {
       {/* ===== FEATURE COMPARISON TABLE ===== */}
       <section className="py-12 sm:py-16">
         <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
+          <div className="mb-12 space-y-3 text-center md:space-y-4">
             <h2 className="text-base-content text-2xl font-semibold md:text-3xl">Compare Plans</h2>
-            <p className="text-base-content/80 mt-4 text-lg">
+            <p className="text-base-content/70 text-lg">
               All plans include barcode scanning, mobile app, and offline mode.
             </p>
           </div>
 
-          <div className="mt-10 overflow-visible pt-6">
-            <div className="overflow-x-auto">
-              <table className="table w-full border-separate border-spacing-0">
-                <thead>
-                  <tr>
-                    <th className="text-base-content">Feature</th>
-                    <th className="text-base-content text-center">Starter</th>
-                    <th className="bg-primary/10 text-primary text-center relative border-x-2 border-t-2 border-primary first:rounded-tl-xl last:rounded-tr-xl rounded-t-xl">
-                      <span className="absolute -top-5 left-1/2 -translate-x-1/2 bg-primary text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-md whitespace-nowrap z-10">
-                        Most Popular
-                      </span>
-                      <span className="flex items-center justify-center gap-1 pt-4 pb-1 text-lg font-bold">
-                        Growth <span className="icon-[tabler--star-filled] text-primary size-5"></span>
-                      </span>
-                    </th>
-                    <th className="text-base-content text-center">Scale</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {/* Limits */}
-                  <tr>
-                    <td className="text-base-content font-medium">Items</td>
-                    <td className="text-base-content/80 text-center">1,200</td>
-                    <td className="bg-primary/[0.06] text-primary font-semibold text-center border-x-2 border-primary">3,000</td>
-                    <td className="text-base-content/80 text-center">8,000</td>
-                  </tr>
-                  <tr>
-                    <td className="text-base-content font-medium">Users</td>
-                    <td className="text-base-content/80 text-center">3</td>
-                    <td className="bg-primary/[0.06] text-primary font-semibold text-center border-x-2 border-primary">5</td>
-                    <td className="text-base-content/80 text-center">8</td>
-                  </tr>
-                  <tr>
-                    <td className="text-base-content font-medium">Locations</td>
-                    <td className="text-base-content/80 text-center">Single</td>
-                    <td className="bg-primary/[0.06] text-primary font-semibold text-center border-x-2 border-primary">Multi</td>
-                    <td className="text-base-content/80 text-center">Multi</td>
-                  </tr>
-                  <tr>
-                    <td className="text-base-content font-medium">
-                      <span className="flex items-center gap-1">
-                        <span className="icon-[tabler--sparkles] text-primary size-4"></span>
-                        AskZoe AI questions/mo
-                      </span>
-                    </td>
-                    <td className="text-base-content/60 text-center text-sm">50 trial*</td>
-                    <td className="bg-primary/[0.06] text-primary font-semibold text-center border-x-2 border-primary">100</td>
-                    <td className="text-base-content/80 text-center">500</td>
-                  </tr>
-                  {/* Core features */}
-                  <tr>
-                    <td className="text-base-content font-medium">Barcode & QR scanning</td>
-                    <td className="text-center">
-                      <span className="icon-[tabler--check] text-success size-5"></span>
-                    </td>
-                    <td className="bg-primary/[0.06] text-center border-x-2 border-primary">
-                      <span className="icon-[tabler--check] text-success size-5"></span>
-                    </td>
-                    <td className="text-center">
-                      <span className="icon-[tabler--check] text-success size-5"></span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="text-base-content font-medium">Mobile app + offline</td>
-                    <td className="text-center">
-                      <span className="icon-[tabler--check] text-success size-5"></span>
-                    </td>
-                    <td className="bg-primary/[0.06] text-center border-x-2 border-primary">
-                      <span className="icon-[tabler--check] text-success size-5"></span>
-                    </td>
-                    <td className="text-center">
-                      <span className="icon-[tabler--check] text-success size-5"></span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="text-base-content font-medium">Purchase orders</td>
-                    <td className="text-center">
-                      <span className="icon-[tabler--x] text-base-content/30 size-5"></span>
-                    </td>
-                    <td className="bg-primary/[0.06] text-center border-x-2 border-primary">
-                      <span className="icon-[tabler--check] text-success size-5"></span>
-                    </td>
-                    <td className="text-center">
-                      <span className="icon-[tabler--check] text-success size-5"></span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="text-base-content font-medium">Check-in / check-out</td>
-                    <td className="text-center">
-                      <span className="icon-[tabler--x] text-base-content/30 size-5"></span>
-                    </td>
-                    <td className="bg-primary/[0.06] text-center border-x-2 border-primary">
-                      <span className="icon-[tabler--check] text-success size-5"></span>
-                    </td>
-                    <td className="text-center">
-                      <span className="icon-[tabler--check] text-success size-5"></span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="text-base-content font-medium">Lot & serial tracking</td>
-                    <td className="text-center">
-                      <span className="icon-[tabler--x] text-base-content/30 size-5"></span>
-                    </td>
-                    <td className="bg-primary/[0.06] text-center border-x-2 border-primary">
-                      <span className="icon-[tabler--x] text-base-content/30 size-5"></span>
-                    </td>
-                    <td className="text-center">
-                      <span className="icon-[tabler--check] text-success size-5"></span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="text-base-content font-medium">Audit trail & approvals</td>
-                    <td className="text-center">
-                      <span className="icon-[tabler--x] text-base-content/30 size-5"></span>
-                    </td>
-                    <td className="bg-primary/[0.06] text-center border-x-2 border-primary">
-                      <span className="icon-[tabler--x] text-base-content/30 size-5"></span>
-                    </td>
-                    <td className="text-center">
-                      <span className="icon-[tabler--check] text-success size-5"></span>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td className="text-base-content font-medium">Priority support</td>
-                    <td className="text-center">
-                      <span className="icon-[tabler--x] text-base-content/30 size-5"></span>
-                    </td>
-                    <td className="bg-primary/[0.06] text-center border-x-2 border-b-2 border-primary rounded-b-xl">
-                      <span className="icon-[tabler--x] text-base-content/30 size-5"></span>
-                    </td>
-                    <td className="text-center">
-                      <span className="icon-[tabler--check] text-success size-5"></span>
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-            <p className="text-base-content/50 mt-3 text-center text-xs">
-              *Starter plan includes 50 AskZoe AI questions during the first 7 days
-            </p>
+          {/* Pricing Table */}
+          <div className="overflow-x-auto">
+            <table className="table w-full">
+              {/* Header Row */}
+              <thead>
+                <tr className="normal-case">
+                  <th className="bg-transparent"></th>
+                  <th className="space-y-1 text-center">
+                    <div className="text-base-content text-lg font-semibold">Starter</div>
+                    <div className="text-base-content text-2xl font-bold">$18</div>
+                    <div className="text-base-content/50 text-sm font-normal">Per month</div>
+                  </th>
+                  <th className="bg-primary text-primary-content rounded-t-box space-y-1 text-center">
+                    <div className="flex items-center justify-center gap-1.5">
+                      <span className="text-lg font-semibold">Growth</span>
+                      <span className="icon-[tabler--star-filled] size-4"></span>
+                    </div>
+                    <div className="text-2xl font-bold">$39</div>
+                    <div className="text-sm font-normal opacity-80">Per month</div>
+                  </th>
+                  <th className="space-y-1 text-center">
+                    <div className="text-base-content text-lg font-semibold">Scale</div>
+                    <div className="text-base-content text-2xl font-bold">$89</div>
+                    <div className="text-base-content/50 text-sm font-normal">Per month</div>
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {/* Items */}
+                <tr className="text-base-content">
+                  <td className="font-medium">Items</td>
+                  <td className="text-center">1,200</td>
+                  <td className="bg-primary/10 text-primary text-center font-semibold">3,000</td>
+                  <td className="text-center">8,000</td>
+                </tr>
+                {/* Users */}
+                <tr className="text-base-content">
+                  <td className="font-medium">Users</td>
+                  <td className="text-center">3</td>
+                  <td className="bg-primary/10 text-primary text-center font-semibold">5</td>
+                  <td className="text-center">8</td>
+                </tr>
+                {/* Locations */}
+                <tr className="text-base-content">
+                  <td className="font-medium">Locations</td>
+                  <td className="text-center">Single</td>
+                  <td className="bg-primary/10 text-primary text-center font-semibold">Multi</td>
+                  <td className="text-center">Multi</td>
+                </tr>
+                {/* AskZoe AI */}
+                <tr className="text-base-content">
+                  <td className="font-medium">
+                    <span className="flex items-center gap-1.5">
+                      <span className="icon-[tabler--sparkles] text-primary size-4"></span>
+                      AskZoe AI questions/mo
+                    </span>
+                  </td>
+                  <td className="text-base-content/50 text-center text-sm">50 trial*</td>
+                  <td className="bg-primary/10 text-primary text-center font-semibold">100</td>
+                  <td className="text-center">500</td>
+                </tr>
+                {/* Barcode & QR scanning */}
+                <tr className="text-base-content">
+                  <td className="font-medium">Barcode & QR scanning</td>
+                  <td>
+                    <div className="flex justify-center">
+                      <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
+                    </div>
+                  </td>
+                  <td className="bg-primary/10">
+                    <div className="flex justify-center">
+                      <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="flex justify-center">
+                      <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
+                    </div>
+                  </td>
+                </tr>
+                {/* Mobile app + offline */}
+                <tr className="text-base-content">
+                  <td className="font-medium">Mobile app + offline</td>
+                  <td>
+                    <div className="flex justify-center">
+                      <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
+                    </div>
+                  </td>
+                  <td className="bg-primary/10">
+                    <div className="flex justify-center">
+                      <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="flex justify-center">
+                      <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
+                    </div>
+                  </td>
+                </tr>
+                {/* Purchase orders */}
+                <tr className="text-base-content">
+                  <td className="font-medium">Purchase orders</td>
+                  <td className="text-base-content/30 text-center">—</td>
+                  <td className="bg-primary/10">
+                    <div className="flex justify-center">
+                      <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="flex justify-center">
+                      <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
+                    </div>
+                  </td>
+                </tr>
+                {/* Check-in / check-out */}
+                <tr className="text-base-content">
+                  <td className="font-medium">Check-in / check-out</td>
+                  <td className="text-base-content/30 text-center">—</td>
+                  <td className="bg-primary/10">
+                    <div className="flex justify-center">
+                      <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="flex justify-center">
+                      <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
+                    </div>
+                  </td>
+                </tr>
+                {/* Lot & serial tracking */}
+                <tr className="text-base-content">
+                  <td className="font-medium">Lot & serial tracking</td>
+                  <td className="text-base-content/30 text-center">—</td>
+                  <td className="bg-primary/10 text-base-content/30 text-center">—</td>
+                  <td>
+                    <div className="flex justify-center">
+                      <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
+                    </div>
+                  </td>
+                </tr>
+                {/* Audit trail & approvals */}
+                <tr className="text-base-content">
+                  <td className="font-medium">Audit trail & approvals</td>
+                  <td className="text-base-content/30 text-center">—</td>
+                  <td className="bg-primary/10 text-base-content/30 text-center">—</td>
+                  <td>
+                    <div className="flex justify-center">
+                      <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
+                    </div>
+                  </td>
+                </tr>
+                {/* Priority support */}
+                <tr className="text-base-content">
+                  <td className="font-medium">Priority support</td>
+                  <td className="text-base-content/30 text-center">—</td>
+                  <td className="bg-primary/10 text-base-content/30 text-center">—</td>
+                  <td>
+                    <div className="flex justify-center">
+                      <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
+                    </div>
+                  </td>
+                </tr>
+                {/* CTA Row */}
+                <tr className="text-base-content">
+                  <td></td>
+                  <td>
+                    <Link href="/signup?plan=starter" className="link link-primary flex items-center justify-center gap-1 font-medium">
+                      Get Started
+                      <span className="icon-[tabler--arrow-right] size-4 rtl:rotate-180"></span>
+                    </Link>
+                  </td>
+                  <td className="bg-primary rounded-b-box">
+                    <Link href="/signup?plan=growth" className="text-primary-content flex items-center justify-center gap-1 font-medium">
+                      Get Started
+                      <span className="icon-[tabler--arrow-right] size-4 rtl:rotate-180"></span>
+                    </Link>
+                  </td>
+                  <td>
+                    <Link href="/signup?plan=scale" className="link link-primary flex items-center justify-center gap-1 font-medium">
+                      Get Started
+                      <span className="icon-[tabler--arrow-right] size-4 rtl:rotate-180"></span>
+                    </Link>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
           </div>
+          <p className="text-base-content/50 mt-4 text-center text-xs">
+            *Starter plan includes 50 AskZoe AI questions during the first 7 days
+          </p>
         </div>
       </section>
 
