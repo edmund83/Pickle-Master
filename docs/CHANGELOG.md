@@ -9,6 +9,44 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+
+#### Pick List Creation from Sales Order
+Fixed bug where clicking "Start Picking" on a confirmed Sales Order failed with constraint violation.
+
+**Root Cause**: The RPC function `generate_pick_list_from_sales_order` was using `'pending'` status, but the `pick_lists` table has a CHECK constraint (`chk_pick_list_status`) that only allows: `'draft'`, `'in_progress'`, `'completed'`, `'cancelled'`.
+
+**Fix** (Migration: `00084_fix_pick_list_status_from_so.sql`):
+- Changed pick list status from `'pending'` to `'draft'`
+- Fixed activity_logs insert to use correct column names (`action_type` instead of `action`, `changes` instead of `details`)
+
+#### Invoice Add Line Item UI
+Fixed missing UI for adding line items to invoices - previously showed "No items on this invoice" with no way to add items.
+
+**Changes** (`app/(dashboard)/tasks/invoices/[id]/InvoiceDetailClient.tsx`):
+- Added search input with debounced item lookup
+- Added barcode scanner integration (Scan button)
+- Added search results dropdown with item selection
+- Items can now be searched by name or SKU and added to invoices
+
+**Server Action** (`app/actions/invoices.ts`):
+- Added `searchInventoryItemsForInvoice()` function for item search
+
+### Changed
+
+#### UI/UX Consistency Improvements for Fulfillment Tasks
+Improved consistency across Sales Orders, Pick Lists, Delivery Orders, and Invoices detail pages.
+
+**Sticky Action Footers**:
+- Added sticky footer to Delivery Orders detail page showing item count and status actions (Mark Ready / Dispatch)
+- Added sticky footer to Invoices detail page showing line item count, total amount, and status actions (Mark Pending / Send Invoice)
+- Now consistent with Sales Orders and Pick Lists which already had sticky footers
+
+**User Experience**:
+- Clear action guidance at bottom of all task detail pages
+- Consistent validation messaging across all task types
+- Mobile-friendly sticky footers that stay visible during scroll
+
 ### Added
 
 #### Standalone Delivery Orders (Flexible Workflow)

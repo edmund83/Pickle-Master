@@ -24,7 +24,10 @@ import {
   ExternalLink,
   User,
   Hash,
-  Download
+  Download,
+  Plus,
+  X,
+  Users
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -37,6 +40,7 @@ import {
   deleteDeliveryOrder,
 } from '@/app/actions/delivery-orders'
 import type { DeliveryOrderWithDetails } from './page'
+import type { Customer } from '@/app/actions/customers'
 import { ChatterPanel } from '@/components/chatter'
 import { ItemThumbnail } from '@/components/ui/item-thumbnail'
 import { useFeedback } from '@/components/feedback/FeedbackProvider'
@@ -49,6 +53,7 @@ interface DeliveryOrderDetailClientProps {
   createdByName: string | null
   dispatchedByName: string | null
   currentUserId: string | null
+  customers: Customer[]
 }
 
 const statusConfig: Record<string, { icon: React.ElementType; color: string; bgColor: string; label: string }> = {
@@ -67,7 +72,8 @@ export function DeliveryOrderDetailClient({
   deliveryOrder,
   createdByName,
   dispatchedByName,
-  currentUserId
+  currentUserId,
+  customers
 }: DeliveryOrderDetailClientProps) {
   const router = useRouter()
   const feedback = useFeedback()
@@ -87,6 +93,11 @@ export function DeliveryOrderDetailClient({
   const [notes, setNotes] = useState(deliveryOrder.notes || '')
   const canDownloadPdf = deliveryOrder.items.length > 0
 
+  // Customer state (for standalone delivery orders)
+  const [customerId, setCustomerId] = useState(deliveryOrder.customer_id || '')
+  const [customerSearchQuery, setCustomerSearchQuery] = useState('')
+  const [showCustomerDropdown, setShowCustomerDropdown] = useState(false)
+
   // Delivery confirmation state
   const [receivedBy, setReceivedBy] = useState('')
   const [deliveryNotes, setDeliveryNotes] = useState('')
@@ -102,6 +113,27 @@ export function DeliveryOrderDetailClient({
   const isDraft = status === 'draft'
   const isReady = status === 'ready'
   const canEdit = ['draft', 'ready'].includes(status)
+
+  // Standalone DO = no sales_order_id (customer can be edited)
+  const isStandalone = !deliveryOrder.sales_order_id
+  const canEditCustomer = isDraft && isStandalone
+
+  // Customer filtering for search
+  const filteredCustomers = customerSearchQuery.trim()
+    ? customers.filter(c =>
+        c.name.toLowerCase().includes(customerSearchQuery.toLowerCase()) ||
+        (c.email && c.email.toLowerCase().includes(customerSearchQuery.toLowerCase()))
+      )
+    : customers
+
+  // Get selected customer details
+  const selectedCustomer = customers.find(c => c.id === customerId)
+  const currentCustomer = deliveryOrder.sales_order?.customers || selectedCustomer || deliveryOrder.customers
+
+  // Validation
+  const missingFields: string[] = []
+  if (isStandalone && !customerId) missingFields.push('Customer')
+  const isValid = missingFields.length === 0 && deliveryOrder.items.length > 0
 
   const StatusIcon = statusConfig[status]?.icon || Clock
 
@@ -198,6 +230,62 @@ export function DeliveryOrderDetailClient({
       received_by: receivedBy || undefined,
       delivery_notes: deliveryNotes || undefined,
     })
+  }
+
+  async function handleCustomerSelect(newCustomerId: string) {
+    const customer = customers.find(c => c.id === newCustomerId)
+    if (!customer) return
+
+    setCustomerId(newCustomerId)
+    setActionLoading('customer')
+    setError(null)
+
+    const result = await updateDeliveryOrder(deliveryOrder.id, {
+      customer_id: newCustomerId,
+      // Auto-fill shipping address from customer if not already set
+      ship_to_name: deliveryOrder.ship_to_name || customer.name || null,
+      ship_to_address1: deliveryOrder.ship_to_address1 || customer.shipping_address1 || null,
+      ship_to_address2: deliveryOrder.ship_to_address2 || customer.shipping_address2 || null,
+      ship_to_city: deliveryOrder.ship_to_city || customer.shipping_city || null,
+      ship_to_state: deliveryOrder.ship_to_state || customer.shipping_state || null,
+      ship_to_postal_code: deliveryOrder.ship_to_postal_code || customer.shipping_postal_code || null,
+      ship_to_country: deliveryOrder.ship_to_country || customer.shipping_country || null,
+      ship_to_phone: deliveryOrder.ship_to_phone || customer.phone || null,
+    })
+
+    if (result.success) {
+      feedback.success('Customer updated')
+      router.refresh()
+    } else {
+      const errorMsg = result.error || 'Failed to update customer'
+      setError(errorMsg)
+      feedback.error(errorMsg)
+      setCustomerId(deliveryOrder.customer_id || '')
+    }
+
+    setActionLoading(null)
+  }
+
+  async function handleClearCustomer() {
+    setCustomerId('')
+    setActionLoading('customer')
+    setError(null)
+
+    const result = await updateDeliveryOrder(deliveryOrder.id, {
+      customer_id: null,
+    })
+
+    if (result.success) {
+      feedback.success('Customer cleared')
+      router.refresh()
+    } else {
+      const errorMsg = result.error || 'Failed to clear customer'
+      setError(errorMsg)
+      feedback.error(errorMsg)
+      setCustomerId(deliveryOrder.customer_id || '')
+    }
+
+    setActionLoading(null)
   }
 
   return (
@@ -615,44 +703,165 @@ export function DeliveryOrderDetailClient({
               </CardContent>
             </Card>
 
-            {/* Customer Info */}
-            {(deliveryOrder.sales_order?.customers || deliveryOrder.customers) && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    Customer
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {(() => {
-                    const customer = deliveryOrder.sales_order?.customers || deliveryOrder.customers
-                    if (!customer) return null
-                    return (
-                      <div className="space-y-3">
-                        <p className="font-medium text-neutral-900">{customer.name}</p>
-                        {customer.email && (
-                          <div className="flex items-center gap-2 text-sm text-neutral-600">
-                            <Mail className="h-4 w-4 text-neutral-400" />
-                            <a href={`mailto:${customer.email}`} className="hover:text-primary">
-                              {customer.email}
-                            </a>
+            {/* Validation Alert (for standalone DOs in draft mode) */}
+            {isDraft && isStandalone && !isValid && missingFields.length > 0 && (
+              <div className="flex items-start gap-2 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3">
+                <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-amber-800">Required to mark ready:</p>
+                  <p className="text-sm text-amber-700">{missingFields.join(', ')}</p>
+                  {deliveryOrder.items.length === 0 && (
+                    <p className="text-sm text-amber-700">At least 1 item</p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Customer Card - Editable for standalone DOs in draft mode */}
+            <Card className={`border-2 ${canEditCustomer && !customerId ? 'border-amber-200 bg-gradient-to-br from-white to-amber-50/30' : 'border-transparent'}`}>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-4 w-4" />
+                  Customer {isStandalone && <span className="text-red-500">*</span>}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {/* If linked to a Sales Order, show read-only customer info */}
+                {deliveryOrder.sales_order?.customers ? (
+                  <div className="space-y-3">
+                    <p className="font-medium text-neutral-900">{deliveryOrder.sales_order.customers.name}</p>
+                    {deliveryOrder.sales_order.customers.email && (
+                      <div className="flex items-center gap-2 text-sm text-neutral-600">
+                        <Mail className="h-4 w-4 text-neutral-400" />
+                        <a href={`mailto:${deliveryOrder.sales_order.customers.email}`} className="hover:text-primary">
+                          {deliveryOrder.sales_order.customers.email}
+                        </a>
+                      </div>
+                    )}
+                    {deliveryOrder.sales_order.customers.phone && (
+                      <div className="flex items-center gap-2 text-sm text-neutral-600">
+                        <Phone className="h-4 w-4 text-neutral-400" />
+                        <a href={`tel:${deliveryOrder.sales_order.customers.phone}`} className="hover:text-primary">
+                          {deliveryOrder.sales_order.customers.phone}
+                        </a>
+                      </div>
+                    )}
+                    <p className="text-xs text-neutral-400 mt-2">Linked from Sales Order</p>
+                  </div>
+                ) : canEditCustomer ? (
+                  // Editable customer selection for standalone DOs in draft mode
+                  <>
+                    {customerId && selectedCustomer ? (
+                      <div className="flex items-center justify-between p-3 rounded-lg border border-neutral-200 bg-neutral-50">
+                        <div className="flex items-center gap-3">
+                          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                            <Users className="h-5 w-5 text-primary" />
                           </div>
-                        )}
-                        {customer.phone && (
-                          <div className="flex items-center gap-2 text-sm text-neutral-600">
-                            <Phone className="h-4 w-4 text-neutral-400" />
-                            <a href={`tel:${customer.phone}`} className="hover:text-primary">
-                              {customer.phone}
-                            </a>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium text-neutral-900">{selectedCustomer.name}</p>
+                            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-neutral-500">
+                              {selectedCustomer.email && (
+                                <span className="flex items-center gap-1">
+                                  <Mail className="h-3 w-3" />
+                                  {selectedCustomer.email}
+                                </span>
+                              )}
+                              {selectedCustomer.phone && (
+                                <span className="flex items-center gap-1">
+                                  <Phone className="h-3 w-3" />
+                                  {selectedCustomer.phone}
+                                </span>
+                              )}
+                            </div>
                           </div>
+                        </div>
+                        {/* Don't show clear button for standalone DOs - customer is required */}
+                      </div>
+                    ) : (
+                      <div className="relative">
+                        <div className="relative">
+                          <Users className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+                          <input
+                            type="text"
+                            value={customerSearchQuery}
+                            onChange={(e) => {
+                              setCustomerSearchQuery(e.target.value)
+                              setShowCustomerDropdown(e.target.value.trim().length > 0)
+                            }}
+                            onFocus={() => setShowCustomerDropdown(true)}
+                            placeholder="Search customers..."
+                            disabled={actionLoading !== null}
+                            className={`w-full pl-10 pr-4 py-2.5 rounded-lg border text-sm focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all ${!customerId ? 'border-amber-300' : 'border-neutral-200'}`}
+                          />
+                        </div>
+
+                        {showCustomerDropdown && (
+                          <>
+                            <div
+                              className="fixed inset-0 z-10"
+                              onClick={() => setShowCustomerDropdown(false)}
+                            />
+                            <div className="absolute top-full left-0 right-0 mt-1 z-20 bg-white rounded-lg border border-neutral-200 shadow-lg max-h-72 overflow-y-auto">
+                              {filteredCustomers.length > 0 ? (
+                                filteredCustomers.slice(0, 10).map((customer) => (
+                                  <button
+                                    key={customer.id}
+                                    type="button"
+                                    onClick={() => {
+                                      handleCustomerSelect(customer.id)
+                                      setShowCustomerDropdown(false)
+                                      setCustomerSearchQuery('')
+                                    }}
+                                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 text-left border-b border-neutral-100 last:border-0"
+                                  >
+                                    <div className="h-8 w-8 rounded-lg bg-neutral-100 flex items-center justify-center flex-shrink-0">
+                                      <Users className="h-4 w-4 text-neutral-400" />
+                                    </div>
+                                    <div className="min-w-0 flex-1">
+                                      <p className="font-medium text-neutral-900 truncate">{customer.name}</p>
+                                      {customer.email && (
+                                        <p className="text-xs text-neutral-500 truncate">{customer.email}</p>
+                                      )}
+                                    </div>
+                                  </button>
+                                ))
+                              ) : (
+                                <div className="px-4 py-3 text-sm text-neutral-500">
+                                  No customers found
+                                </div>
+                              )}
+                            </div>
+                          </>
                         )}
                       </div>
-                    )
-                  })()}
-                </CardContent>
-              </Card>
-            )}
+                    )}
+                  </>
+                ) : currentCustomer ? (
+                  // Read-only display for non-editable states
+                  <div className="space-y-3">
+                    <p className="font-medium text-neutral-900">{currentCustomer.name}</p>
+                    {currentCustomer.email && (
+                      <div className="flex items-center gap-2 text-sm text-neutral-600">
+                        <Mail className="h-4 w-4 text-neutral-400" />
+                        <a href={`mailto:${currentCustomer.email}`} className="hover:text-primary">
+                          {currentCustomer.email}
+                        </a>
+                      </div>
+                    )}
+                    {currentCustomer.phone && (
+                      <div className="flex items-center gap-2 text-sm text-neutral-600">
+                        <Phone className="h-4 w-4 text-neutral-400" />
+                        <a href={`tel:${currentCustomer.phone}`} className="hover:text-primary">
+                          {currentCustomer.phone}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <p className="text-sm text-neutral-500">No customer assigned</p>
+                )}
+              </CardContent>
+            </Card>
 
             {/* Related Documents */}
             <Card>
@@ -750,6 +959,47 @@ export function DeliveryOrderDetailClient({
             currentUserId={currentUserId}
             className="mt-6"
           />
+        )}
+
+        {/* Sticky Footer - Action Bar */}
+        {canEdit && (
+          <div className="sticky bottom-0 border-t border-neutral-200 bg-white px-6 py-4 -mx-6 mt-6">
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-neutral-600">
+                  <span className="font-medium">{deliveryOrder.items.length}</span> item{deliveryOrder.items.length !== 1 ? 's' : ''}
+                </span>
+              </div>
+              <div className="flex items-center gap-3">
+                {isDraft && (
+                  <Button
+                    onClick={() => handleStatusChange('ready')}
+                    disabled={actionLoading !== null}
+                  >
+                    {actionLoading === 'status' ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Package className="mr-2 h-4 w-4" />
+                    )}
+                    Mark Ready
+                  </Button>
+                )}
+                {isReady && (
+                  <Button
+                    onClick={() => handleStatusChange('dispatched')}
+                    disabled={actionLoading !== null}
+                  >
+                    {actionLoading === 'status' ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Truck className="mr-2 h-4 w-4" />
+                    )}
+                    Dispatch
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
         )}
       </div>
 
