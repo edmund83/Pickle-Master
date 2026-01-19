@@ -265,6 +265,16 @@ export default function CompanySettingsPage() {
     currency: 'MYR',
     decimal_precision: '0.01',
     logo_url: '',
+    company_address1: '',
+    company_address2: '',
+    company_city: '',
+    company_state: '',
+    company_postal_code: '',
+    company_country: '',
+    company_phone: '',
+    company_email: '',
+    tax_id_label: '',
+    company_tax_id: '',
   })
 
   useEffect(() => {
@@ -313,6 +323,16 @@ export default function CompanySettingsPage() {
             currency: (settings.currency as string) || 'MYR',
             decimal_precision: (settings.decimal_precision as string) || '0.01',
             logo_url: tenantData.logo_url || '',
+            company_address1: (settings.company_address1 as string) || '',
+            company_address2: (settings.company_address2 as string) || '',
+            company_city: (settings.company_city as string) || '',
+            company_state: (settings.company_state as string) || '',
+            company_postal_code: (settings.company_postal_code as string) || '',
+            company_country: (settings.company_country as string) || '',
+            company_phone: (settings.company_phone as string) || '',
+            company_email: (settings.company_email as string) || '',
+            tax_id_label: (settings.tax_id_label as string) || '',
+            company_tax_id: (settings.company_tax_id as string) || '',
           })
         }
       }
@@ -422,6 +442,16 @@ export default function CompanySettingsPage() {
           time_format: formData.time_format as '12-hour' | '24-hour',
           currency: formData.currency,
           decimal_precision: formData.decimal_precision,
+          company_address1: formData.company_address1 || null,
+          company_address2: formData.company_address2 || null,
+          company_city: formData.company_city || null,
+          company_state: formData.company_state || null,
+          company_postal_code: formData.company_postal_code || null,
+          company_country: formData.company_country || null,
+          company_phone: formData.company_phone || null,
+          company_email: formData.company_email || null,
+          tax_id_label: formData.tax_id_label || null,
+          company_tax_id: formData.company_tax_id || null,
         } as TenantSettings,
       })
 
@@ -442,6 +472,16 @@ export default function CompanySettingsPage() {
           time_format: formData.time_format,
           currency: formData.currency,
           decimal_precision: formData.decimal_precision,
+          company_address1: formData.company_address1 || null,
+          company_address2: formData.company_address2 || null,
+          company_city: formData.company_city || null,
+          company_state: formData.company_state || null,
+          company_postal_code: formData.company_postal_code || null,
+          company_country: formData.company_country || null,
+          company_phone: formData.company_phone || null,
+          company_email: formData.company_email || null,
+          tax_id_label: formData.tax_id_label || null,
+          company_tax_id: formData.company_tax_id || null,
         },
       })
       setMessage({ type: 'success', text: 'Company settings updated successfully' })
@@ -588,6 +628,128 @@ export default function CompanySettingsPage() {
                       Active
                     </span>
                   </div>
+                </div>
+              </div>
+
+              {/* Company Address */}
+              <div>
+                <h4 className="text-sm font-medium text-neutral-900">Company Address</h4>
+                <p className="mt-1 text-xs text-neutral-500">Printed on PDFs for invoices and purchase orders.</p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                    Address Line 1
+                  </label>
+                  <Input
+                    value={formData.company_address1}
+                    onChange={(e) => setFormData({ ...formData, company_address1: e.target.value })}
+                    placeholder="Street address"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                    Address Line 2
+                  </label>
+                  <Input
+                    value={formData.company_address2}
+                    onChange={(e) => setFormData({ ...formData, company_address2: e.target.value })}
+                    placeholder="Suite, unit, building"
+                  />
+                </div>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-3">
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                    City
+                  </label>
+                  <Input
+                    value={formData.company_city}
+                    onChange={(e) => setFormData({ ...formData, company_city: e.target.value })}
+                    placeholder="City"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                    State/Province
+                  </label>
+                  <Input
+                    value={formData.company_state}
+                    onChange={(e) => setFormData({ ...formData, company_state: e.target.value })}
+                    placeholder="State"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                    Postal Code
+                  </label>
+                  <Input
+                    value={formData.company_postal_code}
+                    onChange={(e) => setFormData({ ...formData, company_postal_code: e.target.value })}
+                    placeholder="ZIP"
+                  />
+                </div>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                    Country
+                  </label>
+                  <Input
+                    value={formData.company_country}
+                    onChange={(e) => setFormData({ ...formData, company_country: e.target.value })}
+                    placeholder="Country"
+                  />
+                </div>
+              </div>
+
+              {/* Company Contact */}
+              <div>
+                <h4 className="text-sm font-medium text-neutral-900">Company Contact</h4>
+                <p className="mt-1 text-xs text-neutral-500">Shown in PDF headers for billing documents.</p>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                    Phone
+                  </label>
+                  <Input
+                    value={formData.company_phone}
+                    onChange={(e) => setFormData({ ...formData, company_phone: e.target.value })}
+                    placeholder="(555) 123-4567"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                    Email
+                  </label>
+                  <Input
+                    value={formData.company_email}
+                    onChange={(e) => setFormData({ ...formData, company_email: e.target.value })}
+                    placeholder="billing@company.com"
+                  />
+                </div>
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                    Tax ID Label
+                  </label>
+                  <Input
+                    value={formData.tax_id_label}
+                    onChange={(e) => setFormData({ ...formData, tax_id_label: e.target.value })}
+                    placeholder="Tax ID / VAT / EIN"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                    Tax ID
+                  </label>
+                  <Input
+                    value={formData.company_tax_id}
+                    onChange={(e) => setFormData({ ...formData, company_tax_id: e.target.value })}
+                    placeholder="12-3456789"
+                  />
                 </div>
               </div>
             </div>

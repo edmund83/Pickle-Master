@@ -36,6 +36,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { FormattedShortDate, FormattedDateTime } from '@/components/formatting/FormattedDate'
 import { useFormatting } from '@/hooks/useFormatting'
+import { useTenantCompanyDetails, useTenantName, useTenantLogoUrl } from '@/contexts/TenantSettingsContext'
 import {
   updatePurchaseOrder,
   updatePurchaseOrderStatus,
@@ -55,7 +56,7 @@ import { VendorFormDialog, type VendorFormData } from '@/components/settings/ven
 import { ItemThumbnail } from '@/components/ui/item-thumbnail'
 import { useFeedback } from '@/components/feedback/FeedbackProvider'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
-import { downloadPdfBlob, generatePurchaseOrderPDF } from '@/lib/documents/pdf-generator'
+import { buildCompanyBranding, downloadPdfBlob, fetchImageDataUrl, generatePurchaseOrderPDF } from '@/lib/documents/pdf-generator'
 
 interface PurchaseOrderDetailClientProps {
   purchaseOrder: PurchaseOrderWithDetails
@@ -84,6 +85,9 @@ export function PurchaseOrderDetailClient({
 }: PurchaseOrderDetailClientProps) {
   const router = useRouter()
   const { formatCurrency, formatDate, formatShortDate } = useFormatting()
+  const tenantName = useTenantName()
+  const tenantLogoUrl = useTenantLogoUrl()
+  const companyDetails = useTenantCompanyDetails()
   const feedback = useFeedback()
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -518,11 +522,17 @@ export function PurchaseOrderDetailClient({
     if (!canDownloadPdf) return
     setActionLoading('download-pdf')
     try {
-      const pdfBlob = generatePurchaseOrderPDF(purchaseOrder, {
-        formatCurrency,
-        formatDate,
-        formatShortDate,
-      })
+      const logoDataUrl = tenantLogoUrl ? await fetchImageDataUrl(tenantLogoUrl) : null
+      const branding = buildCompanyBranding(tenantName, logoDataUrl, companyDetails)
+      const pdfBlob = generatePurchaseOrderPDF(
+        purchaseOrder,
+        {
+          formatCurrency,
+          formatDate,
+          formatShortDate,
+        },
+        branding
+      )
       const baseName = purchaseOrder.display_id || purchaseOrder.order_number || purchaseOrder.id
       const safeName = baseName.replace(/\s+/g, '-').toLowerCase()
       downloadPdfBlob(pdfBlob, `purchase-order-${safeName}.pdf`)

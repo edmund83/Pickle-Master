@@ -8,6 +8,26 @@ export interface PdfFormatters {
 
 type PdfAlign = 'left' | 'center' | 'right'
 
+export interface PdfBranding {
+  companyName?: string | null
+  companyLogoDataUrl?: string | null
+  companyAddressLines?: string[] | null
+  companyContactLines?: string[] | null
+}
+
+export interface CompanyDetails {
+  address1?: string | null
+  address2?: string | null
+  city?: string | null
+  state?: string | null
+  postalCode?: string | null
+  country?: string | null
+  phone?: string | null
+  email?: string | null
+  taxId?: string | null
+  taxIdLabel?: string | null
+}
+
 interface PdfColumn<Row> {
   label: string
   width: number
@@ -22,6 +42,8 @@ const MARGIN = 48
 const CONTENT_WIDTH = PAGE_WIDTH - MARGIN * 2
 const LINE_HEIGHT = 14
 const SECTION_GAP = 12
+const META_WIDTH = 180
+const COLUMN_GAP = 24
 
 function createDocument(): jsPDF {
   const pdf = new jsPDF({ unit: 'pt', format: 'letter' })
@@ -52,6 +74,33 @@ function combineCityStatePostal(
   if (cityState && postal) return `${cityState} ${postal}`
   if (cityState) return cityState
   return postal || null
+}
+
+export function buildCompanyBranding(
+  companyName: string | null,
+  logoDataUrl: string | null,
+  details: CompanyDetails | null
+): PdfBranding {
+  const addressLines = [
+    details?.address1,
+    details?.address2,
+    combineCityStatePostal(details?.city, details?.state, details?.postalCode),
+    details?.country,
+  ].filter(Boolean) as string[]
+
+  const taxLabel = details?.taxId ? (details?.taxIdLabel || 'Tax ID') : null
+  const contactLines = [
+    details?.phone ? `Phone: ${details.phone}` : null,
+    details?.email || null,
+    taxLabel ? `${taxLabel}: ${details?.taxId}` : null,
+  ].filter(Boolean) as string[]
+
+  return {
+    companyName,
+    companyLogoDataUrl: logoDataUrl,
+    companyAddressLines: addressLines.length > 0 ? addressLines : null,
+    companyContactLines: contactLines.length > 0 ? contactLines : null,
+  }
 }
 
 function formatAddressLines({
@@ -85,20 +134,146 @@ function formatAddressLines({
   return lines.length > 0 ? lines : ['-']
 }
 
+function getImageFormat(dataUrl: string): 'PNG' | 'JPEG' | null {
+  if (dataUrl.startsWith('data:image/png')) return 'PNG'
+  if (dataUrl.startsWith('data:image/jpeg') || dataUrl.startsWith('data:image/jpg')) return 'JPEG'
+  return null
+}
+
+function drawSectionTitleAt(pdf: jsPDF, title: string, x: number, y: number): number {
+  pdf.setFont('helvetica', 'bold')
+  pdf.setFontSize(11)
+  pdf.text(title, x, y)
+  return y + LINE_HEIGHT
+}
+
+function drawTextLinesAt(
+  pdf: jsPDF,
+  lines: string[],
+  x: number,
+  y: number,
+  width: number,
+  fontSize = 10
+): number {
+  pdf.setFont('helvetica', 'normal')
+  pdf.setFontSize(fontSize)
+  let cursorY = y
+  const cleanLines = lines.length > 0 ? lines : ['-']
+
+  cleanLines.forEach((line) => {
+    const wrapped = pdf.splitTextToSize(line, width)
+    pdf.text(wrapped, x, cursorY)
+    cursorY += wrapped.length * LINE_HEIGHT
+  })
+
+  return cursorY
+}
+
+function drawTwoColumnBlocks(
+  pdf: jsPDF,
+  left: { title: string; lines: string[] },
+  right: { title: string; lines: string[] } | null,
+  y: number
+): number {
+  const columnWidth = (CONTENT_WIDTH - COLUMN_GAP) / 2
+  const leftX = MARGIN
+  const rightX = MARGIN + columnWidth + COLUMN_GAP
+
+  let leftY = drawSectionTitleAt(pdf, left.title, leftX, y)
+  leftY = drawTextLinesAt(pdf, left.lines, leftX, leftY, columnWidth)
+
+  let rightY = y
+  if (right) {
+    rightY = drawSectionTitleAt(pdf, right.title, rightX, y)
+    rightY = drawTextLinesAt(pdf, right.lines, rightX, rightY, columnWidth)
+  }
+
+  return Math.max(leftY, rightY) + SECTION_GAP
+}
+
+function drawSummaryBox(
+  pdf: jsPDF,
+  title: string,
+  value: string,
+  y: number
+): number {
+  const boxWidth = 180
+  const boxHeight = 48
+  const x = PAGE_WIDTH - MARGIN - boxWidth
+
+  pdf.setDrawColor(210, 210, 210)
+  pdf.setFillColor(248, 248, 248)
+  pdf.rect(x, y, boxWidth, boxHeight, 'FD')
+
+  pdf.setFont('helvetica', 'bold')
+  pdf.setFontSize(10)
+  pdf.text(title, x + boxWidth / 2, y + 16, { align: 'center' })
+
+  pdf.setFontSize(14)
+  pdf.text(value, x + boxWidth / 2, y + 34, { align: 'center' })
+
+  return y + boxHeight + SECTION_GAP
+}
+
 function drawHeader(
   pdf: jsPDF,
   title: string,
   docId: string | null | undefined,
-  meta: Array<{ label: string; value: string }>
+  meta: Array<{ label: string; value: string }>,
+  branding?: PdfBranding
 ): number {
+  let leftY = MARGIN
+  let leftX = MARGIN
+  let logoBottom = MARGIN
+
+  const logoDataUrl = branding?.companyLogoDataUrl || null
+  if (logoDataUrl) {
+    const format = getImageFormat(logoDataUrl)
+    if (format) {
+      const logoSize = 36
+      pdf.addImage(logoDataUrl, format, MARGIN, MARGIN, logoSize, logoSize)
+      leftX = MARGIN + logoSize + 12
+      logoBottom = MARGIN + logoSize
+    }
+  }
+
+  const companyName = branding?.companyName?.trim()
+  const addressLines = (branding?.companyAddressLines || []).filter(Boolean)
+  const contactLines = (branding?.companyContactLines || []).filter(Boolean)
+  const maxWidth = Math.max(PAGE_WIDTH - MARGIN - META_WIDTH - leftX, 200)
+
+  if (companyName) {
+    pdf.setFont('helvetica', 'bold')
+    pdf.setFontSize(12)
+    const nameLines = pdf.splitTextToSize(companyName, maxWidth)
+    pdf.text(nameLines, leftX, leftY)
+    leftY += nameLines.length * LINE_HEIGHT
+  }
+
+  if (addressLines.length > 0) {
+    pdf.setFont('helvetica', 'normal')
+    leftY = drawTextLinesAt(pdf, addressLines, leftX, leftY, maxWidth, 9)
+  }
+
+  if (contactLines.length > 0) {
+    pdf.setFont('helvetica', 'normal')
+    leftY = drawTextLinesAt(pdf, contactLines, leftX, leftY, maxWidth, 9)
+  }
+
+  if (companyName || addressLines.length > 0 || contactLines.length > 0) {
+    leftY += 4
+  }
+
   pdf.setFont('helvetica', 'bold')
   pdf.setFontSize(18)
-  pdf.text(title, MARGIN, MARGIN)
+  pdf.text(title, leftX, leftY)
+  leftY += LINE_HEIGHT + 2
 
   pdf.setFont('helvetica', 'normal')
   pdf.setFontSize(11)
   if (docId) {
-    pdf.text(docId, MARGIN, MARGIN + LINE_HEIGHT + 2)
+    pdf.text(docId, leftX, leftY)
+    leftY += LINE_HEIGHT
   }
 
   pdf.setFontSize(10)
@@ -110,10 +285,8 @@ function drawHeader(
     metaY += LINE_HEIGHT
   })
 
-  const leftLines = docId ? 2 : 1
-  const rightLines = meta.length
-  const headerLines = Math.max(leftLines, rightLines)
-  return MARGIN + headerLines * LINE_HEIGHT + SECTION_GAP
+  const rightHeight = MARGIN + meta.length * LINE_HEIGHT
+  return Math.max(leftY, rightHeight, logoBottom) + SECTION_GAP
 }
 
 function drawSectionTitle(pdf: jsPDF, title: string, y: number): number {
@@ -124,18 +297,7 @@ function drawSectionTitle(pdf: jsPDF, title: string, y: number): number {
 }
 
 function drawTextLines(pdf: jsPDF, lines: string[], y: number, width = CONTENT_WIDTH): number {
-  pdf.setFont('helvetica', 'normal')
-  pdf.setFontSize(10)
-  let cursorY = y
-  const cleanLines = lines.length > 0 ? lines : ['-']
-
-  cleanLines.forEach((line) => {
-    const wrapped = pdf.splitTextToSize(line, width)
-    pdf.text(wrapped, MARGIN, cursorY)
-    cursorY += wrapped.length * LINE_HEIGHT
-  })
-
-  return cursorY
+  return drawTextLinesAt(pdf, lines, MARGIN, y, width)
 }
 
 function drawTableHeader<Row>(
@@ -218,19 +380,39 @@ function drawTotals(
   totals: Array<{ label: string; value: string }>,
   startY: number
 ): number {
-  pdf.setFont('helvetica', 'normal')
-  pdf.setFontSize(10)
   let y = startY
   const labelX = PAGE_WIDTH - MARGIN - 160
   const valueX = PAGE_WIDTH - MARGIN
 
-  totals.forEach((total) => {
+  totals.forEach((total, index) => {
+    const isLast = index === totals.length - 1
+    pdf.setFont('helvetica', isLast ? 'bold' : 'normal')
+    pdf.setFontSize(isLast ? 11 : 10)
     pdf.text(total.label, labelX, y)
     pdf.text(total.value, valueX, y, { align: 'right' })
     y += LINE_HEIGHT
   })
 
   return y + SECTION_GAP
+}
+
+export async function fetchImageDataUrl(url: string): Promise<string | null> {
+  try {
+    const response = await fetch(url, { cache: 'force-cache' })
+    if (!response.ok) return null
+
+    const blob = await response.blob()
+    if (!blob.type.startsWith('image/')) return null
+
+    return await new Promise((resolve) => {
+      const reader = new FileReader()
+      reader.onloadend = () => resolve(typeof reader.result === 'string' ? reader.result : null)
+      reader.onerror = () => resolve(null)
+      reader.readAsDataURL(blob)
+    })
+  } catch {
+    return null
+  }
 }
 
 export function downloadPdfBlob(blob: Blob, filename: string) {
@@ -287,23 +469,24 @@ export interface PurchaseOrderPdfData {
 
 export function generatePurchaseOrderPDF(
   purchaseOrder: PurchaseOrderPdfData,
-  formatters: PdfFormatters
+  formatters: PdfFormatters,
+  branding?: PdfBranding
 ): Blob {
   const pdf = createDocument()
   const meta = [
     { label: 'Status', value: formatStatus(purchaseOrder.status) },
+    { label: 'PO Date', value: formatters.formatShortDate(purchaseOrder.created_at) },
     { label: 'Expected', value: formatters.formatShortDate(purchaseOrder.expected_date) },
-    { label: 'Created', value: formatters.formatShortDate(purchaseOrder.created_at) },
   ]
 
   let y = drawHeader(
     pdf,
     'Purchase Order',
     purchaseOrder.display_id || purchaseOrder.order_number,
-    meta
+    meta,
+    branding
   )
 
-  y = drawSectionTitle(pdf, 'Vendor', y)
   const vendorLines = purchaseOrder.vendor
     ? [
         purchaseOrder.vendor.name,
@@ -313,37 +496,48 @@ export function generatePurchaseOrderPDF(
         purchaseOrder.vendor.payment_terms ? `Terms: ${purchaseOrder.vendor.payment_terms}` : null,
       ].filter(Boolean) as string[]
     : ['-']
-  y = drawTextLines(pdf, vendorLines, y) + SECTION_GAP
 
-  y = drawSectionTitle(pdf, 'Ship To', y)
-  y = drawTextLines(
+  const shipToLines = formatAddressLines({
+    name: purchaseOrder.ship_to_name,
+    address1: purchaseOrder.ship_to_address1,
+    address2: purchaseOrder.ship_to_address2,
+    city: purchaseOrder.ship_to_city,
+    state: purchaseOrder.ship_to_state,
+    postal: purchaseOrder.ship_to_postal_code,
+    country: purchaseOrder.ship_to_country,
+  })
+  y = drawTwoColumnBlocks(
     pdf,
-    formatAddressLines({
-      name: purchaseOrder.ship_to_name,
-      address1: purchaseOrder.ship_to_address1,
-      address2: purchaseOrder.ship_to_address2,
-      city: purchaseOrder.ship_to_city,
-      state: purchaseOrder.ship_to_state,
-      postal: purchaseOrder.ship_to_postal_code,
-      country: purchaseOrder.ship_to_country,
-    }),
+    { title: 'Vendor', lines: vendorLines },
+    { title: 'Ship To', lines: shipToLines },
     y
-  ) + SECTION_GAP
+  )
 
-  y = drawSectionTitle(pdf, 'Bill To', y)
-  y = drawTextLines(
-    pdf,
-    formatAddressLines({
-      name: purchaseOrder.bill_to_name,
-      address1: purchaseOrder.bill_to_address1,
-      address2: purchaseOrder.bill_to_address2,
-      city: purchaseOrder.bill_to_city,
-      state: purchaseOrder.bill_to_state,
-      postal: purchaseOrder.bill_to_postal_code,
-      country: purchaseOrder.bill_to_country,
-    }),
-    y
-  ) + SECTION_GAP
+  const hasBillTo =
+    purchaseOrder.bill_to_name ||
+    purchaseOrder.bill_to_address1 ||
+    purchaseOrder.bill_to_address2 ||
+    purchaseOrder.bill_to_city ||
+    purchaseOrder.bill_to_state ||
+    purchaseOrder.bill_to_postal_code ||
+    purchaseOrder.bill_to_country
+
+  if (hasBillTo) {
+    y = drawSectionTitle(pdf, 'Bill To', y)
+    y = drawTextLines(
+      pdf,
+      formatAddressLines({
+        name: purchaseOrder.bill_to_name,
+        address1: purchaseOrder.bill_to_address1,
+        address2: purchaseOrder.bill_to_address2,
+        city: purchaseOrder.bill_to_city,
+        state: purchaseOrder.bill_to_state,
+        postal: purchaseOrder.bill_to_postal_code,
+        country: purchaseOrder.bill_to_country,
+      }),
+      y
+    ) + SECTION_GAP
+  }
 
   y = drawSectionTitle(pdf, 'Items', y)
   y = drawTable(
@@ -414,7 +608,11 @@ export interface PickListPdfData {
   created_by_name: string | null
 }
 
-export function generatePickListPDF(data: PickListPdfData, formatters: PdfFormatters): Blob {
+export function generatePickListPDF(
+  data: PickListPdfData,
+  formatters: PdfFormatters,
+  branding?: PdfBranding
+): Blob {
   const pdf = createDocument()
   const meta = [
     { label: 'Status', value: formatStatus(data.pick_list.status) },
@@ -426,34 +624,31 @@ export function generatePickListPDF(data: PickListPdfData, formatters: PdfFormat
     pdf,
     'Pick List',
     data.pick_list.display_id || data.pick_list.pick_list_number,
-    meta
+    meta,
+    branding
   )
 
-  y = drawSectionTitle(pdf, 'Details', y)
-  y = drawTextLines(
+  const detailLines = [
+    `Outcome: ${formatStatus(data.pick_list.item_outcome)}`,
+    `Assigned: ${safeText(data.assigned_to_name)}`,
+    `Created: ${formatters.formatShortDate(data.pick_list.created_at)}`,
+    `Created by: ${safeText(data.created_by_name)}`,
+  ]
+  const shipToLines = formatAddressLines({
+    name: data.pick_list.ship_to_name,
+    address1: data.pick_list.ship_to_address1,
+    address2: data.pick_list.ship_to_address2,
+    city: data.pick_list.ship_to_city,
+    state: data.pick_list.ship_to_state,
+    postal: data.pick_list.ship_to_postal_code,
+    country: data.pick_list.ship_to_country,
+  })
+  y = drawTwoColumnBlocks(
     pdf,
-    [
-      `Outcome: ${formatStatus(data.pick_list.item_outcome)}`,
-      `Created: ${formatters.formatShortDate(data.pick_list.created_at)}`,
-      `Created by: ${safeText(data.created_by_name)}`,
-    ],
+    { title: 'Pick Details', lines: detailLines },
+    { title: 'Ship To', lines: shipToLines },
     y
-  ) + SECTION_GAP
-
-  y = drawSectionTitle(pdf, 'Ship To', y)
-  y = drawTextLines(
-    pdf,
-    formatAddressLines({
-      name: data.pick_list.ship_to_name,
-      address1: data.pick_list.ship_to_address1,
-      address2: data.pick_list.ship_to_address2,
-      city: data.pick_list.ship_to_city,
-      state: data.pick_list.ship_to_state,
-      postal: data.pick_list.ship_to_postal_code,
-      country: data.pick_list.ship_to_country,
-    }),
-    y
-  ) + SECTION_GAP
+  )
 
   y = drawSectionTitle(pdf, 'Items', y)
   y = drawTable(
@@ -522,62 +717,60 @@ export interface SalesOrderPdfData {
 
 export function generateSalesOrderPDF(
   salesOrder: SalesOrderPdfData,
-  formatters: PdfFormatters
+  formatters: PdfFormatters,
+  branding?: PdfBranding
 ): Blob {
   const pdf = createDocument()
   const meta = [
     { label: 'Status', value: formatStatus(salesOrder.status) },
     { label: 'Order Date', value: formatters.formatShortDate(salesOrder.order_date) },
-    { label: 'Assigned', value: safeText(salesOrder.assigned_to_name) },
+    { label: 'Requested', value: formatters.formatShortDate(salesOrder.requested_date) },
+    { label: 'Promised', value: formatters.formatShortDate(salesOrder.promised_date) },
   ]
+
+  if (salesOrder.priority && salesOrder.priority !== 'normal') {
+    meta.push({ label: 'Priority', value: formatStatus(salesOrder.priority) })
+  }
 
   let y = drawHeader(
     pdf,
     'Sales Order',
     salesOrder.display_id || salesOrder.order_number,
-    meta
+    meta,
+    branding
   )
 
-  y = drawSectionTitle(pdf, 'Customer', y)
-  const customerLines = salesOrder.customer
-    ? [
-        salesOrder.customer.name,
-        salesOrder.customer.contact_name,
-        salesOrder.customer.email,
-        salesOrder.customer.phone,
-      ].filter(Boolean) as string[]
-    : ['-']
-  y = drawTextLines(pdf, customerLines, y) + SECTION_GAP
+  const billToLines = [
+    salesOrder.bill_to_name || salesOrder.customer?.name || null,
+    salesOrder.customer?.contact_name || null,
+    salesOrder.customer?.email || null,
+    salesOrder.customer?.phone || null,
+    salesOrder.bill_to_address1,
+    salesOrder.bill_to_address2,
+    combineCityStatePostal(
+      salesOrder.bill_to_city,
+      salesOrder.bill_to_state,
+      salesOrder.bill_to_postal_code
+    ),
+    salesOrder.bill_to_country,
+  ].filter(Boolean) as string[]
 
-  y = drawSectionTitle(pdf, 'Ship To', y)
-  y = drawTextLines(
-    pdf,
-    formatAddressLines({
-      name: salesOrder.ship_to_name,
-      address1: salesOrder.ship_to_address1,
-      address2: salesOrder.ship_to_address2,
-      city: salesOrder.ship_to_city,
-      state: salesOrder.ship_to_state,
-      postal: salesOrder.ship_to_postal_code,
-      country: salesOrder.ship_to_country,
-    }),
-    y
-  ) + SECTION_GAP
+  const shipToLines = formatAddressLines({
+    name: salesOrder.ship_to_name,
+    address1: salesOrder.ship_to_address1,
+    address2: salesOrder.ship_to_address2,
+    city: salesOrder.ship_to_city,
+    state: salesOrder.ship_to_state,
+    postal: salesOrder.ship_to_postal_code,
+    country: salesOrder.ship_to_country,
+  })
 
-  y = drawSectionTitle(pdf, 'Bill To', y)
-  y = drawTextLines(
+  y = drawTwoColumnBlocks(
     pdf,
-    formatAddressLines({
-      name: salesOrder.bill_to_name,
-      address1: salesOrder.bill_to_address1,
-      address2: salesOrder.bill_to_address2,
-      city: salesOrder.bill_to_city,
-      state: salesOrder.bill_to_state,
-      postal: salesOrder.bill_to_postal_code,
-      country: salesOrder.bill_to_country,
-    }),
+    { title: 'Bill To', lines: billToLines.length > 0 ? billToLines : ['-'] },
+    { title: 'Ship To', lines: shipToLines },
     y
-  ) + SECTION_GAP
+  )
 
   y = drawSectionTitle(pdf, 'Items', y)
   y = drawTable(
@@ -658,7 +851,8 @@ export interface DeliveryOrderPdfData {
 
 export function generateDeliveryOrderPDF(
   deliveryOrder: DeliveryOrderPdfData,
-  formatters: PdfFormatters
+  formatters: PdfFormatters,
+  branding?: PdfBranding
 ): Blob {
   const pdf = createDocument()
   const meta = [
@@ -671,48 +865,41 @@ export function generateDeliveryOrderPDF(
     pdf,
     'Delivery Order',
     deliveryOrder.display_id || deliveryOrder.sales_order?.display_id,
-    meta
+    meta,
+    branding
   )
 
-  y = drawSectionTitle(pdf, 'Customer', y)
-  const customerLines = deliveryOrder.sales_order?.customers
-    ? [
-        deliveryOrder.sales_order.customers.name,
-        deliveryOrder.sales_order.customers.email,
-        deliveryOrder.sales_order.customers.phone,
-      ].filter(Boolean) as string[]
-    : ['-']
-  y = drawTextLines(pdf, customerLines, y) + SECTION_GAP
+  const shipToLines = [
+    deliveryOrder.sales_order?.customers?.name || null,
+    deliveryOrder.sales_order?.customers?.email || null,
+    deliveryOrder.sales_order?.customers?.phone || null,
+    deliveryOrder.ship_to_name,
+    deliveryOrder.ship_to_address1,
+    deliveryOrder.ship_to_address2,
+    combineCityStatePostal(
+      deliveryOrder.ship_to_city,
+      deliveryOrder.ship_to_state,
+      deliveryOrder.ship_to_postal_code
+    ),
+    deliveryOrder.ship_to_country,
+    deliveryOrder.ship_to_phone ? `Phone: ${deliveryOrder.ship_to_phone}` : null,
+  ].filter(Boolean) as string[]
 
-  y = drawSectionTitle(pdf, 'Ship To', y)
-  y = drawTextLines(
-    pdf,
-    formatAddressLines({
-      name: deliveryOrder.ship_to_name,
-      address1: deliveryOrder.ship_to_address1,
-      address2: deliveryOrder.ship_to_address2,
-      city: deliveryOrder.ship_to_city,
-      state: deliveryOrder.ship_to_state,
-      postal: deliveryOrder.ship_to_postal_code,
-      country: deliveryOrder.ship_to_country,
-      phone: deliveryOrder.ship_to_phone,
-    }),
-    y
-  ) + SECTION_GAP
+  const shipmentLines = [
+    `Tracking: ${safeText(deliveryOrder.tracking_number)}`,
+    `Method: ${safeText(deliveryOrder.shipping_method)}`,
+    `Dispatched: ${formatters.formatShortDate(deliveryOrder.dispatched_at)}`,
+    `Delivered: ${formatters.formatShortDate(deliveryOrder.delivered_at)}`,
+    `Packages: ${deliveryOrder.total_packages}`,
+    deliveryOrder.total_weight ? `Weight: ${deliveryOrder.total_weight} ${deliveryOrder.weight_unit || ''}` : null,
+  ].filter(Boolean) as string[]
 
-  y = drawSectionTitle(pdf, 'Shipment', y)
-  y = drawTextLines(
+  y = drawTwoColumnBlocks(
     pdf,
-    [
-      `Tracking: ${safeText(deliveryOrder.tracking_number)}`,
-      `Method: ${safeText(deliveryOrder.shipping_method)}`,
-      `Dispatched: ${formatters.formatShortDate(deliveryOrder.dispatched_at)}`,
-      `Delivered: ${formatters.formatShortDate(deliveryOrder.delivered_at)}`,
-      `Packages: ${deliveryOrder.total_packages}`,
-      deliveryOrder.total_weight ? `Weight: ${deliveryOrder.total_weight} ${deliveryOrder.weight_unit || ''}` : null,
-    ].filter(Boolean) as string[],
+    { title: 'Ship To', lines: shipToLines.length > 0 ? shipToLines : ['-'] },
+    { title: 'Shipment', lines: shipmentLines.length > 0 ? shipmentLines : ['-'] },
     y
-  ) + SECTION_GAP
+  )
 
   y = drawSectionTitle(pdf, 'Items', y)
   y = drawTable(
@@ -776,7 +963,8 @@ export interface InvoicePdfData {
 
 export function generateInvoicePDF(
   invoice: InvoicePdfData,
-  formatters: PdfFormatters
+  formatters: PdfFormatters,
+  branding?: PdfBranding
 ): Blob {
   const pdf = createDocument()
   const meta = [
@@ -789,33 +977,28 @@ export function generateInvoicePDF(
     pdf,
     'Invoice',
     invoice.display_id || invoice.invoice_number,
-    meta
+    meta,
+    branding
   )
 
-  y = drawSectionTitle(pdf, 'Customer', y)
-  const customerLines = invoice.customer
-    ? [
-        invoice.customer.name,
-        invoice.customer.email,
-        invoice.customer.phone,
-      ].filter(Boolean) as string[]
-    : ['-']
-  y = drawTextLines(pdf, customerLines, y) + SECTION_GAP
+  y = drawSummaryBox(pdf, 'Balance Due', formatters.formatCurrency(invoice.balance_due), y)
+
+  const billToLines = [
+    invoice.bill_to_name || invoice.customer?.name || null,
+    invoice.customer?.email || null,
+    invoice.customer?.phone || null,
+    invoice.bill_to_address1,
+    invoice.bill_to_address2,
+    combineCityStatePostal(
+      invoice.bill_to_city,
+      invoice.bill_to_state,
+      invoice.bill_to_postal_code
+    ),
+    invoice.bill_to_country,
+  ].filter(Boolean) as string[]
 
   y = drawSectionTitle(pdf, 'Bill To', y)
-  y = drawTextLines(
-    pdf,
-    formatAddressLines({
-      name: invoice.bill_to_name,
-      address1: invoice.bill_to_address1,
-      address2: invoice.bill_to_address2,
-      city: invoice.bill_to_city,
-      state: invoice.bill_to_state,
-      postal: invoice.bill_to_postal_code,
-      country: invoice.bill_to_country,
-    }),
-    y
-  ) + SECTION_GAP
+  y = drawTextLines(pdf, billToLines.length > 0 ? billToLines : ['-'], y) + SECTION_GAP
 
   y = drawSectionTitle(pdf, 'Items', y)
   y = drawTable(

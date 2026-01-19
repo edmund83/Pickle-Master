@@ -48,7 +48,8 @@ import type { ScanResult } from '@/lib/scanner/useBarcodeScanner'
 import { ChatterPanel } from '@/components/chatter'
 import { useFeedback } from '@/components/feedback/FeedbackProvider'
 import { useFormatting } from '@/hooks/useFormatting'
-import { downloadPdfBlob, generatePickListPDF } from '@/lib/documents/pdf-generator'
+import { useTenantCompanyDetails, useTenantName, useTenantLogoUrl } from '@/contexts/TenantSettingsContext'
+import { buildCompanyBranding, downloadPdfBlob, fetchImageDataUrl, generatePickListPDF } from '@/lib/documents/pdf-generator'
 
 interface TeamMember {
   id: string
@@ -147,6 +148,9 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
   const router = useRouter()
   const feedback = useFeedback()
   const { formatCurrency, formatDate, formatShortDate } = useFormatting()
+  const tenantName = useTenantName()
+  const tenantLogoUrl = useTenantLogoUrl()
+  const companyDetails = useTenantCompanyDetails()
   const [pickingItemId, setPickingItemId] = useState<string | null>(null)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
 
@@ -430,11 +434,17 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
     if (!canDownloadPdf) return
     setActionLoading('download-pdf')
     try {
-      const pdfBlob = generatePickListPDF(data, {
-        formatCurrency,
-        formatDate,
-        formatShortDate,
-      })
+      const logoDataUrl = tenantLogoUrl ? await fetchImageDataUrl(tenantLogoUrl) : null
+      const branding = buildCompanyBranding(tenantName, logoDataUrl, companyDetails)
+      const pdfBlob = generatePickListPDF(
+        data,
+        {
+          formatCurrency,
+          formatDate,
+          formatShortDate,
+        },
+        branding
+      )
       const baseName = pickList.display_id || pickList.pick_list_number || pickList.name || pickList.id
       const safeName = baseName.replace(/\s+/g, '-').toLowerCase()
       downloadPdfBlob(pdfBlob, `pick-list-${safeName}.pdf`)

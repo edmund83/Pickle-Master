@@ -67,6 +67,13 @@ Major performance and cost optimization for the Ask Zoe AI assistant:
 - Token usage: ~8000 → ~3000 tokens per chat (60% reduction)
 - Cost per chat: ~$0.02 → ~$0.008 (60% savings)
 
+#### PDF Headers
+- PDF exports now include the tenant company name in the document header when available.
+
+#### PDF Layouts
+- Updated task document PDFs to a QuickBooks-style layout with logo support, two-column address blocks, and balance due callouts for invoices.
+- Added company address/contact/tax ID fields in Company Settings for PDF headers.
+
 ### Added
 
 #### User Documentation Guide

@@ -37,6 +37,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import { FormattedShortDate } from '@/components/formatting/FormattedDate'
 import { useFormatting } from '@/hooks/useFormatting'
+import { useTenantCompanyDetails, useTenantName, useTenantLogoUrl } from '@/contexts/TenantSettingsContext'
 import {
   updateSalesOrder,
   updateSalesOrderStatus,
@@ -57,7 +58,7 @@ import { ItemThumbnail } from '@/components/ui/item-thumbnail'
 import { useFeedback } from '@/components/feedback/FeedbackProvider'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { TaxRateDropdown } from '@/components/tax/TaxRateSelector'
-import { downloadPdfBlob, generateSalesOrderPDF } from '@/lib/documents/pdf-generator'
+import { buildCompanyBranding, downloadPdfBlob, fetchImageDataUrl, generateSalesOrderPDF } from '@/lib/documents/pdf-generator'
 
 interface SalesOrderDetailClientProps {
   salesOrder: SalesOrderWithDetails
@@ -100,6 +101,9 @@ export function SalesOrderDetailClient({
 }: SalesOrderDetailClientProps) {
   const router = useRouter()
   const { formatCurrency, formatDate, formatShortDate } = useFormatting()
+  const tenantName = useTenantName()
+  const tenantLogoUrl = useTenantLogoUrl()
+  const companyDetails = useTenantCompanyDetails()
   const feedback = useFeedback()
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -575,6 +579,8 @@ export function SalesOrderDetailClient({
     if (!canDownloadPdf) return
     setActionLoading('download-pdf')
     try {
+      const logoDataUrl = tenantLogoUrl ? await fetchImageDataUrl(tenantLogoUrl) : null
+      const branding = buildCompanyBranding(tenantName, logoDataUrl, companyDetails)
       const pdfBlob = generateSalesOrderPDF(
         {
           ...salesOrder,
@@ -584,7 +590,8 @@ export function SalesOrderDetailClient({
           formatCurrency,
           formatDate,
           formatShortDate,
-        }
+        },
+        branding
       )
       const baseName = salesOrder.display_id || salesOrder.order_number || salesOrder.id
       const safeName = baseName.replace(/\s+/g, '-').toLowerCase()
