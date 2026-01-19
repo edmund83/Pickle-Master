@@ -166,7 +166,7 @@ export function PrimarySidebar({ isExpanded = false, onToggle }: PrimarySidebarP
       </div>
 
       {/* Main Navigation */}
-      <nav className={cn('flex flex-1 flex-col gap-1', isExpanded ? 'px-3' : 'items-center px-2')}>
+      <nav className={cn('flex flex-1 flex-col gap-1 overflow-y-auto', isExpanded ? 'px-3' : 'items-center px-2')}>
         {/* Home */}
         <Link
           href="/dashboard"
@@ -231,7 +231,7 @@ export function PrimarySidebar({ isExpanded = false, onToggle }: PrimarySidebarP
       </nav>
 
       {/* System Navigation (Bottom) */}
-      <div className={cn('flex flex-col gap-1 py-4', isExpanded ? 'px-3' : 'items-center px-2')}>
+      <div className={cn('flex flex-col gap-1 py-4 flex-shrink-0', isExpanded ? 'px-3' : 'items-center px-2')}>
         {systemNav.map((item) => {
           const isActive = pathname.startsWith(item.href)
           return (
@@ -273,26 +273,6 @@ export function PrimarySidebar({ isExpanded = false, onToggle }: PrimarySidebarP
           )}
         </button>
 
-        {/* Collapse/Expand Toggle */}
-        {onToggle && (
-          <button
-            onClick={onToggle}
-            className={cn(
-              'mt-2 flex items-center rounded-xl text-white transition-colors hover:bg-white/10',
-              isExpanded ? 'h-10 gap-3 px-3' : 'h-10 w-10 justify-center'
-            )}
-            title={isExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
-          >
-            {isExpanded ? (
-              <>
-                <ChevronLeft className="h-5 w-5 shrink-0" />
-                <span className="text-sm font-medium">Collapse</span>
-              </>
-            ) : (
-              <ChevronRight className="h-5 w-5" />
-            )}
-          </button>
-        )}
       </div>
       </div>
 
