@@ -23,6 +23,7 @@ import {
   Minus,
   MapPin,
   FileText,
+  Download,
   Camera,
   X,
   Info,
@@ -54,6 +55,7 @@ import { VendorFormDialog, type VendorFormData } from '@/components/settings/ven
 import { ItemThumbnail } from '@/components/ui/item-thumbnail'
 import { useFeedback } from '@/components/feedback/FeedbackProvider'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
+import { downloadPdfBlob, generatePurchaseOrderPDF } from '@/lib/documents/pdf-generator'
 
 interface PurchaseOrderDetailClientProps {
   purchaseOrder: PurchaseOrderWithDetails
@@ -81,7 +83,7 @@ export function PurchaseOrderDetailClient({
   currentUserId
 }: PurchaseOrderDetailClientProps) {
   const router = useRouter()
-  const { formatCurrency } = useFormatting()
+  const { formatCurrency, formatDate, formatShortDate } = useFormatting()
   const feedback = useFeedback()
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -157,6 +159,7 @@ export function PurchaseOrderDetailClient({
   const status = purchaseOrder.status || 'draft'
   const isDraft = status === 'draft'
   const canReceive = ['submitted', 'confirmed', 'partial'].includes(status)
+  const canDownloadPdf = purchaseOrder.items.length > 0
 
   // Filter vendors based on search query
   const filteredVendors = vendorSearchQuery.trim()
@@ -511,6 +514,26 @@ export function PurchaseOrderDetailClient({
     }
   }
 
+  async function handleDownloadPDF() {
+    if (!canDownloadPdf) return
+    setActionLoading('download-pdf')
+    try {
+      const pdfBlob = generatePurchaseOrderPDF(purchaseOrder, {
+        formatCurrency,
+        formatDate,
+        formatShortDate,
+      })
+      const baseName = purchaseOrder.display_id || purchaseOrder.order_number || purchaseOrder.id
+      const safeName = baseName.replace(/\s+/g, '-').toLowerCase()
+      downloadPdfBlob(pdfBlob, `purchase-order-${safeName}.pdf`)
+    } catch (err) {
+      console.error('Failed to generate purchase order PDF:', err)
+      feedback.error('Failed to generate PDF')
+    } finally {
+      setActionLoading(null)
+    }
+  }
+
   // Validation for draft mode
   const isValid = vendorId && purchaseOrder.items.length > 0
   const missingFields: string[] = []
@@ -542,6 +565,14 @@ export function PurchaseOrderDetailClient({
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                onClick={handleDownloadPDF}
+                disabled={!canDownloadPdf || actionLoading !== null}
+              >
+                <Download className="mr-2 h-4 w-4" />
+                Download PDF
+              </Button>
               {/* More menu with Delete option */}
               <div className="relative">
                 <Button
@@ -1213,6 +1244,14 @@ export function PurchaseOrderDetailClient({
 
           {/* Action Buttons */}
           <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              onClick={handleDownloadPDF}
+              disabled={!canDownloadPdf || actionLoading !== null}
+            >
+              <Download className="mr-2 h-4 w-4" />
+              Download PDF
+            </Button>
             {(status === 'submitted' || status === 'pending_approval') && (
               <>
                 <Button
