@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { takePercySnapshot } from './utils/percy'
 
 /**
  * E2E Tests for Dashboard & Navigation
@@ -23,6 +24,9 @@ test.describe('Dashboard & Navigation', () => {
     expect(hasContent).toBe(true)
     // Log load time for reference (not strictly enforcing 2s as it depends on test environment)
     console.log(`Dashboard load time: ${loadTime}ms`)
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Dashboard - Main Page Load')
   })
 
   // Scenario 17: View total inventory count on dashboard
@@ -33,6 +37,9 @@ test.describe('Dashboard & Navigation', () => {
     // Either total items is visible (authenticated) or page loaded successfully (unauthenticated)
     const pageLoaded = await page.locator('body').isVisible()
     expect(isVisible || pageLoaded).toBe(true)
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Dashboard - Total Inventory Count')
   })
 
   // Scenario 18: View total inventory value on dashboard
@@ -41,6 +48,9 @@ test.describe('Dashboard & Navigation', () => {
     const bodyContent = await page.locator('body').textContent()
     const hasValueIndicator = bodyContent?.includes('$') || bodyContent?.includes('Value') || bodyContent?.includes('Total')
     expect(hasValueIndicator).toBe(true)
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Dashboard - Inventory Value')
   })
 
   // Scenario 19: View low stock alerts count on dashboard
@@ -51,6 +61,9 @@ test.describe('Dashboard & Navigation', () => {
     // Either low stock text is visible or page loaded successfully
     const pageLoaded = await page.locator('body').isVisible()
     expect(isVisible || pageLoaded).toBe(true)
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Dashboard - Low Stock Alerts')
   })
 
   // Scenario 20: View out of stock count on dashboard
@@ -60,6 +73,9 @@ test.describe('Dashboard & Navigation', () => {
     const isVisible = await outOfStockText.isVisible().catch(() => false)
     const pageLoaded = await page.locator('body').isVisible()
     expect(isVisible || pageLoaded).toBe(true)
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Dashboard - Out of Stock Count')
   })
 
   // Scenario 21: View recent activity feed on dashboard
@@ -69,6 +85,9 @@ test.describe('Dashboard & Navigation', () => {
     const isVisible = await activitySection.isVisible().catch(() => false)
     const pageLoaded = await page.locator('body').isVisible()
     expect(isVisible || pageLoaded).toBe(true)
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Dashboard - Activity Feed')
   })
 
   // Scenario 22: Tap on low stock alert card to see list of low stock items
@@ -84,6 +103,9 @@ test.describe('Dashboard & Navigation', () => {
 
     // Page should load regardless
     expect(await page.locator('body').isVisible()).toBe(true)
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Dashboard - Low Stock Items List')
   })
 
   // Scenario 23: Tap on out of stock card to see out of stock items
@@ -98,6 +120,9 @@ test.describe('Dashboard & Navigation', () => {
     }
 
     expect(await page.locator('body').isVisible()).toBe(true)
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Dashboard - Out of Stock Items List')
   })
 
   // Scenario 24: Navigate to Inventory via bottom navigation
@@ -115,6 +140,9 @@ test.describe('Dashboard & Navigation', () => {
       // Page loaded successfully (unauthenticated - redirected to login)
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Dashboard - Navigate to Inventory')
   })
 
   // Scenario 25: Navigate to Tasks via bottom navigation
@@ -130,6 +158,9 @@ test.describe('Dashboard & Navigation', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Dashboard - Navigate to Tasks')
   })
 
   // Scenario 26: Navigate to Scan via bottom navigation
@@ -145,6 +176,9 @@ test.describe('Dashboard & Navigation', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Dashboard - Navigate to Scan')
   })
 
   // Scenario 27: Navigate to Settings via hamburger menu
@@ -160,6 +194,9 @@ test.describe('Dashboard & Navigation', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Dashboard - Navigate to Settings')
   })
 
   // Scenario 28: Pull to refresh dashboard data
@@ -168,6 +205,9 @@ test.describe('Dashboard & Navigation', () => {
     await page.reload()
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').isVisible()).toBe(true)
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Dashboard - After Refresh')
   })
 
   // Scenario 29: Dashboard KPIs update after item quantity changes
@@ -175,6 +215,9 @@ test.describe('Dashboard & Navigation', () => {
     // Dashboard should display KPIs
     const hasContent = await page.locator('body').isVisible()
     expect(hasContent).toBe(true)
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Dashboard - KPIs Display')
   })
 
   // Scenario 30: Expand Tasks sub-menu in sidebar navigation
@@ -189,6 +232,9 @@ test.describe('Dashboard & Navigation', () => {
     }
 
     expect(await page.locator('body').isVisible()).toBe(true)
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Dashboard - Tasks Menu Expanded')
   })
 
   // Scenario 31: Collapse Tasks sub-menu in sidebar
@@ -206,6 +252,9 @@ test.describe('Dashboard & Navigation', () => {
     }
 
     expect(await page.locator('body').isVisible()).toBe(true)
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Dashboard - Tasks Menu Collapsed')
   })
 
   // Scenario 32: View notification badge count in navigation
@@ -216,6 +265,9 @@ test.describe('Dashboard & Navigation', () => {
 
     // Page should load regardless of notification presence
     expect(await page.locator('body').isVisible()).toBe(true)
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Dashboard - Notification Badge')
   })
 
   // Scenario 33: Navigate using breadcrumbs
@@ -229,6 +281,9 @@ test.describe('Dashboard & Navigation', () => {
     const isVisible = await breadcrumb.isVisible().catch(() => false)
 
     expect(await page.locator('body').isVisible()).toBe(true)
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Dashboard - Breadcrumb Navigation')
   })
 
   // Scenario 34: Dark mode toggle (if available) updates UI correctly
@@ -243,6 +298,9 @@ test.describe('Dashboard & Navigation', () => {
     }
 
     expect(await page.locator('body').isVisible()).toBe(true)
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Dashboard - Dark Mode Toggle')
   })
 
   // Scenario 35: Swipe left/right gesture navigation (if enabled)
@@ -254,5 +312,8 @@ test.describe('Dashboard & Navigation', () => {
 
     // Page should be responsive on mobile
     expect(await page.locator('body').isVisible()).toBe(true)
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Dashboard - Mobile Gesture Navigation')
   })
 })

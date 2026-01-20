@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { takePercySnapshot } from './utils/percy'
 
 /**
  * E2E Tests for Inventory Items - Read & View
@@ -16,6 +17,9 @@ test.describe('Inventory Items - Read & View', () => {
 
     // Page should be visible
     expect(await page.locator('body').isVisible()).toBe(true)
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Inventory Read - List View')
   })
 
   // Scenario 57: View item detail page by tapping on item

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { takePercySnapshot } from './utils/percy'
 
 /**
  * E2E Tests for Inventory Items - Create
@@ -36,6 +37,9 @@ test.describe('Inventory Items - Create', () => {
       // Not authenticated - page loaded successfully
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Inventory Create - Basic Form')
   })
 
   // Scenario 37: Add new item with all fields filled (name, SKU, quantity, price, notes)
@@ -55,6 +59,9 @@ test.describe('Inventory Items - Create', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Inventory Create - Full Form')
   })
 
   // Scenario 38: Add item with auto-generated SKU
@@ -260,6 +267,9 @@ test.describe('Inventory Items - Create', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Inventory Create - Form Validation')
   })
 
   // Scenario 54: Success toast displayed after item creation

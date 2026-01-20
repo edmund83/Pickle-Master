@@ -68,3 +68,9 @@ docs/screenshot/
 public/sw.js
 public/workbox-*.js
 public/swe-worker-*.js
+
+# Playwright
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/

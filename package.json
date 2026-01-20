@@ -11,7 +11,12 @@
     "test:run": "vitest run",
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui"
+    "test:e2e:ui": "playwright test --ui",
+    "test:visual": "playwright test --config=tests/playwright.visual.config.ts",
+    "test:visual:percy": "percy exec -- playwright test --config=tests/playwright.visual.config.ts",
+    "test:visual:dashboard": "playwright test --config=tests/playwright.visual.config.ts dashboard.spec.ts",
+    "test:visual:dashboard:percy": "percy exec -- playwright test --config=tests/playwright.visual.config.ts dashboard.spec.ts",
+    "test:visual:update": "playwright test --config=tests/playwright.visual.config.ts --update-snapshots"
   },
   "dependencies": {
     "@ducanh2912/next-pwa": "^10.2.9",
@@ -50,6 +55,8 @@
     "zustand": "^5.0.2"
   },
   "devDependencies": {
+    "@percy/cli": "^1.31.8",
+    "@percy/playwright": "^1.0.10",
     "@playwright/test": "^1.57.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
@@ -64,6 +71,7 @@
     "eslint-config-next": "^16.0.10",
     "jsdom": "^27.4.0",
     "lodash": "^4.17.21",
+    "playwright": "^1.57.0",
     "postcss": "^8.5.6",
     "tailwindcss": "^4.1.18",
     "typescript": "5.9.3",

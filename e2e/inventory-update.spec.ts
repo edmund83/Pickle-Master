@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { takePercySnapshot } from './utils/percy'
 
 /**
  * E2E Tests for Inventory Items - Update
@@ -31,6 +32,7 @@ test.describe('Inventory Items - Update', () => {
                           await editLink.isVisible().catch(() => false)
     }
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Inventory Update - Edit item name')
   })
 
   // Scenario 72: Edit item quantity using +/- quick action buttons
@@ -43,78 +45,91 @@ test.describe('Inventory Items - Update', () => {
       const plusVisible = await plusButton.isVisible().catch(() => false)
     }
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Inventory Update - Quick quantity buttons')
   })
 
   // Scenario 73: Edit item quantity by entering exact number
   test('73. Edit item quantity by entering exact number', async ({ page }) => {
     const hasItem = await navigateToFirstItem(page)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Inventory Update - Enter exact quantity')
   })
 
   // Scenario 74: Edit item price/cost
   test('74. Edit item price/cost', async ({ page }) => {
     const hasItem = await navigateToFirstItem(page)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Inventory Update - Edit price')
   })
 
   // Scenario 75: Edit item notes
   test('75. Edit item notes', async ({ page }) => {
     const hasItem = await navigateToFirstItem(page)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Inventory Update - Edit notes')
   })
 
   // Scenario 76: Edit item minimum stock threshold
   test('76. Edit item minimum stock threshold', async ({ page }) => {
     const hasItem = await navigateToFirstItem(page)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Inventory Update - Edit min stock')
   })
 
   // Scenario 77: Move item to different folder
   test('77. Move item to different folder', async ({ page }) => {
     const hasItem = await navigateToFirstItem(page)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Inventory Update - Move to folder')
   })
 
   // Scenario 78: Add additional photo to existing item
   test('78. Add additional photo to existing item', async ({ page }) => {
     const hasItem = await navigateToFirstItem(page)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Inventory Update - Add photo')
   })
 
   // Scenario 79: Remove photo from item
   test('79. Remove photo from item', async ({ page }) => {
     const hasItem = await navigateToFirstItem(page)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Inventory Update - Remove photo')
   })
 
   // Scenario 80: Set photo as primary/cover image
   test('80. Set photo as primary/cover image', async ({ page }) => {
     const hasItem = await navigateToFirstItem(page)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Inventory Update - Set primary photo')
   })
 
   // Scenario 81: Add tags to existing item
   test('81. Add tags to existing item', async ({ page }) => {
     const hasItem = await navigateToFirstItem(page)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Inventory Update - Add tags')
   })
 
   // Scenario 82: Remove tags from item
   test('82. Remove tags from item', async ({ page }) => {
     const hasItem = await navigateToFirstItem(page)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Inventory Update - Remove tags')
   })
 
   // Scenario 83: Update custom field values
   test('83. Update custom field values', async ({ page }) => {
     const hasItem = await navigateToFirstItem(page)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Inventory Update - Custom fields')
   })
 
   // Scenario 84: Changes auto-save while editing
   test('84. Changes auto-save while editing', async ({ page }) => {
     const hasItem = await navigateToFirstItem(page)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Inventory Update - Auto-save')
   })
 
   // Scenario 85: Undo recent quantity change within 30 seconds
@@ -124,6 +139,7 @@ test.describe('Inventory Items - Update', () => {
     const undoButton = page.getByRole('button', { name: /undo/i }).first()
     const undoVisible = await undoButton.isVisible().catch(() => false)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Inventory Update - Undo change')
   })
 
   // Scenario 86: Edit multiple items in bulk (select mode)
@@ -134,6 +150,7 @@ test.describe('Inventory Items - Update', () => {
     const selectButton = page.getByRole('button', { name: /select|bulk/i }).first()
     const selectVisible = await selectButton.isVisible().catch(() => false)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Inventory Update - Bulk select mode')
   })
 
   // Scenario 87: Bulk update category/folder for multiple items
@@ -141,6 +158,7 @@ test.describe('Inventory Items - Update', () => {
     await page.goto('/inventory')
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Inventory Update - Bulk update folder')
   })
 
   // Scenario 88: Bulk update tags for multiple items
@@ -148,6 +166,7 @@ test.describe('Inventory Items - Update', () => {
     await page.goto('/inventory')
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Inventory Update - Bulk update tags')
   })
 
   // Scenario 89: Activity log updates after edit
@@ -157,6 +176,7 @@ test.describe('Inventory Items - Update', () => {
     const activitySection = page.getByText(/activity|history|log/i)
     const activityVisible = await activitySection.isVisible().catch(() => false)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Inventory Update - Activity log')
   })
 
   // Scenario 90: Last modified timestamp updates after edit
@@ -166,5 +186,6 @@ test.describe('Inventory Items - Update', () => {
     const timestampSection = page.getByText(/modified|updated/i)
     const timestampVisible = await timestampSection.isVisible().catch(() => false)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Inventory Update - Last modified')
   })
 })
