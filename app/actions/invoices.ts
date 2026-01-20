@@ -214,6 +214,143 @@ export async function createInvoice(input: CreateInvoiceInput): Promise<InvoiceR
     return { success: true, invoice_id: data.id, display_id: data.display_id }
 }
 
+// Input type for creating invoice with items
+export interface CreateInvoiceWithItemsInput extends CreateInvoiceInput {
+    items: InvoiceItemInput[]
+}
+
+// Create a new invoice with items in a single transaction
+export async function createInvoiceWithItems(input: CreateInvoiceWithItemsInput): Promise<InvoiceResult> {
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
+
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // Validate main invoice input
+    const validation = validateInput(createInvoiceSchema, input)
+    if (!validation.success) return { success: false, error: validation.error }
+    const validatedInput = validation.data
+
+    // Validate each item
+    for (let i = 0; i < input.items.length; i++) {
+        const itemValidation = validateInput(invoiceItemSchema, input.items[i])
+        if (!itemValidation.success) {
+            return { success: false, error: `Item ${i + 1}: ${itemValidation.error}` }
+        }
+    }
+
+    // Verify customer belongs to tenant
+    const customerCheck = await verifyRelatedTenantOwnership(
+        'customers',
+        validatedInput.customer_id,
+        context.tenantId,
+        'Customer'
+    )
+    if (!customerCheck.success) return { success: false, error: customerCheck.error }
+
+    const supabase = await createClient()
+
+    // Get customer details for billing address defaults
+
+    const { data: customer } = await (supabase as any)
+        .from('customers')
+        .select('name, billing_address_line1, billing_address_line2, billing_city, billing_state, billing_postal_code, billing_country')
+        .eq('id', validatedInput.customer_id)
+        .eq('tenant_id', context.tenantId)
+        .single()
+
+    // Generate display ID
+
+    const { data: displayId } = await (supabase as any).rpc(
+        'generate_display_id_for_current_user',
+        { p_entity_type: 'invoice' }
+    )
+
+    // Create invoice
+
+    const { data: invoiceData, error: invoiceError } = await (supabase as any)
+        .from('invoices')
+        .insert({
+            tenant_id: context.tenantId,
+            display_id: displayId,
+            customer_id: validatedInput.customer_id,
+            sales_order_id: validatedInput.sales_order_id || null,
+            delivery_order_id: validatedInput.delivery_order_id || null,
+            invoice_number: validatedInput.invoice_number || null,
+            invoice_date: validatedInput.invoice_date || new Date().toISOString().split('T')[0],
+            due_date: validatedInput.due_date || null,
+            bill_to_name: validatedInput.bill_to_name || customer?.name || null,
+            bill_to_address1: validatedInput.bill_to_address1 || customer?.billing_address_line1 || null,
+            bill_to_address2: validatedInput.bill_to_address2 || customer?.billing_address_line2 || null,
+            bill_to_city: validatedInput.bill_to_city || customer?.billing_city || null,
+            bill_to_state: validatedInput.bill_to_state || customer?.billing_state || null,
+            bill_to_postal_code: validatedInput.bill_to_postal_code || customer?.billing_postal_code || null,
+            bill_to_country: validatedInput.bill_to_country || customer?.billing_country || null,
+            tax_rate: validatedInput.tax_rate || 0,
+            discount_amount: validatedInput.discount_amount || 0,
+            payment_term_id: validatedInput.payment_term_id || null,
+            internal_notes: validatedInput.internal_notes || null,
+            customer_notes: validatedInput.customer_notes || null,
+            terms_and_conditions: validatedInput.terms_and_conditions || null,
+            created_by: context.userId,
+            status: 'draft',
+        })
+        .select('id, display_id')
+        .single()
+
+    if (invoiceError) {
+        console.error('Create invoice error:', invoiceError)
+        return { success: false, error: invoiceError.message }
+    }
+
+    // Create invoice items
+    if (input.items.length > 0) {
+        const invoiceItems = input.items.map((item, index) => {
+            const baseAmount = item.quantity * item.unit_price
+            const discountAmt = item.discount_amount || (baseAmount * (item.discount_percent || 0) / 100)
+            const afterDiscount = baseAmount - discountAmt
+            const taxAmt = afterDiscount * (item.tax_rate || 0) / 100
+            const lineTotal = afterDiscount + taxAmt
+
+            return {
+                invoice_id: invoiceData.id,
+                sales_order_item_id: item.sales_order_item_id || null,
+                delivery_order_item_id: item.delivery_order_item_id || null,
+                item_id: item.item_id || null,
+                item_name: item.item_name,
+                sku: item.sku || null,
+                description: item.description || null,
+                quantity: item.quantity,
+                unit_price: item.unit_price,
+                discount_percent: item.discount_percent || 0,
+                discount_amount: discountAmt,
+                tax_rate: item.tax_rate || 0,
+                tax_amount: taxAmt,
+                line_total: lineTotal,
+                sort_order: item.sort_order ?? index,
+            }
+        })
+
+
+        const { error: itemsError } = await (supabase as any)
+            .from('invoice_items')
+            .insert(invoiceItems)
+
+        if (itemsError) {
+            console.error('Create invoice items error:', itemsError)
+            // Rollback invoice creation
+
+            await (supabase as any).from('invoices').delete().eq('id', invoiceData.id)
+            return { success: false, error: itemsError.message }
+        }
+    }
+
+    revalidatePath('/tasks/invoices')
+    return { success: true, invoice_id: invoiceData.id, display_id: invoiceData.display_id }
+}
+
 // Create invoice from a sales order (copies items)
 export async function createInvoiceFromSO(salesOrderId: string): Promise<InvoiceResult> {
     const authResult = await getAuthContext()

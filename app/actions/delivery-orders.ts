@@ -789,6 +789,40 @@ export async function deleteDeliveryOrder(deliveryOrderId: string): Promise<Deli
     return { success: true }
 }
 
+// Search inventory items for delivery order (items with available stock)
+export async function searchInventoryItemsForDO(query: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) return []
+
+    // Get user's tenant
+    const { data: profile } = await (supabase as any)
+        .from('profiles')
+        .select('tenant_id')
+        .eq('id', user.id)
+        .single()
+
+    if (!profile?.tenant_id) return []
+
+    // Search items with available stock for delivery
+    let queryBuilder = (supabase as any)
+        .from('inventory_items')
+        .select('id, name, sku, quantity, image_urls, unit, price')
+        .eq('tenant_id', profile.tenant_id)
+        .is('deleted_at', null)
+        .gt('quantity', 0) // Only items with stock available
+        .order('name')
+        .limit(20)
+
+    if (query) {
+        queryBuilder = queryBuilder.or(`name.ilike.%${query}%,sku.ilike.%${query}%`)
+    }
+
+    const { data } = await queryBuilder
+    return data || []
+}
+
 // Paginated delivery orders list
 export interface PaginatedDeliveryOrdersResult {
     data: DeliveryOrderListItem[]

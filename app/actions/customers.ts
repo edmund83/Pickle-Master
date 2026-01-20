@@ -30,6 +30,20 @@ export interface Customer {
     email: string | null
     phone: string | null
     is_active: boolean
+    // Shipping address fields for delivery orders
+    shipping_address1: string | null
+    shipping_address2: string | null
+    shipping_city: string | null
+    shipping_state: string | null
+    shipping_postal_code: string | null
+    shipping_country: string | null
+    // Billing address fields for invoices
+    billing_address1: string | null
+    billing_address2: string | null
+    billing_city: string | null
+    billing_state: string | null
+    billing_postal_code: string | null
+    billing_country: string | null
 }
 
 // Validation schemas
@@ -120,16 +134,49 @@ export async function getCustomers() {
 
     if (!profile?.tenant_id) return []
 
-    // Get customers
-     
+    // Get customers with shipping and billing address
+
     const { data } = await (supabase as any)
         .from('customers')
-        .select('id, name, customer_code, contact_name, email, phone, is_active')
+        .select(`
+            id, name, customer_code, contact_name, email, phone, is_active,
+            shipping_address_line1, shipping_address_line2,
+            shipping_city, shipping_state, shipping_postal_code, shipping_country,
+            billing_address_line1, billing_address_line2,
+            billing_city, billing_state, billing_postal_code, billing_country
+        `)
         .eq('tenant_id', profile.tenant_id)
         .eq('is_active', true)
         .order('name')
 
-    return data || []
+    // Map database field names to interface field names
+    return (data || []).map((c: {
+        id: string
+        name: string
+        customer_code: string | null
+        contact_name: string | null
+        email: string | null
+        phone: string | null
+        is_active: boolean
+        shipping_address_line1: string | null
+        shipping_address_line2: string | null
+        shipping_city: string | null
+        shipping_state: string | null
+        shipping_postal_code: string | null
+        shipping_country: string | null
+        billing_address_line1: string | null
+        billing_address_line2: string | null
+        billing_city: string | null
+        billing_state: string | null
+        billing_postal_code: string | null
+        billing_country: string | null
+    }) => ({
+        ...c,
+        shipping_address1: c.shipping_address_line1,
+        shipping_address2: c.shipping_address_line2,
+        billing_address1: c.billing_address_line1,
+        billing_address2: c.billing_address_line2,
+    }))
 }
 
 // Get all customers including inactive

@@ -166,9 +166,14 @@ export const priceSchema = z.number().nonnegative().max(1000000000)
 export const dateStringSchema = z.string().refine((val) => !isNaN(Date.parse(val)), {
   message: 'Invalid date format',
 })
-export const optionalDateStringSchema = z.string().refine((val) => !isNaN(Date.parse(val)), {
-  message: 'Invalid date format',
-}).nullable().optional()
+export const optionalDateStringSchema = z
+  .string()
+  .transform(val => val === '' ? null : val)
+  .nullable()
+  .optional()
+  .refine((val) => !val || !isNaN(Date.parse(val)), {
+    message: 'Invalid date format',
+  })
 
 // Address validation schema
 export const addressSchema = z.object({
