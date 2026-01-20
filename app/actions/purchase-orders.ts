@@ -921,8 +921,8 @@ export async function deletePurchaseOrder(purchaseOrderId: string): Promise<Purc
     if (!authResult.success) return { success: false, error: authResult.error }
     const { context } = authResult
 
-    // 2. Check admin permission for delete operations
-    const permResult = requireAdminPermission(context)
+    // 2. Check write permission for delete operations (editors can delete draft POs)
+    const permResult = requireWritePermission(context)
     if (!permResult.success) return { success: false, error: permResult.error }
 
     const supabase = await createClient()
