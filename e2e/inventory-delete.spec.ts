@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { takePercySnapshot } from './utils/percy'
 
 /**
  * E2E Tests for Inventory Items - Delete
@@ -29,12 +30,14 @@ test.describe('Inventory Items - Delete', () => {
       const deleteVisible = await deleteButton.isVisible().catch(() => false)
     }
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Inventory Delete - Delete single item')
   })
 
   // Scenario 92: Cancel delete operation in confirmation dialog
   test('92. Cancel delete operation in confirmation dialog', async ({ page }) => {
     const hasItem = await navigateToFirstItem(page)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Inventory Delete - Cancel delete dialog')
   })
 
   // Scenario 93: Undo delete within 30 seconds
@@ -43,6 +46,7 @@ test.describe('Inventory Items - Delete', () => {
     await page.waitForLoadState('networkidle')
     // Look for undo toast/button functionality
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Inventory Delete - Undo delete')
   })
 
   // Scenario 94: Delete multiple items in bulk
@@ -53,6 +57,7 @@ test.describe('Inventory Items - Delete', () => {
     const selectButton = page.getByRole('button', { name: /select|bulk/i }).first()
     const selectVisible = await selectButton.isVisible().catch(() => false)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Inventory Delete - Bulk delete')
   })
 
   // Scenario 95: Deleted item removed from inventory list
@@ -60,6 +65,7 @@ test.describe('Inventory Items - Delete', () => {
     await page.goto('/inventory')
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Inventory Delete - Item removed from list')
   })
 
   // Scenario 96: Dashboard counts update after deletion
@@ -71,12 +77,14 @@ test.describe('Inventory Items - Delete', () => {
     const isVisible = await totalItems.isVisible().catch(() => false)
     // Either total items is visible (authenticated) or page loaded successfully
     expect(isVisible || await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Inventory Delete - Dashboard counts updated')
   })
 
   // Scenario 97: Cannot delete item that is checked out (warning shown)
   test('97. Cannot delete item that is checked out (warning shown)', async ({ page }) => {
     const hasItem = await navigateToFirstItem(page)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Inventory Delete - Checked out warning')
   })
 
   // Scenario 98: Swipe to delete gesture (if enabled)
@@ -85,12 +93,14 @@ test.describe('Inventory Items - Delete', () => {
     await page.goto('/inventory')
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Inventory Delete - Swipe to delete mobile')
   })
 
   // Scenario 99: Confirmation shows item name being deleted
   test('99. Confirmation shows item name being deleted', async ({ page }) => {
     const hasItem = await navigateToFirstItem(page)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Inventory Delete - Confirmation with item name')
   })
 
   // Scenario 100: Activity log records deletion
@@ -101,5 +111,6 @@ test.describe('Inventory Items - Delete', () => {
     const isVisible = await heading.isVisible().catch(() => false)
     // Either activity log is visible (authenticated) or page loaded successfully
     expect(isVisible || await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Inventory Delete - Activity log')
   })
 })

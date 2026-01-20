@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { takePercySnapshot } from './utils/percy'
 
 /**
  * E2E Tests for Search & Filtering
@@ -22,6 +23,7 @@ test.describe('Search & Filtering', () => {
       await page.waitForTimeout(500) // Debounce
     }
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Search - Partial name match')
   })
 
   // Scenario 117: Search by SKU
@@ -34,6 +36,7 @@ test.describe('Search & Filtering', () => {
       await page.waitForTimeout(500)
     }
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Search - By SKU')
   })
 
   // Scenario 118: Search by barcode
@@ -46,6 +49,7 @@ test.describe('Search & Filtering', () => {
       await page.waitForTimeout(500)
     }
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Search - By barcode')
   })
 
   // Scenario 119: Search by notes content
@@ -58,6 +62,7 @@ test.describe('Search & Filtering', () => {
       await page.waitForTimeout(500)
     }
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Search - By notes')
   })
 
   // Scenario 120: Search results appear within 200ms
@@ -73,6 +78,7 @@ test.describe('Search & Filtering', () => {
       console.log(`Search response time: ${elapsed}ms`)
     }
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Search - Fast results')
   })
 
   // Scenario 121: Filter by stock status (in stock/low/out)
@@ -86,6 +92,7 @@ test.describe('Search & Filtering', () => {
       await page.waitForTimeout(300)
     }
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Search - Filter by stock status')
   })
 
   // Scenario 122: Filter by folder/category
@@ -93,6 +100,7 @@ test.describe('Search & Filtering', () => {
     const filterButton = page.getByRole('button', { name: /filter|folder|category/i }).first()
     const isVisible = await filterButton.isVisible().catch(() => false)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Search - Filter by folder')
   })
 
   // Scenario 123: Filter by tag
@@ -100,6 +108,7 @@ test.describe('Search & Filtering', () => {
     const filterButton = page.getByRole('button', { name: /filter|tag/i }).first()
     const isVisible = await filterButton.isVisible().catch(() => false)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Search - Filter by tag')
   })
 
   // Scenario 124: Combine multiple filters
@@ -107,6 +116,7 @@ test.describe('Search & Filtering', () => {
     const filterButton = page.getByRole('button', { name: /filter/i }).first()
     const isVisible = await filterButton.isVisible().catch(() => false)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Search - Multiple filters')
   })
 
   // Scenario 125: Clear all filters with one tap
@@ -115,6 +125,7 @@ test.describe('Search & Filtering', () => {
     const clearButton = page.getByRole('button', { name: /clear|reset/i }).first()
     const isVisible = await clearButton.isVisible().catch(() => false)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Search - Clear filters')
   })
 
   // Scenario 126: Sort by name (A-Z, Z-A)
@@ -123,6 +134,7 @@ test.describe('Search & Filtering', () => {
     const sortButton = page.getByRole('button', { name: /sort/i }).first()
     const isVisible = await sortButton.isVisible().catch(() => false)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Search - Sort by name')
   })
 
   // Scenario 127: Sort by quantity (high to low, low to high)
@@ -130,6 +142,7 @@ test.describe('Search & Filtering', () => {
     const sortButton = page.getByRole('button', { name: /sort/i }).first()
     const isVisible = await sortButton.isVisible().catch(() => false)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Search - Sort by quantity')
   })
 
   // Scenario 128: Sort by date modified
@@ -137,6 +150,7 @@ test.describe('Search & Filtering', () => {
     const sortButton = page.getByRole('button', { name: /sort/i }).first()
     const isVisible = await sortButton.isVisible().catch(() => false)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Search - Sort by date')
   })
 
   // Scenario 129: Sort by value
@@ -144,6 +158,7 @@ test.describe('Search & Filtering', () => {
     const sortButton = page.getByRole('button', { name: /sort/i }).first()
     const isVisible = await sortButton.isVisible().catch(() => false)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Search - Sort by value')
   })
 
   // Scenario 130: Search history shows recent searches
@@ -158,5 +173,6 @@ test.describe('Search & Filtering', () => {
       const historyVisible = await historyDropdown.isVisible().catch(() => false)
     }
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Search - Search history')
   })
 })

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { takePercySnapshot } from './utils/percy'
 
 /**
  * E2E Tests for Advanced Features
@@ -12,12 +13,14 @@ test.describe('Offline Mode', () => {
     await page.goto('/inventory')
     await page.waitForLoadState('load')
     await expect(page.locator('body')).toBeVisible()
+    await takePercySnapshot(page, 'Advanced - Cached inventory offline')
   })
 
   test('397. Queue quantity changes while offline', async ({ page }) => {
     await page.goto('/inventory')
     await page.waitForLoadState('load')
     await expect(page.locator('body')).toBeVisible()
+    await takePercySnapshot(page, 'Advanced - Queue changes offline')
   })
 
   test('398. Offline indicator shown in UI', async ({ page }) => {
@@ -27,18 +30,21 @@ test.describe('Offline Mode', () => {
     const offlineIndicator = page.locator('[class*="offline"], [aria-label*="offline"]')
     const isVisible = await offlineIndicator.isVisible().catch(() => false)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Advanced - Offline indicator')
   })
 
   test('399. Sync pending changes when back online', async ({ page }) => {
     await page.goto('/inventory')
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Advanced - Sync pending changes')
   })
 
   test('400-410. Offline mode features', async ({ page }) => {
     await page.goto('/inventory')
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Advanced - Offline mode features')
   })
 })
 
@@ -52,18 +58,21 @@ test.describe('AI Assistant', () => {
     const aiButton = page.getByRole('button', { name: /zoe|ai|assistant/i }).first()
     const isVisible = await aiButton.isVisible().catch(() => false)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Advanced - AI assistant button')
   })
 
   test('412. Ask AI about inventory status', async ({ page }) => {
     await page.goto('/ai-assistant')
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Advanced - AI inventory status')
   })
 
   test('413-420. AI assistant features', async ({ page }) => {
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Advanced - AI assistant features')
   })
 })
 
@@ -76,54 +85,63 @@ test.describe('Performance & Edge Cases', () => {
     const loadTime = Date.now() - startTime
     console.log(`App load time: ${loadTime}ms`)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Advanced - App load performance')
   })
 
   test('422. Handle 1000+ items without lag', async ({ page }) => {
     await page.goto('/inventory')
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Advanced - Large item list')
   })
 
   test('423. Virtual scrolling for large lists', async ({ page }) => {
     await page.goto('/inventory')
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Advanced - Virtual scrolling')
   })
 
   test('424. Graceful handling of network errors', async ({ page }) => {
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Advanced - Network error handling')
   })
 
   test('425. Session timeout handled gracefully', async ({ page }) => {
     await page.goto('/login')
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Advanced - Session timeout')
   })
 
   test('426. Empty states shown for zero items', async ({ page }) => {
     await page.goto('/inventory')
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Advanced - Empty state')
   })
 
   test('427. Duplicate SKU prevented with clear error', async ({ page }) => {
     await page.goto('/inventory/new')
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Advanced - Duplicate SKU error')
   })
 
   test('428. Maximum photo limit handled (5 photos)', async ({ page }) => {
     await page.goto('/inventory/new')
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Advanced - Photo limit')
   })
 
   test('429. Large photo files compressed/rejected', async ({ page }) => {
     await page.goto('/inventory/new')
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Advanced - Photo compression')
   })
 
   test('430. Negative quantity prevented', async ({ page }) => {
@@ -139,24 +157,28 @@ test.describe('Performance & Edge Cases', () => {
       // Not authenticated - page loaded successfully
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Advanced - Negative quantity prevention')
   })
 
   test('431. Special characters handled in item names', async ({ page }) => {
     await page.goto('/inventory/new')
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Advanced - Special characters')
   })
 
   test('432. Long item names truncated with ellipsis', async ({ page }) => {
     await page.goto('/inventory')
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Advanced - Long name truncation')
   })
 
   test('433. Concurrent edits handled', async ({ page }) => {
     await page.goto('/inventory')
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Advanced - Concurrent edits')
   })
 
   test('434. Memory leaks prevented on navigation', async ({ page }) => {
@@ -168,12 +190,14 @@ test.describe('Performance & Edge Cases', () => {
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Advanced - Memory management')
   })
 
   test('435-440. Additional performance tests', async ({ page }) => {
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Advanced - Performance tests')
   })
 })
 
@@ -186,6 +210,7 @@ test.describe('Accessibility', () => {
     // Check for ARIA labels
     const hasAriaLabels = await page.locator('[aria-label]').count() > 0
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Accessibility - Screen reader nav')
   })
 
   test('442. Keyboard navigation for all features', async ({ page }) => {
@@ -196,12 +221,14 @@ test.describe('Accessibility', () => {
     await page.keyboard.press('Tab')
     await page.keyboard.press('Tab')
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Accessibility - Keyboard navigation')
   })
 
   test('443. Color contrast meets WCAG standards', async ({ page }) => {
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Accessibility - Color contrast')
   })
 
   test('444. Touch targets minimum 44x44 pixels', async ({ page }) => {
@@ -209,12 +236,14 @@ test.describe('Accessibility', () => {
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Accessibility - Touch targets')
   })
 
   test('445. Text scalable without breaking layout', async ({ page }) => {
     await page.goto('/dashboard')
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Accessibility - Text scaling')
   })
 
   test('446. Focus indicators visible on all interactive elements', async ({ page }) => {
@@ -226,12 +255,14 @@ test.describe('Accessibility', () => {
     const focusedElement = page.locator(':focus')
     const isVisible = await focusedElement.isVisible().catch(() => false)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Accessibility - Focus indicators')
   })
 
   test('447. Error messages announced to screen readers', async ({ page }) => {
     await page.goto('/login')
     await page.waitForLoadState('networkidle')
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Accessibility - Error announcements')
   })
 
   test('448. Form labels properly associated with inputs', async ({ page }) => {
@@ -242,6 +273,7 @@ test.describe('Accessibility', () => {
     const emailLabel = page.locator('label[for="userEmail"]')
     const hasLabel = await emailLabel.isVisible().catch(() => false)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Accessibility - Form labels')
   })
 
   test('449. Images have alt text', async ({ page }) => {
@@ -255,6 +287,7 @@ test.describe('Accessibility', () => {
       // alt can be empty string for decorative images
       expect(alt !== null).toBe(true)
     }
+    await takePercySnapshot(page, 'Accessibility - Image alt text')
   })
 
   test('450. Skip to main content link available', async ({ page }) => {
@@ -265,5 +298,6 @@ test.describe('Accessibility', () => {
     const skipLink = page.locator('a[href="#main-content"], .skip-link').first()
     const isVisible = await skipLink.isVisible().catch(() => false)
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Accessibility - Skip link')
   })
 })

@@ -1,5 +1,9 @@
 {
   "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["@playwright/mcp@latest"]
+    },
     "sauce-labs": {
       "command": "/Users/tongkwankiat/.local/bin/uvx",
       "args": ["sauce-api-mcp"],

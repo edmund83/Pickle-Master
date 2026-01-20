@@ -13,6 +13,72 @@
 2. **Testing Environment:** Test on both iOS and Android devices
 3. **Network Conditions:** Test under various network conditions (4G, 3G, WiFi, Offline)
 4. **Mark Status:** Use ✅ Pass, ❌ Fail, ⏭️ Skipped, 🔄 Retest
+5. **Notes Field:** Tag coverage and evidence (e.g., `[E2E][DI][D]`, test run ID, trace link, DB check)
+
+## Test Strategy (Layered Coverage)
+
+- Primary goal: verify UI behavior and data integrity for every scenario.
+- Execute each scenario using the "Primary coverage" defined in the matrix below.
+- Run the DI checklist whenever a scenario creates/updates/deletes data or changes status.
+- Prefer automation where possible (Vitest for U/I, Playwright for E2E), then validate device-only paths manually.
+
+### Coverage Legend
+
+- U = Unit tests (business logic, validators, calculations)
+- I = Integration tests (component + API wiring)
+- E2E = End-to-end tests (full user journeys)
+- DI = Data integrity verification (DB read-back + constraints + audit)
+- V = Visual regression (key screens and PDFs)
+- D = Device/hardware (camera, push notifications, printers, offline)
+- P = Performance (throughput, latency, load)
+- A = Accessibility (screen reader, contrast, focus)
+- S = Security/permissions (roles, RLS, isolation)
+
+### Data Integrity Checklist (DI)
+
+- Verify the record exists with correct fields after create/update (or is absent after delete).
+- Verify derived totals and status transitions (dashboard KPIs, report totals, item status).
+- Verify audit log entries and user attribution for the action.
+- Verify role isolation (other roles cannot see or mutate restricted data).
+- Verify idempotency (retry does not create duplicates or double-count).
+- Offline scenarios: verify queued changes sync correctly and resolve conflicts.
+
+### Scenario Coverage Matrix
+
+| Section | Scenario range | Primary coverage | DI requirement |
+|---|---|---|---|
+| Authentication & Onboarding | 1-15 | E2E + S | Required |
+| Dashboard & Navigation | 16-35 | E2E + V + P | Sample |
+| Inventory Items - Create | 36-55 | E2E + U/I | Required |
+| Inventory Items - Read & View | 56-70 | E2E + V | Sample |
+| Inventory Items - Update | 71-90 | E2E + U/I | Required |
+| Inventory Items - Delete | 91-100 | E2E | Required |
+| Folders & Categories | 101-115 | E2E | Required |
+| Search & Filtering | 116-130 | E2E + P | Sample |
+| Barcode & QR Scanning | 131-150 | E2E + D | Required |
+| Check-In / Check-Out | 151-170 | E2E | Required |
+| Purchase Orders | 171-190 | E2E | Required |
+| Goods Receiving | 191-205 | E2E + D | Required |
+| Pick Lists | 206-225 | E2E | Required |
+| Sales Orders | 226-235 | E2E | Required |
+| Delivery Orders | 236-250 | E2E | Required |
+| Invoices | 251-265 | E2E | Required |
+| Stock Counts | 266-280 | E2E + D | Required |
+| Reorder Suggestions | 281-290 | E2E + P | Required |
+| Lot & Batch Tracking | 291-300 | E2E | Required |
+| Serial Number Tracking | 301-310 | E2E + D | Required |
+| Reminders & Alerts | 311-320 | E2E | Sample |
+| Notifications | 321-330 | E2E + D | Sample |
+| Reports | 331-340 | E2E + V | Required |
+| Labels & Printing | 341-350 | E2E + D + V | Sample |
+| Team & Permissions | 351-360 | E2E + S | Required |
+| Settings | 361-375 | E2E | Required |
+| Vendors & Customers | 376-385 | E2E | Required |
+| Data Import/Export | 386-395 | E2E + P | Required |
+| Offline Mode | 396-410 | E2E + D | Required |
+| AI Assistant (Ask Zoe) | 411-420 | E2E | Sample |
+| Performance & Edge Cases | 421-440 | P + E2E | Sample |
+| Accessibility | 441-450 | A + E2E | N/A |
 
 ---
 

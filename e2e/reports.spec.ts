@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { takePercySnapshot } from './utils/percy'
 
 /**
  * E2E Tests for Reports
@@ -36,6 +37,7 @@ test.describe('Reports Hub', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Hub page')
   })
 
   test('displays all 8 report cards', async ({ page }) => {
@@ -57,6 +59,7 @@ test.describe('Reports Hub', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - All report cards')
   })
 
   test('report cards have correct links', async ({ page }) => {
@@ -79,6 +82,7 @@ test.describe('Reports Hub', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Card links')
   })
 })
 
@@ -94,6 +98,7 @@ test.describe('Low Stock Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Low stock title')
   })
 
   test('displays back button', async ({ page }) => {
@@ -104,6 +109,7 @@ test.describe('Low Stock Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Low stock back button')
   })
 
   test('displays summary cards for out of stock and low stock', async ({ page }) => {
@@ -114,6 +120,7 @@ test.describe('Low Stock Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Low stock summary')
   })
 
   test('back button navigates to reports hub', async ({ page }) => {
@@ -124,6 +131,7 @@ test.describe('Low Stock Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Low stock navigation')
   })
 })
 
@@ -139,6 +147,7 @@ test.describe('Inventory Summary Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Inventory summary title')
   })
 
   test('displays summary stats', async ({ page }) => {
@@ -151,6 +160,7 @@ test.describe('Inventory Summary Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Inventory summary stats')
   })
 
   test('displays By Category section', async ({ page }) => {
@@ -160,6 +170,7 @@ test.describe('Inventory Summary Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - By category section')
   })
 })
 
@@ -175,6 +186,7 @@ test.describe('Inventory Value Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Inventory value title')
   })
 
   test('displays value stats', async ({ page }) => {
@@ -187,6 +199,7 @@ test.describe('Inventory Value Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Inventory value stats')
   })
 
   test('displays Value by Folder section', async ({ page }) => {
@@ -196,6 +209,7 @@ test.describe('Inventory Value Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Value by folder')
   })
 
   test('displays Top 10 Valuable Items section', async ({ page }) => {
@@ -205,6 +219,7 @@ test.describe('Inventory Value Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Top valuable items')
   })
 })
 
@@ -220,6 +235,7 @@ test.describe('Profit Margin Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Profit margin title')
   })
 
   test('displays margin stats', async ({ page }) => {
@@ -232,6 +248,7 @@ test.describe('Profit Margin Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Profit margin stats')
   })
 
   test('displays Highest Margin Items section', async ({ page }) => {
@@ -241,6 +258,7 @@ test.describe('Profit Margin Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Highest margin items')
   })
 
   test('displays Lowest Margin Items section', async ({ page }) => {
@@ -250,6 +268,7 @@ test.describe('Profit Margin Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Lowest margin items')
   })
 
   test('displays Top Profit Contributors section', async ({ page }) => {
@@ -259,6 +278,7 @@ test.describe('Profit Margin Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Top profit contributors')
   })
 })
 
@@ -274,6 +294,7 @@ test.describe('Activity Log Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Activity log title')
   })
 
   test('displays filter button', async ({ page }) => {
@@ -283,6 +304,7 @@ test.describe('Activity Log Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Activity log filter')
   })
 
   test('displays export CSV button', async ({ page }) => {
@@ -292,6 +314,7 @@ test.describe('Activity Log Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Activity log export')
   })
 
   test('filter panel shows when clicked', async ({ page }) => {
@@ -304,6 +327,7 @@ test.describe('Activity Log Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Activity log filter panel')
   })
 
   test('can filter by action type', async ({ page }) => {
@@ -315,6 +339,7 @@ test.describe('Activity Log Report', () => {
       await page.waitForTimeout(500)
     }
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Reports - Activity log filtered')
   })
 })
 
@@ -330,6 +355,7 @@ test.describe('Inventory Trends Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Trends title')
   })
 
   test('displays trend stats', async ({ page }) => {
@@ -342,6 +368,7 @@ test.describe('Inventory Trends Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Trends stats')
   })
 
   test('displays Activity Last 7 Days section', async ({ page }) => {
@@ -351,6 +378,7 @@ test.describe('Inventory Trends Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Last 7 days activity')
   })
 
   test('displays Action Breakdown section', async ({ page }) => {
@@ -360,6 +388,7 @@ test.describe('Inventory Trends Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Action breakdown')
   })
 
   test('displays Most Active Items section', async ({ page }) => {
@@ -369,6 +398,7 @@ test.describe('Inventory Trends Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Most active items')
   })
 })
 
@@ -384,6 +414,7 @@ test.describe('Stock Movement Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Stock movement title')
   })
 
   test('displays movement stats', async ({ page }) => {
@@ -395,6 +426,7 @@ test.describe('Stock Movement Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Stock movement stats')
   })
 
   test('displays date range selector', async ({ page }) => {
@@ -409,6 +441,7 @@ test.describe('Stock Movement Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Stock movement date range')
   })
 
   test('displays export CSV button', async ({ page }) => {
@@ -418,6 +451,7 @@ test.describe('Stock Movement Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Stock movement export')
   })
 
   test('can change date range', async ({ page }) => {
@@ -428,6 +462,7 @@ test.describe('Stock Movement Report', () => {
       await page.waitForTimeout(500)
     }
     expect(await page.locator('body').isVisible()).toBe(true)
+    await takePercySnapshot(page, 'Reports - Stock movement 7 days')
   })
 })
 
@@ -443,6 +478,7 @@ test.describe('Expiring Items Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Expiring items title')
   })
 
   test('displays expiry summary stats', async ({ page }) => {
@@ -455,6 +491,7 @@ test.describe('Expiring Items Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Expiring items stats')
   })
 
   test('shows empty state or expired lots section', async ({ page }) => {
@@ -466,6 +503,7 @@ test.describe('Expiring Items Report', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Expiring items section')
   })
 })
 
@@ -497,6 +535,7 @@ test.describe('Navigation', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Navigation complete')
   })
 })
 
@@ -514,6 +553,7 @@ test.describe('Responsive Design', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Mobile view')
   })
 
   test('reports hub displays correctly on tablet', async ({ page }) => {
@@ -526,6 +566,7 @@ test.describe('Responsive Design', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Tablet view')
   })
 
   test('reports hub displays correctly on desktop', async ({ page }) => {
@@ -539,5 +580,6 @@ test.describe('Responsive Design', () => {
     } else {
       expect(await page.locator('body').isVisible()).toBe(true)
     }
+    await takePercySnapshot(page, 'Reports - Desktop view')
   })
 })

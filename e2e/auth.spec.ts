@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { takePercySnapshot, preparePageForSnapshot } from './utils/percy'
 
 /**
  * E2E Tests for Authentication & Onboarding
@@ -26,6 +27,9 @@ test.describe('Authentication & Onboarding', () => {
     await expect(page.locator('#userPassword')).toBeVisible()
     await expect(page.locator('#termsAgreement')).toBeVisible()
     await expect(page.getByRole('button', { name: 'Create account' })).toBeVisible()
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Auth - Sign Up Form Mobile')
   })
 
   // Scenario 2: Sign up with Google OAuth on mobile
@@ -38,6 +42,9 @@ test.describe('Authentication & Onboarding', () => {
     const googleButton = page.getByRole('button', { name: /google/i })
     await expect(googleButton).toBeVisible({ timeout: 10000 })
     await expect(googleButton).toBeEnabled()
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Auth - Sign Up Google OAuth Mobile')
   })
 
   // Scenario 3: Sign in with existing email/password credentials
@@ -50,6 +57,9 @@ test.describe('Authentication & Onboarding', () => {
     await expect(page.locator('#userEmail')).toBeVisible()
     await expect(page.locator('#userPassword')).toBeVisible()
     await expect(page.getByRole('button', { name: /sign in/i })).toBeVisible()
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Auth - Login Form')
   })
 
   // Scenario 4: Sign in with Google OAuth
@@ -61,6 +71,9 @@ test.describe('Authentication & Onboarding', () => {
     const googleButton = page.getByRole('button', { name: /google/i })
     await expect(googleButton).toBeVisible({ timeout: 10000 })
     await expect(googleButton).toBeEnabled()
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Auth - Login Google OAuth')
   })
 
   // Scenario 5: Reset password via email link on mobile
@@ -76,6 +89,9 @@ test.describe('Authentication & Onboarding', () => {
 
     // Should navigate to forgot password page
     await expect(page).toHaveURL('/forgot-password')
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Auth - Forgot Password Mobile')
   })
 
   // Scenario 6: Sign out from the app
@@ -86,6 +102,9 @@ test.describe('Authentication & Onboarding', () => {
 
     // Verify the login page loads (sign out would redirect here)
     await expect(page.getByRole('heading', { name: 'Sign in to StockZip' })).toBeVisible({ timeout: 10000 })
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Auth - Sign Out Redirect')
   })
 
   // Scenario 7: Session persists after closing and reopening app
@@ -97,6 +116,9 @@ test.describe('Authentication & Onboarding', () => {
     await page.waitForLoadState('networkidle')
     const url = page.url()
     expect(url).toMatch(/\/(dashboard|login)/)
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Auth - Session Persistence')
   })
 
   // Scenario 8: Session expires after prolonged inactivity
@@ -108,6 +130,9 @@ test.describe('Authentication & Onboarding', () => {
     // Page should load without error
     const hasContent = await page.locator('body').isVisible()
     expect(hasContent).toBe(true)
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Auth - Session Expiry Check')
   })
 
   // Scenario 9: Complete onboarding flow to add first item
@@ -118,6 +143,9 @@ test.describe('Authentication & Onboarding', () => {
     // Check if dashboard or inventory access is possible
     const url = page.url()
     expect(url).toMatch(/\/(dashboard|login|inventory)/)
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Auth - Onboarding Flow')
   })
 
   // Scenario 10: Skip onboarding and navigate to dashboard
@@ -128,6 +156,9 @@ test.describe('Authentication & Onboarding', () => {
     // Should be able to access dashboard
     const url = page.url()
     expect(url).toMatch(/\/(dashboard|login)/)
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Auth - Skip Onboarding')
   })
 
   // Scenario 11: View and accept terms of service during signup
@@ -144,6 +175,9 @@ test.describe('Authentication & Onboarding', () => {
     const termsLink = page.getByRole('link', { name: /terms of service/i })
     const href = await termsLink.getAttribute('href')
     expect(href).toBe('/terms')
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Auth - Terms of Service')
   })
 
   // Scenario 12: Error message displayed for invalid email format
@@ -165,6 +199,9 @@ test.describe('Authentication & Onboarding', () => {
     const emailInput = page.locator('#userEmail')
     const isInvalid = await emailInput.evaluate((el: HTMLInputElement) => !el.validity.valid)
     expect(isInvalid).toBe(true)
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Auth - Invalid Email Error')
   })
 
   // Scenario 13: Error message displayed for weak password
@@ -177,6 +214,9 @@ test.describe('Authentication & Onboarding', () => {
     await expect(passwordInput).toBeVisible({ timeout: 10000 })
     const minLength = await passwordInput.getAttribute('minLength')
     expect(minLength).toBe('6')
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Auth - Password Validation')
   })
 
   // Scenario 14: Error message displayed for incorrect login credentials
@@ -198,6 +238,9 @@ test.describe('Authentication & Onboarding', () => {
     const url = page.url()
     const hasError = await page.locator('.text-red-600').isVisible().catch(() => false)
     expect(url.includes('/login') || hasError).toBe(true)
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Auth - Invalid Credentials Error')
   })
 
   // Scenario 15: Navigate back to login from signup screen
@@ -212,5 +255,8 @@ test.describe('Authentication & Onboarding', () => {
 
     // Should navigate to login page
     await expect(page).toHaveURL('/login')
+
+    // Percy snapshot
+    await takePercySnapshot(page, 'Auth - Navigate to Login')
   })
 })
