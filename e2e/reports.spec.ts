@@ -14,10 +14,12 @@ test.describe('Reports Hub', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to reports page (requires authentication)
     await page.goto('/reports')
+    await page.waitForLoadState('networkidle')
   })
 
   test('displays reports hub page with title', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: 'Reports' })).toBeVisible()
+    // Wait for page content to load
+    await expect(page.getByRole('heading', { name: 'Reports' }).first()).toBeVisible({ timeout: 10000 })
     await expect(page.getByText('Analyze your inventory data')).toBeVisible()
   })
 
@@ -290,6 +292,9 @@ test.describe('Expiring Items Report', () => {
 
 test.describe('Navigation', () => {
   test('can navigate from reports hub to each report and back', async ({ page }) => {
+    // Increase timeout for this test that navigates to 8 pages
+    test.setTimeout(120000)
+
     const reports = [
       { url: '/reports/low-stock', title: 'Low Stock Report' },
       { url: '/reports/inventory-summary', title: 'Inventory Summary' },
@@ -302,8 +307,8 @@ test.describe('Navigation', () => {
     ]
 
     for (const report of reports) {
-      await page.goto('/reports')
-      await page.goto(report.url)
+      await page.goto('/reports', { waitUntil: 'networkidle' })
+      await page.goto(report.url, { waitUntil: 'networkidle' })
       await expect(page).toHaveURL(report.url)
 
       // Check title is visible
