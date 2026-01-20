@@ -1,3 +1,13 @@
 {
-  "mcpServers": {}
+  "mcpServers": {
+    "sauce-labs": {
+      "command": "/Users/tongkwankiat/.local/bin/uvx",
+      "args": ["sauce-api-mcp"],
+      "env": {
+        "SAUCE_USERNAME": "oauth-edmund.tong83-861af",
+        "SAUCE_ACCESS_KEY": "655b2dd6-b51d-4497-b7d2-fb46d8908ce0",
+        "SAUCE_REGION": "US_WEST"
+      }
+    }
+  }
 }
