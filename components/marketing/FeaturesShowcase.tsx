@@ -101,6 +101,7 @@ const FEATURES: Feature[] = [
       },
     ],
     imageAlt: 'StockZip real-time team collaboration and multi-location tracking',
+    imageSrc: '/images/StockIMS.jpg',
   },
 ]
 
