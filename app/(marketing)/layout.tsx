@@ -60,9 +60,9 @@ export default function MarketingLayout({
       <div className="fixed top-0 z-10 w-full">
         {/* Announcement Banner */}
         <div className="bg-accent text-accent-content text-center py-2.5 px-4 text-sm font-medium">
-          New Members Get 30% Off Annual Plan
+          Early Access: Get 3 Months Free — Limited Spots
           <Link href="/pricing" className="ml-4 btn btn-xs bg-white text-accent-content rounded-full border-0 hover:bg-white/90">
-            Read more
+            Join now
           </Link>
         </div>
         {/* Navigation */}
