@@ -29,13 +29,18 @@ interface ItemCheckoutSectionProps {
   item: InventoryItem
 }
 
+interface ItemCheckoutStatusCardProps {
+  item: InventoryItem
+  onCheckoutChange?: () => void
+}
+
 const assigneeTypeIcons = {
   person: <User className="h-4 w-4" />,
   job: <Briefcase className="h-4 w-4" />,
   location: <MapPin className="h-4 w-4" />
 }
 
-export function ItemCheckoutStatusCard({ item }: ItemCheckoutSectionProps) {
+export function ItemCheckoutStatusCard({ item, onCheckoutChange }: ItemCheckoutStatusCardProps) {
   const router = useRouter()
   const [activeCheckout, setActiveCheckout] = useState<ActiveCheckout | null>(null)
   const [loading, setLoading] = useState(true)
@@ -51,17 +56,14 @@ export function ItemCheckoutStatusCard({ item }: ItemCheckoutSectionProps) {
     const supabase = createClient()
 
     try {
-       
       const { data: checkoutData } = await (supabase as any)
         .from('checkouts')
         .select('*')
         .eq('item_id', item.id)
         .neq('status', 'returned')
-        .maybeSingle() // Use maybeSingle to avoid error if no checkout found
+        .maybeSingle()
 
       if (checkoutData) {
-        // Calculate overdue status manually since we aren't using RPC
-        // Compare dates at day level - item is overdue only AFTER the due date has passed
         const today = new Date()
         today.setHours(0, 0, 0, 0)
         const dueDate = checkoutData.due_date ? new Date(checkoutData.due_date) : null
@@ -73,7 +75,7 @@ export function ItemCheckoutStatusCard({ item }: ItemCheckoutSectionProps) {
           ...checkoutData,
           is_overdue: isOverdue,
           days_until_due: daysUntilDue,
-          checked_out_by_name: null // Simplified, logic would need another join or separate fetch if needed, but for now null is fine
+          checked_out_by_name: null
         })
       } else {
         setActiveCheckout(null)
@@ -88,6 +90,7 @@ export function ItemCheckoutStatusCard({ item }: ItemCheckoutSectionProps) {
 
   function handleSuccess() {
     loadActiveCheckout()
+    onCheckoutChange?.()
     router.refresh()
   }
 
@@ -213,19 +216,25 @@ export function ItemCheckoutStatusCard({ item }: ItemCheckoutSectionProps) {
   )
 }
 
-export function ItemCheckoutHistoryCard({ itemId, limit = 5 }: { itemId: string; limit?: number }) {
+export function ItemCheckoutHistoryCard({ itemId, limit = 5, refreshTrigger = 0 }: { itemId: string; limit?: number; refreshTrigger?: number }) {
   return (
     <ItemDetailCard title="Borrowing History" icon={<Clock className="h-5 w-5" />}>
-      <CheckoutHistory itemId={itemId} limit={limit} />
+      <CheckoutHistory itemId={itemId} limit={limit} refreshTrigger={refreshTrigger} />
     </ItemDetailCard>
   )
 }
 
 export function ItemCheckoutSection({ item }: ItemCheckoutSectionProps) {
+  const [refreshTrigger, setRefreshTrigger] = useState(0)
+
+  function handleCheckoutChange() {
+    setRefreshTrigger(prev => prev + 1)
+  }
+
   return (
     <>
-      <ItemCheckoutStatusCard item={item} />
-      <ItemCheckoutHistoryCard itemId={item.id} limit={5} />
+      <ItemCheckoutStatusCard item={item} onCheckoutChange={handleCheckoutChange} />
+      <ItemCheckoutHistoryCard itemId={item.id} limit={5} refreshTrigger={refreshTrigger} />
     </>
   )
 }
