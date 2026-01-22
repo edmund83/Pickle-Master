@@ -8,9 +8,32 @@ import { createClient } from '@/lib/supabase/client'
 import { AlertCircle, CheckCircle, Sparkles } from 'lucide-react'
 
 const PLAN_DETAILS = {
-  starter: { name: 'Starter', price: '$19/mo', color: 'bg-blue-100 text-blue-700' },
-  team: { name: 'Team', price: '$49/mo', color: 'bg-primary/10 text-primary', badge: 'Most Popular' },
-  business: { name: 'Business', price: '$99/mo', color: 'bg-purple-100 text-purple-700' },
+  early_access: {
+    name: 'Early Access',
+    price: '$0 for 3 months',
+    color: 'bg-accent/10 text-accent',
+    badge: 'Early Bird',
+    trialText: '3 months free • No card required',
+  },
+  starter: {
+    name: 'Starter',
+    price: '$18/mo',
+    color: 'bg-blue-100 text-blue-700',
+    trialText: '14 days free',
+  },
+  growth: {
+    name: 'Growth',
+    price: '$39/mo',
+    color: 'bg-primary/10 text-primary',
+    badge: 'Best Value',
+    trialText: '14 days free',
+  },
+  scale: {
+    name: 'Scale',
+    price: '$89/mo',
+    color: 'bg-purple-100 text-purple-700',
+    trialText: '14 days free',
+  },
 } as const
 
 type PlanType = keyof typeof PLAN_DETAILS
@@ -18,7 +41,7 @@ type PlanType = keyof typeof PLAN_DETAILS
 function SignupForm() {
   const searchParams = useSearchParams()
   const planParam = searchParams.get('plan') as PlanType | null
-  const selectedPlan = planParam && PLAN_DETAILS[planParam] ? planParam : 'team'
+  const selectedPlan = planParam && PLAN_DETAILS[planParam] ? planParam : 'growth'
   const planInfo = PLAN_DETAILS[selectedPlan]
 
   const [fullName, setFullName] = useState('')
@@ -166,14 +189,16 @@ function SignupForm() {
             <div className="flex items-center gap-2">
               <div className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium ${planInfo.color}`}>
                 <Sparkles className="h-3.5 w-3.5" />
-                Starting {planInfo.name} plan trial
+                {selectedPlan === 'early_access' ? 'Joining Early Access' : `Starting ${planInfo.name} plan trial`}
                 {'badge' in planInfo && (
                   <span className="ml-1 rounded-full bg-primary/20 px-2 py-0.5 text-xs">{planInfo.badge}</span>
                 )}
               </div>
             </div>
             <p className="text-xs text-base-content/60">
-              14 days free &bull; {planInfo.price} after trial &bull;{' '}
+              {planInfo.trialText}
+              {selectedPlan !== 'early_access' && ` • ${planInfo.price} after trial`}
+              {' • '}
               <Link href="/pricing" className="link link-primary">
                 Change plan
               </Link>

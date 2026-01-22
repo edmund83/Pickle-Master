@@ -107,6 +107,12 @@ export default function PricingPage() {
               We&apos;re launching and keeping prices low to help early customers get started. Sign up now and keep
               this rate as long as you stay with us.
             </p>
+            {/* Early Access callout */}
+            <p className="text-accent font-medium">
+              <span className="icon-[tabler--rocket] mr-1.5 inline-block size-4 align-text-bottom"></span>
+              Early Access: Get 3 months free for early supporters
+              <span className="text-base-content/60 font-normal"> (limited seats • no card required)</span>
+            </p>
             {/* Founders Pricing explainer */}
             <div className="bg-primary/5 border-primary/20 mt-2 flex flex-col items-center gap-2 rounded-xl border px-6 py-4 sm:flex-row sm:gap-6">
               <div className="flex items-center gap-2 text-sm">
@@ -126,10 +132,78 @@ export default function PricingPage() {
           </div>
 
           {/* ===== PRICING CARDS ===== */}
-          <div className="grid gap-6 lg:grid-cols-3">
+          <div className="grid gap-6 lg:grid-cols-4">
+            {/* Early Access Plan - Highlighted */}
+            <div className="relative origin-bottom scale-[1.02] lg:scale-105">
+              <div className="card bg-base-100 shadow-xl ring-2 ring-accent h-full">
+              <div className="card-body flex h-full flex-col gap-6">
+                <div className="space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="text-base-content text-xl font-bold">Early Access</h2>
+                    <span className="badge badge-accent rounded-full text-xs text-white">
+                      <span className="icon-[tabler--rocket] mr-1 size-3"></span>
+                      Early Bird
+                    </span>
+                  </div>
+                  <p className="text-base-content/70">3 months free for early supporters.</p>
+                </div>
+                <div className="text-base-content text-4xl font-bold">
+                  $0 <span className="text-base-content/50 text-base font-normal">for 3 months</span>
+                </div>
+                {/* Plan limits */}
+                <div className="bg-accent/10 -mx-2 rounded-lg px-3 py-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-base-content/70">Items</span>
+                    <span className="text-base-content font-semibold">1,200</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-base-content/70">Users</span>
+                    <span className="text-base-content font-semibold">3</span>
+                  </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-base-content/70">Locations</span>
+                    <span className="text-accent font-semibold">Up to 3</span>
+                  </div>
+                </div>
+                <ul className="text-base-content/80 space-y-3">
+                  <li className="flex gap-2">
+                    <span className="icon-[tabler--circle-check] text-success size-5 shrink-0"></span>
+                    <span>All Scale features included</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="icon-[tabler--circle-check] text-success size-5 shrink-0"></span>
+                    <span>Lot & serial number tracking</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="icon-[tabler--circle-check] text-success size-5 shrink-0"></span>
+                    <span>Advanced role permissions</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="icon-[tabler--circle-check] text-success size-5 shrink-0"></span>
+                    <span>Approvals & audit trail</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="icon-[tabler--sparkles] text-primary/60 size-5 shrink-0"></span>
+                    <span>500 AskZoe AI questions/month</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="icon-[tabler--mood-smile] text-accent/60 size-5 shrink-0"></span>
+                    <span className="text-base-content/60">Brief survey each month</span>
+                  </li>
+                </ul>
+                <div className="mt-auto flex flex-col items-center gap-2">
+                  <Link href="/signup?plan=early_access" className="btn btn-accent">
+                    Join Early Access
+                  </Link>
+                  <p className="text-base-content/60 text-center text-xs">Limited seats • No card required</p>
+                </div>
+              </div>
+            </div>
+            </div>
+
             {/* Starter Plan */}
-            <div className="card card-border bg-base-100 shadow-sm">
-              <div className="card-body gap-6">
+            <div className="card card-border bg-base-100 shadow-sm h-full">
+              <div className="card-body flex h-full flex-col gap-6">
                 <div className="space-y-1">
                   <h2 className="text-base-content text-xl font-semibold">Starter</h2>
                   <p className="text-base-content/70">Perfect for getting started.</p>
@@ -155,6 +229,10 @@ export default function PricingPage() {
                 <ul className="space-y-3 text-base-content/80">
                   <li className="flex gap-2">
                     <span className="icon-[tabler--circle-check] text-success size-5 shrink-0"></span>
+                    <span>Core features included:</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="icon-[tabler--circle-check] text-success size-5 shrink-0"></span>
                     <span>Barcode & QR scanning</span>
                   </li>
                   <li className="flex gap-2">
@@ -167,83 +245,75 @@ export default function PricingPage() {
                   </li>
                   <li className="flex gap-2">
                     <span className="icon-[tabler--circle-check] text-success size-5 shrink-0"></span>
-                    <span>CSV import/export</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="icon-[tabler--circle-check] text-success size-5 shrink-0"></span>
-                    <span>Label printing</span>
+                    <span>CSV import/export & label printing</span>
                   </li>
                   <li className="flex gap-2">
                     <span className="icon-[tabler--sparkles] text-primary/60 size-5 shrink-0"></span>
-                    <span className="text-base-content/60">50 AskZoe AI questions (first 7 days)</span>
+                    <span>50 AskZoe AI questions/month</span>
                   </li>
                 </ul>
-                <Link href="/signup?plan=starter" className="btn btn-primary">
-                  Start 14-Day Free Trial
-                </Link>
-                <p className="text-base-content/60 text-center text-xs">No credit card required</p>
+                <div className="mt-auto flex flex-col items-center gap-2">
+                  <Link href="/signup?plan=starter" className="btn btn-primary">
+                    Start 14-Day Free Trial
+                  </Link>
+                  <p className="text-base-content/60 text-center text-xs">No credit card required</p>
+                </div>
               </div>
             </div>
 
-            {/* Growth Plan (Recommended) - Bold styling with border + scale */}
-            <div className="relative scale-[1.02] lg:scale-105">
-              <div className="card bg-base-100 shadow-xl ring-2 ring-primary">
-                <div className="card-body gap-6">
-                  <div className="space-y-1">
-                    <div className="flex items-center justify-between gap-3">
-                      <h2 className="text-base-content text-xl font-bold">Growth</h2>
-                      <span className="badge badge-primary rounded-full text-white">
-                        <span className="icon-[tabler--star-filled] mr-1 size-3"></span>
-                        Recommended
-                      </span>
-                    </div>
-                    <p className="text-base-content/70">Best value for growing teams.</p>
+            {/* Growth Plan */}
+            <div className="card card-border bg-base-100 shadow-sm h-full">
+              <div className="card-body flex h-full flex-col gap-6">
+                <div className="space-y-1">
+                  <h2 className="text-base-content text-xl font-semibold">Growth</h2>
+                  <p className="text-base-content/70">Best value for growing teams.</p>
+                </div>
+                <div className="text-base-content text-4xl font-semibold">
+                  $39 <span className="text-base-content/50 text-base font-normal">/month</span>
+                </div>
+                {/* Plan limits */}
+                <div className="bg-base-200/50 -mx-2 rounded-lg px-3 py-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-base-content/70">Items</span>
+                    <span className="text-base-content font-medium">3,000</span>
                   </div>
-                  <div className="text-base-content text-4xl font-bold">
-                    $39 <span className="text-base-content/50 text-base font-normal">/month</span>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-base-content/70">Users</span>
+                    <span className="text-base-content font-medium">5</span>
                   </div>
-                  {/* Plan limits */}
-                  <div className="bg-primary/10 -mx-2 rounded-lg px-3 py-2">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-base-content/70">Items</span>
-                      <span className="text-base-content font-semibold">3,000</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-base-content/70">Users</span>
-                      <span className="text-base-content font-semibold">5</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-base-content/70">Locations</span>
-                      <span className="text-primary font-semibold">Multi-location</span>
-                    </div>
+                  <div className="flex items-center justify-between text-sm">
+                    <span className="text-base-content/70">Locations</span>
+                    <span className="text-base-content font-medium">Multi-location</span>
                   </div>
-                  <ul className="space-y-3 text-base-content/80">
-                    <li className="flex gap-2">
-                      <span className="icon-[tabler--circle-check] text-success size-5 shrink-0"></span>
-                      <span>Everything in Starter, plus:</span>
-                    </li>
-                    <li className="flex gap-2">
-                      <span className="icon-[tabler--circle-check] text-success size-5 shrink-0"></span>
-                      <span>Multi-location inventory</span>
-                    </li>
-                    <li className="flex gap-2">
-                      <span className="icon-[tabler--circle-check] text-success size-5 shrink-0"></span>
-                      <span>Purchase orders & receiving</span>
-                    </li>
-                    <li className="flex gap-2">
-                      <span className="icon-[tabler--circle-check] text-success size-5 shrink-0"></span>
-                      <span>Check-in / check-out workflow</span>
-                    </li>
-                    <li className="flex gap-2">
-                      <span className="icon-[tabler--circle-check] text-success size-5 shrink-0"></span>
-                      <span>Stock counts & cycle counting</span>
-                    </li>
-                    <li className="flex gap-2">
-                      <span className="icon-[tabler--sparkles] text-primary size-5 shrink-0"></span>
-                      <span>100 AskZoe AI questions/month</span>
-                    </li>
-                  </ul>
-                  <Link href="/signup?plan=growth" className="btn btn-primary btn-lg">
+                </div>
+                <ul className="space-y-3 text-base-content/80">
+                  <li className="flex gap-2">
+                    <span className="icon-[tabler--circle-check] text-success size-5 shrink-0"></span>
+                    <span>Everything in Starter, plus:</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="icon-[tabler--circle-check] text-success size-5 shrink-0"></span>
+                    <span>Multi-location inventory</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="icon-[tabler--circle-check] text-success size-5 shrink-0"></span>
+                    <span>Purchase orders & receiving</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="icon-[tabler--circle-check] text-success size-5 shrink-0"></span>
+                    <span>Check-in / check-out workflow</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="icon-[tabler--circle-check] text-success size-5 shrink-0"></span>
+                    <span>Stock counts & cycle counting</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="icon-[tabler--sparkles] text-primary/60 size-5 shrink-0"></span>
+                    <span>100 AskZoe AI questions/month</span>
+                  </li>
+                </ul>
+                <div className="mt-auto flex flex-col items-center gap-2">
+                  <Link href="/signup?plan=growth" className="btn btn-primary">
                     Start 14-Day Free Trial
                   </Link>
                   <p className="text-base-content/60 text-center text-xs">No credit card required</p>
@@ -252,8 +322,8 @@ export default function PricingPage() {
             </div>
 
             {/* Scale Plan */}
-            <div className="card card-border bg-base-100 shadow-sm">
-              <div className="card-body gap-6">
+            <div className="card card-border bg-base-100 shadow-sm h-full">
+              <div className="card-body flex h-full flex-col gap-6">
                 <div className="space-y-1">
                   <div className="flex items-center justify-between gap-3">
                     <h2 className="text-base-content text-xl font-semibold">Scale</h2>
@@ -305,10 +375,12 @@ export default function PricingPage() {
                     <span>500 AskZoe AI questions/month</span>
                   </li>
                 </ul>
-                <Link href="/signup?plan=scale" className="btn btn-primary">
-                  Start 14-Day Free Trial
-                </Link>
-                <p className="text-base-content/60 text-center text-xs">No credit card required</p>
+                <div className="mt-auto flex flex-col items-center gap-2">
+                  <Link href="/signup?plan=scale" className="btn btn-primary">
+                    Start 14-Day Free Trial
+                  </Link>
+                  <p className="text-base-content/60 text-center text-xs">No credit card required</p>
+                </div>
               </div>
             </div>
           </div>
@@ -360,18 +432,23 @@ export default function PricingPage() {
               <thead>
                 <tr className="normal-case">
                   <th className="bg-transparent"></th>
+                  <th className="bg-accent text-accent-content rounded-t-box space-y-1 text-center">
+                    <div className="flex items-center justify-center gap-1.5">
+                      <span className="text-lg font-semibold">Early Access</span>
+                      <span className="icon-[tabler--rocket] size-4"></span>
+                    </div>
+                    <div className="text-2xl font-bold">$0</div>
+                    <div className="text-sm font-normal opacity-80">3 months free</div>
+                  </th>
                   <th className="space-y-1 text-center">
                     <div className="text-base-content text-lg font-semibold">Starter</div>
                     <div className="text-base-content text-2xl font-bold">$18</div>
                     <div className="text-base-content/50 text-sm font-normal">Per month</div>
                   </th>
-                  <th className="bg-primary text-primary-content rounded-t-box space-y-1 text-center">
-                    <div className="flex items-center justify-center gap-1.5">
-                      <span className="text-lg font-semibold">Growth</span>
-                      <span className="icon-[tabler--star-filled] size-4"></span>
-                    </div>
-                    <div className="text-2xl font-bold">$39</div>
-                    <div className="text-sm font-normal opacity-80">Per month</div>
+                  <th className="space-y-1 text-center">
+                    <div className="text-base-content text-lg font-semibold">Growth</div>
+                    <div className="text-base-content text-2xl font-bold">$39</div>
+                    <div className="text-base-content/50 text-sm font-normal">Per month</div>
                   </th>
                   <th className="space-y-1 text-center">
                     <div className="text-base-content text-lg font-semibold">Scale</div>
@@ -384,22 +461,25 @@ export default function PricingPage() {
                 {/* Items */}
                 <tr className="text-base-content">
                   <td className="font-medium">Items</td>
+                  <td className="bg-accent/10 text-accent text-center font-semibold">1,200</td>
                   <td className="text-center">1,200</td>
-                  <td className="bg-primary/10 text-primary text-center font-semibold">3,000</td>
+                  <td className="text-center">3,000</td>
                   <td className="text-center">8,000</td>
                 </tr>
                 {/* Users */}
                 <tr className="text-base-content">
                   <td className="font-medium">Users</td>
+                  <td className="bg-accent/10 text-accent text-center font-semibold">3</td>
                   <td className="text-center">3</td>
-                  <td className="bg-primary/10 text-primary text-center font-semibold">5</td>
+                  <td className="text-center">5</td>
                   <td className="text-center">8</td>
                 </tr>
                 {/* Locations */}
                 <tr className="text-base-content">
                   <td className="font-medium">Locations</td>
+                  <td className="bg-accent/10 text-accent text-center font-semibold">Up to 3</td>
                   <td className="text-center">Single</td>
-                  <td className="bg-primary/10 text-primary text-center font-semibold">Multi</td>
+                  <td className="text-center">Multi</td>
                   <td className="text-center">Multi</td>
                 </tr>
                 {/* AskZoe AI */}
@@ -410,19 +490,25 @@ export default function PricingPage() {
                       AskZoe AI questions/mo
                     </span>
                   </td>
+                  <td className="bg-accent/10 text-accent text-center font-semibold">500</td>
                   <td className="text-base-content/50 text-center text-sm">50 trial*</td>
-                  <td className="bg-primary/10 text-primary text-center font-semibold">100</td>
+                  <td className="text-center">100</td>
                   <td className="text-center">500</td>
                 </tr>
                 {/* Barcode & QR scanning */}
                 <tr className="text-base-content">
                   <td className="font-medium">Barcode & QR scanning</td>
+                  <td className="bg-accent/10">
+                    <div className="flex justify-center">
+                      <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
+                    </div>
+                  </td>
                   <td>
                     <div className="flex justify-center">
                       <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
                     </div>
                   </td>
-                  <td className="bg-primary/10">
+                  <td>
                     <div className="flex justify-center">
                       <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
                     </div>
@@ -436,12 +522,17 @@ export default function PricingPage() {
                 {/* Mobile app + offline */}
                 <tr className="text-base-content">
                   <td className="font-medium">Mobile app + offline</td>
+                  <td className="bg-accent/10">
+                    <div className="flex justify-center">
+                      <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
+                    </div>
+                  </td>
                   <td>
                     <div className="flex justify-center">
                       <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
                     </div>
                   </td>
-                  <td className="bg-primary/10">
+                  <td>
                     <div className="flex justify-center">
                       <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
                     </div>
@@ -455,8 +546,13 @@ export default function PricingPage() {
                 {/* Purchase orders */}
                 <tr className="text-base-content">
                   <td className="font-medium">Purchase orders</td>
+                  <td className="bg-accent/10">
+                    <div className="flex justify-center">
+                      <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
+                    </div>
+                  </td>
                   <td className="text-base-content/30 text-center">—</td>
-                  <td className="bg-primary/10">
+                  <td>
                     <div className="flex justify-center">
                       <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
                     </div>
@@ -470,8 +566,13 @@ export default function PricingPage() {
                 {/* Check-in / check-out */}
                 <tr className="text-base-content">
                   <td className="font-medium">Check-in / check-out</td>
+                  <td className="bg-accent/10">
+                    <div className="flex justify-center">
+                      <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
+                    </div>
+                  </td>
                   <td className="text-base-content/30 text-center">—</td>
-                  <td className="bg-primary/10">
+                  <td>
                     <div className="flex justify-center">
                       <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
                     </div>
@@ -485,8 +586,13 @@ export default function PricingPage() {
                 {/* Lot & serial tracking */}
                 <tr className="text-base-content">
                   <td className="font-medium">Lot & serial tracking</td>
+                  <td className="bg-accent/10">
+                    <div className="flex justify-center">
+                      <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
+                    </div>
+                  </td>
                   <td className="text-base-content/30 text-center">—</td>
-                  <td className="bg-primary/10 text-base-content/30 text-center">—</td>
+                  <td className="text-base-content/30 text-center">—</td>
                   <td>
                     <div className="flex justify-center">
                       <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
@@ -496,8 +602,13 @@ export default function PricingPage() {
                 {/* Audit trail & approvals */}
                 <tr className="text-base-content">
                   <td className="font-medium">Audit trail & approvals</td>
+                  <td className="bg-accent/10">
+                    <div className="flex justify-center">
+                      <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
+                    </div>
+                  </td>
                   <td className="text-base-content/30 text-center">—</td>
-                  <td className="bg-primary/10 text-base-content/30 text-center">—</td>
+                  <td className="text-base-content/30 text-center">—</td>
                   <td>
                     <div className="flex justify-center">
                       <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
@@ -507,8 +618,13 @@ export default function PricingPage() {
                 {/* Priority support */}
                 <tr className="text-base-content">
                   <td className="font-medium">Priority support</td>
+                  <td className="bg-accent/10">
+                    <div className="flex justify-center">
+                      <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
+                    </div>
+                  </td>
                   <td className="text-base-content/30 text-center">—</td>
-                  <td className="bg-primary/10 text-base-content/30 text-center">—</td>
+                  <td className="text-base-content/30 text-center">—</td>
                   <td>
                     <div className="flex justify-center">
                       <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
@@ -518,14 +634,20 @@ export default function PricingPage() {
                 {/* CTA Row */}
                 <tr className="text-base-content">
                   <td></td>
+                  <td className="bg-accent rounded-b-box">
+                    <Link href="/signup?plan=early_access" className="text-accent-content flex items-center justify-center gap-1 font-medium">
+                      Join Now
+                      <span className="icon-[tabler--arrow-right] size-4 rtl:rotate-180"></span>
+                    </Link>
+                  </td>
                   <td>
                     <Link href="/signup?plan=starter" className="link link-primary flex items-center justify-center gap-1 font-medium">
                       Get Started
                       <span className="icon-[tabler--arrow-right] size-4 rtl:rotate-180"></span>
                     </Link>
                   </td>
-                  <td className="bg-primary rounded-b-box">
-                    <Link href="/signup?plan=growth" className="text-primary-content flex items-center justify-center gap-1 font-medium">
+                  <td>
+                    <Link href="/signup?plan=growth" className="link link-primary flex items-center justify-center gap-1 font-medium">
                       Get Started
                       <span className="icon-[tabler--arrow-right] size-4 rtl:rotate-180"></span>
                     </Link>
