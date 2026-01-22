@@ -5,7 +5,8 @@ import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Save, Building2, Globe, Upload, X, Check, AlertCircle, Camera } from 'lucide-react'
+import { Save, Building2, Globe, Upload, X, Check, AlertCircle, Camera, Loader2 } from 'lucide-react'
+import { compressImage } from '@/lib/image-compression'
 import { SettingsSection } from '@/components/settings'
 import type { Tenant } from '@/types/database.types'
 import { updateTenantSettings } from '@/app/actions/tenant-settings'
@@ -351,9 +352,9 @@ export default function CompanySettingsPage() {
       return
     }
 
-    // Validate file size (max 2MB)
-    if (file.size > 2 * 1024 * 1024) {
-      setMessage({ type: 'error', text: 'Image must be less than 2MB' })
+    // Allow larger files since we'll compress them (10MB limit for original)
+    if (file.size > 10 * 1024 * 1024) {
+      setMessage({ type: 'error', text: 'Image must be less than 10MB' })
       return
     }
 
@@ -362,31 +363,37 @@ export default function CompanySettingsPage() {
 
     try {
       const supabase = createClient()
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${tenant.id}/logo.${fileExt}`
+
+      // Compress image to maximum compression (WebP format)
+      const compressedFile = await compressImage(file)
+
+      // Always use .webp extension since compression converts to WebP
+      const fileName = `${tenant.id}/logo.webp`
 
       // Upload to Supabase Storage
       const { error: uploadError } = await supabase.storage
         .from('tenant-assets')
-        .upload(fileName, file, { upsert: true })
+        .upload(fileName, compressedFile, { upsert: true })
 
       if (uploadError) throw uploadError
 
-      // Get public URL
+      // Get public URL with cache-busting timestamp
       const { data: { publicUrl } } = supabase.storage
         .from('tenant-assets')
         .getPublicUrl(fileName)
 
+      const publicUrlWithCacheBust = `${publicUrl}?t=${Date.now()}`
+
       // Update tenant with logo URL
-       
+
       const { error: updateError } = await (supabase as any)
         .from('tenants')
-        .update({ logo_url: publicUrl, updated_at: new Date().toISOString() })
+        .update({ logo_url: publicUrlWithCacheBust, updated_at: new Date().toISOString() })
         .eq('id', tenant.id)
 
       if (updateError) throw updateError
 
-      setFormData({ ...formData, logo_url: publicUrl })
+      setFormData({ ...formData, logo_url: publicUrlWithCacheBust })
       setMessage({ type: 'success', text: 'Logo uploaded successfully' })
     } catch (err) {
       setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to upload logo' })
@@ -582,13 +589,17 @@ export default function CompanySettingsPage() {
                     disabled={uploadingLogo}
                     className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-primary text-white shadow-sm hover:bg-primary/90 disabled:opacity-50"
                   >
-                    <Camera className="h-4 w-4" />
+                    {uploadingLogo ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Camera className="h-4 w-4" />
+                    )}
                   </button>
                 </div>
                 <div className="flex-1">
                   <h4 className="font-medium text-neutral-900">Company Logo</h4>
                   <p className="mt-1 text-sm text-neutral-500">
-                    Upload your company logo. PNG or JPG, max 2MB.
+                    Upload your company logo. PNG or JPG. Auto-compressed for fast loading.
                   </p>
                   <Button
                     type="button"
@@ -598,8 +609,12 @@ export default function CompanySettingsPage() {
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploadingLogo}
                   >
-                    <Upload className="mr-2 h-4 w-4" />
-                    {uploadingLogo ? 'Uploading...' : 'Upload Logo'}
+                    {uploadingLogo ? (
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    ) : (
+                      <Upload className="mr-2 h-4 w-4" />
+                    )}
+                    {uploadingLogo ? 'Compressing...' : 'Upload Logo'}
                   </Button>
                 </div>
               </div>

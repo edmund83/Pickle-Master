@@ -5,7 +5,8 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { SettingsSection } from '@/components/settings'
-import { Save, User, Lock, Camera, Check, AlertCircle, Eye, EyeOff } from 'lucide-react'
+import { Save, User, Lock, Camera, Check, AlertCircle, Eye, EyeOff, Loader2 } from 'lucide-react'
+import { compressImage } from '@/lib/image-compression'
 import Link from 'next/link'
 import type { Profile } from '@/types/database.types'
 
@@ -85,14 +86,15 @@ export default function ProfileSettingsPage() {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Validate file
+    // Validate file type
     if (!file.type.startsWith('image/')) {
       setMessage({ type: 'error', text: 'Please upload an image file' })
       return
     }
 
-    if (file.size > 2 * 1024 * 1024) {
-      setMessage({ type: 'error', text: 'Image must be less than 2MB' })
+    // Allow larger files since we'll compress them (10MB limit for original)
+    if (file.size > 10 * 1024 * 1024) {
+      setMessage({ type: 'error', text: 'Image must be less than 10MB' })
       return
     }
 
@@ -104,31 +106,35 @@ export default function ProfileSettingsPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) throw new Error('Not authenticated')
 
-      // Upload to storage
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${user.id}/avatar.${fileExt}`
+      // Compress image to maximum compression (WebP format)
+      const compressedFile = await compressImage(file)
+
+      // Always use .webp extension since compression converts to WebP
+      const fileName = `${user.id}/avatar.webp`
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(fileName, file, { upsert: true })
+        .upload(fileName, compressedFile, { upsert: true })
 
       if (uploadError) throw uploadError
 
-      // Get public URL
+      // Get public URL with cache-busting timestamp
       const { data: { publicUrl } } = supabase.storage
         .from('avatars')
         .getPublicUrl(fileName)
 
+      const publicUrlWithCacheBust = `${publicUrl}?t=${Date.now()}`
+
       // Update profile
-       
+
       const { error: updateError } = await (supabase as any)
         .from('profiles')
-        .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
+        .update({ avatar_url: publicUrlWithCacheBust, updated_at: new Date().toISOString() })
         .eq('id', user.id)
 
       if (updateError) throw updateError
 
-      setProfile((prev) => prev ? { ...prev, avatar_url: publicUrl } : null)
+      setProfile((prev) => prev ? { ...prev, avatar_url: publicUrlWithCacheBust } : null)
       setMessage({ type: 'success', text: 'Avatar updated successfully' })
     } catch (err) {
       setMessage({ type: 'error', text: err instanceof Error ? err.message : 'Failed to upload avatar' })
@@ -303,7 +309,11 @@ export default function ProfileSettingsPage() {
                   disabled={avatarUploading}
                   className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full border-2 border-white bg-primary text-white shadow-sm hover:bg-primary/90 disabled:opacity-50"
                 >
-                  <Camera className="h-4 w-4" />
+                  {avatarUploading ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Camera className="h-4 w-4" />
+                  )}
                 </button>
                 <input
                   ref={fileInputRef}
@@ -315,7 +325,7 @@ export default function ProfileSettingsPage() {
               </div>
               <div>
                 <p className="font-medium text-neutral-900">Profile Photo</p>
-                <p className="text-sm text-neutral-500">JPG, PNG or GIF. Max 2MB.</p>
+                <p className="text-sm text-neutral-500">JPG, PNG or GIF. Auto-compressed for fast upload.</p>
               </div>
             </div>
 
