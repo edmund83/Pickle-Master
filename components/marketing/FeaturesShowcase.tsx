@@ -59,6 +59,7 @@ const FEATURES: Feature[] = [
       },
     ],
     imageAlt: 'StockZip barcode scanning and offline inventory tracking',
+    imageSrc: '/images/Scan1.jpg',
   },
   {
     category: 'Accountability',
