@@ -19,12 +19,12 @@ export function PricingSection() {
           </p>
         </FadeIn>
 
-        <StaggerContainer className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <StaggerContainer className="grid items-stretch gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {/* Early Access Plan */}
-          <StaggerItem>
-            <HoverScale>
+          <StaggerItem className="h-full">
+            <HoverScale className="h-full">
               <div className="card shadow-xl ring-2 ring-accent h-full">
-                <div className="card-body gap-6">
+                <div className="card-body flex h-full flex-col gap-6">
                   <div className="space-y-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="text-base-content text-xl font-bold">Early Access</h3>
@@ -57,7 +57,7 @@ export function PricingSection() {
                     <li className="flex gap-2"><span className="icon-[tabler--circle-check] text-success size-5"></span>Lot &amp; serial tracking</li>
                     <li className="flex gap-2"><span className="icon-[tabler--sparkles] text-primary size-5"></span>500 AskZoe AI questions/mo</li>
                   </ul>
-                  <Link href="/signup?plan=early_access" className="btn btn-accent">
+                  <Link href="/signup?plan=early_access" className="btn btn-accent mt-auto">
                     Join Early Access
                   </Link>
                 </div>
@@ -66,10 +66,10 @@ export function PricingSection() {
           </StaggerItem>
 
           {/* Starter Plan */}
-          <StaggerItem>
-            <HoverScale>
+          <StaggerItem className="h-full">
+            <HoverScale className="h-full">
               <div className="card card-border shadow-none h-full">
-                <div className="card-body gap-6">
+                <div className="card-body flex h-full flex-col gap-6">
                   <div className="space-y-1">
                     <h3 className="text-base-content text-xl font-semibold">Starter</h3>
                     <p className="text-base-content/70">Perfect for getting started.</p>
@@ -92,7 +92,7 @@ export function PricingSection() {
                     <li className="flex gap-2"><span className="icon-[tabler--circle-check] text-primary size-5"></span>Mobile app + offline mode</li>
                     <li className="flex gap-2"><span className="icon-[tabler--circle-check] text-primary size-5"></span>Low-stock alerts</li>
                   </ul>
-                  <Link href="/signup?plan=starter" className="btn btn-primary">
+                  <Link href="/signup?plan=starter" className="btn btn-primary mt-auto">
                     Start free trial
                   </Link>
                 </div>
@@ -101,10 +101,10 @@ export function PricingSection() {
           </StaggerItem>
 
           {/* Growth Plan (Recommended) */}
-          <StaggerItem>
-            <HoverScale>
+          <StaggerItem className="h-full">
+            <HoverScale className="h-full">
               <div className="card card-border shadow-none border-primary/40 ring-2 ring-primary h-full">
-                <div className="card-body gap-6">
+                <div className="card-body flex h-full flex-col gap-6">
                   <div className="space-y-1">
                     <div className="flex items-center justify-between gap-3">
                       <h3 className="text-base-content text-xl font-bold">Growth</h3>
@@ -133,7 +133,7 @@ export function PricingSection() {
                     <li className="flex gap-2"><span className="icon-[tabler--circle-check] text-primary size-5"></span>Purchase orders &amp; receiving</li>
                     <li className="flex gap-2"><span className="icon-[tabler--circle-check] text-primary size-5"></span>100 AskZoe AI questions/mo</li>
                   </ul>
-                  <Link href="/signup?plan=growth" className="btn btn-primary">
+                  <Link href="/signup?plan=growth" className="btn btn-primary mt-auto">
                     Start free trial
                   </Link>
                 </div>
@@ -142,10 +142,10 @@ export function PricingSection() {
           </StaggerItem>
 
           {/* Scale Plan */}
-          <StaggerItem>
-            <HoverScale>
+          <StaggerItem className="h-full">
+            <HoverScale className="h-full">
               <div className="card card-border shadow-none h-full">
-                <div className="card-body gap-6">
+                <div className="card-body flex h-full flex-col gap-6">
                   <div className="space-y-1">
                     <h3 className="text-base-content text-xl font-semibold">Scale</h3>
                     <p className="text-base-content/70">For teams needing control &amp; compliance.</p>
@@ -168,7 +168,7 @@ export function PricingSection() {
                     <li className="flex gap-2"><span className="icon-[tabler--circle-check] text-primary size-5"></span>Audit trail &amp; approvals</li>
                     <li className="flex gap-2"><span className="icon-[tabler--circle-check] text-primary size-5"></span>500 AskZoe AI questions/mo</li>
                   </ul>
-                  <Link href="/signup?plan=scale" className="btn btn-primary">
+                  <Link href="/signup?plan=scale" className="btn btn-primary mt-auto">
                     Start free trial
                   </Link>
                 </div>

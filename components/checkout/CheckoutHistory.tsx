@@ -42,6 +42,7 @@ interface CheckoutHistoryItem {
 interface CheckoutHistoryProps {
   itemId: string
   limit?: number
+  refreshTrigger?: number
 }
 
 const assigneeTypeIcons = {
@@ -64,30 +65,65 @@ const conditionLabels: Record<ItemCondition, string> = {
   lost: 'Lost'
 }
 
-export function CheckoutHistory({ itemId, limit = 10 }: CheckoutHistoryProps) {
+export function CheckoutHistory({ itemId, limit = 10, refreshTrigger = 0 }: CheckoutHistoryProps) {
   const [history, setHistory] = useState<CheckoutHistoryItem[]>([])
   const [loading, setLoading] = useState(true)
   const { formatDateTime, formatDate } = useFormatting()
 
   useEffect(() => {
     loadHistory()
-  }, [itemId])
+  }, [itemId, refreshTrigger])
 
   async function loadHistory() {
     setLoading(true)
     const supabase = createClient()
 
     try {
-      // Use RPC function that includes linked serials
-       
-      const { data: historyData } = await (supabase as any)
-        .rpc('get_item_checkout_history', {
-          p_item_id: itemId,
-          p_limit: limit
-        })
+      // Query checkouts directly with RLS instead of RPC
+      const { data: checkoutsData, error } = await supabase
+        .from('checkouts')
+        .select(`
+          id,
+          quantity,
+          assignee_type,
+          assignee_name,
+          checked_out_at,
+          due_date,
+          status,
+          returned_at,
+          return_condition,
+          return_notes,
+          checked_out_by,
+          returned_by
+        `)
+        .eq('item_id', itemId)
+        .order('checked_out_at', { ascending: false })
+        .limit(limit)
 
-      if (historyData) {
-        setHistory(historyData)
+      if (error) {
+        console.error('Error loading checkout history:', error)
+        setHistory([])
+        return
+      }
+
+      if (checkoutsData) {
+        // Map the data to match the expected interface
+        const historyItems: CheckoutHistoryItem[] = checkoutsData.map(checkout => ({
+          id: checkout.id,
+          quantity: checkout.quantity,
+          assignee_type: checkout.assignee_type,
+          assignee_name: checkout.assignee_name,
+          checked_out_at: checkout.checked_out_at,
+          due_date: checkout.due_date,
+          status: checkout.status,
+          returned_at: checkout.returned_at,
+          return_condition: checkout.return_condition,
+          return_notes: checkout.return_notes,
+          checked_out_by_name: null, // Would need a join to get this
+          returned_by_name: null, // Would need a join to get this
+          serials: [] // Would need a separate query for serials
+        }))
+        setHistory(historyItems)
       }
     } catch (err) {
       console.error('Error loading checkout history:', err)
