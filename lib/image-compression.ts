@@ -8,14 +8,14 @@ export interface CompressionOptions {
 }
 
 /**
- * Maximum compression preset for aggressive file size reduction.
- * Use this for all user uploads to minimize storage and bandwidth.
+ * Compression preset optimized for web apps (Notion-style).
+ * Good balance of quality and file size for inline image display.
  */
 export const MAX_COMPRESSION_OPTIONS: CompressionOptions = {
-  maxSizeMB: 0.2, // Target max 200KB for maximum compression
-  maxWidthOrHeight: 1280, // HD max dimension (sufficient for web display)
+  maxSizeMB: 0.3, // Target max 300KB - fast loading for web apps
+  maxWidthOrHeight: 1600, // Sufficient for most displays
   useWebWorker: true,
-  initialQuality: 0.5, // 50% quality - aggressive but acceptable for web
+  initialQuality: 0.75, // 75% quality - good clarity with smaller size
 }
 
 /**
