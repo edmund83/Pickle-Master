@@ -17,9 +17,9 @@ import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/lib/marketing/jsonld'
 
 export const metadata: Metadata = marketingMetadata({
-  title: 'Inventory Management Software Pricing | Founders Pricing - Lock In Your Rate',
+  title: 'Inventory Management Software Pricing | 3 Months Free Early Access',
   description:
-    'Simple inventory software pricing for small businesses. Founders pricing from $18/mo. Lock in your rate forever. Start free for 14 days.',
+    'Try StockZip free for 3 months. Limited early access spots available. No credit card required. Simple inventory software from $18/mo after trial.',
   pathname: '/pricing',
 })
 
@@ -97,35 +97,29 @@ export default function PricingPage() {
       <section className="bg-base-200 py-12 sm:py-16 lg:py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 flex flex-col items-center space-y-4 text-center sm:mb-16">
-            <span className="badge badge-soft badge-primary rounded-full font-medium uppercase">
-              Founders Pricing (Limited Time)
+            <span className="badge badge-soft badge-accent rounded-full font-medium uppercase">
+              Early Access — Limited Spots
             </span>
             <h1 className="text-base-content text-3xl font-semibold tracking-tight md:text-4xl lg:text-5xl">
-              Lock In Your Rate Forever
+              Try StockZip Free for 3 Months
             </h1>
             <p className="text-base-content/80 max-w-3xl text-lg md:text-xl">
-              We&apos;re launching and keeping prices low to help early customers get started. Sign up now and keep
-              this rate as long as you stay with us.
+              We&apos;re inviting a small group of early users to try StockZip free for 3 months — no credit card
+              required.
             </p>
-            {/* Early Access callout */}
-            <p className="text-accent font-medium">
-              <span className="icon-[tabler--rocket] mr-1.5 inline-block size-4 align-text-bottom"></span>
-              Early Access: Get 3 months free for early supporters
-              <span className="text-base-content/60 font-normal"> (limited seats • no card required)</span>
-            </p>
-            {/* Founders Pricing explainer */}
-            <div className="bg-primary/5 border-primary/20 mt-2 flex flex-col items-center gap-2 rounded-xl border px-6 py-4 sm:flex-row sm:gap-6">
+            {/* Early Access benefits */}
+            <div className="bg-accent/5 border-accent/20 mt-2 flex flex-col items-center gap-2 rounded-xl border px-6 py-4 sm:flex-row sm:gap-6">
               <div className="flex items-center gap-2 text-sm">
-                <span className="icon-[tabler--discount-check] text-primary size-5"></span>
-                <span className="text-base-content/80">Limited-time launch pricing</span>
+                <span className="icon-[tabler--calendar-month] text-accent size-5"></span>
+                <span className="text-base-content/80">3 months free access</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
-                <span className="icon-[tabler--lock] text-primary size-5"></span>
-                <span className="text-base-content/80">Early customers lock in their rate</span>
+                <span className="icon-[tabler--credit-card-off] text-accent size-5"></span>
+                <span className="text-base-content/80">No credit card required</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
-                <span className="icon-[tabler--rotate-clockwise] text-primary size-5"></span>
-                <span className="text-base-content/80">Cancel anytime</span>
+                <span className="icon-[tabler--hourglass] text-accent size-5"></span>
+                <span className="text-base-content/80">Limited early access spots</span>
               </div>
             </div>
             <p className="text-base-content/60 text-sm">Last updated: {lastUpdated}</p>
