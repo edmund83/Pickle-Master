@@ -27,16 +27,19 @@ export async function checkRateLimit(operation: string): Promise<RateLimitResult
 
         if (error) {
             console.error('Rate limit check error:', error)
-            // Allow on error - DB triggers provide fallback protection
-            // In production, you may want to be more conservative
-            return { allowed: true }
+            return {
+                allowed: false,
+                error: 'Rate limit service unavailable. Please try again later.'
+            }
         }
 
         return data as RateLimitResult
     } catch (err) {
         console.error('Rate limit check exception:', err)
-        // Allow on error to prevent blocking legitimate requests
-        return { allowed: true }
+        return {
+            allowed: false,
+            error: 'Rate limit service unavailable. Please try again later.'
+        }
     }
 }
 
