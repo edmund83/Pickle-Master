@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { Search as SearchIcon, Package, Filter, X, Loader2, ArrowUpDown, Bookmark, BookmarkPlus, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { escapeSqlLike } from '@/lib/utils'
 import type { InventoryItem, Folder, Tag } from '@/types/database.types'
 
 interface SearchFilters {
@@ -41,11 +42,13 @@ const SORT_OPTIONS: { value: SortOption; label: string; defaultDir: SortDirectio
 ]
 
 function sanitizeSearchTerm(value: string): string {
-  return value
+  const sanitized = value
     .replace(/[(),]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, 100)
+  // Escape SQL LIKE wildcards (% and _) to prevent pattern injection
+  return escapeSqlLike(sanitized)
 }
 
 export default function SearchPage() {

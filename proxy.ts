@@ -47,7 +47,7 @@ export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
 
   // Public routes that don't require authentication
-  const publicRoutes = ['/login', '/signup', '/forgot-password', '/reset-password', '/auth/callback']
+  const publicRoutes = ['/login', '/signup', '/forgot-password', '/reset-password', '/auth/callback', '/accept-invite']
   const isPublicRoute = publicRoutes.some((route) => pathname.startsWith(route))
 
   // Marketing routes - accessible regardless of auth status (no redirects)

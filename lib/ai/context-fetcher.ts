@@ -3,6 +3,7 @@ import {
   formatCompactContext,
   ZoeContextRPCResponse,
 } from './context-compressor'
+import { escapeSqlLike } from '@/lib/utils'
 
  
 type AnySupabaseClient = SupabaseClient<any, any, any>
@@ -531,7 +532,7 @@ async function searchInventoryItems(
     `)
     .eq('tenant_id', tenantId)
     .is('deleted_at', null)
-    .or(`name.ilike.%${keywords[0]}%,sku.ilike.%${keywords[0]}%`)
+    .or(`name.ilike.%${escapeSqlLike(keywords[0])}%,sku.ilike.%${escapeSqlLike(keywords[0])}%`)
     .limit(limit)
 
    

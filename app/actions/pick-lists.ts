@@ -5,7 +5,6 @@ import { revalidatePath } from 'next/cache'
 import {
     getAuthContext,
     requireWritePermission,
-    requireAdminPermission,
     verifyTenantOwnership,
     verifyRelatedTenantOwnership,
     validateInput,
@@ -16,6 +15,7 @@ import {
     pickListStatusSchema,
 } from '@/lib/auth/server-auth'
 import { z } from 'zod'
+import { escapeSqlLike } from '@/lib/utils'
 
 export type PickListResult = {
     success: boolean
@@ -335,8 +335,8 @@ export async function deletePickList(pickListId: string): Promise<PickListResult
     if (!authResult.success) return { success: false, error: authResult.error }
     const { context } = authResult
 
-    // 2. Check admin permission for delete operations
-    const permResult = requireAdminPermission(context)
+    // 2. Check write permission for delete operations
+    const permResult = requireWritePermission(context)
     if (!permResult.success) return { success: false, error: permResult.error }
 
     // 3. Verify pick list belongs to user's tenant and check status
@@ -715,8 +715,8 @@ export async function cancelPickList(pickListId: string): Promise<PickListResult
     if (!authResult.success) return { success: false, error: authResult.error }
     const { context } = authResult
 
-    // 2. Check admin permission for cancel operations
-    const permResult = requireAdminPermission(context)
+    // 2. Check write permission for cancel operations
+    const permResult = requireWritePermission(context)
     if (!permResult.success) return { success: false, error: permResult.error }
 
     // 3. Verify pick list belongs to user's tenant
@@ -916,7 +916,7 @@ export async function getPaginatedPickLists(
     }
 
     if (search) {
-        const searchPattern = `%${search}%`
+        const searchPattern = `%${escapeSqlLike(search)}%`
         countQuery = countQuery.or(`display_id.ilike.${searchPattern},name.ilike.${searchPattern},pick_list_number.ilike.${searchPattern}`)
         dataQuery = dataQuery.or(`display_id.ilike.${searchPattern},name.ilike.${searchPattern},pick_list_number.ilike.${searchPattern}`)
     }
@@ -988,8 +988,7 @@ export async function searchInventoryItems(query: string) {
         .limit(20)
 
     if (query) {
-        // Escape special characters in query to prevent SQL injection via ilike
-        const escapedQuery = query.replace(/[%_]/g, '\\$&')
+        const escapedQuery = escapeSqlLike(query)
         queryBuilder = queryBuilder.or(`name.ilike.%${escapedQuery}%,sku.ilike.%${escapedQuery}%`)
     }
 

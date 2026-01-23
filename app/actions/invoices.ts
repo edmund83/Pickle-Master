@@ -14,6 +14,7 @@ import {
     optionalDateStringSchema,
 } from '@/lib/auth/server-auth'
 import { z } from 'zod'
+import { escapeSqlLike } from '@/lib/utils'
 
 export type InvoiceResult = {
     success: boolean
@@ -1103,7 +1104,7 @@ export async function getPaginatedInvoices(
     }
 
     if (search) {
-        const searchPattern = `%${search}%`
+        const searchPattern = `%${escapeSqlLike(search)}%`
         countQuery = countQuery.or(`display_id.ilike.${searchPattern},invoice_number.ilike.${searchPattern}`)
         dataQuery = dataQuery.or(`display_id.ilike.${searchPattern},invoice_number.ilike.${searchPattern}`)
     }
@@ -1286,7 +1287,8 @@ export async function searchInventoryItemsForInvoice(query: string) {
         .limit(20)
 
     if (query) {
-        queryBuilder = queryBuilder.or(`name.ilike.%${query}%,sku.ilike.%${query}%`)
+        const escapedQuery = escapeSqlLike(query)
+        queryBuilder = queryBuilder.or(`name.ilike.%${escapedQuery}%,sku.ilike.%${escapedQuery}%`)
     }
 
     const { data } = await queryBuilder

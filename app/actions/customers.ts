@@ -5,7 +5,6 @@ import { revalidatePath } from 'next/cache'
 import {
     getAuthContext,
     requireWritePermission,
-    requireAdminPermission,
     verifyTenantOwnership,
     validateInput,
     optionalStringSchema,
@@ -13,6 +12,7 @@ import {
     priceSchema,
 } from '@/lib/auth/server-auth'
 import { z } from 'zod'
+import { escapeSqlLike } from '@/lib/utils'
 
 export type CustomerResult = {
     success: boolean
@@ -503,8 +503,8 @@ export async function deleteCustomer(customerId: string): Promise<CustomerResult
     if (!authResult.success) return { success: false, error: authResult.error }
     const { context } = authResult
 
-    // 2. Check admin permission for delete operations
-    const permResult = requireAdminPermission(context)
+    // 2. Check write permission for delete operations
+    const permResult = requireWritePermission(context)
     if (!permResult.success) return { success: false, error: permResult.error }
 
     const supabase = await createClient()
@@ -691,7 +691,8 @@ export async function searchCustomers(query: string, activeOnly: boolean = true)
     }
 
     if (query) {
-        queryBuilder = queryBuilder.or(`name.ilike.%${query}%,customer_code.ilike.%${query}%,email.ilike.%${query}%`)
+        const escapedQuery = escapeSqlLike(query)
+        queryBuilder = queryBuilder.or(`name.ilike.%${escapedQuery}%,customer_code.ilike.%${escapedQuery}%,email.ilike.%${escapedQuery}%`)
     }
 
     const { data } = await queryBuilder
@@ -809,7 +810,7 @@ export async function getPaginatedCustomers(
     }
 
     if (search) {
-        const searchPattern = `%${search}%`
+        const searchPattern = `%${escapeSqlLike(search)}%`
         countQuery = countQuery.or(`name.ilike.${searchPattern},customer_code.ilike.${searchPattern},email.ilike.${searchPattern}`)
         dataQuery = dataQuery.or(`name.ilike.${searchPattern},customer_code.ilike.${searchPattern},email.ilike.${searchPattern}`)
     }

@@ -2,6 +2,7 @@
 
 import { resend } from '@/lib/resend'
 import { getAuthContext, requireWritePermission } from '@/lib/auth/server-auth'
+import { escapeHtml } from '@/lib/utils'
 
 export type EmailResult = {
     success: boolean
@@ -28,21 +29,25 @@ export async function sendLowStockAlert(
     }
 
     try {
+        // Escape user input to prevent XSS in email
+        const safeItemName = escapeHtml(itemName)
+        const safeUnit = escapeHtml(unit)
+
         const { data, error } = await resend.emails.send({
             from: 'StockZip <onboarding@resend.dev>', // Should be configured in env, but defaulting for ease
             to: [email],
-            subject: `⚠️ Low Stock Alert: ${itemName}`,
+            subject: `⚠️ Low Stock Alert: ${safeItemName}`,
             html: `
                 <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
                     <h1 style="color: #d97706;">Low Stock Alert</h1>
                     <p>The following item has fallen below its minimum stock level:</p>
-                    
+
                     <div style="background-color: #fffbeb; padding: 20px; border-radius: 8px; border: 1px solid #fcd34d; margin: 20px 0;">
-                        <h2 style="margin-top: 0; color: #92400e;">${itemName}</h2>
+                        <h2 style="margin-top: 0; color: #92400e;">${safeItemName}</h2>
                         <p style="font-size: 16px;">
-                            Current Quantity: <strong>${currentQuantity} ${unit}</strong>
+                            Current Quantity: <strong>${currentQuantity} ${safeUnit}</strong>
                             <br/>
-                            Minimum Required: <strong>${minQuantity} ${unit}</strong>
+                            Minimum Required: <strong>${minQuantity} ${safeUnit}</strong>
                         </p>
                     </div>
 

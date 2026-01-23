@@ -37,7 +37,7 @@ async function getInventoryValueData() {
      
     (supabase as any)
       .from('folders')
-      .select('*')
+      .select('id, name, color')
       .eq('tenant_id', profile.tenant_id),
   ])
 
@@ -174,4 +174,3 @@ export default async function InventoryValuePage() {
     </div>
   )
 }
-

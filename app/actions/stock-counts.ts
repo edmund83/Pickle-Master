@@ -4,6 +4,7 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { getAuthContext, requireWritePermission, requireOwnerPermission } from '@/lib/auth/server-auth'
 import { z } from 'zod'
+import { escapeSqlLike } from '@/lib/utils'
 
 export interface StockCount {
   id: string
@@ -728,7 +729,7 @@ export async function getPaginatedStockCounts(
     }
 
     if (search) {
-        const searchPattern = `%${search}%`
+        const searchPattern = `%${escapeSqlLike(search)}%`
         countQuery = countQuery.or(`display_id.ilike.${searchPattern},name.ilike.${searchPattern}`)
         dataQuery = dataQuery.or(`display_id.ilike.${searchPattern},name.ilike.${searchPattern}`)
     }

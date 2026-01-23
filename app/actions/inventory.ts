@@ -6,12 +6,12 @@ import { sendLowStockAlert } from './email'
 import {
     getAuthContext,
     requireWritePermission,
-    requireAdminPermission,
     verifyRelatedTenantOwnership,
     validateInput,
     quantitySchema,
 } from '@/lib/auth/server-auth'
 import { z } from 'zod'
+import { escapeSqlLike } from '@/lib/utils'
 
 export type ActionResult<T> = {
     success: boolean
@@ -291,8 +291,8 @@ export async function deleteItem(itemId: string): Promise<ActionResult<void>> {
     if (!authResult.success) return { success: false, error: authResult.error }
     const { context } = authResult
 
-    // 2. Require admin permission for delete
-    const permResult = requireAdminPermission(context)
+    // 2. Require write permission for delete
+    const permResult = requireWritePermission(context)
     if (!permResult.success) return { success: false, error: permResult.error }
 
     // 3. Validate itemId
@@ -917,7 +917,7 @@ export async function getMovePageData(
 
     // Apply search filter
     if (search) {
-        const searchPattern = `%${search}%`
+        const searchPattern = `%${escapeSqlLike(search)}%`
         countQuery = countQuery.or(`name.ilike.${searchPattern},sku.ilike.${searchPattern}`)
         dataQuery = dataQuery.or(`name.ilike.${searchPattern},sku.ilike.${searchPattern}`)
     }

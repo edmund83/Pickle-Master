@@ -5,7 +5,6 @@ import { revalidatePath } from 'next/cache'
 import {
     getAuthContext,
     requireWritePermission,
-    requireAdminPermission,
     verifyTenantOwnership,
     verifyRelatedTenantOwnership,
     validateInput,
@@ -16,6 +15,7 @@ import {
     optionalDateStringSchema,
 } from '@/lib/auth/server-auth'
 import { z } from 'zod'
+import { escapeSqlLike } from '@/lib/utils'
 
 export type SalesOrderResult = {
     success: boolean
@@ -689,7 +689,7 @@ export async function deleteSalesOrder(salesOrderId: string): Promise<SalesOrder
     if (!authResult.success) return { success: false, error: authResult.error }
     const { context } = authResult
 
-    const permResult = requireAdminPermission(context)
+    const permResult = requireWritePermission(context)
     if (!permResult.success) return { success: false, error: permResult.error }
 
     const supabase = await createClient()
@@ -879,7 +879,7 @@ export async function getPaginatedSalesOrders(
     }
 
     if (search) {
-        const searchPattern = `%${search}%`
+        const searchPattern = `%${escapeSqlLike(search)}%`
         countQuery = countQuery.or(`order_number.ilike.${searchPattern},display_id.ilike.${searchPattern}`)
         dataQuery = dataQuery.or(`order_number.ilike.${searchPattern},display_id.ilike.${searchPattern}`)
     }
@@ -958,7 +958,8 @@ export async function searchInventoryItemsForSO(query: string) {
         .limit(20)
 
     if (query) {
-        queryBuilder = queryBuilder.or(`name.ilike.%${query}%,sku.ilike.%${query}%`)
+        const escapedQuery = escapeSqlLike(query)
+        queryBuilder = queryBuilder.or(`name.ilike.%${escapedQuery}%,sku.ilike.%${escapedQuery}%`)
     }
 
     const { data } = await queryBuilder

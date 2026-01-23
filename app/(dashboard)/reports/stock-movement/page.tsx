@@ -38,7 +38,7 @@ export default function StockMovementPage() {
        
       const { data } = await (supabase as any)
         .from('activity_logs')
-        .select('*')
+        .select('id, created_at, user_name, action_type, entity_name, from_folder_name, to_folder_name, quantity_delta')
         .eq('tenant_id', profile.tenant_id)
         .in('action_type', ['move', 'adjust_quantity'])
         .gte('created_at', startDate.toISOString())

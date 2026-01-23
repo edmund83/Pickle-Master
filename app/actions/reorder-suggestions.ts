@@ -4,7 +4,6 @@ import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import {
     getAuthContext,
-    requireAdminPermission,
     requireWritePermission,
 } from '@/lib/auth/server-auth'
 
@@ -347,7 +346,7 @@ export async function unlinkItemFromVendor(
     if (!authResult.success) return { success: false, error: authResult.error }
     const { context } = authResult
 
-    const permResult = requireAdminPermission(context)
+    const permResult = requireWritePermission(context)
     if (!permResult.success) return { success: false, error: permResult.error }
 
     const supabase = await createClient()

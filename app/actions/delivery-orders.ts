@@ -14,6 +14,7 @@ import {
     optionalDateStringSchema,
 } from '@/lib/auth/server-auth'
 import { z } from 'zod'
+import { escapeSqlLike } from '@/lib/utils'
 
 export type DeliveryOrderResult = {
     success: boolean
@@ -740,7 +741,8 @@ export async function searchInventoryItemsForDO(query: string) {
         .limit(20)
 
     if (query) {
-        queryBuilder = queryBuilder.or(`name.ilike.%${query}%,sku.ilike.%${query}%`)
+        const escapedQuery = escapeSqlLike(query)
+        queryBuilder = queryBuilder.or(`name.ilike.%${escapedQuery}%,sku.ilike.%${escapedQuery}%`)
     }
 
     const { data } = await queryBuilder
@@ -864,7 +866,7 @@ export async function getPaginatedDeliveryOrders(
     }
 
     if (search) {
-        const searchPattern = `%${search}%`
+        const searchPattern = `%${escapeSqlLike(search)}%`
         countQuery = countQuery.or(`display_id.ilike.${searchPattern},tracking_number.ilike.${searchPattern}`)
         dataQuery = dataQuery.or(`display_id.ilike.${searchPattern},tracking_number.ilike.${searchPattern}`)
     }

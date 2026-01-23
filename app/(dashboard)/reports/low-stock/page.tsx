@@ -24,7 +24,7 @@ async function getLowStockItems(): Promise<InventoryItem[]> {
    
   const { data } = await (supabase as any)
     .from('inventory_items')
-    .select('*')
+    .select('id, name, sku, quantity, min_quantity, unit, status, image_urls')
     .eq('tenant_id', profile.tenant_id)
     .is('deleted_at', null)
     .in('status', ['low_stock', 'out_of_stock'])

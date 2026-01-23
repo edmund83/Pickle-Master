@@ -3,13 +3,16 @@ import { redirect } from 'next/navigation'
 import type { InventoryItemWithTags, Folder } from '@/types/database.types'
 import { MobileInventoryView } from './components/mobile-inventory-view'
 import { InventoryDesktopView } from './components/inventory-desktop-view'
+import { escapeSqlLike } from '@/lib/utils'
 
 function sanitizeSearchTerm(value?: string): string {
-  return String(value ?? '')
+  const sanitized = String(value ?? '')
     .replace(/[(),]/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
     .slice(0, 100)
+  // Escape SQL LIKE wildcards (% and _) to prevent pattern injection
+  return escapeSqlLike(sanitized)
 }
 
 async function getInventoryData(query?: string): Promise<{
