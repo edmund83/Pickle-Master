@@ -25,7 +25,6 @@ const featureGroups: FeatureGroup[] = [
     features: [
       { name: 'Items (SKUs)', starter: '1,200', growth: '3,000', scale: '8,000' },
       { name: 'Users', starter: '3', growth: '5', scale: '8' },
-      { name: 'Locations', starter: 'Single', growth: 'Multi', scale: 'Multi' },
       {
         name: 'AskZoe AI questions/mo',
         icon: 'icon-[tabler--sparkles]',

@@ -32,7 +32,7 @@ const PRICING_FAQS: FaqItem[] = [
   {
     question: 'How does StockZip pricing work?',
     answer:
-      'Simple monthly pricing based on your needs. Starter ($18/mo) gives you 1,200 items and 3 users. Growth ($39/mo) bumps that to 3,000 items, 5 users, and multi-location support. Scale ($89/mo) offers 8,000 items, 8 users, and advanced controls. All plans include barcode scanning, mobile app, and offline mode.',
+      'Simple monthly pricing based on your needs. Starter ($18/mo) gives you 1,200 items and 3 users. Growth ($39/mo) bumps that to 3,000 items, 5 users, and operations features. Scale ($89/mo) offers 8,000 items, 8 users, and advanced controls. All plans include barcode scanning, mobile app, and offline mode.',
   },
   {
     question: 'What are the item and user limits?',
@@ -154,10 +154,6 @@ export default function PricingPage() {
                     <span className="text-base-content/70">Users</span>
                     <span className="text-base-content font-semibold">3</span>
                   </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-base-content/70">Locations</span>
-                    <span className="text-accent font-semibold">Up to 3</span>
-                  </div>
                 </div>
                 <ul className="text-base-content/80 space-y-3">
                   <li className="flex gap-2">
@@ -215,10 +211,6 @@ export default function PricingPage() {
                     <span className="text-base-content/70">Users</span>
                     <span className="text-base-content font-medium">3</span>
                   </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-base-content/70">Locations</span>
-                    <span className="text-base-content font-medium">Single</span>
-                  </div>
                 </div>
                 <ul className="space-y-3 text-base-content/80">
                   <li className="flex gap-2">
@@ -275,10 +267,6 @@ export default function PricingPage() {
                     <span className="text-base-content/70">Users</span>
                     <span className="text-base-content font-medium">5</span>
                   </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-base-content/70">Locations</span>
-                    <span className="text-base-content font-medium">Multi-location</span>
-                  </div>
                 </div>
                 <ul className="space-y-3 text-base-content/80">
                   <li className="flex gap-2">
@@ -287,11 +275,11 @@ export default function PricingPage() {
                   </li>
                   <li className="flex gap-2">
                     <span className="icon-[tabler--circle-check] text-success size-5 shrink-0"></span>
-                    <span>Multi-location inventory</span>
+                    <span>Purchase orders & receiving</span>
                   </li>
                   <li className="flex gap-2">
                     <span className="icon-[tabler--circle-check] text-success size-5 shrink-0"></span>
-                    <span>Purchase orders & receiving</span>
+                    <span>Pick lists & fulfillment</span>
                   </li>
                   <li className="flex gap-2">
                     <span className="icon-[tabler--circle-check] text-success size-5 shrink-0"></span>
@@ -337,10 +325,6 @@ export default function PricingPage() {
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-base-content/70">Users</span>
                     <span className="text-base-content font-medium">8</span>
-                  </div>
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="text-base-content/70">Locations</span>
-                    <span className="text-base-content font-medium">Multi-location</span>
                   </div>
                 </div>
                 <ul className="space-y-3 text-base-content/80">
@@ -467,14 +451,6 @@ export default function PricingPage() {
                   <td className="text-center">3</td>
                   <td className="text-center">5</td>
                   <td className="text-center">8</td>
-                </tr>
-                {/* Locations */}
-                <tr className="text-base-content">
-                  <td className="font-medium">Locations</td>
-                  <td className="bg-accent/10 text-accent text-center font-semibold">Up to 3</td>
-                  <td className="text-center">Single</td>
-                  <td className="text-center">Multi</td>
-                  <td className="text-center">Multi</td>
                 </tr>
                 {/* AskZoe AI */}
                 <tr className="text-base-content">

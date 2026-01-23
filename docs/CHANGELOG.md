@@ -34,6 +34,15 @@ Fixed missing UI for adding line items to invoices - previously showed "No items
 
 ### Changed
 
+#### Pricing Plans - Removed Location Caps
+Removed location and folder cap limits from all pricing plans. Plans now differentiate by items, users, and features only.
+
+**Files Updated**:
+- `docs/pricingplan.md` - Removed Locations column from plan summary and features table
+- `components/marketing/PricingSection.tsx` - Removed Locations row from Early Access card, replaced Growth feature
+- `components/marketing/PricingComparisonTable.tsx` - Removed Locations row from feature comparison
+- `app/(marketing)/pricing/page.tsx` - Removed Locations rows from all plan cards and comparison table
+
 #### UI/UX Consistency Improvements for Fulfillment Tasks
 Improved consistency across Sales Orders, Pick Lists, Delivery Orders, and Invoices detail pages.
 
