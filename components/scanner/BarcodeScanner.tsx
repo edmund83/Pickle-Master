@@ -2,7 +2,9 @@
 
 import { useEffect, useId } from 'react'
 import { Camera, CameraOff, RefreshCw, X, Loader2 } from 'lucide-react'
-import { useBarcodeScanner, ScanResult } from '@/lib/scanner/useBarcodeScanner'
+import { useBarcodeScanner, type ScanResult } from '@/lib/scanner/useBarcodeScanner'
+
+export type { ScanResult }
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 

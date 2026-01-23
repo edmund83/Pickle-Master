@@ -96,7 +96,7 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}) {
    * Queue a change for sync
    */
   const queueChange = useCallback(
-    async (change: Omit<PendingChange, 'id' | 'created_at' | 'retry_count' | 'status'>) => {
+    async (change: Omit<PendingChange, 'id' | 'created_at' | 'retry_count' | 'status' | 'tenant_id' | 'user_id'>) => {
       const scope = await resolveScope()
       if (!scope) {
         throw new Error('Offline sync unavailable: no tenant context')

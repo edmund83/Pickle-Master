@@ -80,7 +80,7 @@ export function CheckoutHistory({ itemId, limit = 10, refreshTrigger = 0 }: Chec
 
     try {
       // Query checkouts directly with RLS instead of RPC
-      const { data: checkoutsData, error } = await supabase
+      const { data: checkoutsData, error } = await (supabase as any)
         .from('checkouts')
         .select(`
           id,
@@ -108,7 +108,7 @@ export function CheckoutHistory({ itemId, limit = 10, refreshTrigger = 0 }: Chec
 
       if (checkoutsData) {
         // Map the data to match the expected interface
-        const historyItems: CheckoutHistoryItem[] = checkoutsData.map(checkout => ({
+        const historyItems: CheckoutHistoryItem[] = checkoutsData.map((checkout: any) => ({
           id: checkout.id,
           quantity: checkout.quantity,
           assignee_type: checkout.assignee_type,
