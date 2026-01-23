@@ -66,7 +66,7 @@ export default function AcceptInvitePage() {
         const supabase = createClient()
 
         // Call the RPC function to get invitation details
-        const { data, error: rpcError } = await supabase.rpc('get_invitation_by_token', {
+        const { data, error: rpcError } = await (supabase as any).rpc('get_invitation_by_token', {
           p_token: token,
         })
 
@@ -268,7 +268,7 @@ export default function AcceptInvitePage() {
                 {role.icon}
               </div>
               <div>
-                <p className="font-medium text-neutral-900">You'll join as {role.label}</p>
+                <p className="font-medium text-neutral-900">You&apos;ll join as {role.label}</p>
                 <p className="text-sm text-neutral-500">{role.description}</p>
               </div>
             </div>

@@ -108,12 +108,14 @@ export function useHapticCallback<T extends (...args: unknown[]) => unknown>(
 ): T {
   const { vibrate } = useHaptic()
 
-   
-  return useCallback(
-    ((...args: unknown[]) => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const memoizedCallback = useCallback(
+    (...args: unknown[]) => {
       vibrate(intensity)
       return callback(...args)
-    }) as T,
+    },
     [callback, vibrate, intensity]
   )
+
+  return memoizedCallback as T
 }

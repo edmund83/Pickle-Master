@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -224,7 +224,7 @@ export default function SettingsLayout({
     setMobileMenuOpen(false)
   }, [pathname])
 
-  const SidebarContent = () => (
+  const sidebarContent = useMemo(() => (
     <>
       {/* User Profile Card */}
       <div className="p-4 border-b border-neutral-200">
@@ -250,7 +250,7 @@ export default function SettingsLayout({
         </p>
       </div>
     </>
-  )
+  ), [profile, pathname])
 
   return (
     <div className="flex flex-1 overflow-hidden">
@@ -292,7 +292,7 @@ export default function SettingsLayout({
           </Button>
         </div>
         <div className="flex h-[calc(100%-3.5rem)] flex-col">
-          <SidebarContent />
+          {sidebarContent}
         </div>
       </div>
 
@@ -302,7 +302,7 @@ export default function SettingsLayout({
           <h2 className="text-lg font-semibold text-neutral-900">Settings</h2>
         </div>
         <div className="flex flex-1 flex-col overflow-hidden">
-          <SidebarContent />
+          {sidebarContent}
         </div>
       </div>
 

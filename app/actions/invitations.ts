@@ -96,7 +96,8 @@ export async function createInvitation(
   }
 
   // 4. Check for existing pending invitation
-  const { data: existingInvite } = await supabase
+  // Note: team_invitations table types may not be in generated types - using type assertion
+  const { data: existingInvite } = await (supabase as any)
     .from('team_invitations')
     .select('id')
     .eq('tenant_id', tenantId)
@@ -112,7 +113,8 @@ export async function createInvitation(
   // 5. Generate token and create invitation
   const token = generateToken()
 
-  const { data: invitation, error } = await supabase
+  // Note: team_invitations table types may not be in generated types - using type assertion
+  const { data: invitation, error } = await (supabase as any)
     .from('team_invitations')
     .insert({
       tenant_id: tenantId,
@@ -170,7 +172,8 @@ export async function getInvitations(): Promise<{
 
   // 2. Fetch invitations
   const supabase = await createClient()
-  const { data: invitations, error } = await supabase
+  // Note: team_invitations table types may not be in generated types - using type assertion
+  const { data: invitations, error } = await (supabase as any)
     .from('team_invitations')
     .select(`
       id,
@@ -234,7 +237,8 @@ export async function cancelInvitation(invitationId: string): Promise<Invitation
 
   // 3. Delete the invitation
   const supabase = await createClient()
-  const { error } = await supabase
+  // Note: team_invitations table types may not be in generated types - using type assertion
+  const { error } = await (supabase as any)
     .from('team_invitations')
     .delete()
     .eq('id', invitationId)
@@ -283,7 +287,8 @@ export async function resendInvitation(invitationId: string): Promise<Invitation
   newExpiry.setDate(newExpiry.getDate() + 7) // 7 days from now
 
   const supabase = await createClient()
-  const { data: invitation, error } = await supabase
+  // Note: team_invitations table types may not be in generated types - using type assertion
+  const { data: invitation, error } = await (supabase as any)
     .from('team_invitations')
     .update({
       token: newToken,
@@ -361,7 +366,7 @@ export async function updateMemberRole(
     .select('id, role')
     .eq('id', memberId)
     .eq('tenant_id', tenantId)
-    .single()
+    .single<{ id: string; role: string | null }>()
 
   if (!member) {
     return { success: false, error: 'Team member not found' }
@@ -372,7 +377,7 @@ export async function updateMemberRole(
   }
 
   // 5. Update role
-  const { error } = await supabase
+  const { error } = await (supabase as any)
     .from('profiles')
     .update({ role: newRole })
     .eq('id', memberId)
@@ -429,7 +434,7 @@ export async function removeMember(
     .select('id, role')
     .eq('id', memberId)
     .eq('tenant_id', tenantId)
-    .single()
+    .single<{ id: string; role: string | null }>()
 
   if (!member) {
     return { success: false, error: 'Team member not found' }
@@ -442,7 +447,7 @@ export async function removeMember(
   // 5. Delete the profile (this will cascade delete auth user via trigger if needed)
   // Note: We're just removing from this tenant - the user still exists in Supabase Auth
   // We'll set tenant_id to null to effectively remove them from the team
-  const { error } = await supabase
+  const { error } = await (supabase as any)
     .from('profiles')
     .delete()
     .eq('id', memberId)

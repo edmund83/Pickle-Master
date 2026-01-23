@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/rules-of-hooks */
+// Disable React hooks rule - `use` here is Playwright's fixture injection, not React's use hook
 import { test as base, Page } from '@playwright/test'
 import percySnapshot from '@percy/playwright'
 

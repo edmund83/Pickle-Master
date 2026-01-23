@@ -7,6 +7,9 @@ const withPWA = withPWAInit({
   aggressiveFrontEndNavCaching: true,
   reloadOnOnline: true,
   disable: process.env.NODE_ENV === 'development',
+  fallbacks: {
+    document: '/offline.html',
+  },
   workboxOptions: {
     // Avoid @rollup/plugin-terser worker threads during SW bundling.
     mode: process.env.WORKBOX_MODE ?? 'development',

@@ -72,10 +72,11 @@ export function DropdownMenuContent({ children, align = 'end', className }: { ch
     )
 }
 
-export function DropdownMenuItem({ children, className, onClick }: { children: React.ReactNode; className?: string; onClick?: () => void }) {
+export function DropdownMenuItem({ children, className, onClick, disabled }: { children: React.ReactNode; className?: string; onClick?: () => void; disabled?: boolean }) {
     const context = React.useContext(DropdownMenuContext)
 
     const handleClick = () => {
+        if (disabled) return
         onClick?.()
         context?.setOpen(false)
     }
@@ -84,9 +85,11 @@ export function DropdownMenuItem({ children, className, onClick }: { children: R
         <button
             className={cn(
                 "flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-neutral-700 transition-colors hover:bg-neutral-50",
+                disabled && "opacity-50 cursor-not-allowed",
                 className
             )}
             onClick={handleClick}
+            disabled={disabled}
         >
             {children}
         </button>
