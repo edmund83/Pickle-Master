@@ -13,7 +13,7 @@ async function getTeamData() {
     .from('profiles')
     .select('tenant_id, role')
     .eq('id', user.id)
-    .single()
+    .single<{ tenant_id: string | null; role: string | null }>()
 
   if (!profile?.tenant_id) {
     return {

@@ -179,7 +179,7 @@ export function ZoeChatPanel() {
                 <Sparkles className="h-8 w-8 text-violet-600" />
               </div>
               <h3 className="text-lg font-semibold text-neutral-900 mb-2">
-                Hi! I'm Zoe
+                Hi! I&apos;m Zoe
               </h3>
               <p className="text-sm text-neutral-500 mb-6">
                 Your AI inventory assistant. Ask me anything about your stock, items, or reports!

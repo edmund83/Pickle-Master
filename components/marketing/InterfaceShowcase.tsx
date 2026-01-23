@@ -11,7 +11,7 @@ export function InterfaceShowcase() {
           <h2 className="text-base-content text-2xl font-semibold md:text-3xl lg:text-4xl">
             Everything your team needs —
             <span className="relative z-[1] font-bold">
-              {' '}nothing they don't
+              {' '}nothing they don&apos;t
               <span
                 className="from-primary absolute start-0 bottom-0 -z-[1] h-0.5 w-full bg-gradient-to-r to-transparent to-100% max-sm:hidden"
                 aria-hidden="true"
