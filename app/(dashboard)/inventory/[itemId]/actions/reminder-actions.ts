@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { getAuthContext, requireWritePermission } from '@/lib/auth/server-auth'
 import type {
   ItemReminderWithDetails,
   CreateReminderInput,
@@ -22,6 +23,9 @@ interface RPCResponse {
 export async function getItemReminders(
   itemId: string
 ): Promise<ItemReminderWithDetails[]> {
+  const authResult = await getAuthContext()
+  if (!authResult.success) return []
+
   const supabase = await createClient()
 
    
@@ -43,6 +47,12 @@ export async function getItemReminders(
 export async function createItemReminder(
   input: CreateReminderInput
 ): Promise<{ success: boolean; error?: string; reminderId?: string }> {
+  const authResult = await getAuthContext()
+  if (!authResult.success) return { success: false, error: authResult.error }
+  const { context } = authResult
+  const permResult = requireWritePermission(context)
+  if (!permResult.success) return { success: false, error: permResult.error }
+
   const supabase = await createClient()
 
    
@@ -96,6 +106,12 @@ export async function updateItemReminder(
     status?: ReminderStatus
   }
 ): Promise<{ success: boolean; error?: string }> {
+  const authResult = await getAuthContext()
+  if (!authResult.success) return { success: false, error: authResult.error }
+  const { context } = authResult
+  const permResult = requireWritePermission(context)
+  if (!permResult.success) return { success: false, error: permResult.error }
+
   const supabase = await createClient()
 
    
@@ -135,6 +151,12 @@ export async function deleteItemReminder(
   reminderId: string,
   itemId: string
 ): Promise<{ success: boolean; error?: string }> {
+  const authResult = await getAuthContext()
+  if (!authResult.success) return { success: false, error: authResult.error }
+  const { context } = authResult
+  const permResult = requireWritePermission(context)
+  if (!permResult.success) return { success: false, error: permResult.error }
+
   const supabase = await createClient()
 
    
@@ -164,6 +186,12 @@ export async function toggleReminderStatus(
   reminderId: string,
   itemId: string
 ): Promise<{ success: boolean; error?: string; newStatus?: string }> {
+  const authResult = await getAuthContext()
+  if (!authResult.success) return { success: false, error: authResult.error }
+  const { context } = authResult
+  const permResult = requireWritePermission(context)
+  if (!permResult.success) return { success: false, error: permResult.error }
+
   const supabase = await createClient()
 
    
@@ -190,29 +218,18 @@ export async function toggleReminderStatus(
  * Get team members for the current user's tenant
  */
 export async function getTeamMembers(): Promise<Profile[]> {
+  const authResult = await getAuthContext()
+  if (!authResult.success) return []
+  const { context } = authResult
+
   const supabase = await createClient()
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return []
-
-  // Get user's tenant_id
-   
-  const { data: profile } = await (supabase as any)
-    .from('profiles')
-    .select('tenant_id')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile?.tenant_id) return []
 
   // Get all team members in the tenant
    
   const { data: members, error } = await (supabase as any)
     .from('profiles')
     .select('id, email, full_name, role, avatar_url')
-    .eq('tenant_id', profile.tenant_id)
+    .eq('tenant_id', context.tenantId)
     .order('full_name', { ascending: true })
 
   if (error) {

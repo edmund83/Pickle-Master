@@ -5,7 +5,6 @@ import { revalidatePath } from 'next/cache'
 import {
     getAuthContext,
     requireWritePermission,
-    requireAdminPermission,
     verifyTenantOwnership,
     verifyRelatedTenantOwnership,
     validateInput,
@@ -17,6 +16,7 @@ import {
     purchaseOrderStatusSchema,
 } from '@/lib/auth/server-auth'
 import { z } from 'zod'
+import { escapeSqlLike } from '@/lib/utils'
 
 export type PurchaseOrderResult = {
     success: boolean
@@ -365,33 +365,55 @@ async function generateDisplayId(supabase: ReturnType<typeof createClient> exten
 // Create a new purchase order with items
 // Uses RPC for atomic creation with display_id generation
 export async function createPurchaseOrder(input: CreatePurchaseOrderInput): Promise<PurchaseOrderResult> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
 
-    if (!user) return { success: false, error: 'Unauthorized' }
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // 3. Validate input
+    const validation = validateInput(createPurchaseOrderSchema, input)
+    if (!validation.success) return { success: false, error: validation.error }
+    const validatedInput = validation.data
+
+    // 4. If vendor_id is provided, verify it belongs to the tenant
+    if (validatedInput.vendor_id) {
+        const vendorCheck = await verifyRelatedTenantOwnership(
+            'vendors',
+            validatedInput.vendor_id,
+            context.tenantId,
+            'Vendor'
+        )
+        if (!vendorCheck.success) return { success: false, error: vendorCheck.error }
+    }
+
+    const supabase = await createClient()
 
     // Use the new RPC function for atomic creation with display_id
-     
+
     const { data, error } = await (supabase as any).rpc('create_purchase_order_v2', {
-        p_vendor_id: input.vendor_id || null,
-        p_expected_date: input.expected_date || null,
-        p_notes: input.notes || null,
+        p_vendor_id: validatedInput.vendor_id || null,
+        p_expected_date: validatedInput.expected_date || null,
+        p_notes: validatedInput.notes || null,
         p_currency: 'MYR',
-        p_ship_to_name: input.ship_to_name || null,
-        p_ship_to_address1: input.ship_to_address1 || null,
-        p_ship_to_address2: input.ship_to_address2 || null,
-        p_ship_to_city: input.ship_to_city || null,
-        p_ship_to_state: input.ship_to_state || null,
-        p_ship_to_postal_code: input.ship_to_postal_code || null,
-        p_ship_to_country: input.ship_to_country || null,
-        p_bill_to_name: input.bill_to_name || null,
-        p_bill_to_address1: input.bill_to_address1 || null,
-        p_bill_to_address2: input.bill_to_address2 || null,
-        p_bill_to_city: input.bill_to_city || null,
-        p_bill_to_state: input.bill_to_state || null,
-        p_bill_to_postal_code: input.bill_to_postal_code || null,
-        p_bill_to_country: input.bill_to_country || null,
-        p_items: input.items.map(item => ({
+        p_ship_to_name: validatedInput.ship_to_name || null,
+        p_ship_to_address1: validatedInput.ship_to_address1 || null,
+        p_ship_to_address2: validatedInput.ship_to_address2 || null,
+        p_ship_to_city: validatedInput.ship_to_city || null,
+        p_ship_to_state: validatedInput.ship_to_state || null,
+        p_ship_to_postal_code: validatedInput.ship_to_postal_code || null,
+        p_ship_to_country: validatedInput.ship_to_country || null,
+        p_bill_to_name: validatedInput.bill_to_name || null,
+        p_bill_to_address1: validatedInput.bill_to_address1 || null,
+        p_bill_to_address2: validatedInput.bill_to_address2 || null,
+        p_bill_to_city: validatedInput.bill_to_city || null,
+        p_bill_to_state: validatedInput.bill_to_state || null,
+        p_bill_to_postal_code: validatedInput.bill_to_postal_code || null,
+        p_bill_to_country: validatedInput.bill_to_country || null,
+        p_items: validatedInput.items.map(item => ({
             item_id: item.item_id,
             item_name: item.item_name,
             sku: item.sku,
@@ -407,6 +429,28 @@ export async function createPurchaseOrder(input: CreatePurchaseOrderInput): Prom
 
     if (data && !data.success) {
         return { success: false, error: data.error || 'Failed to create purchase order' }
+    }
+
+    // Log activity
+    try {
+
+        await (supabase as any).from('activity_logs').insert({
+            tenant_id: context.tenantId,
+            user_id: context.userId,
+            user_name: context.fullName,
+            action_type: 'create',
+            entity_type: 'purchase_order',
+            entity_id: data?.purchase_order_id,
+            entity_name: data?.display_id,
+            changes: {
+                status: 'draft',
+                source: 'full_create',
+                items_count: validatedInput.items.length,
+                vendor_id: validatedInput.vendor_id
+            }
+        })
+    } catch (logError) {
+        console.error('Activity log error:', logError)
     }
 
     revalidatePath('/tasks/purchase-orders')
@@ -1016,7 +1060,8 @@ export async function searchInventoryItemsForPO(query: string, lowStockOnly: boo
         .limit(20)
 
     if (query) {
-        queryBuilder = queryBuilder.or(`name.ilike.%${query}%,sku.ilike.%${query}%`)
+        const escapedQuery = escapeSqlLike(query)
+        queryBuilder = queryBuilder.or(`name.ilike.%${escapedQuery}%,sku.ilike.%${escapedQuery}%`)
     }
 
     // Filter for low stock items only
@@ -1158,7 +1203,7 @@ export async function getPaginatedPurchaseOrders(
     }
 
     if (search) {
-        const searchPattern = `%${search}%`
+        const searchPattern = `%${escapeSqlLike(search)}%`
         countQuery = countQuery.or(`order_number.ilike.${searchPattern},display_id.ilike.${searchPattern}`)
         dataQuery = dataQuery.or(`order_number.ilike.${searchPattern},display_id.ilike.${searchPattern}`)
     }

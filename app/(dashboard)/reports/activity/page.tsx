@@ -67,7 +67,7 @@ export default function ActivityReportPage() {
        
       let query = (supabase as any)
         .from('activity_logs')
-        .select('*')
+        .select('id, created_at, user_name, action_type, entity_type, entity_name, quantity_delta')
         .eq('tenant_id', profile.tenant_id)
         .gte('created_at', startDate.toISOString())
         .order('created_at', { ascending: false })

@@ -5,7 +5,6 @@ import { revalidatePath } from 'next/cache'
 import {
     getAuthContext,
     requireWritePermission,
-    requireAdminPermission,
     verifyTenantOwnership,
     verifyRelatedTenantOwnership,
     validateInput,
@@ -15,6 +14,7 @@ import {
     optionalDateStringSchema,
 } from '@/lib/auth/server-auth'
 import { z } from 'zod'
+import { escapeSqlLike } from '@/lib/utils'
 
 export type ReceiveResult = {
     success: boolean
@@ -707,8 +707,8 @@ export async function cancelReceive(receiveId: string): Promise<ReceiveResult> {
     if (!authResult.success) return { success: false, error: authResult.error }
     const { context } = authResult
 
-    // 2. Check admin permission for cancel operations
-    const permResult = requireAdminPermission(context)
+    // 2. Check write permission for cancel operations
+    const permResult = requireWritePermission(context)
     if (!permResult.success) return { success: false, error: permResult.error }
 
     // 3. Validate receiveId
@@ -1262,7 +1262,7 @@ export async function getPaginatedReceives(
     }
 
     if (search) {
-        const searchPattern = `%${search}%`
+        const searchPattern = `%${escapeSqlLike(search)}%`
         countQuery = countQuery.or(`display_id.ilike.${searchPattern},delivery_note_number.ilike.${searchPattern},tracking_number.ilike.${searchPattern}`)
         dataQuery = dataQuery.or(`display_id.ilike.${searchPattern},delivery_note_number.ilike.${searchPattern},tracking_number.ilike.${searchPattern}`)
     }

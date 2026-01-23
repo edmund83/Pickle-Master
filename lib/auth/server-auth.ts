@@ -78,7 +78,7 @@ export async function getAuthContext(): Promise<AuthResult> {
 }
 
 /**
- * Check if the user has write permission (owner, admin, or editor).
+ * Check if the user has write permission (owner or staff).
  */
 export function hasWritePermission(role: string): boolean {
   return WRITE_ROLES.includes(role as WriteRole)
@@ -105,7 +105,7 @@ export function hasAdminPermission(role: string): boolean {
  */
 export function requireWritePermission(context: AuthContext): { success: true } | { success: false; error: string } {
   if (!hasWritePermission(context.role)) {
-    return { success: false, error: 'Permission denied: Requires editor, admin, or owner role' }
+    return { success: false, error: 'Permission denied: Requires staff or owner role' }
   }
   return { success: true }
 }

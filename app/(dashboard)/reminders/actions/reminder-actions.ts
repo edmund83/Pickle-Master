@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { getAuthContext, requireWritePermission } from '@/lib/auth/server-auth'
 import type {
   ReminderType,
   ComparisonOperator,
@@ -72,8 +73,12 @@ export async function getAllReminders(
   offset: number = 0
 ): Promise<GetAllRemindersResult> {
   const supabase = await createClient()
+  const authResult = await getAuthContext()
+  if (!authResult.success) {
+    return { reminders: [], total: 0 }
+  }
 
-   
+  
   const { data, error } = await (supabase as any).rpc('get_all_reminders', {
     p_type: type || null,
     p_status: status || null,
@@ -94,8 +99,17 @@ export async function getAllReminders(
  */
 export async function getReminderStats(): Promise<ReminderStats> {
   const supabase = await createClient()
+  const authResult = await getAuthContext()
+  if (!authResult.success) {
+    return {
+      total: 0,
+      active: 0,
+      paused: 0,
+      by_type: { low_stock: 0, expiry: 0, restock: 0 },
+    }
+  }
 
-   
+  
   const { data, error } = await (supabase as any).rpc('get_reminder_stats')
 
   if (error) {
@@ -129,6 +143,12 @@ export async function createFolderReminder(input: {
   notifyUserIds?: string[]
   comparisonOperator?: ComparisonOperator
 }): Promise<{ success: boolean; error?: string; reminderId?: string }> {
+  const authResult = await getAuthContext()
+  if (!authResult.success) return { success: false, error: authResult.error }
+  const { context } = authResult
+  const permResult = requireWritePermission(context)
+  if (!permResult.success) return { success: false, error: permResult.error }
+
   const supabase = await createClient()
 
    
@@ -181,6 +201,12 @@ export async function createBulkItemReminders(input: {
   notifyUserIds?: string[]
   comparisonOperator?: ComparisonOperator
 }): Promise<{ success: boolean; error?: string; created?: number; skipped?: number }> {
+  const authResult = await getAuthContext()
+  if (!authResult.success) return { success: false, error: authResult.error }
+  const { context } = authResult
+  const permResult = requireWritePermission(context)
+  if (!permResult.success) return { success: false, error: permResult.error }
+
   const supabase = await createClient()
 
    
@@ -222,6 +248,12 @@ export async function deleteReminder(
   reminderId: string,
   sourceType: 'item' | 'folder'
 ): Promise<{ success: boolean; error?: string }> {
+  const authResult = await getAuthContext()
+  if (!authResult.success) return { success: false, error: authResult.error }
+  const { context } = authResult
+  const permResult = requireWritePermission(context)
+  if (!permResult.success) return { success: false, error: permResult.error }
+
   const supabase = await createClient()
 
    
@@ -264,6 +296,12 @@ export async function updateReminder(
     notifyEmail?: boolean
   }
 ): Promise<{ success: boolean; error?: string }> {
+  const authResult = await getAuthContext()
+  if (!authResult.success) return { success: false, error: authResult.error }
+  const { context } = authResult
+  const permResult = requireWritePermission(context)
+  if (!permResult.success) return { success: false, error: permResult.error }
+
   const supabase = await createClient()
 
    
@@ -304,6 +342,12 @@ export async function toggleReminder(
   reminderId: string,
   sourceType: 'item' | 'folder'
 ): Promise<{ success: boolean; error?: string; newStatus?: string }> {
+  const authResult = await getAuthContext()
+  if (!authResult.success) return { success: false, error: authResult.error }
+  const { context } = authResult
+  const permResult = requireWritePermission(context)
+  if (!permResult.success) return { success: false, error: permResult.error }
+
   const supabase = await createClient()
 
    
@@ -333,27 +377,17 @@ export async function toggleReminder(
 export async function getItemsForSelection(): Promise<
   { id: string; name: string; folder_id: string | null }[]
 > {
+  const authResult = await getAuthContext()
+  if (!authResult.success) return []
+  const { context } = authResult
+
   const supabase = await createClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return []
-
-   
-  const { data: profile } = await (supabase as any)
-    .from('profiles')
-    .select('tenant_id')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile?.tenant_id) return []
-
-   
+  
   const { data: items, error } = await (supabase as any)
     .from('inventory_items')
     .select('id, name, folder_id')
-    .eq('tenant_id', profile.tenant_id)
+    .eq('tenant_id', context.tenantId)
     .is('deleted_at', null)
     .order('name', { ascending: true })
     .limit(500)
@@ -372,24 +406,14 @@ export async function getItemsForSelection(): Promise<
 export async function getFoldersForSelection(): Promise<
   { id: string; name: string; parent_id: string | null; item_count: number }[]
 > {
+  const authResult = await getAuthContext()
+  if (!authResult.success) return []
+  const { context } = authResult
+
   const supabase = await createClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return []
-
-   
-  const { data: profile } = await (supabase as any)
-    .from('profiles')
-    .select('tenant_id')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile?.tenant_id) return []
-
   // Get folders with item counts
-   
+  
   const { data: folders, error } = await (supabase as any)
     .from('folders')
     .select(`
@@ -398,7 +422,7 @@ export async function getFoldersForSelection(): Promise<
       parent_id,
       inventory_items!inner(id)
     `)
-    .eq('tenant_id', profile.tenant_id)
+    .eq('tenant_id', context.tenantId)
     .order('name', { ascending: true })
 
   if (error) {
@@ -419,27 +443,17 @@ export async function getFoldersForSelection(): Promise<
  * Get team members for the current user's tenant
  */
 export async function getTeamMembers(): Promise<Profile[]> {
+  const authResult = await getAuthContext()
+  if (!authResult.success) return []
+  const { context } = authResult
+
   const supabase = await createClient()
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return []
-
-   
-  const { data: profile } = await (supabase as any)
-    .from('profiles')
-    .select('tenant_id')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile?.tenant_id) return []
-
-   
+  
   const { data: members, error } = await (supabase as any)
     .from('profiles')
     .select('id, email, full_name, role, avatar_url')
-    .eq('tenant_id', profile.tenant_id)
+    .eq('tenant_id', context.tenantId)
     .order('full_name', { ascending: true })
 
   if (error) {

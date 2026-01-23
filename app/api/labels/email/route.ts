@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { resend } from '@/lib/resend'
 import { getAuthContext, requireWritePermission } from '@/lib/auth/server-auth'
 import { checkRateLimit, RATE_LIMITED_OPERATIONS } from '@/lib/rate-limit'
+import { escapeHtml } from '@/lib/utils'
 
 const MAX_PDF_BYTES = 5 * 1024 * 1024 // 5MB
 const MAX_ITEM_NAME_LENGTH = 120
@@ -64,14 +65,17 @@ export async function POST(request: NextRequest) {
       .replace(/^-|-$/g, '')
       .slice(0, 50) || 'label'
 
+    // Escape user input to prevent XSS in email
+    const safeItemName = escapeHtml(trimmedName)
+
     const { data, error } = await resend.emails.send({
       from: 'StockZip <onboarding@resend.dev>',
       to: [email],
-      subject: `Label for ${trimmedName}`,
+      subject: `Label for ${safeItemName}`,
       html: `
         <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
           <h1 style="color: #22c55e;">Your Label is Ready</h1>
-          <p>The label for <strong>${trimmedName}</strong> is attached to this email as a PDF.</p>
+          <p>The label for <strong>${safeItemName}</strong> is attached to this email as a PDF.</p>
 
           <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; border: 1px solid #86efac; margin: 20px 0;">
             <h2 style="margin-top: 0; color: #166534;">Printing Tips</h2>

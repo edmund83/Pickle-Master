@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { Search, Package, Clock, ArrowRight, Loader2 } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, escapeSqlLike } from '@/lib/utils'
 import { useGlobalSearch } from '@/contexts/GlobalSearchContext'
 import { createClient } from '@/lib/supabase/client'
 import { useAuthStore } from '@/lib/stores/auth-store'
@@ -117,13 +117,14 @@ export function GlobalSearchModal() {
       }
 
       // Single Supabase call with explicit columns (no auth.getUser, no profile query)
-       
+      // Escape SQL wildcards to prevent pattern injection
+      const escapedQuery = escapeSqlLike(searchQuery)
       const { data: items } = await (supabase as any)
         .from('inventory_items')
         .select(SEARCH_COLUMNS)
         .eq('tenant_id', currentTenantId)
         .is('deleted_at', null)
-        .or(`name.ilike.%${searchQuery}%,sku.ilike.%${searchQuery}%,description.ilike.%${searchQuery}%`)
+        .or(`name.ilike.%${escapedQuery}%,sku.ilike.%${escapedQuery}%,description.ilike.%${escapedQuery}%`)
         .order('updated_at', { ascending: false })
         .limit(MAX_RESULTS)
 

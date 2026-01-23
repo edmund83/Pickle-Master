@@ -112,8 +112,8 @@ async function handleCheckoutComplete(
   const subscriptionId = session.subscription as string
 
   if (!tenantId) {
-    console.error('No tenant_id in checkout session')
-    return
+    // Throw error to trigger Stripe retry - session may have been created before tenant was saved
+    throw new Error(`No tenant_id in checkout session ${session.id}`)
   }
 
   // Get subscription details
@@ -122,8 +122,8 @@ async function handleCheckoutComplete(
   const planInfo = getPlanByPriceId(priceId)
 
   if (!planInfo) {
-    console.error('Unknown price ID:', priceId)
-    return
+    // Throw error - this indicates a configuration issue that needs attention
+    throw new Error(`Unknown price ID: ${priceId}`)
   }
 
   // Update tenant with subscription info
@@ -163,8 +163,8 @@ async function handleSubscriptionUpdated(
     .single()
 
   if (findError || !tenant) {
-    console.error('Tenant not found for customer:', customerId)
-    return
+    // Throw error to trigger Stripe retry - tenant may not be synced yet
+    throw new Error(`Tenant not found for customer: ${customerId}`)
   }
 
   const priceId = subscription.items.data[0]?.price.id
@@ -221,8 +221,8 @@ async function handleSubscriptionDeleted(
     .single()
 
   if (findError || !tenant) {
-    console.error('Tenant not found for customer:', customerId)
-    return
+    // Throw error to trigger Stripe retry - tenant may not be synced yet
+    throw new Error(`Tenant not found for customer: ${customerId}`)
   }
 
   // Set status to cancelled
@@ -259,8 +259,8 @@ async function handlePaymentFailed(
     .single()
 
   if (findError || !tenant) {
-    console.error('Tenant not found for customer:', customerId)
-    return
+    // Throw error to trigger Stripe retry - tenant may not be synced yet
+    throw new Error(`Tenant not found for customer: ${customerId}`)
   }
 
   // Log the failed payment - don't immediately cancel
@@ -287,8 +287,8 @@ async function handlePaymentSucceeded(
     .single()
 
   if (findError || !tenant) {
-    console.error('Tenant not found for customer:', customerId)
-    return
+    // Throw error to trigger Stripe retry - tenant may not be synced yet
+    throw new Error(`Tenant not found for customer: ${customerId}`)
   }
 
   // If status was past_due or paused, reactivate
