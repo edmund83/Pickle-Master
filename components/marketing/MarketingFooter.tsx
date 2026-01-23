@@ -45,6 +45,7 @@ export function MarketingFooter() {
                 <li><Link href="/features" className="link link-animated text-base-content/80">Features</Link></li>
                 <li><Link href="/solutions" className="link link-animated text-base-content/80">Solutions</Link></li>
                 <li><Link href="/pricing" className="link link-animated text-base-content/80">Pricing</Link></li>
+                <li><Link href="/pricing/free-inventory-software" className="link link-animated text-base-content/80">Free inventory software</Link></li>
                 <li><Link href="/demo" className="link link-animated text-base-content/80">Demo</Link></li>
                 <li><Link href="/migration/sortly" className="link link-animated text-base-content/80">Sortly migration</Link></li>
               </ul>
@@ -139,4 +140,3 @@ export function MarketingFooter() {
     </footer>
   )
 }
-

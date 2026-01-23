@@ -2,6 +2,11 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import {
+    getAuthContext,
+    requireAdminPermission,
+    requireWritePermission,
+} from '@/lib/auth/server-auth'
 
 // ===================
 // Types
@@ -109,6 +114,12 @@ export type ReorderResult = {
 export async function getReorderSuggestions(
     includeWithoutVendor: boolean = false
 ): Promise<ReorderSuggestion[]> {
+    const authResult = await getAuthContext()
+    if (!authResult.success) {
+        console.error('Unauthorized reorder suggestions request:', authResult.error)
+        return []
+    }
+
     const supabase = await createClient()
 
      
@@ -130,6 +141,12 @@ export async function getReorderSuggestions(
 // ===================
 
 export async function getReorderSuggestionsByVendor(): Promise<VendorSuggestionGroup[]> {
+    const authResult = await getAuthContext()
+    if (!authResult.success) {
+        console.error('Unauthorized reorder suggestions by vendor request:', authResult.error)
+        return []
+    }
+
     const supabase = await createClient()
 
      
@@ -149,6 +166,12 @@ export async function getReorderSuggestionsByVendor(): Promise<VendorSuggestionG
 // ===================
 
 export async function getReorderSuggestionsCount(): Promise<number> {
+    const authResult = await getAuthContext()
+    if (!authResult.success) {
+        console.error('Unauthorized reorder suggestions count request:', authResult.error)
+        return 0
+    }
+
     const supabase = await createClient()
 
      
@@ -170,6 +193,13 @@ export async function getReorderSuggestionsCount(): Promise<number> {
 export async function createPOFromSuggestions(
     input: CreatePOFromSuggestionsInput
 ): Promise<ReorderResult> {
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
+
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
     const supabase = await createClient()
 
      
@@ -199,6 +229,12 @@ export async function createPOFromSuggestions(
 // ===================
 
 export async function getItemVendors(itemId: string): Promise<ItemVendor[]> {
+    const authResult = await getAuthContext()
+    if (!authResult.success) {
+        console.error('Unauthorized get item vendors request:', authResult.error)
+        return []
+    }
+
     const supabase = await createClient()
 
      
@@ -222,6 +258,13 @@ export async function getItemVendors(itemId: string): Promise<ItemVendor[]> {
 export async function linkItemToVendor(
     input: LinkItemToVendorInput
 ): Promise<{ success: boolean; error?: string; item_vendor_id?: string }> {
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
+
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
     const supabase = await createClient()
 
      
@@ -260,6 +303,13 @@ export async function updateItemVendor(
     itemVendorId: string,
     updates: Partial<Omit<LinkItemToVendorInput, 'item_id' | 'vendor_id'>>
 ): Promise<{ success: boolean; error?: string }> {
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
+
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
     const supabase = await createClient()
 
      
@@ -293,6 +343,13 @@ export async function updateItemVendor(
 export async function unlinkItemFromVendor(
     itemVendorId: string
 ): Promise<{ success: boolean; error?: string }> {
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
+
+    const permResult = requireAdminPermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
     const supabase = await createClient()
 
      
@@ -318,6 +375,13 @@ export async function setPreferredVendor(
     itemId: string,
     vendorId: string
 ): Promise<{ success: boolean; error?: string }> {
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
+
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
     const supabase = await createClient()
 
     // First, unset all preferred vendors for this item
@@ -355,6 +419,13 @@ export async function updateItemReorderSettings(
         reorder_quantity?: number | null
     }
 ): Promise<{ success: boolean; error?: string }> {
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
+
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
     const supabase = await createClient()
 
      
