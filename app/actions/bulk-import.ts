@@ -1,6 +1,8 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { getAuthContext, requireWritePermission } from '@/lib/auth/server-auth'
+import { checkRateLimit, RATE_LIMITED_OPERATIONS } from '@/lib/rate-limit'
 import { revalidatePath } from 'next/cache'
 
 export type ImportItemData = {
@@ -58,20 +60,21 @@ export async function bulkImportItems(
   }
 
   try {
-    const supabase = await createClient()
-
-    // Check authentication
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser()
-
-    if (authError || !user) {
+    const authResult = await getAuthContext()
+    if (!authResult.success) {
       return {
         ...defaultResult,
-        error: 'You must be logged in to import items',
+        error: authResult.error,
       }
     }
+    const permResult = requireWritePermission(authResult.context)
+    if (!permResult.success) {
+      return {
+        ...defaultResult,
+        error: permResult.error,
+      }
+    }
+    const supabase = await createClient()
 
     // Validate items array
     if (!items || items.length === 0) {
@@ -85,6 +88,15 @@ export async function bulkImportItems(
     const importOptions = {
       skip_duplicates: options.skipDuplicates ?? true,
       create_folders: options.createFolders ?? true,
+    }
+
+    // Check rate limit before import
+    const rateLimitResult = await checkRateLimit(RATE_LIMITED_OPERATIONS.BULK_IMPORT)
+    if (!rateLimitResult.allowed) {
+      return {
+        ...defaultResult,
+        error: rateLimitResult.error || 'Rate limit exceeded. Please try again later.',
+      }
     }
 
     // Call the bulk import database function
@@ -142,6 +154,14 @@ export async function checkImportQuota(itemCount: number): Promise<{
   message?: string
 }> {
   try {
+    const authResult = await getAuthContext()
+    if (!authResult.success) {
+      return {
+        allowed: false,
+        remaining: 0,
+        message: authResult.error,
+      }
+    }
     const supabase = await createClient()
 
      

@@ -265,110 +265,24 @@ export async function createDeliveryOrderFromSO(salesOrderId: string): Promise<D
     if (!permResult.success) return { success: false, error: permResult.error }
 
     const supabase = await createClient()
+    const { data, error } = await (supabase as any).rpc('create_delivery_order_from_sales_order', {
+        p_sales_order_id: salesOrderId,
+    })
 
-    // Get SO with items that have been picked
-     
-    const { data: so, error: soError } = await (supabase as any)
-        .from('sales_orders')
-        .select(`
-            *,
-            customers(name),
-            sales_order_items(
-                id, item_id, item_name, sku,
-                quantity_ordered, quantity_picked, quantity_shipped
-            )
-        `)
-        .eq('id', salesOrderId)
-        .eq('tenant_id', context.tenantId)
-        .single()
-
-    if (soError || !so) {
-        return { success: false, error: 'Sales order not found' }
+    if (error) {
+        console.error('Create DO error:', error)
+        return { success: false, error: error.message }
     }
 
-    // Check SO is in correct status
-    if (!['picked', 'partial_shipped'].includes(so.status)) {
-        return { success: false, error: 'Sales order must be in picked or partial shipped status' }
-    }
+    const result = Array.isArray(data) ? data[0] : data
 
-    // Find items ready to ship (picked > shipped)
-    const itemsToShip = (so.sales_order_items || []).filter(
-        (item: { quantity_picked: number; quantity_shipped: number }) =>
-            item.quantity_picked > item.quantity_shipped
-    )
-
-    if (itemsToShip.length === 0) {
-        return { success: false, error: 'No items ready to ship' }
-    }
-
-    // Generate display ID
-     
-    const { data: displayId } = await (supabase as any).rpc(
-        'generate_display_id_for_current_user',
-        { p_entity_type: 'delivery_order' }
-    )
-
-    // Create delivery order
-     
-    const { data: doData, error: doError } = await (supabase as any)
-        .from('delivery_orders')
-        .insert({
-            tenant_id: context.tenantId,
-            display_id: displayId,
-            sales_order_id: salesOrderId,
-            pick_list_id: so.pick_list_id || null,
-            ship_to_name: so.ship_to_name || so.customers?.name || null,
-            ship_to_address1: so.ship_to_address1 || null,
-            ship_to_address2: so.ship_to_address2 || null,
-            ship_to_city: so.ship_to_city || null,
-            ship_to_state: so.ship_to_state || null,
-            ship_to_postal_code: so.ship_to_postal_code || null,
-            ship_to_country: so.ship_to_country || null,
-            ship_to_phone: so.ship_to_phone || null,
-            created_by: context.userId,
-            status: 'draft',
-        })
-        .select('id, display_id')
-        .single()
-
-    if (doError) {
-        console.error('Create DO error:', doError)
-        return { success: false, error: doError.message }
-    }
-
-    // Create delivery order items
-    const doItems = itemsToShip.map((item: {
-        id: string
-        item_id: string | null
-        item_name: string
-        sku: string | null
-        quantity_picked: number
-        quantity_shipped: number
-    }) => ({
-        delivery_order_id: doData.id,
-        sales_order_item_id: item.id,
-        item_id: item.item_id || null,
-        item_name: item.item_name,
-        sku: item.sku || null,
-        quantity_shipped: item.quantity_picked - item.quantity_shipped,
-    }))
-
-     
-    const { error: itemsError } = await (supabase as any)
-        .from('delivery_order_items')
-        .insert(doItems)
-
-    if (itemsError) {
-        console.error('Create DO items error:', itemsError)
-        // Rollback DO creation
-         
-        await (supabase as any).from('delivery_orders').delete().eq('id', doData.id)
-        return { success: false, error: itemsError.message }
+    if (!result?.delivery_order_id) {
+        return { success: false, error: 'Failed to create delivery order' }
     }
 
     revalidatePath('/tasks/delivery-orders')
     revalidatePath(`/tasks/sales-orders/${salesOrderId}`)
-    return { success: true, delivery_order_id: doData.id, display_id: doData.display_id }
+    return { success: true, delivery_order_id: result.delivery_order_id, display_id: result.display_id }
 }
 
 // Get delivery order with details
