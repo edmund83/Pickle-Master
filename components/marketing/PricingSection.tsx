@@ -47,10 +47,6 @@ export function PricingSection() {
                       <span className="text-base-content/70">Users</span>
                       <span className="text-base-content font-semibold">3</span>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-base-content/70">Locations</span>
-                      <span className="text-accent font-semibold">Up to 3</span>
-                    </div>
                   </div>
                   <ul className="space-y-3 text-base-content/80">
                     <li className="flex gap-2"><span className="icon-[tabler--circle-check] text-success size-5"></span>All Scale features included</li>
@@ -129,8 +125,8 @@ export function PricingSection() {
                     </div>
                   </div>
                   <ul className="space-y-3 text-base-content/80">
-                    <li className="flex gap-2"><span className="icon-[tabler--circle-check] text-primary size-5"></span>Multi-location inventory</li>
                     <li className="flex gap-2"><span className="icon-[tabler--circle-check] text-primary size-5"></span>Purchase orders &amp; receiving</li>
+                    <li className="flex gap-2"><span className="icon-[tabler--circle-check] text-primary size-5"></span>Pick lists &amp; fulfillment</li>
                     <li className="flex gap-2"><span className="icon-[tabler--circle-check] text-primary size-5"></span>100 AskZoe AI questions/mo</li>
                   </ul>
                   <Link href="/signup?plan=growth" className="btn btn-primary mt-auto">
