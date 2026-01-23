@@ -80,14 +80,21 @@ export async function checkAiUsageLimit(
 
     if (error) {
       console.error('Error checking AI usage limit:', error)
-      // Fail open to not block users if DB issue
-      return { allowed: true, status: 200 }
+      return {
+        allowed: false,
+        status: 503,
+        error: 'AI usage check unavailable. Please try again later.',
+      }
     }
 
     return data as UsageCheckResult
   } catch (err) {
     console.error('Exception checking AI usage limit:', err)
-    return { allowed: true, status: 200 }
+    return {
+      allowed: false,
+      status: 503,
+      error: 'AI usage check unavailable. Please try again later.',
+    }
   }
 }
 

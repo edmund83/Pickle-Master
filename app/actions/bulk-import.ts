@@ -179,7 +179,10 @@ export async function checkImportQuota(itemCount: number): Promise<{
 
     return { allowed: true, remaining }
   } catch {
-    // Allow operation if quota check fails
-    return { allowed: true, remaining: itemCount }
+    return {
+      allowed: false,
+      remaining: 0,
+      message: 'Quota check unavailable. Please try again later.',
+    }
   }
 }

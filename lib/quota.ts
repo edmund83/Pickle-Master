@@ -54,10 +54,11 @@ export async function canAddItem(): Promise<QuotaCheckResult> {
 
     return { allowed: true, usage: items }
   } catch {
-    // If we can't check quota, allow the operation
-    // The database trigger will catch it as a fallback
-    console.warn('Could not check item quota, allowing operation')
-    return { allowed: true }
+    console.warn('Could not check item quota')
+    return {
+      allowed: false,
+      message: 'Quota check unavailable. Please try again later.',
+    }
   }
 }
 
@@ -84,10 +85,11 @@ export async function canAddUser(): Promise<QuotaCheckResult> {
 
     return { allowed: true, usage: users }
   } catch {
-    // If we can't check quota, allow the operation
-    // The database trigger will catch it as a fallback
-    console.warn('Could not check user quota, allowing operation')
-    return { allowed: true }
+    console.warn('Could not check user quota')
+    return {
+      allowed: false,
+      message: 'Quota check unavailable. Please try again later.',
+    }
   }
 }
 

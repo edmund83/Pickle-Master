@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient } from '@/lib/supabase/server'
+import { getAuthContext, requireOwnerPermission } from '@/lib/auth/server-auth'
 
 function getStripe() {
   if (!process.env.STRIPE_SECRET_KEY) {
@@ -17,28 +18,20 @@ export async function POST(req: Request) {
   }
 
   try {
+    const authResult = await getAuthContext()
+    if (!authResult.success) {
+      return NextResponse.json({ error: authResult.error }, { status: 401 })
+    }
+    const permResult = requireOwnerPermission(authResult.context)
+    if (!permResult.success) {
+      return NextResponse.json({ error: permResult.error }, { status: 403 })
+    }
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Get tenant info
-    const { data: profile } = await (supabase as any)
-      .from('profiles')
-      .select('tenant_id')
-      .eq('id', user.id)
-      .single()
-
-    if (!profile?.tenant_id) {
-      return NextResponse.json({ error: 'No tenant found' }, { status: 404 })
-    }
 
     const { data: tenant } = await (supabase as any)
       .from('tenants')
       .select('stripe_customer_id')
-      .eq('id', profile.tenant_id)
+      .eq('id', authResult.context.tenantId)
       .single()
 
     if (!tenant?.stripe_customer_id) {
