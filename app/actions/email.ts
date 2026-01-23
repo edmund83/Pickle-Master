@@ -1,6 +1,7 @@
 'use server'
 
 import { resend } from '@/lib/resend'
+import { getAuthContext, requireWritePermission } from '@/lib/auth/server-auth'
 
 export type EmailResult = {
     success: boolean
@@ -14,6 +15,13 @@ export async function sendLowStockAlert(
     minQuantity: number,
     unit: string = 'units'
 ): Promise<EmailResult> {
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
+
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
     if (!resend) {
         console.warn('⚠️ Email skipped: RESEND_API_KEY not found in environment variables.')
         return { success: false, error: 'Configuration missing' }

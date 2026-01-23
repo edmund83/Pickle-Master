@@ -23,18 +23,6 @@ const withPWA = withPWAInit({
           },
         },
       },
-      {
-        urlPattern: /^https:\/\/.*\.supabase\.co\/rest\/v1\/.*/i,
-        handler: 'NetworkFirst',
-        options: {
-          cacheName: 'supabase-api',
-          networkTimeoutSeconds: 10,
-          expiration: {
-            maxEntries: 50,
-            maxAgeSeconds: 60 * 5, // 5 minutes
-          },
-        },
-      },
     ],
   },
 })

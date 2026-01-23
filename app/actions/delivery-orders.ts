@@ -541,10 +541,20 @@ export async function updateDeliveryOrderStatus(
         // Update each SO item's shipped quantity
         for (const item of doItems || []) {
             if (item.sales_order_item_id) {
-                await (supabase as any).rpc('increment_so_item_shipped', {
+                const { data: incrementResult, error: incrementError } = await (supabase as any).rpc('increment_so_item_shipped', {
                     p_so_item_id: item.sales_order_item_id,
                     p_quantity: item.quantity_shipped
                 })
+                if (incrementError) {
+                    console.error('Failed to increment SO item shipped quantity:', incrementError)
+                    return { success: false, error: incrementError.message }
+                }
+                if (incrementResult?.success === false) {
+                    return {
+                        success: false,
+                        error: incrementResult.error || 'Failed to increment shipped quantity'
+                    }
+                }
             }
         }
 
