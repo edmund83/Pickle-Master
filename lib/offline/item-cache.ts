@@ -99,14 +99,14 @@ export async function syncItemCache(
     const lastSync = await getLastCacheSync(scope)
     const since = lastSync?.toISOString() || new Date(0).toISOString()
 
-    let cursor = since
+    let cursorUpdatedAt = since
+    let cursorId = '00000000-0000-0000-0000-000000000000'
     let hasMore = true
     const allItems: OfflineItem[] = []
     const idsToRemove: string[] = []
 
     // Fetch items updated since last sync to update cache or remove stale entries
     while (hasMore) {
-       
       const { data, error } = await (supabase as any)
         .from('inventory_items')
         .select(
@@ -125,8 +125,9 @@ export async function syncItemCache(
           folders (name)
         `
         )
-        .gt('updated_at', cursor)
+        .or(`updated_at.gt.${cursorUpdatedAt},and(updated_at.eq.${cursorUpdatedAt},id.gt.${cursorId})`)
         .order('updated_at', { ascending: true })
+        .order('id', { ascending: true })
         .limit(BATCH_SIZE)
 
       if (error) {
@@ -159,7 +160,9 @@ export async function syncItemCache(
       allItems.push(...transformedItems)
 
       // Update cursor for next batch
-      cursor = data[data.length - 1].updated_at
+      const lastItem = data[data.length - 1]
+      cursorUpdatedAt = lastItem.updated_at
+      cursorId = lastItem.id
       hasMore = data.length === BATCH_SIZE
     }
 

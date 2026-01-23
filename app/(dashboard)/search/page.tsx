@@ -40,6 +40,14 @@ const SORT_OPTIONS: { value: SortOption; label: string; defaultDir: SortDirectio
   { value: 'price', label: 'Price', defaultDir: 'desc' },
 ]
 
+function sanitizeSearchTerm(value: string): string {
+  return value
+    .replace(/[(),]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 100)
+}
+
 export default function SearchPage() {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<InventoryItem[]>([])
@@ -180,9 +188,9 @@ export default function SearchPage() {
       // Load folders and tags in parallel
       const [foldersResult, tagsResult] = await Promise.all([
          
-        (supabase as any).from('folders').select('*').eq('tenant_id', profile.tenant_id),
+        (supabase as any).from('folders').select('id, name, parent_id, path').eq('tenant_id', profile.tenant_id),
          
-        (supabase as any).from('tags').select('*').eq('tenant_id', profile.tenant_id),
+        (supabase as any).from('tags').select('id, name').eq('tenant_id', profile.tenant_id),
       ])
 
       setFolders((foldersResult.data || []) as Folder[])
@@ -218,13 +226,16 @@ export default function SearchPage() {
        
       let searchQuery = (supabase as any)
         .from('inventory_items')
-        .select('*')
+        .select('id, name, sku, quantity, unit, status, image_urls, updated_at, price')
         .eq('tenant_id', profile.tenant_id)
         .is('deleted_at', null)
 
       // Text search
       if (query.trim()) {
-        searchQuery = searchQuery.or(`name.ilike.%${query}%,sku.ilike.%${query}%,description.ilike.%${query}%`)
+        const sanitizedQuery = sanitizeSearchTerm(query)
+        if (sanitizedQuery) {
+          searchQuery = searchQuery.or(`name.ilike.%${sanitizedQuery}%,sku.ilike.%${sanitizedQuery}%,description.ilike.%${sanitizedQuery}%`)
+        }
       }
 
       // Apply filters

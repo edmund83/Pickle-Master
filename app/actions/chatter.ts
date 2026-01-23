@@ -1,6 +1,7 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { getAuthContext } from '@/lib/auth/server-auth'
 import { revalidatePath } from 'next/cache'
 import type { Database } from '@/types/database.types'
 
@@ -67,6 +68,10 @@ export async function getEntityMessages(
     limit = 50,
     offset = 0
 ): Promise<ActionResult<ChatterMessage[]>> {
+    const authResult = await getAuthContext()
+    if (!authResult.success) {
+        return { success: false, error: authResult.error }
+    }
     const supabase = await createClient()
 
      
@@ -119,6 +124,10 @@ export async function getMessageReplies(
     messageId: string,
     limit = 50
 ): Promise<ActionResult<ChatterReply[]>> {
+    const authResult = await getAuthContext()
+    if (!authResult.success) {
+        return { success: false, error: authResult.error }
+    }
     const supabase = await createClient()
 
      
@@ -169,6 +178,10 @@ export async function postMessage(
     parentId?: string,
     mentionedUserIds?: string[]
 ): Promise<ActionResult<string>> {
+    const authResult = await getAuthContext()
+    if (!authResult.success) {
+        return { success: false, error: authResult.error }
+    }
     const supabase = await createClient()
 
      
@@ -200,12 +213,12 @@ export async function editMessage(
     messageId: string,
     content: string
 ): Promise<ActionResult<void>> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-        return { success: false, error: 'Unauthorized' }
+    const authResult = await getAuthContext()
+    if (!authResult.success) {
+        return { success: false, error: authResult.error }
     }
+    const { context } = authResult
+    const supabase = await createClient()
 
      
     const { error } = await (supabase as any)
@@ -215,7 +228,7 @@ export async function editMessage(
             edited_at: new Date().toISOString()
         })
         .eq('id', messageId)
-        .eq('author_id', user.id) // Ensure user owns the message
+        .eq('author_id', context.userId) // Ensure user owns the message
 
     if (error) {
         console.error('Error editing message:', error)
@@ -229,19 +242,19 @@ export async function editMessage(
 export async function deleteMessage(
     messageId: string
 ): Promise<ActionResult<void>> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-        return { success: false, error: 'Unauthorized' }
+    const authResult = await getAuthContext()
+    if (!authResult.success) {
+        return { success: false, error: authResult.error }
     }
+    const { context } = authResult
+    const supabase = await createClient()
 
      
     const { error } = await (supabase as any)
         .from('chatter_messages')
         .update({ deleted_at: new Date().toISOString() })
         .eq('id', messageId)
-        .eq('author_id', user.id) // Ensure user owns the message
+        .eq('author_id', context.userId) // Ensure user owns the message
 
     if (error) {
         console.error('Error deleting message:', error)
@@ -256,6 +269,10 @@ export async function getEntityFollowers(
     entityType: ChatterEntityType,
     entityId: string
 ): Promise<ActionResult<ChatterFollower[]>> {
+    const authResult = await getAuthContext()
+    if (!authResult.success) {
+        return { success: false, error: authResult.error }
+    }
     const supabase = await createClient()
 
      
@@ -300,33 +317,21 @@ export async function followEntity(
     notifyInApp = true,
     notifyPush = false
 ): Promise<ActionResult<void>> {
+    const authResult = await getAuthContext()
+    if (!authResult.success) {
+        return { success: false, error: authResult.error }
+    }
+    const { context } = authResult
     const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-        return { success: false, error: 'Unauthorized' }
-    }
-
-    // Get tenant_id from profile
-     
-    const { data: profile } = await (supabase as any)
-        .from('profiles')
-        .select('tenant_id')
-        .eq('id', user.id)
-        .single()
-
-    if (!profile?.tenant_id) {
-        return { success: false, error: 'Profile not found' }
-    }
 
      
     const { error } = await (supabase as any)
         .from('entity_followers')
         .upsert({
-            tenant_id: profile.tenant_id,
+            tenant_id: context.tenantId,
             entity_type: entityType,
             entity_id: entityId,
-            user_id: user.id,
+            user_id: context.userId,
             notify_email: notifyEmail,
             notify_in_app: notifyInApp,
             notify_push: notifyPush
@@ -347,12 +352,12 @@ export async function unfollowEntity(
     entityType: ChatterEntityType,
     entityId: string
 ): Promise<ActionResult<void>> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-        return { success: false, error: 'Unauthorized' }
+    const authResult = await getAuthContext()
+    if (!authResult.success) {
+        return { success: false, error: authResult.error }
     }
+    const { context } = authResult
+    const supabase = await createClient()
 
      
     const { error } = await (supabase as any)
@@ -360,7 +365,7 @@ export async function unfollowEntity(
         .delete()
         .eq('entity_type', entityType)
         .eq('entity_id', entityId)
-        .eq('user_id', user.id)
+        .eq('user_id', context.userId)
 
     if (error) {
         console.error('Error unfollowing entity:', error)
@@ -375,6 +380,10 @@ export async function isFollowingEntity(
     entityType: ChatterEntityType,
     entityId: string
 ): Promise<boolean> {
+    const authResult = await getAuthContext()
+    if (!authResult.success) {
+        return false
+    }
     const supabase = await createClient()
 
      
@@ -401,12 +410,12 @@ export async function updateFollowPreferences(
         notify_push?: boolean
     }
 ): Promise<ActionResult<void>> {
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-        return { success: false, error: 'Unauthorized' }
+    const authResult = await getAuthContext()
+    if (!authResult.success) {
+        return { success: false, error: authResult.error }
     }
+    const { context } = authResult
+    const supabase = await createClient()
 
      
     const { error } = await (supabase as any)
@@ -414,7 +423,7 @@ export async function updateFollowPreferences(
         .update(preferences)
         .eq('entity_type', entityType)
         .eq('entity_id', entityId)
-        .eq('user_id', user.id)
+        .eq('user_id', context.userId)
 
     if (error) {
         console.error('Error updating follow preferences:', error)
@@ -428,6 +437,10 @@ export async function updateFollowPreferences(
 export async function getTeamMembersForMention(
     searchQuery?: string
 ): Promise<ActionResult<TeamMember[]>> {
+    const authResult = await getAuthContext()
+    if (!authResult.success) {
+        return { success: false, error: authResult.error }
+    }
     const supabase = await createClient()
 
      
@@ -458,6 +471,10 @@ export async function getTeamMembersForMention(
 
 // Get unread mention count
 export async function getUnreadMentionsCount(): Promise<number> {
+    const authResult = await getAuthContext()
+    if (!authResult.success) {
+        return 0
+    }
     const supabase = await createClient()
 
      
@@ -475,6 +492,10 @@ export async function getUnreadMentionsCount(): Promise<number> {
 export async function markMentionsRead(
     messageIds: string[]
 ): Promise<ActionResult<number>> {
+    const authResult = await getAuthContext()
+    if (!authResult.success) {
+        return { success: false, error: authResult.error }
+    }
     const supabase = await createClient()
 
      

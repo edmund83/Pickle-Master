@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { CURRENCY_SYMBOLS, TenantSettings } from '@/lib/formatting'
+import { getAuthContext, requireOwnerPermission } from '@/lib/auth/server-auth'
 
 // Valid options - should match the UI dropdown options
 const VALID_CURRENCIES = Object.keys(CURRENCY_SYMBOLS)
@@ -171,37 +172,22 @@ export async function updateTenantSettings(
   }
 
   try {
+    const authResult = await getAuthContext()
+    if (!authResult.success) {
+      return { error: authResult.error }
+    }
+    const permResult = requireOwnerPermission(authResult.context)
+    if (!permResult.success) {
+      return { error: permResult.error }
+    }
     const supabase = await createClient()
-
-    // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return { error: 'Not authenticated' }
-    }
-
-    // Get user's tenant_id from profile
-     
-    const { data: profile, error: profileError } = await (supabase as any)
-      .from('profiles')
-      .select('tenant_id, role')
-      .eq('id', user.id)
-      .single()
-
-    if (profileError || !profile?.tenant_id) {
-      return { error: 'Could not find your organization' }
-    }
-
-    // Check user has permission (owner or admin only)
-    if (!['owner', 'admin'].includes(profile.role)) {
-      return { error: 'You do not have permission to update company settings' }
-    }
 
     // Get existing tenant data to preserve other settings
      
     const { data: existingTenant } = await (supabase as any)
       .from('tenants')
       .select('settings')
-      .eq('id', profile.tenant_id)
+      .eq('id', authResult.context.tenantId)
       .single()
 
     const existingSettings = typeof existingTenant?.settings === 'object' && existingTenant.settings !== null
@@ -235,7 +221,7 @@ export async function updateTenantSettings(
         },
         updated_at: new Date().toISOString(),
       })
-      .eq('id', profile.tenant_id)
+      .eq('id', authResult.context.tenantId)
 
     if (updateError) {
       console.error('Failed to update tenant settings:', updateError)
@@ -257,29 +243,17 @@ export async function updateTenantSettings(
  */
 export async function getTaxInclusiveSetting(): Promise<{ pricesIncludeTax: boolean; error?: string }> {
   try {
+    const authResult = await getAuthContext()
+    if (!authResult.success) {
+      return { pricesIncludeTax: false, error: authResult.error }
+    }
     const supabase = await createClient()
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return { pricesIncludeTax: false, error: 'Not authenticated' }
-    }
-
-     
-    const { data: profile } = await (supabase as any)
-      .from('profiles')
-      .select('tenant_id')
-      .eq('id', user.id)
-      .single()
-
-    if (!profile?.tenant_id) {
-      return { pricesIncludeTax: false, error: 'No tenant found' }
-    }
 
      
     const { data: tenant } = await (supabase as any)
       .from('tenants')
       .select('prices_include_tax')
-      .eq('id', profile.tenant_id)
+      .eq('id', authResult.context.tenantId)
       .single()
 
     return { pricesIncludeTax: tenant?.prices_include_tax ?? false }
@@ -294,27 +268,15 @@ export async function getTaxInclusiveSetting(): Promise<{ pricesIncludeTax: bool
  */
 export async function updateTaxInclusiveSetting(pricesIncludeTax: boolean): Promise<ActionResult> {
   try {
+    const authResult = await getAuthContext()
+    if (!authResult.success) {
+      return { error: authResult.error }
+    }
+    const permResult = requireOwnerPermission(authResult.context)
+    if (!permResult.success) {
+      return { error: permResult.error }
+    }
     const supabase = await createClient()
-
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    if (authError || !user) {
-      return { error: 'Not authenticated' }
-    }
-
-     
-    const { data: profile } = await (supabase as any)
-      .from('profiles')
-      .select('tenant_id, role')
-      .eq('id', user.id)
-      .single()
-
-    if (!profile?.tenant_id) {
-      return { error: 'No tenant found' }
-    }
-
-    if (!['owner', 'admin'].includes(profile.role)) {
-      return { error: 'Permission denied' }
-    }
 
      
     const { error: updateError } = await (supabase as any)
@@ -323,7 +285,7 @@ export async function updateTaxInclusiveSetting(pricesIncludeTax: boolean): Prom
         prices_include_tax: pricesIncludeTax,
         updated_at: new Date().toISOString(),
       })
-      .eq('id', profile.tenant_id)
+      .eq('id', authResult.context.tenantId)
 
     if (updateError) {
       console.error('Failed to update tax inclusive setting:', updateError)

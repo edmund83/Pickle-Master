@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { FOLDER_COLORS } from '@/lib/constants/folder-colors'
+import { getAuthContext, requireWritePermission } from '@/lib/auth/server-auth'
 
 export type ActionResult<T> = {
   success: boolean
@@ -29,24 +30,14 @@ export interface UpdateFolderInput {
 export async function createFolder(
   input: CreateFolderInput
 ): Promise<ActionResult<{ id: string; name: string; color: string }>> {
+  const authResult = await getAuthContext()
+  if (!authResult.success) return { success: false, error: authResult.error }
+  const { context } = authResult
+  const permResult = requireWritePermission(context)
+  if (!permResult.success) return { success: false, error: permResult.error }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    return { success: false, error: 'Unauthorized' }
-  }
-
-  // Get user's tenant_id
-   
-  const { data: profile } = await (supabase as any)
-    .from('profiles')
-    .select('tenant_id')
-    .eq('id', user.id)
-    .single()
-
-  if (!profile?.tenant_id) {
-    return { success: false, error: 'No tenant found' }
-  }
 
   // Build path array for hierarchy
   let path: string[] = []
@@ -58,6 +49,7 @@ export async function createFolder(
       .from('folders')
       .select('path, depth')
       .eq('id', input.parentId)
+      .eq('tenant_id', context.tenantId)
       .single()
 
     if (parent) {
@@ -71,7 +63,7 @@ export async function createFolder(
   const { data: siblings } = await (supabase as any)
     .from('folders')
     .select('sort_order')
-    .eq('tenant_id', profile.tenant_id)
+    .eq('tenant_id', context.tenantId)
     .eq('parent_id', input.parentId || null)
     .order('sort_order', { ascending: false })
     .limit(1)
@@ -85,14 +77,14 @@ export async function createFolder(
   const { data: folder, error: insertError } = await (supabase as any)
     .from('folders')
     .insert({
-      tenant_id: profile.tenant_id,
+      tenant_id: context.tenantId,
       name: input.name.trim(),
       color: input.color || FOLDER_COLORS[0],
       parent_id: input.parentId || null,
       path,
       depth,
       sort_order: nextSortOrder,
-      created_by: user.id,
+      created_by: context.userId,
     })
     .select('id, name, color')
     .single()
@@ -104,9 +96,9 @@ export async function createFolder(
   // Log activity (fire-and-forget)
    
   (supabase as any).from('activity_logs').insert({
-    tenant_id: profile.tenant_id,
-    user_id: user.id,
-    user_name: user.email,
+    tenant_id: context.tenantId,
+    user_id: context.userId,
+    user_name: user?.email,
     action_type: 'create',
     entity_type: 'folder',
     entity_id: folder.id,
@@ -135,12 +127,14 @@ export async function updateFolder(
   folderId: string,
   input: UpdateFolderInput
 ): Promise<ActionResult<void>> {
+  const authResult = await getAuthContext()
+  if (!authResult.success) return { success: false, error: authResult.error }
+  const { context } = authResult
+  const permResult = requireWritePermission(context)
+  if (!permResult.success) return { success: false, error: permResult.error }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    return { success: false, error: 'Unauthorized' }
-  }
 
   // Get current folder for logging
    
@@ -148,6 +142,7 @@ export async function updateFolder(
     .from('folders')
     .select('*')
     .eq('id', folderId)
+    .eq('tenant_id', context.tenantId)
     .single()
 
   if (fetchError || !folder) {
@@ -156,9 +151,7 @@ export async function updateFolder(
 
   // Build update object
    
-  const updates: Record<string, any> = {
-    updated_at: new Date().toISOString(),
-  }
+  const updates: Record<string, any> = {}
 
   if (input.name !== undefined) {
     updates.name = input.name.trim()
@@ -174,52 +167,36 @@ export async function updateFolder(
 
   // Handle parent change (requires path recalculation)
   if (input.parentId !== undefined && input.parentId !== folder.parent_id) {
-    let newPath: string[] = []
-    let newDepth = 0
-
-    if (input.parentId) {
-      // Prevent moving folder into its own descendants
-       
-      const { data: newParent } = await (supabase as any)
-        .from('folders')
-        .select('path, depth')
-        .eq('id', input.parentId)
-        .single()
-
-      if (newParent?.path?.includes(folderId)) {
-        return { success: false, error: 'Cannot move folder into its own subfolder' }
-      }
-
-      if (newParent) {
-        newPath = [...(newParent.path || []), input.parentId]
-        newDepth = (newParent.depth || 0) + 1
-      }
+    const { error: moveError } = await (supabase as any).rpc('move_folder_with_descendants', {
+      p_folder_id: folderId,
+      p_new_parent_id: input.parentId ?? null,
+    })
+    if (moveError) {
+      return { success: false, error: moveError.message }
     }
-
-    updates.parent_id = input.parentId
-    updates.path = newPath
-    updates.depth = newDepth
-
-    // TODO: Update all descendant paths (complex operation, defer to future)
   }
 
   // Update folder
    
-  const { error: updateError } = await (supabase as any)
-    .from('folders')
-    .update(updates)
-    .eq('id', folderId)
+  if (Object.keys(updates).length > 0) {
+    updates.updated_at = new Date().toISOString()
+    const { error: updateError } = await (supabase as any)
+      .from('folders')
+      .update(updates)
+      .eq('id', folderId)
+      .eq('tenant_id', context.tenantId)
 
-  if (updateError) {
-    return { success: false, error: updateError.message }
+    if (updateError) {
+      return { success: false, error: updateError.message }
+    }
   }
 
   // Log activity (fire-and-forget)
    
   (supabase as any).from('activity_logs').insert({
     tenant_id: folder.tenant_id,
-    user_id: user.id,
-    user_name: user.email,
+    user_id: context.userId,
+    user_name: user?.email,
     action_type: 'update',
     entity_type: 'folder',
     entity_id: folderId,
@@ -243,12 +220,14 @@ export async function updateFolder(
 export async function deleteFolder(
   folderId: string
 ): Promise<ActionResult<void>> {
+  const authResult = await getAuthContext()
+  if (!authResult.success) return { success: false, error: authResult.error }
+  const { context } = authResult
+  const permResult = requireWritePermission(context)
+  if (!permResult.success) return { success: false, error: permResult.error }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-
-  if (!user) {
-    return { success: false, error: 'Unauthorized' }
-  }
 
   // Get folder for logging
    
@@ -256,6 +235,7 @@ export async function deleteFolder(
     .from('folders')
     .select('*')
     .eq('id', folderId)
+    .eq('tenant_id', context.tenantId)
     .single()
 
   if (fetchError || !folder) {
@@ -268,6 +248,7 @@ export async function deleteFolder(
     .from('inventory_items')
     .select('id', { count: 'exact', head: true })
     .eq('folder_id', folderId)
+    .eq('tenant_id', context.tenantId)
     .is('deleted_at', null)
 
   if (itemCount && itemCount > 0) {
@@ -283,6 +264,7 @@ export async function deleteFolder(
     .from('folders')
     .select('id', { count: 'exact', head: true })
     .eq('parent_id', folderId)
+    .eq('tenant_id', context.tenantId)
 
   if (subfolderCount && subfolderCount > 0) {
     return {
@@ -297,6 +279,7 @@ export async function deleteFolder(
     .from('folders')
     .delete()
     .eq('id', folderId)
+    .eq('tenant_id', context.tenantId)
 
   if (deleteError) {
     return { success: false, error: deleteError.message }
@@ -306,8 +289,8 @@ export async function deleteFolder(
    
   (supabase as any).from('activity_logs').insert({
     tenant_id: folder.tenant_id,
-    user_id: user.id,
-    user_name: user.email,
+    user_id: context.userId,
+    user_name: user?.email,
     action_type: 'delete',
     entity_type: 'folder',
     entity_id: folderId,

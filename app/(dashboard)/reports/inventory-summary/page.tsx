@@ -57,14 +57,14 @@ async function getSummaryData(): Promise<SummaryData> {
    
   const { data: items } = await (supabase as any)
     .from('inventory_items')
-    .select('*')
+    .select('id, folder_id, quantity, price, status')
     .eq('tenant_id', profile.tenant_id)
     .is('deleted_at', null)
 
    
   const { data: folders } = await (supabase as any)
     .from('folders')
-    .select('*')
+    .select('id, name, color, sort_order')
     .eq('tenant_id', profile.tenant_id)
     .order('sort_order', { ascending: true })
 

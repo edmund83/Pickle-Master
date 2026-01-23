@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { getAuthContext, requireWritePermission } from '@/lib/auth/server-auth'
+import { getAuthContext, requireWritePermission, requireOwnerPermission } from '@/lib/auth/server-auth'
 import { z } from 'zod'
 
 export interface StockCount {
@@ -343,9 +343,9 @@ export async function approveStockCount(
   }
   const { context } = authResult
 
-  // Check admin permission
-  if (!['owner', 'admin'].includes(context.role)) {
-    return { success: false, error: 'Only admins can approve stock counts' }
+  const permResult = requireOwnerPermission(context)
+  if (!permResult.success) {
+    return { success: false, error: permResult.error }
   }
 
   const supabase = await createClient()
@@ -446,9 +446,9 @@ export async function rejectStockCount(
   }
   const { context } = authResult
 
-  // Check admin permission
-  if (!['owner', 'admin'].includes(context.role)) {
-    return { success: false, error: 'Only admins can reject stock counts' }
+  const permResult = requireOwnerPermission(context)
+  if (!permResult.success) {
+    return { success: false, error: permResult.error }
   }
 
   const supabase = await createClient()

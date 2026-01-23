@@ -4,6 +4,14 @@ import type { InventoryItemWithTags, Folder } from '@/types/database.types'
 import { MobileInventoryView } from './components/mobile-inventory-view'
 import { InventoryDesktopView } from './components/inventory-desktop-view'
 
+function sanitizeSearchTerm(value?: string): string {
+  return String(value ?? '')
+    .replace(/[(),]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 100)
+}
+
 async function getInventoryData(query?: string): Promise<{
   items: InventoryItemWithTags[],
   folders: Folder[],
@@ -30,13 +38,16 @@ async function getInventoryData(query?: string): Promise<{
    
   let queryBuilder = (supabase as any)
     .from('items_with_tags')
-    .select('*')
+    .select('id, name, sku, barcode, quantity, min_quantity, price, cost_price, status, description, notes, unit, folder_id, tag_list, image_urls, location, updated_at')
     .eq('tenant_id', profile.tenant_id)
     .is('deleted_at', null)
     .order('updated_at', { ascending: false })
 
   if (query) {
-    queryBuilder = queryBuilder.or(`name.ilike.%${query}%,sku.ilike.%${query}%,barcode.eq.${query}`)
+    const sanitizedQuery = sanitizeSearchTerm(query)
+    if (sanitizedQuery) {
+      queryBuilder = queryBuilder.or(`name.ilike.%${sanitizedQuery}%,sku.ilike.%${sanitizedQuery}%,barcode.eq.${sanitizedQuery}`)
+    }
   }
 
   const { data: items } = await queryBuilder
@@ -44,7 +55,7 @@ async function getInventoryData(query?: string): Promise<{
    
   const { data: folders } = await (supabase as any)
     .from('folders')
-    .select('*')
+    .select('id, name, parent_id, color, path, depth, sort_order')
     .eq('tenant_id', profile.tenant_id)
     .order('sort_order', { ascending: true })
 
