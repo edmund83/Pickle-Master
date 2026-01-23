@@ -462,13 +462,12 @@ export async function getActiveSession(
   scope: OfflineScope
 ): Promise<ScanSession | undefined> {
   const db = getDB()
-  return db.scanSessions
+  const sessions = await db.scanSessions
     .where('tenant_id')
     .equals(scope.tenantId)
-    .orderBy('updated_at')
-    .reverse()
-    .filter((s) => !s.completed_at)
-    .first()
+    .filter((s: ScanSession) => !s.completed_at)
+    .sortBy('updated_at')
+  return sessions.reverse()[0]
 }
 
 /**
@@ -547,12 +546,11 @@ export async function getAllScanSessions(
   scope: OfflineScope
 ): Promise<ScanSession[]> {
   const db = getDB()
-  return db.scanSessions
+  const sessions = await db.scanSessions
     .where('tenant_id')
     .equals(scope.tenantId)
-    .orderBy('created_at')
-    .reverse()
-    .toArray()
+    .sortBy('created_at')
+  return sessions.reverse()
 }
 
 // ============================================================================

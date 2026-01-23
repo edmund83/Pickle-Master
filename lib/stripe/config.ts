@@ -4,40 +4,36 @@
  */
 
 export const STRIPE_PLANS = {
+  early_access: {
+    name: 'Early Access',
+    description: 'Exclusive free tier for early adopters',
+    monthly: {
+      priceId: process.env.STRIPE_EARLY_ACCESS_PRICE_ID || 'price_1SsgGZ5NscmEQsQQEMnpJ59h',
+      amount: 0, // Free
+    },
+  },
   starter: {
     name: 'Starter',
-    description: 'For solo operators and small teams',
+    description: 'For individuals & small operations',
     monthly: {
-      priceId: process.env.STRIPE_STARTER_MONTHLY_PRICE_ID || '',
-      amount: 1900, // $19.00 in cents
-    },
-    annual: {
-      priceId: process.env.STRIPE_STARTER_ANNUAL_PRICE_ID || '',
-      amount: 15200, // $152.00/year ($15.20/mo equivalent, 20% off)
+      priceId: process.env.STRIPE_STARTER_MONTHLY_PRICE_ID || 'price_1SlqBh5NscmEQsQQCALccT4F',
+      amount: 1800, // $18.00 in cents
     },
   },
-  team: {
-    name: 'Team',
-    description: 'For teams who need accountability',
+  growth: {
+    name: 'Growth',
+    description: 'For growing small businesses',
     monthly: {
-      priceId: process.env.STRIPE_TEAM_MONTHLY_PRICE_ID || '',
-      amount: 4900, // $49.00 in cents
-    },
-    annual: {
-      priceId: process.env.STRIPE_TEAM_ANNUAL_PRICE_ID || '',
-      amount: 39200, // $392.00/year ($39.20/mo equivalent, 20% off)
+      priceId: process.env.STRIPE_GROWTH_MONTHLY_PRICE_ID || 'price_1SlqB95NscmEQsQQ1YoczS1u',
+      amount: 3900, // $39.00 in cents
     },
   },
-  business: {
-    name: 'Business',
-    description: 'For multi-location operations',
+  scale: {
+    name: 'Scale',
+    description: 'For teams needing advanced controls',
     monthly: {
-      priceId: process.env.STRIPE_BUSINESS_MONTHLY_PRICE_ID || '',
-      amount: 9900, // $99.00 in cents
-    },
-    annual: {
-      priceId: process.env.STRIPE_BUSINESS_ANNUAL_PRICE_ID || '',
-      amount: 79200, // $792.00/year ($79.20/mo equivalent, 20% off)
+      priceId: process.env.STRIPE_SCALE_MONTHLY_PRICE_ID || 'price_1Slq9O5NscmEQsQQnGvdw1SW',
+      amount: 8900, // $89.00 in cents
     },
   },
 } as const
@@ -46,10 +42,10 @@ export type StripePlanId = keyof typeof STRIPE_PLANS
 export type BillingInterval = 'monthly' | 'annual'
 
 /**
- * Get price ID for a plan and interval
+ * Get price ID for a plan
  */
-export function getPriceId(planId: StripePlanId, interval: BillingInterval): string {
-  return STRIPE_PLANS[planId][interval].priceId
+export function getPriceId(planId: StripePlanId): string {
+  return STRIPE_PLANS[planId].monthly.priceId
 }
 
 /**
@@ -59,9 +55,6 @@ export function getPlanByPriceId(priceId: string): { planId: StripePlanId; inter
   for (const [planId, plan] of Object.entries(STRIPE_PLANS)) {
     if (plan.monthly.priceId === priceId) {
       return { planId: planId as StripePlanId, interval: 'monthly' }
-    }
-    if (plan.annual.priceId === priceId) {
-      return { planId: planId as StripePlanId, interval: 'annual' }
     }
   }
   return null
