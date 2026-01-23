@@ -6,13 +6,25 @@
 import { createClient } from '@/lib/supabase/server'
 import { z } from 'zod'
 
-// Roles that can perform write operations
-export const WRITE_ROLES = ['owner', 'admin', 'editor'] as const
+// =============================================================================
+// ROLE DEFINITIONS (3-role model: owner, staff, viewer)
+// =============================================================================
+
+// All valid roles in the system
+export const ROLES = ['owner', 'staff', 'viewer'] as const
+export type Role = (typeof ROLES)[number]
+
+// Roles that can perform write operations (create, edit, delete inventory)
+export const WRITE_ROLES = ['owner', 'staff'] as const
 export type WriteRole = (typeof WRITE_ROLES)[number]
 
-// Roles that can perform admin operations (delete, approve, etc.)
-export const ADMIN_ROLES = ['owner', 'admin'] as const
-export type AdminRole = (typeof ADMIN_ROLES)[number]
+// Roles that can perform owner-only operations (team management, billing, settings)
+export const OWNER_ROLES = ['owner'] as const
+export type OwnerRole = (typeof OWNER_ROLES)[number]
+
+// Legacy alias for backwards compatibility (use OWNER_ROLES instead)
+export const ADMIN_ROLES = OWNER_ROLES
+export type AdminRole = OwnerRole
 
 export interface AuthContext {
   userId: string
@@ -73,10 +85,19 @@ export function hasWritePermission(role: string): boolean {
 }
 
 /**
- * Check if the user has admin permission (owner or admin).
+ * Check if the user has owner permission (owner only).
+ * Use this for team management, billing, and organization settings.
+ */
+export function hasOwnerPermission(role: string): boolean {
+  return OWNER_ROLES.includes(role as OwnerRole)
+}
+
+/**
+ * Check if the user has admin permission (owner only).
+ * @deprecated Use hasOwnerPermission instead for clarity.
  */
 export function hasAdminPermission(role: string): boolean {
-  return ADMIN_ROLES.includes(role as AdminRole)
+  return hasOwnerPermission(role)
 }
 
 /**
@@ -90,13 +111,22 @@ export function requireWritePermission(context: AuthContext): { success: true } 
 }
 
 /**
- * Require admin permission, returning an error if not met.
+ * Require owner permission, returning an error if not met.
+ * Use this for team management, billing, and organization settings.
  */
-export function requireAdminPermission(context: AuthContext): { success: true } | { success: false; error: string } {
-  if (!hasAdminPermission(context.role)) {
-    return { success: false, error: 'Permission denied: Requires admin or owner role' }
+export function requireOwnerPermission(context: AuthContext): { success: true } | { success: false; error: string } {
+  if (!hasOwnerPermission(context.role)) {
+    return { success: false, error: 'Permission denied: Requires owner role' }
   }
   return { success: true }
+}
+
+/**
+ * Require admin permission, returning an error if not met.
+ * @deprecated Use requireOwnerPermission instead for clarity.
+ */
+export function requireAdminPermission(context: AuthContext): { success: true } | { success: false; error: string } {
+  return requireOwnerPermission(context)
 }
 
 /**
