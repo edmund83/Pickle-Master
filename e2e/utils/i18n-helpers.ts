@@ -24,10 +24,36 @@ export async function changeTenantSettings(page: Page, preset: LocalePreset): Pr
   // Small delay to ensure form is interactive
   await page.waitForTimeout(500)
 
-  // Change Country
-  const countrySelect = page.locator('select[name="country"], label:has-text("Country") ~ select, label:has-text("Country") + * select').first()
+  // Change Country (this may trigger a confirmation dialog)
+  const countrySelect = page.locator('select[name="country"], label:has-text("Business Location") ~ select, label:has-text("Country") ~ select, label:has-text("Country") + * select').first()
   if (await countrySelect.isVisible()) {
-    await countrySelect.selectOption(preset.country)
+    const currentCountry = await countrySelect.inputValue()
+    if (currentCountry !== preset.country) {
+      await countrySelect.selectOption(preset.country)
+
+      // Handle the region change confirmation dialog if it appears
+      const confirmDialog = page.locator('[role="alertdialog"]')
+      try {
+        await confirmDialog.waitFor({ state: 'visible', timeout: 2000 })
+        // Click the confirm button to proceed with the region change
+        const confirmButton = confirmDialog.locator('button:has-text("Change Region")')
+        await confirmButton.click()
+        await confirmDialog.waitFor({ state: 'hidden', timeout: 3000 })
+      } catch {
+        // Dialog may not appear if no data exists - this is expected
+      }
+    }
+  }
+
+  // Expand the "Customize formatting" collapsible section if collapsed
+  const customizeButton = page.locator('button:has-text("Customize formatting")')
+  if (await customizeButton.isVisible()) {
+    // Check if the section is collapsed by looking for the currency select
+    const currencySelectCheck = page.locator('label:has-text("Currency") ~ select').first()
+    if (!(await currencySelectCheck.isVisible())) {
+      await customizeButton.click()
+      await page.waitForTimeout(300) // Wait for animation
+    }
   }
 
   // Change Currency
@@ -55,7 +81,7 @@ export async function changeTenantSettings(page: Page, preset: LocalePreset): Pr
   }
 
   // Change Decimal Precision
-  const decimalSelect = page.locator('select[name="decimal_precision"], label:has-text("Decimals") ~ select, label:has-text("Decimal") ~ select').first()
+  const decimalSelect = page.locator('select[name="decimal_precision"], label:has-text("Decimals") ~ select, label:has-text("Price precision") ~ select, label:has-text("Decimal") ~ select').first()
   if (await decimalSelect.isVisible()) {
     await decimalSelect.selectOption(preset.decimalPrecision)
   }

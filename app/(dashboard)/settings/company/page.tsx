@@ -5,12 +5,15 @@ import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Save, Building2, Globe, Upload, X, Check, AlertCircle, Camera, Loader2 } from 'lucide-react'
+import { Save, Building2, Globe, Upload, X, Check, AlertCircle, Camera, Loader2, Settings2 } from 'lucide-react'
 import { compressImage } from '@/lib/image-compression'
-import { SettingsSection } from '@/components/settings'
+import { SettingsSection, RegionChangeDialog } from '@/components/settings'
+import { CollapsibleSection } from '@/components/ui/collapsible-section'
 import type { Tenant } from '@/types/database.types'
-import { updateTenantSettings } from '@/app/actions/tenant-settings'
+import { updateTenantSettings, getTenantDataCounts } from '@/app/actions/tenant-settings'
 import type { TenantSettings } from '@/lib/formatting'
+import { getSettingsFromCountry, guessCountryFromTimezone, detectBrowserContext } from '@/lib/i18n/resolver'
+import { getCurrencySymbol } from '@/lib/formatting'
 
 // Currency options with symbols - comprehensive list sorted alphabetically by code
 const CURRENCIES = [
@@ -257,6 +260,25 @@ export default function CompanySettingsPage() {
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // Regional settings simplification state
+  const [hasUserCustomized, setHasUserCustomized] = useState(false)
+
+  // Region change confirmation dialog state
+  const [regionChangeDialog, setRegionChangeDialog] = useState<{
+    isOpen: boolean
+    pendingCountry: string
+    fromCountry: string
+    fromCurrency: string
+    toCurrency: string
+  } | null>(null)
+  const [dataCounts, setDataCounts] = useState<{
+    itemsWithPrice: number
+    invoices: number
+    taxRates: number
+    salesOrders: number
+  } | null>(null)
+  const [isLoadingCounts, setIsLoadingCounts] = useState(false)
+
   const [formData, setFormData] = useState({
     name: '',
     country: 'MY',
@@ -297,7 +319,7 @@ export default function CompanySettingsPage() {
 
       if (!user) return
 
-       
+
       const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -305,7 +327,7 @@ export default function CompanySettingsPage() {
         .single()
 
       if (profile?.tenant_id) {
-         
+
         const { data: tenantData } = await (supabase as any)
           .from('tenants')
           .select('*')
@@ -315,13 +337,39 @@ export default function CompanySettingsPage() {
         if (tenantData) {
           setTenant(tenantData as Tenant)
           const settings = tenantData.settings as Record<string, unknown> || {}
+
+          // Auto-detect country from browser if no saved country
+          let detectedCountry = (settings.country as string) || ''
+          if (!detectedCountry) {
+            const browserContext = detectBrowserContext()
+            detectedCountry = guessCountryFromTimezone(browserContext.timezone) || 'US'
+          }
+
+          // Get default settings for the country
+          const defaults = getSettingsFromCountry(detectedCountry)
+
+          // Use saved values or fall back to country defaults
+          const savedTimezone = (settings.timezone as string) || defaults.timezone
+          const savedDateFormat = (settings.date_format as string) || defaults.dateFormat
+          const savedTimeFormat = (settings.time_format as string) || defaults.timeFormat
+          const savedCurrency = (settings.currency as string) || defaults.currency
+
+          // Check if user has customized settings (different from country defaults)
+          const isCustomized =
+            savedTimezone !== defaults.timezone ||
+            savedDateFormat !== defaults.dateFormat ||
+            savedTimeFormat !== defaults.timeFormat ||
+            savedCurrency !== defaults.currency
+
+          setHasUserCustomized(isCustomized)
+
           setFormData({
             name: tenantData.name || '',
-            country: (settings.country as string) || 'MY',
-            timezone: (settings.timezone as string) || 'Asia/Kuala_Lumpur',
-            date_format: (settings.date_format as string) || 'DD/MM/YYYY',
-            time_format: (settings.time_format as string) || '12-hour',
-            currency: (settings.currency as string) || 'MYR',
+            country: detectedCountry,
+            timezone: savedTimezone,
+            date_format: savedDateFormat,
+            time_format: savedTimeFormat,
+            currency: savedCurrency,
             decimal_precision: (settings.decimal_precision as string) || '0.01',
             logo_url: tenantData.logo_url || '',
             company_address1: (settings.company_address1 as string) || '',
@@ -414,7 +462,7 @@ export default function CompanySettingsPage() {
     try {
       const supabase = createClient()
 
-       
+
       const { error } = await (supabase as any)
         .from('tenants')
         .update({ logo_url: null, updated_at: new Date().toISOString() })
@@ -429,6 +477,84 @@ export default function CompanySettingsPage() {
     } finally {
       setUploadingLogo(false)
     }
+  }
+
+  // Handle country change with auto-inference
+  async function handleCountryChange(newCountry: string) {
+    // If same country, no need for confirmation
+    if (newCountry === formData.country) return
+
+    const inferred = getSettingsFromCountry(newCountry)
+    const currentInferred = getSettingsFromCountry(formData.country)
+
+    // Check if we need to show confirmation dialog
+    // Only show if there's existing data that could be affected
+    setIsLoadingCounts(true)
+    setRegionChangeDialog({
+      isOpen: true,
+      pendingCountry: newCountry,
+      fromCountry: formData.country,
+      fromCurrency: hasUserCustomized ? formData.currency : currentInferred.currency,
+      toCurrency: inferred.currency,
+    })
+
+    // Fetch data counts in background
+    const counts = await getTenantDataCounts()
+    setDataCounts(counts)
+    setIsLoadingCounts(false)
+  }
+
+  // Apply the country change after confirmation
+  function applyCountryChange(newCountry: string) {
+    const inferred = getSettingsFromCountry(newCountry)
+
+    // If user hasn't customized, auto-fill all fields from country
+    if (!hasUserCustomized) {
+      setFormData(prev => ({
+        ...prev,
+        country: newCountry,
+        currency: inferred.currency,
+        timezone: inferred.timezone,
+        date_format: inferred.dateFormat,
+        time_format: inferred.timeFormat,
+      }))
+    } else {
+      // User has customized - only update country, preserve their custom settings
+      setFormData(prev => ({ ...prev, country: newCountry }))
+    }
+  }
+
+  // Close the region change dialog without applying changes
+  function closeRegionChangeDialog() {
+    setRegionChangeDialog(null)
+    setDataCounts(null)
+  }
+
+  // Confirm the region change
+  function confirmRegionChange() {
+    if (regionChangeDialog) {
+      applyCountryChange(regionChangeDialog.pendingCountry)
+    }
+    closeRegionChangeDialog()
+  }
+
+  // Track when user manually changes any advanced field
+  function handleAdvancedFieldChange(field: string, value: string) {
+    setFormData(prev => ({ ...prev, [field]: value }))
+    setHasUserCustomized(true)
+  }
+
+  // Reset to country defaults
+  function handleResetToDefaults() {
+    const inferred = getSettingsFromCountry(formData.country)
+    setFormData(prev => ({
+      ...prev,
+      currency: inferred.currency,
+      timezone: inferred.timezone,
+      date_format: inferred.dateFormat,
+      time_format: inferred.timeFormat,
+    }))
+    setHasUserCustomized(false)
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -777,116 +903,166 @@ export default function CompanySettingsPage() {
             icon={Globe}
           >
             <div className="space-y-4">
-              {/* Row 1: Country & Timezone */}
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-                    Country
-                  </label>
-                  <select
-                    value={formData.country}
-                    onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                    className="flex h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm ring-offset-white focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  >
-                    {COUNTRIES.map((country) => (
-                      <option key={country.value} value={country.value}>
-                        {country.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-                    Time zone
-                  </label>
-                  <select
-                    value={formData.timezone}
-                    onChange={(e) => setFormData({ ...formData, timezone: e.target.value })}
-                    className="flex h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm ring-offset-white focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  >
-                    {TIMEZONES.map((tz) => (
-                      <option key={tz.value} value={tz.value}>
-                        {tz.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              {/* Primary: Business Location */}
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                  Business Location
+                </label>
+                <select
+                  value={formData.country}
+                  onChange={(e) => handleCountryChange(e.target.value)}
+                  className="flex h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm ring-offset-white focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                >
+                  {COUNTRIES.map((country) => (
+                    <option key={country.value} value={country.value}>
+                      {country.label}
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              {/* Row 2: Date Format & Time Format */}
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-                    Date Format
-                  </label>
-                  <select
-                    value={formData.date_format}
-                    onChange={(e) => setFormData({ ...formData, date_format: e.target.value })}
-                    className="flex h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm ring-offset-white focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  >
-                    {DATE_FORMATS.map((format) => (
-                      <option key={format.value} value={format.value}>
-                        {format.label}
-                      </option>
-                    ))}
-                  </select>
+              {/* Settings Preview Card */}
+              <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-3">
+                <p className="mb-2 text-xs font-medium text-neutral-500">
+                  Based on your selection:
+                </p>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 text-sm">
+                  <span className="text-neutral-500">Currency</span>
+                  <span className="font-medium text-neutral-700">
+                    {formData.currency} ({getCurrencySymbol(formData.currency)})
+                  </span>
+
+                  <span className="text-neutral-500">Timezone</span>
+                  <span className="font-medium text-neutral-700">
+                    {TIMEZONES.find(tz => tz.value === formData.timezone)?.label || formData.timezone}
+                  </span>
+
+                  <span className="text-neutral-500">Date format</span>
+                  <span className="font-medium text-neutral-700">
+                    {DATE_FORMATS.find(f => f.value === formData.date_format)?.label || formData.date_format}
+                  </span>
+
+                  <span className="text-neutral-500">Time format</span>
+                  <span className="font-medium text-neutral-700">
+                    {formData.time_format === '12-hour' ? '12-hour (2:30 PM)' : '24-hour (14:30)'}
+                  </span>
                 </div>
 
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-                    Time Format
-                  </label>
-                  <select
-                    value={formData.time_format}
-                    onChange={(e) => setFormData({ ...formData, time_format: e.target.value })}
-                    className="flex h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm ring-offset-white focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  >
-                    {TIME_FORMATS.map((format) => (
-                      <option key={format.value} value={format.value}>
-                        {format.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                {hasUserCustomized && (
+                  <p className="mt-2 text-xs text-amber-600">
+                    You have customized some settings below.
+                  </p>
+                )}
               </div>
 
-              {/* Row 3: Currency & Decimal Precision */}
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-                    Currency
-                  </label>
-                  <select
-                    value={formData.currency}
-                    onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
-                    className="flex h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm ring-offset-white focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  >
-                    {CURRENCIES.map((currency) => (
-                      <option key={currency.value} value={currency.value}>
-                        {currency.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+              {/* Collapsible Advanced Section */}
+              <CollapsibleSection
+                title="Customize formatting"
+                icon={Settings2}
+                hasContent={hasUserCustomized}
+                defaultExpanded={hasUserCustomized}
+              >
+                <div className="space-y-4">
+                  {hasUserCustomized && (
+                    <div className="flex justify-end">
+                      <button
+                        type="button"
+                        onClick={handleResetToDefaults}
+                        className="text-xs text-primary hover:underline"
+                      >
+                        Reset to country defaults
+                      </button>
+                    </div>
+                  )}
 
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-                    Decimals in Price
-                  </label>
-                  <select
-                    value={formData.decimal_precision}
-                    onChange={(e) => setFormData({ ...formData, decimal_precision: e.target.value })}
-                    className="flex h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm ring-offset-white focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                  >
-                    {DECIMAL_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <div>
+                      <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                        Timezone
+                      </label>
+                      <select
+                        value={formData.timezone}
+                        onChange={(e) => handleAdvancedFieldChange('timezone', e.target.value)}
+                        className="flex h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm ring-offset-white focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      >
+                        {TIMEZONES.map((tz) => (
+                          <option key={tz.value} value={tz.value}>
+                            {tz.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                        Currency
+                      </label>
+                      <select
+                        value={formData.currency}
+                        onChange={(e) => handleAdvancedFieldChange('currency', e.target.value)}
+                        className="flex h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm ring-offset-white focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      >
+                        {CURRENCIES.map((currency) => (
+                          <option key={currency.value} value={currency.value}>
+                            {currency.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                        Date format
+                      </label>
+                      <select
+                        value={formData.date_format}
+                        onChange={(e) => handleAdvancedFieldChange('date_format', e.target.value)}
+                        className="flex h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm ring-offset-white focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      >
+                        {DATE_FORMATS.map((format) => (
+                          <option key={format.value} value={format.value}>
+                            {format.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                        Time format
+                      </label>
+                      <select
+                        value={formData.time_format}
+                        onChange={(e) => handleAdvancedFieldChange('time_format', e.target.value)}
+                        className="flex h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm ring-offset-white focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      >
+                        {TIME_FORMATS.map((format) => (
+                          <option key={format.value} value={format.value}>
+                            {format.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                        Price precision
+                      </label>
+                      <select
+                        value={formData.decimal_precision}
+                        onChange={(e) => handleAdvancedFieldChange('decimal_precision', e.target.value)}
+                        className="flex h-10 w-full rounded-lg border border-neutral-300 bg-white px-3 text-sm ring-offset-white focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+                      >
+                        {DECIMAL_OPTIONS.map((option) => (
+                          <option key={option.value} value={option.value}>
+                            {option.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
                 </div>
-              </div>
+              </CollapsibleSection>
             </div>
 
             <div className="mt-6 flex justify-end border-t border-neutral-100 pt-4">
@@ -898,6 +1074,21 @@ export default function CompanySettingsPage() {
           </SettingsSection>
         </div>
       </form>
+
+      {/* Region Change Confirmation Dialog */}
+      {regionChangeDialog && (
+        <RegionChangeDialog
+          isOpen={regionChangeDialog.isOpen}
+          onClose={closeRegionChangeDialog}
+          onConfirm={confirmRegionChange}
+          fromCountry={regionChangeDialog.fromCountry}
+          toCountry={regionChangeDialog.pendingCountry}
+          fromCurrency={regionChangeDialog.fromCurrency}
+          toCurrency={regionChangeDialog.toCurrency}
+          dataCounts={dataCounts}
+          isLoadingCounts={isLoadingCounts}
+        />
+      )}
     </div>
   )
 }

@@ -11,6 +11,48 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Added
 
+#### Region Change Confirmation Dialog
+Added a safety confirmation dialog when changing business region to prevent accidental data inconsistency.
+
+**Problem Solved**: If a tenant accidentally changes their region (e.g., US → Malaysia) after having live data, prices would display with the wrong currency symbol without any conversion, causing confusion in reports and documents.
+
+**Features**:
+- Shows confirmation dialog before region change takes effect
+- Fetches and displays counts of affected data (items with prices, invoices, sales orders, tax rates)
+- Warns about currency symbol change and that values won't be converted
+- Uses destructive button variant when existing data is at risk
+- Allows cancellation to revert to previous region
+
+**Files Added**:
+- `components/settings/region-change-dialog.tsx` - Confirmation dialog component
+
+**Files Modified**:
+- `app/actions/tenant-settings.ts` - Added `getTenantDataCounts()` server action
+- `app/(dashboard)/settings/company/page.tsx` - Integrated confirmation dialog
+- `components/settings/index.ts` - Exported new component
+
+### Changed
+
+#### Simplified Regional Settings UI for Small Business Users
+Reduced the Regional Settings form from 6 dropdowns to a single "Business Location" dropdown with auto-inference. This improves user-friendliness for mom and pop small business users who don't want to make 6 separate decisions.
+
+**Before**: 6 dropdowns (Country, Timezone, Date Format, Time Format, Currency, Decimals)
+**After**: 1 dropdown (Business Location) + preview card + optional "Customize formatting" section
+
+**Features**:
+- Auto-detects country from browser timezone on first load
+- Auto-infers currency, timezone, date format, and time format from country selection
+- Shows a preview card with inferred settings for transparency
+- Collapsible "Customize formatting" section for power users who need to override defaults
+- "Reset to country defaults" button to undo customizations
+- Preserves existing custom settings for tenants who already customized
+
+**Files Modified**:
+- `lib/i18n/resolver.ts` - Added `COUNTRY_TO_PRIMARY_TIMEZONE` mapping and `getSettingsFromCountry()` function
+- `app/(dashboard)/settings/company/page.tsx` - Refactored Regional Settings UI with simplified design
+
+### Added
+
 #### Internationalization (i18n) System Overhaul
 Implemented industry-standard i18n following best practices from Stripe, Shopify, and Notion with three-tier locale resolution (User > Tenant > Browser > Default).
 
