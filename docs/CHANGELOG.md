@@ -11,6 +11,30 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Fixed
 
+#### Pricing Plan Sync Issues
+Fixed critical bugs where pricing plans were not properly synchronized between Stripe, database, and frontend.
+
+**Issues Fixed**:
+1. **Webhook didn't sync limits** - When users upgraded/downgraded via Stripe, `max_users`/`max_items` were not updated
+2. **Plan name mismatch** - Database trigger used `team`/`business` but Stripe uses `growth`/`scale`
+3. **Wrong limits on signup** - All plans got 10,000 items instead of 1,200/3,000/8,000
+4. **Price typo** - PricingComparisonTable showed Scale at $79 instead of $89
+
+**Changes**:
+- Created `lib/plans/config.ts` - Single source of truth for plan definitions
+- Added `get_plan_limits()` and `update_tenant_limits()` database functions
+- Updated `handle_new_user()` trigger to recognize `early_access`, `starter`, `growth`, `scale`
+- Stripe webhook now syncs `max_users`, `max_items`, `max_folders` on plan changes
+- Data migration to fix existing tenants with incorrect limits
+
+**Files**:
+- `lib/plans/config.ts` (new)
+- `supabase/migrations/00093_sync_pricing_plans.sql` (new)
+- `supabase/migrations/00094_fix_existing_tenant_limits.sql` (new)
+- `app/api/stripe/webhook/route.ts`
+- `lib/subscription/status.ts`
+- `components/marketing/PricingComparisonTable.tsx`
+
 #### Pick List Creation from Sales Order
 Fixed bug where clicking "Start Picking" on a confirmed Sales Order failed with constraint violation.
 

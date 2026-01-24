@@ -3,7 +3,13 @@
  * Used to check trial status, grace period, and account access
  */
 
-export type SubscriptionTier = 'starter' | 'team' | 'business' | 'enterprise'
+import {
+  type PlanId,
+  PLAN_LIMITS as PLAN_LIMITS_CONFIG,
+} from '@/lib/plans/config'
+
+// Re-export plan types from the single source of truth
+export type SubscriptionTier = PlanId
 export type SubscriptionStatus = 'trial' | 'active' | 'paused' | 'cancelled'
 
 export interface Tenant {
@@ -28,13 +34,9 @@ export interface SubscriptionState {
 
 /**
  * Plan limits configuration
+ * Re-exported from lib/plans/config.ts for backwards compatibility
  */
-export const PLAN_LIMITS = {
-  starter: { maxUsers: 1, maxItems: 10000, price: 19 },
-  team: { maxUsers: 10, maxItems: 10000, price: 49 },
-  business: { maxUsers: 25, maxItems: 10000, price: 99 },
-  enterprise: { maxUsers: Infinity, maxItems: Infinity, price: null },
-} as const
+export const PLAN_LIMITS = PLAN_LIMITS_CONFIG
 
 /**
  * Grace period duration in days
