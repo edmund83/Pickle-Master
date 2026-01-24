@@ -1,7 +1,5 @@
 import { getPaginatedReceives, type PaginatedReceivesResult, type ReceiveListItem, type ReceiveSourceType } from '@/app/actions/receives'
 import { ReceivesListClient } from './ReceivesListClient'
-import { checkFeatureAccess } from '@/lib/features/gating.server'
-import { FeatureUpgradePrompt } from '@/components/FeatureUpgradePrompt'
 
 interface SearchParams {
   page?: string
@@ -18,12 +16,6 @@ export default async function ReceivesPage({
 }: {
   searchParams: Promise<SearchParams>
 }) {
-  // Feature gate: Receiving requires Growth+ plan
-  const featureCheck = await checkFeatureAccess('receiving')
-  if (!featureCheck.allowed) {
-    return <FeatureUpgradePrompt feature="receiving" />
-  }
-
   const params = await searchParams
 
   // Parse and validate URL parameters

@@ -2,7 +2,6 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { requireFeatureSafe } from '@/lib/features/gating.server'
 import {
     getAuthContext,
     requireWritePermission,
@@ -87,6 +86,10 @@ const createStandaloneReceiveSchema = z.object({
     source_type: sourceTypeSchema,
     notes: z.string().max(2000).nullable().optional(),
     default_location_id: optionalUuidSchema,
+    received_date: optionalDateStringSchema,
+    delivery_note_number: optionalStringSchema,
+    carrier: optionalStringSchema,
+    tracking_number: optionalStringSchema,
 })
 
 const addStandaloneReceiveItemSchema = z.object({
@@ -148,6 +151,10 @@ export interface CreateStandaloneReceiveInput {
     source_type: ReceiveSourceType
     notes?: string | null
     default_location_id?: string | null
+    received_date?: string | null
+    delivery_note_number?: string | null
+    carrier?: string | null
+    tracking_number?: string | null
 }
 
 export interface AddStandaloneReceiveItemInput {
@@ -238,10 +245,6 @@ export interface ReceiveSummary {
 
 // Create a new receive from a PO with pre-populated items
 export async function createReceive(input: CreateReceiveInput): Promise<ReceiveResult> {
-    // Feature gate: Receiving requires Growth+ plan
-    const featureCheck = await requireFeatureSafe('receiving')
-    if (featureCheck.error) return { success: false, error: featureCheck.error }
-
     // 1. Authenticate and get context
     const authResult = await getAuthContext()
     if (!authResult.success) return { success: false, error: authResult.error }
@@ -331,10 +334,6 @@ export async function createReceive(input: CreateReceiveInput): Promise<ReceiveR
 
 // Create a standalone receive (for customer returns or stock adjustments)
 export async function createStandaloneReceive(input: CreateStandaloneReceiveInput): Promise<ReceiveResult> {
-    // Feature gate: Receiving requires Growth+ plan
-    const featureCheck = await requireFeatureSafe('receiving')
-    if (featureCheck.error) return { success: false, error: featureCheck.error }
-
     // 1. Authenticate and get context
     const authResult = await getAuthContext()
     if (!authResult.success) return { success: false, error: authResult.error }
@@ -367,7 +366,11 @@ export async function createStandaloneReceive(input: CreateStandaloneReceiveInpu
     const { data, error } = await (supabase as any).rpc('create_standalone_receive', {
         p_source_type: validatedInput.source_type,
         p_notes: validatedInput.notes || null,
-        p_default_location_id: validatedInput.default_location_id || null
+        p_default_location_id: validatedInput.default_location_id || null,
+        p_received_date: validatedInput.received_date || null,
+        p_delivery_note_number: validatedInput.delivery_note_number || null,
+        p_carrier: validatedInput.carrier || null,
+        p_tracking_number: validatedInput.tracking_number || null
     })
 
     if (error) {
