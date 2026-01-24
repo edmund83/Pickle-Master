@@ -4,12 +4,14 @@ import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { ArrowRight, FolderOpen, Package, Loader2, Filter, Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { useFormatting } from '@/hooks/useFormatting'
 import type { ActivityLog } from '@/types/database.types'
 
 export default function StockMovementPage() {
   const [movements, setMovements] = useState<ActivityLog[]>([])
   const [loading, setLoading] = useState(true)
   const [dateRange, setDateRange] = useState('30')
+  const { formatDateTime } = useFormatting()
 
   useEffect(() => {
     loadMovements()
@@ -54,7 +56,7 @@ export default function StockMovementPage() {
   function exportCSV() {
     const headers = ['Date', 'User', 'Item', 'Action', 'From', 'To', 'Quantity Change']
     const rows = movements.map(m => [
-      m.created_at ? new Date(m.created_at).toLocaleString() : '',
+      m.created_at ? formatDateTime(m.created_at) : '',
       m.user_name || 'System',
       m.entity_name || '',
       m.action_type,
@@ -181,7 +183,7 @@ export default function StockMovementPage() {
                   </div>
 
                   <span className="flex-shrink-0 text-sm text-neutral-400">
-                    {movement.created_at ? new Date(movement.created_at).toLocaleString() : ''}
+                    {movement.created_at ? formatDateTime(movement.created_at) : ''}
                   </span>
                 </li>
               ))}

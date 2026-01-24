@@ -75,14 +75,6 @@ const statusConfig: Record<string, { icon: React.ElementType; color: string; bgC
   void: { icon: XCircle, color: 'text-neutral-600', bgColor: 'bg-neutral-300', label: 'Void' },
 }
 
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-  }).format(amount)
-}
-
 export function InvoiceDetailClient({
   invoice,
   customers,
@@ -92,7 +84,7 @@ export function InvoiceDetailClient({
 }: InvoiceDetailClientProps) {
   const router = useRouter()
   const feedback = useFeedback()
-  const { formatCurrency: formatCurrencyTenant, formatDate, formatShortDate } = useFormatting()
+  const { formatCurrency, formatDate, formatShortDate } = useFormatting()
   const tenantName = useTenantName()
   const tenantLogoUrl = useTenantLogoUrl()
   const companyDetails = useTenantCompanyDetails()
@@ -337,7 +329,7 @@ export function InvoiceDetailClient({
       const pdfBlob = generateInvoicePDF(
         invoice,
         {
-          formatCurrency: formatCurrencyTenant,
+          formatCurrency,
           formatDate,
           formatShortDate,
         },

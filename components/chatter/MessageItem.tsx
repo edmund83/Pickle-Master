@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Reply, Edit2, Trash2, ChevronDown, ChevronUp } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { formatDistanceToNow } from 'date-fns'
+import { useFormatting } from '@/hooks/useFormatting'
 import {
     editMessage,
     deleteMessage,
@@ -28,6 +28,7 @@ export function MessageItem({
     onRefresh,
     isReply = false
 }: MessageItemProps) {
+    const { formatRelativeTime } = useFormatting()
     const [showActions, setShowActions] = useState(false)
     const [isEditing, setIsEditing] = useState(false)
     const [editContent, setEditContent] = useState(message.content)
@@ -121,7 +122,7 @@ export function MessageItem({
                             {message.author_name}
                         </span>
                         <span className="text-xs text-neutral-400">
-                            {formatDistanceToNow(new Date(message.created_at), { addSuffix: true })}
+                            {formatRelativeTime(message.created_at)}
                         </span>
                         {message.edited_at && (
                             <span className="text-xs text-neutral-400 italic">(edited)</span>
