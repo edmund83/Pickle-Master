@@ -42,7 +42,7 @@ const PRICING_FAQS: FaqItem[] = [
   {
     question: 'What is AskZoe AI?',
     answer:
-      "AskZoe is your AI inventory assistant. Ask questions like 'What's running low?' or 'Show me items that haven't moved in 30 days.' Growth plan includes 100 questions/month, Scale includes 500. Starter users get 50 free questions during their first 7 days to try it out.",
+      "AskZoe is your AI inventory assistant. Ask questions like 'What's running low?' or 'Show me items that haven't moved in 30 days.' Starter includes 50 questions/month, Growth includes 100, and Scale includes 500.",
   },
   {
     question: 'What happens after the 14-day free trial?',
@@ -215,10 +215,6 @@ export default function PricingPage() {
                 <ul className="space-y-3 text-base-content/80">
                   <li className="flex gap-2">
                     <span className="icon-[tabler--circle-check] text-success size-5 shrink-0"></span>
-                    <span>Core features included:</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="icon-[tabler--circle-check] text-success size-5 shrink-0"></span>
                     <span>Barcode & QR scanning</span>
                   </li>
                   <li className="flex gap-2">
@@ -227,11 +223,15 @@ export default function PricingPage() {
                   </li>
                   <li className="flex gap-2">
                     <span className="icon-[tabler--circle-check] text-success size-5 shrink-0"></span>
+                    <span>Pick lists & check-in/out</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="icon-[tabler--circle-check] text-success size-5 shrink-0"></span>
                     <span>Low-stock alerts</span>
                   </li>
                   <li className="flex gap-2">
                     <span className="icon-[tabler--circle-check] text-success size-5 shrink-0"></span>
-                    <span>CSV import/export & label printing</span>
+                    <span>CSV import/export & labels</span>
                   </li>
                   <li className="flex gap-2">
                     <span className="icon-[tabler--sparkles] text-primary/60 size-5 shrink-0"></span>
@@ -279,15 +279,15 @@ export default function PricingPage() {
                   </li>
                   <li className="flex gap-2">
                     <span className="icon-[tabler--circle-check] text-success size-5 shrink-0"></span>
-                    <span>Pick lists & fulfillment</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="icon-[tabler--circle-check] text-success size-5 shrink-0"></span>
-                    <span>Check-in / check-out workflow</span>
+                    <span>Sales orders & invoices</span>
                   </li>
                   <li className="flex gap-2">
                     <span className="icon-[tabler--circle-check] text-success size-5 shrink-0"></span>
                     <span>Stock counts & cycle counting</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="icon-[tabler--circle-check] text-success size-5 shrink-0"></span>
+                    <span>Auto-reorder suggestions</span>
                   </li>
                   <li className="flex gap-2">
                     <span className="icon-[tabler--sparkles] text-primary/60 size-5 shrink-0"></span>
@@ -461,7 +461,7 @@ export default function PricingPage() {
                     </span>
                   </td>
                   <td className="bg-accent/10 text-accent text-center font-semibold">500</td>
-                  <td className="text-base-content/50 text-center text-sm">50 trial*</td>
+                  <td className="text-center">50</td>
                   <td className="text-center">100</td>
                   <td className="text-center">500</td>
                 </tr>
@@ -533,9 +533,53 @@ export default function PricingPage() {
                     </div>
                   </td>
                 </tr>
-                {/* Check-in / check-out */}
+                {/* Sales orders & invoices */}
                 <tr className="text-base-content">
-                  <td className="font-medium">Check-in / check-out</td>
+                  <td className="font-medium">Sales orders & invoices</td>
+                  <td className="bg-accent/10">
+                    <div className="flex justify-center">
+                      <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
+                    </div>
+                  </td>
+                  <td className="text-base-content/30 text-center">—</td>
+                  <td>
+                    <div className="flex justify-center">
+                      <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="flex justify-center">
+                      <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
+                    </div>
+                  </td>
+                </tr>
+                {/* Pick lists & check-in/out */}
+                <tr className="text-base-content">
+                  <td className="font-medium">Pick lists & check-in/out</td>
+                  <td className="bg-accent/10">
+                    <div className="flex justify-center">
+                      <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="flex justify-center">
+                      <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="flex justify-center">
+                      <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
+                    </div>
+                  </td>
+                  <td>
+                    <div className="flex justify-center">
+                      <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
+                    </div>
+                  </td>
+                </tr>
+                {/* Stock counts & cycle counting */}
+                <tr className="text-base-content">
+                  <td className="font-medium">Stock counts & cycle counting</td>
                   <td className="bg-accent/10">
                     <div className="flex justify-center">
                       <span className="icon-[tabler--circle-check-filled] text-success size-5 shrink-0"></span>
@@ -632,9 +676,6 @@ export default function PricingPage() {
               </tbody>
             </table>
           </div>
-          <p className="text-base-content/50 mt-4 text-center text-xs">
-            *Starter plan includes 50 AskZoe AI questions during the first 7 days
-          </p>
         </div>
       </section>
 

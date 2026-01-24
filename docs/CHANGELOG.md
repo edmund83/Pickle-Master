@@ -9,7 +9,42 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Added
+
+#### Report a Problem Feature
+Added a "Report a Problem" button on the Help page that allows users to submit bug reports and feedback directly from within the app.
+
+**Features**:
+- Dialog form with category selection (Bug, Feature Request, Performance, UI/UX, Data, Other)
+- Subject and description fields with validation
+- Auto-captures current page URL and browser info for context
+- Submissions stored in `bug_reports` table with RLS policies
+
+**Files**:
+- `supabase/migrations/00096_bug_reports.sql` - Database table and RLS policies
+- `app/actions/bug-reports.ts` - Server action for submitting reports
+- `components/help/ReportProblemDialog.tsx` - Dialog component
+- `app/(dashboard)/help/page.tsx` - Added button to support section
+
 ### Fixed
+
+#### Pricing Page Alignment with Current Pricing Plan
+Updated the pricing page and PricingSection component to accurately reflect the features in docs/pricingplan.md.
+
+**Issues Fixed**:
+1. **Check-in/check-out feature** - Comparison table now correctly shows this feature is available in ALL plans including Starter (was showing "—" for Starter)
+2. **AskZoe AI for Starter** - Fixed FAQ and comparison table to show Starter gets 50 questions/month (was incorrectly stated as "trial only")
+3. **Growth plan features** - Updated feature list to emphasize Sales Orders & Invoices as key differentiators (was showing Check-in/check-out which is in all plans)
+4. **Starter plan features** - Added Pick lists & check-in/out to feature list (these are included per pricing doc)
+
+**New Features Added to Comparison Table**:
+- Sales orders & invoices row (Growth and Scale only)
+- Stock counts & cycle counting row (Growth and Scale only)
+- Renamed "Check-in / check-out" row to "Pick lists & check-in/out" for clarity
+
+**Files Updated**:
+- `app/(marketing)/pricing/page.tsx` - Fixed comparison table, feature cards, and FAQ
+- `components/marketing/PricingSection.tsx` - Updated Starter and Growth feature lists
 
 #### Pricing Plan Sync Issues
 Fixed critical bugs where pricing plans were not properly synchronized between Stripe, database, and frontend.
