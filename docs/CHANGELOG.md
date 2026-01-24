@@ -11,6 +11,60 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Added
 
+#### Internationalization (i18n) System Overhaul
+Implemented industry-standard i18n following best practices from Stripe, Shopify, and Notion with three-tier locale resolution (User > Tenant > Browser > Default).
+
+**New i18n Library (`lib/i18n/`)**:
+- `types.ts` - BCP 47 locale types, IANA timezone support, ISO 4217 currency codes
+- `resolver.ts` - Three-tier preference resolution with validation functions
+- `formatters.ts` - Cached Intl-based formatters for optimal performance
+- `index.ts` - Barrel export for clean imports
+
+**Features**:
+- Country-to-locale mapping (40+ countries)
+- Country-to-currency mapping
+- Timezone-to-country detection for onboarding
+- Locale-aware date/time formatting with configurable formats
+- Locale-aware currency formatting (proper symbol placement and separators)
+- Locale-aware number formatting (thousands separators, decimal places)
+- Relative time formatting using `Intl.RelativeTimeFormat`
+- ISO format helpers for data exchange
+
+**Database Migrations**:
+- `00096_user_locale_preferences.sql` - User-level locale overrides (highest priority)
+- `00097_tenant_locale_enhancement.sql` - Enhanced tenant settings validation and locale backfill
+
+**Files**:
+- `lib/i18n/types.ts` - Core types and mappings
+- `lib/i18n/resolver.ts` - Locale resolution logic
+- `lib/i18n/formatters.ts` - Intl-based formatters with caching
+- `lib/i18n/index.ts` - Barrel export
+- `contexts/LocaleContext.tsx` - React context for locale settings
+- `hooks/useFormatting.ts` - Updated to use new i18n system
+
+### Fixed
+
+#### Hardcoded Currency in Invoice Components
+Removed hardcoded USD currency formatting in invoice components, now using tenant settings.
+
+**Files Fixed**:
+- `app/(dashboard)/tasks/invoices/InvoicesListClient.tsx`
+- `app/(dashboard)/tasks/invoices/[id]/InvoiceDetailClient.tsx`
+
+#### Stock Movement Report Date Formatting
+Replaced `toLocaleString()` with locale-aware `formatDateTime()` for proper timezone and format handling.
+
+**Files Fixed**:
+- `app/(dashboard)/reports/stock-movement/page.tsx`
+
+#### Chatter Timestamps
+Replaced `date-fns` `formatDistanceToNow` with locale-aware `formatRelativeTime` for proper localization.
+
+**Files Fixed**:
+- `components/chatter/MessageItem.tsx`
+
+---
+
 #### Report a Problem Feature
 Added a "Report a Problem" button on the Help page that allows users to submit bug reports and feedback directly from within the app.
 

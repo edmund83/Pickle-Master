@@ -15,6 +15,7 @@ import {
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu'
 import { FormattedShortDate } from '@/components/formatting/FormattedDate'
+import { useFormatting } from '@/hooks/useFormatting'
 import type { PaginatedInvoicesResult, InvoiceListItem } from '@/app/actions/invoices'
 import type { Customer } from '@/app/actions/customers'
 
@@ -65,14 +66,6 @@ const columnHeaders: { key: SortColumn; label: string; align?: 'left' | 'right';
   { key: 'balance_due', label: 'Balance', align: 'right' },
 ]
 
-function formatCurrency(amount: number): string {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-  }).format(amount)
-}
-
 export function InvoicesListClient({
   initialData,
   customers,
@@ -82,6 +75,7 @@ export function InvoicesListClient({
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const [isPending, startTransition] = useTransition()
+  const { formatCurrency } = useFormatting()
 
   // Local state for inputs
   const [searchInput, setSearchInput] = useState(initialFilters.search)
@@ -315,6 +309,7 @@ export function InvoicesListClient({
                   key={invoice.id}
                   invoice={invoice}
                   onClick={() => router.push(`/tasks/invoices/${invoice.id}`)}
+                  formatCurrency={formatCurrency}
                 />
               ))
             )}
@@ -363,9 +358,10 @@ export function InvoicesListClient({
 interface InvoiceRowProps {
   invoice: InvoiceListItem
   onClick: () => void
+  formatCurrency: (value: number | null | undefined) => string
 }
 
-function InvoiceRow({ invoice, onClick }: InvoiceRowProps) {
+function InvoiceRow({ invoice, onClick, formatCurrency }: InvoiceRowProps) {
   const isOverdue = invoice.status !== 'paid' && invoice.due_date && new Date(invoice.due_date) < new Date()
 
   return (
