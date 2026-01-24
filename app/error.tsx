@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import Link from 'next/link'
+import * as Sentry from '@sentry/nextjs'
 
 export default function Error({
   error,
@@ -11,7 +12,9 @@ export default function Error({
   reset: () => void
 }) {
   useEffect(() => {
-    // Log the error to an error reporting service
+    // Report the error to Sentry
+    Sentry.captureException(error)
+    // Also log to console for development visibility
     console.error('Application error:', error)
   }, [error])
 
