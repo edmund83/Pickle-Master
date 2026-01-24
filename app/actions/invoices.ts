@@ -1323,17 +1323,9 @@ export async function searchInventoryItemsForInvoice(query: string) {
 // CREDIT NOTE ACTIONS
 // ============================================================================
 
-export type CreditReason = 'return' | 'damaged' | 'overcharge' | 'discount' | 'other'
-
-const creditReasonLabels: Record<CreditReason, string> = {
-    return: 'Customer Return',
-    damaged: 'Damaged Goods',
-    overcharge: 'Overcharge Correction',
-    discount: 'Additional Discount',
-    other: 'Other',
-}
-
-export { creditReasonLabels }
+// Re-export from shared constants for backwards compatibility
+export type { CreditReason } from '@/lib/invoice-constants'
+import type { CreditReason } from '@/lib/invoice-constants'
 
 export interface CreateCreditNoteInput {
     original_invoice_id: string
