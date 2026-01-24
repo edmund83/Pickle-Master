@@ -15,14 +15,29 @@ export interface TenantSettings {
 
 /**
  * Default settings used when tenant settings are not available
+ *
+ * US-First but Global-Safe approach (industry SaaS standard):
+ * - Language: English (en-US)
+ * - Timezone: UTC (display will auto-detect user's timezone where possible)
+ * - Currency: USD
+ * - Date Format: MM/DD/YYYY (US standard)
+ * - Time Format: 12-hour (US standard)
+ * - Week Start: Sunday (implicit in US locale)
+ *
+ * Users configure their own regional settings during onboarding or in settings.
+ *
+ * Hierarchy:
+ * 1. Tenant's actual settings (from database)
+ * 2. DEFAULT_TENANT_SETTINGS (this - USD/US)
+ * 3. SYSTEM_DEFAULTS (lib/i18n/types.ts - also USD/UTC)
  */
 export const DEFAULT_TENANT_SETTINGS: TenantSettings = {
-  currency: 'MYR',
-  timezone: 'Asia/Kuala_Lumpur',
-  date_format: 'DD/MM/YYYY',
+  currency: 'USD',
+  timezone: 'UTC',
+  date_format: 'MM/DD/YYYY',
   time_format: '12-hour',
   decimal_precision: '0.01',
-  country: 'MY',
+  country: 'US',
 }
 
 /**

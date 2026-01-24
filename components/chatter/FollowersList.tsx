@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { UserPlus, Mail, Bell, Smartphone } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { formatDistanceToNow } from 'date-fns'
+import { useFormatting } from '@/hooks/useFormatting'
 import { Button } from '@/components/ui/button'
 import {
     type ChatterFollower,
@@ -26,6 +26,7 @@ export function FollowersList({
     currentUserId,
     onRefresh
 }: FollowersListProps) {
+    const { formatRelativeTime } = useFormatting()
     const [showInviteHint, setShowInviteHint] = useState(false)
 
     // Find current user's follow record
@@ -146,7 +147,7 @@ export function FollowersList({
                             </p>
                             <p className="text-xs text-neutral-400">
                                 Following since{' '}
-                                {formatDistanceToNow(new Date(follower.followed_at), { addSuffix: true })}
+                                {formatRelativeTime(follower.followed_at)}
                             </p>
                         </div>
                         {/* Notification icons */}

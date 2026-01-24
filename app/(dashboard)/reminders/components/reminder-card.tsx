@@ -14,7 +14,7 @@ import {
   Pencil,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { formatDistanceToNow } from 'date-fns'
+import { useFormatting } from '@/hooks/useFormatting'
 import {
   deleteReminder,
   toggleReminder,
@@ -29,6 +29,7 @@ interface ReminderCardProps {
 }
 
 export function ReminderCard({ reminder, onDeleted, onToggled, onEdit }: ReminderCardProps) {
+  const { formatRelativeTime } = useFormatting()
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
 
@@ -216,9 +217,7 @@ export function ReminderCard({ reminder, onDeleted, onToggled, onEdit }: Reminde
               Created by {reminder.created_by_name || 'Unknown'}
             </span>
             <span>
-              {formatDistanceToNow(new Date(reminder.created_at), {
-                addSuffix: true,
-              })}
+              {formatRelativeTime(reminder.created_at)}
             </span>
             {reminder.trigger_count > 0 && (
               <span>Triggered {reminder.trigger_count} times</span>
