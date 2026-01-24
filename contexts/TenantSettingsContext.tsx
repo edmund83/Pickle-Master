@@ -3,6 +3,76 @@
 import { createContext, useContext, useState, useEffect, useCallback, useMemo, useRef, ReactNode } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { TenantSettings, DEFAULT_TENANT_SETTINGS } from '@/lib/formatting'
+import { isValidTimezone, isValidCurrency } from '@/lib/i18n'
+
+// Valid date format options
+const VALID_DATE_FORMATS = new Set(['DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD', 'DD-MM-YYYY', 'DD.MM.YYYY'])
+// Valid time format options
+const VALID_TIME_FORMATS = new Set(['12-hour', '24-hour'])
+// Valid decimal precision options
+const VALID_DECIMAL_PRECISIONS = new Set(['1', '0.1', '0.01', '0.001'])
+
+/**
+ * Validate and sanitize tenant settings from database
+ * Returns validated settings with defaults for invalid values
+ */
+function validateTenantSettings(raw: Record<string, unknown>): TenantSettings {
+  const validated: TenantSettings = { ...DEFAULT_TENANT_SETTINGS }
+
+  // Validate currency (ISO 4217)
+  if (typeof raw.currency === 'string') {
+    if (isValidCurrency(raw.currency)) {
+      validated.currency = raw.currency
+    } else {
+      console.warn(`[TenantSettings] Invalid currency "${raw.currency}", using default "${DEFAULT_TENANT_SETTINGS.currency}"`)
+    }
+  }
+
+  // Validate timezone (IANA)
+  if (typeof raw.timezone === 'string') {
+    if (isValidTimezone(raw.timezone)) {
+      validated.timezone = raw.timezone
+    } else {
+      console.warn(`[TenantSettings] Invalid timezone "${raw.timezone}", using default "${DEFAULT_TENANT_SETTINGS.timezone}"`)
+    }
+  }
+
+  // Validate date format
+  if (typeof raw.date_format === 'string') {
+    if (VALID_DATE_FORMATS.has(raw.date_format)) {
+      validated.date_format = raw.date_format
+    } else {
+      console.warn(`[TenantSettings] Invalid date_format "${raw.date_format}", using default "${DEFAULT_TENANT_SETTINGS.date_format}"`)
+    }
+  }
+
+  // Validate time format
+  if (typeof raw.time_format === 'string') {
+    if (VALID_TIME_FORMATS.has(raw.time_format)) {
+      validated.time_format = raw.time_format as '12-hour' | '24-hour'
+    } else {
+      console.warn(`[TenantSettings] Invalid time_format "${raw.time_format}", using default "${DEFAULT_TENANT_SETTINGS.time_format}"`)
+    }
+  }
+
+  // Validate decimal precision
+  if (typeof raw.decimal_precision === 'string') {
+    if (VALID_DECIMAL_PRECISIONS.has(raw.decimal_precision)) {
+      validated.decimal_precision = raw.decimal_precision
+    } else {
+      console.warn(`[TenantSettings] Invalid decimal_precision "${raw.decimal_precision}", using default "${DEFAULT_TENANT_SETTINGS.decimal_precision}"`)
+    }
+  }
+
+  // Country code (simple alpha-2 check)
+  if (typeof raw.country === 'string' && /^[A-Z]{2}$/.test(raw.country)) {
+    validated.country = raw.country
+  } else if (raw.country) {
+    console.warn(`[TenantSettings] Invalid country "${raw.country}", using default "${DEFAULT_TENANT_SETTINGS.country}"`)
+  }
+
+  return validated
+}
 
 interface TenantSettingsContextType {
   settings: TenantSettings
@@ -106,14 +176,8 @@ export function TenantSettingsProvider({ children }: TenantSettingsProviderProps
 
       if (tenant?.settings) {
         const tenantSettings = tenant.settings as Record<string, unknown>
-        setSettings({
-          currency: (tenantSettings.currency as string) || DEFAULT_TENANT_SETTINGS.currency,
-          timezone: (tenantSettings.timezone as string) || DEFAULT_TENANT_SETTINGS.timezone,
-          date_format: (tenantSettings.date_format as string) || DEFAULT_TENANT_SETTINGS.date_format,
-          time_format: (tenantSettings.time_format as '12-hour' | '24-hour') || DEFAULT_TENANT_SETTINGS.time_format,
-          decimal_precision: (tenantSettings.decimal_precision as string) || DEFAULT_TENANT_SETTINGS.decimal_precision,
-          country: (tenantSettings.country as string) || DEFAULT_TENANT_SETTINGS.country,
-        })
+        // Validate settings and use defaults for invalid values
+        setSettings(validateTenantSettings(tenantSettings))
         setCompanyDetails({
           address1: (tenantSettings.company_address1 as string) || null,
           address2: (tenantSettings.company_address2 as string) || null,

@@ -22,6 +22,7 @@ import {
   trackAiUsage,
   estimateCost,
 } from '@/lib/ai/usage-tracking'
+import { getCurrencySymbol, DEFAULT_TENANT_SETTINGS } from '@/lib/formatting'
 
 interface ChatMessage {
   role: 'user' | 'model' | 'assistant'
@@ -111,6 +112,14 @@ export async function POST(request: NextRequest) {
         const { context } = await fetchZoeContextOptimized(supabase, message, 30)
         const agg = context.aggregates
 
+        // Fetch tenant's currency for proper formatting
+        const { data: tenant } = await (supabase as any)
+          .from('tenants')
+          .select('settings')
+          .single()
+        const currencyCode = tenant?.settings?.currency || DEFAULT_TENANT_SETTINGS.currency
+        const currencySymbol = getCurrencySymbol(currencyCode)
+
         return NextResponse.json({
           response: `Hello! I'm Zoe, your AI inventory assistant. Currently running in demo mode (no API key configured).
 
@@ -118,7 +127,7 @@ Here's what I can see in your inventory:
 - **${agg.totalItems.toLocaleString()}** items tracked
 - **${agg.lowStockCount.toLocaleString()}** items with low stock
 - **${agg.outOfStockCount.toLocaleString()}** out of stock
-- **$${agg.totalValue.toLocaleString()}** total inventory value
+- **${currencySymbol}${agg.totalValue.toLocaleString()}** total inventory value
 
 To enable full AI capabilities, add an \`OPENROUTER_API_KEY\` or \`GOOGLE_AI_API_KEY\` to your environment variables.
 

@@ -338,7 +338,18 @@ export const USES_ISO_FORMAT: Set<string> = new Set([
 
 /**
  * Default system settings (fallback of last resort)
- * Uses international standards: UTC timezone, USD currency, ISO date format
+ *
+ * This is the ULTIMATE fallback when:
+ * 1. No user preferences exist
+ * 2. No tenant settings exist
+ * 3. No browser context is available
+ *
+ * Uses international SaaS standards: UTC timezone, USD currency.
+ * Note: For app-specific defaults (e.g., Malaysian defaults for new tenants),
+ * see DEFAULT_TENANT_SETTINGS in lib/formatting.ts which is used by
+ * TenantSettingsContext before falling back to these values.
+ *
+ * Hierarchy: User Prefs > Tenant Settings > Browser Context > SYSTEM_DEFAULTS
  */
 export const SYSTEM_DEFAULTS: ResolvedLocaleSettings = {
   locale: 'en-US',

@@ -21,8 +21,7 @@ export function InventoryStatsCards({
   todayNetMovement,
   className,
 }: InventoryStatsCardsProps) {
-  const { formatCurrency } = useFormatting()
-  const formatNumber = (num: number) => num.toLocaleString()
+  const { formatCurrency, formatInteger } = useFormatting()
 
   // Determine movement display
   const getMovementDisplay = () => {
@@ -31,7 +30,7 @@ export function InventoryStatsCards({
     }
     if (todayNetMovement > 0) {
       return {
-        value: `+${formatNumber(todayNetMovement)}`,
+        value: `+${formatInteger(todayNetMovement)}`,
         icon: TrendingUp,
         color: 'text-emerald-600',
         bg: 'bg-emerald-50 border-emerald-200'
@@ -39,7 +38,7 @@ export function InventoryStatsCards({
     }
     if (todayNetMovement < 0) {
       return {
-        value: formatNumber(todayNetMovement),
+        value: formatInteger(todayNetMovement),
         icon: TrendingDown,
         color: 'text-red-600',
         bg: 'bg-red-50 border-red-200'
@@ -51,9 +50,9 @@ export function InventoryStatsCards({
   const movement = getMovementDisplay()
 
   const stats = [
-    { label: 'Folders', value: formatNumber(folderCount), icon: Folder },
-    { label: 'Items', value: formatNumber(itemCount), icon: Package },
-    { label: 'Units', value: formatNumber(totalQuantity), icon: Hash },
+    { label: 'Folders', value: formatInteger(folderCount), icon: Folder },
+    { label: 'Items', value: formatInteger(itemCount), icon: Package },
+    { label: 'Units', value: formatInteger(totalQuantity), icon: Hash },
     { label: 'Value', value: formatCurrency(totalValue), icon: DollarSign },
   ]
 
