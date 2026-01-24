@@ -266,6 +266,64 @@ export async function getTaxInclusiveSetting(): Promise<{ pricesIncludeTax: bool
 /**
  * Update tenant's tax inclusive setting
  */
+/**
+ * Get counts of tenant data that would be affected by a region change
+ */
+export async function getTenantDataCounts(): Promise<{
+  itemsWithPrice: number
+  invoices: number
+  taxRates: number
+  salesOrders: number
+  error?: string
+}> {
+  try {
+    const authResult = await getAuthContext()
+    if (!authResult.success) {
+      return { itemsWithPrice: 0, invoices: 0, taxRates: 0, salesOrders: 0, error: authResult.error }
+    }
+    const supabase = await createClient()
+    const tenantId = authResult.context.tenantId
+
+    // Run all counts in parallel for efficiency
+    const [itemsResult, invoicesResult, taxRatesResult, salesOrdersResult] = await Promise.all([
+      // Count items with a price set (these will display in new currency)
+      (supabase as any)
+        .from('inventory_items')
+        .select('id', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId)
+        .gt('price', 0),
+
+      // Count invoices (historical financial documents)
+      (supabase as any)
+        .from('invoices')
+        .select('id', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId),
+
+      // Count tax rates (may need reconfiguration)
+      (supabase as any)
+        .from('tax_rates')
+        .select('id', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId),
+
+      // Count sales orders
+      (supabase as any)
+        .from('sales_orders')
+        .select('id', { count: 'exact', head: true })
+        .eq('tenant_id', tenantId),
+    ])
+
+    return {
+      itemsWithPrice: itemsResult.count ?? 0,
+      invoices: invoicesResult.count ?? 0,
+      taxRates: taxRatesResult.count ?? 0,
+      salesOrders: salesOrdersResult.count ?? 0,
+    }
+  } catch (err) {
+    console.error('Error getting tenant data counts:', err)
+    return { itemsWithPrice: 0, invoices: 0, taxRates: 0, salesOrders: 0, error: 'Failed to load data counts' }
+  }
+}
+
 export async function updateTaxInclusiveSetting(pricesIncludeTax: boolean): Promise<ActionResult> {
   try {
     const authResult = await getAuthContext()

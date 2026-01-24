@@ -231,6 +231,99 @@ export function getSuggestedSettings(browserContext: BrowserContext): Partial<Te
 }
 
 /**
+ * Country to primary timezone mapping
+ * Maps ISO 3166-1 country codes to their most common IANA timezone
+ */
+export const COUNTRY_TO_PRIMARY_TIMEZONE: Record<string, string> = {
+  // Americas
+  US: 'America/New_York',
+  CA: 'America/Toronto',
+  MX: 'America/Mexico_City',
+  BR: 'America/Sao_Paulo',
+  AR: 'America/Buenos_Aires',
+  CO: 'America/Bogota',
+  CL: 'America/Santiago',
+  PE: 'America/Lima',
+
+  // Europe
+  GB: 'Europe/London',
+  IE: 'Europe/Dublin',
+  DE: 'Europe/Berlin',
+  FR: 'Europe/Paris',
+  IT: 'Europe/Rome',
+  ES: 'Europe/Madrid',
+  NL: 'Europe/Amsterdam',
+  BE: 'Europe/Brussels',
+  AT: 'Europe/Vienna',
+  CH: 'Europe/Zurich',
+  PT: 'Europe/Lisbon',
+  SE: 'Europe/Stockholm',
+  NO: 'Europe/Oslo',
+  DK: 'Europe/Copenhagen',
+  FI: 'Europe/Helsinki',
+  PL: 'Europe/Warsaw',
+  CZ: 'Europe/Prague',
+  HU: 'Europe/Budapest',
+  RO: 'Europe/Bucharest',
+  GR: 'Europe/Athens',
+  UA: 'Europe/Kyiv',
+  RU: 'Europe/Moscow',
+  TR: 'Europe/Istanbul',
+
+  // Asia Pacific
+  JP: 'Asia/Tokyo',
+  CN: 'Asia/Shanghai',
+  KR: 'Asia/Seoul',
+  TW: 'Asia/Taipei',
+  HK: 'Asia/Hong_Kong',
+  SG: 'Asia/Singapore',
+  MY: 'Asia/Kuala_Lumpur',
+  TH: 'Asia/Bangkok',
+  VN: 'Asia/Ho_Chi_Minh',
+  ID: 'Asia/Jakarta',
+  PH: 'Asia/Manila',
+  IN: 'Asia/Kolkata',
+  AU: 'Australia/Sydney',
+  NZ: 'Pacific/Auckland',
+
+  // Middle East & Africa
+  SA: 'Asia/Riyadh',
+  AE: 'Asia/Dubai',
+  IL: 'Asia/Jerusalem',
+  EG: 'Africa/Cairo',
+  ZA: 'Africa/Johannesburg',
+  NG: 'Africa/Lagos',
+  KE: 'Africa/Nairobi',
+
+  // South Asia
+  PK: 'Asia/Karachi',
+  BD: 'Asia/Dhaka',
+  LK: 'Asia/Colombo',
+}
+
+/**
+ * Get all inferred settings from a country code
+ * Used for the simplified Regional Settings UI
+ */
+export function getSettingsFromCountry(countryCode: string): {
+  currency: string
+  timezone: string
+  dateFormat: DateFormat
+  timeFormat: TimeFormat
+  locale: string
+} {
+  const locale = COUNTRY_TO_LOCALE[countryCode] || 'en-US'
+
+  return {
+    currency: COUNTRY_TO_CURRENCY[countryCode] || 'USD',
+    timezone: COUNTRY_TO_PRIMARY_TIMEZONE[countryCode] || 'UTC',
+    dateFormat: getDefaultDateFormat(locale),
+    timeFormat: getDefaultTimeFormat(locale),
+    locale,
+  }
+}
+
+/**
  * Validate a locale string (BCP 47 format)
  */
 export function isValidLocale(locale: string): boolean {
