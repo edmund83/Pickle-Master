@@ -995,6 +995,7 @@ export interface InvoiceListItem {
     id: string
     display_id: string | null
     invoice_number: string | null
+    invoice_type: 'invoice' | 'credit_note'
     status: string
     invoice_date: string
     due_date: string | null
@@ -1007,6 +1008,8 @@ export interface InvoiceListItem {
     customer_id: string
     customer_name: string | null
     sales_order_display_id: string | null
+    original_invoice_id: string | null
+    credit_reason: string | null
 }
 
 export interface InvoicesQueryParams {
@@ -1018,6 +1021,7 @@ export interface InvoicesQueryParams {
     customerId?: string
     salesOrderId?: string
     search?: string
+    invoiceType?: 'invoice' | 'credit_note' | 'all'
 }
 
 export async function getPaginatedInvoices(
@@ -1037,7 +1041,8 @@ export async function getPaginatedInvoices(
         status,
         customerId,
         salesOrderId,
-        search
+        search,
+        invoiceType = 'all'
     } = params
 
     const sanitizedPage = Math.max(1, page)
@@ -1068,13 +1073,14 @@ export async function getPaginatedInvoices(
         .eq('tenant_id', context.tenantId)
 
     // Build query for data
-     
+
     let dataQuery = (supabase as any)
         .from('invoices')
         .select(`
             id,
             display_id,
             invoice_number,
+            invoice_type,
             status,
             invoice_date,
             due_date,
@@ -1085,6 +1091,8 @@ export async function getPaginatedInvoices(
             created_at,
             updated_at,
             customer_id,
+            original_invoice_id,
+            credit_reason,
             customers(name),
             sales_orders(display_id)
         `)
@@ -1093,6 +1101,11 @@ export async function getPaginatedInvoices(
         .range(offset, offset + sanitizedPageSize - 1)
 
     // Apply filters
+    if (invoiceType && invoiceType !== 'all') {
+        countQuery = countQuery.eq('invoice_type', invoiceType)
+        dataQuery = dataQuery.eq('invoice_type', invoiceType)
+    }
+
     if (status) {
         countQuery = countQuery.eq('status', status)
         dataQuery = dataQuery.eq('status', status)
@@ -1126,6 +1139,7 @@ export async function getPaginatedInvoices(
         id: string
         display_id: string | null
         invoice_number: string | null
+        invoice_type: 'invoice' | 'credit_note'
         status: string
         invoice_date: string
         due_date: string | null
@@ -1136,12 +1150,15 @@ export async function getPaginatedInvoices(
         created_at: string
         updated_at: string
         customer_id: string
+        original_invoice_id: string | null
+        credit_reason: string | null
         customers: { name: string } | null
         sales_orders: { display_id: string } | null
     }) => ({
         id: invoice.id,
         display_id: invoice.display_id,
         invoice_number: invoice.invoice_number,
+        invoice_type: invoice.invoice_type || 'invoice',
         status: invoice.status,
         invoice_date: invoice.invoice_date,
         due_date: invoice.due_date,
@@ -1154,6 +1171,8 @@ export async function getPaginatedInvoices(
         customer_id: invoice.customer_id,
         customer_name: invoice.customers?.name || null,
         sales_order_display_id: invoice.sales_orders?.display_id || null,
+        original_invoice_id: invoice.original_invoice_id,
+        credit_reason: invoice.credit_reason,
     }))
 
     return {
@@ -1298,4 +1317,272 @@ export async function searchInventoryItemsForInvoice(query: string) {
 
     const { data } = await queryBuilder
     return data || []
+}
+
+// ============================================================================
+// CREDIT NOTE ACTIONS
+// ============================================================================
+
+export type CreditReason = 'return' | 'damaged' | 'overcharge' | 'discount' | 'other'
+
+const creditReasonLabels: Record<CreditReason, string> = {
+    return: 'Customer Return',
+    damaged: 'Damaged Goods',
+    overcharge: 'Overcharge Correction',
+    discount: 'Additional Discount',
+    other: 'Other',
+}
+
+export { creditReasonLabels }
+
+export interface CreateCreditNoteInput {
+    original_invoice_id: string
+    credit_reason: CreditReason
+    notes?: string | null
+}
+
+// Create a credit note from an invoice (uses RPC function)
+export async function createCreditNote(input: CreateCreditNoteInput): Promise<InvoiceResult> {
+    // Feature gate: Credit notes require invoices feature
+    const featureCheck = await requireFeatureSafe('invoices')
+    if (featureCheck.error) return { success: false, error: featureCheck.error }
+
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
+
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // Verify original invoice belongs to tenant
+    const ownershipResult = await verifyTenantOwnership(
+        'invoices',
+        input.original_invoice_id,
+        context.tenantId
+    )
+    if (!ownershipResult.success) return { success: false, error: ownershipResult.error }
+
+    const supabase = await createClient()
+
+    // Get original invoice
+    const { data: originalInvoice, error: fetchError } = await (supabase as any)
+        .from('invoices')
+        .select('id, display_id, invoice_type, customer_id, status, total, bill_to_name, bill_to_address1, bill_to_address2, bill_to_city, bill_to_state, bill_to_postal_code, bill_to_country, tax_rate')
+        .eq('id', input.original_invoice_id)
+        .eq('tenant_id', context.tenantId)
+        .single()
+
+    if (fetchError || !originalInvoice) {
+        return { success: false, error: 'Original invoice not found' }
+    }
+
+    // Cannot create credit note from another credit note
+    if (originalInvoice.invoice_type === 'credit_note') {
+        return { success: false, error: 'Cannot create credit note from another credit note' }
+    }
+
+    // Generate display ID for credit note
+    const { data: displayId } = await (supabase as any).rpc(
+        'generate_display_id_for_current_user',
+        { p_entity_type: 'credit_note' }
+    )
+
+    // Create credit note
+    const { data: creditNote, error: createError } = await (supabase as any)
+        .from('invoices')
+        .insert({
+            tenant_id: context.tenantId,
+            display_id: displayId,
+            invoice_type: 'credit_note',
+            original_invoice_id: input.original_invoice_id,
+            credit_reason: input.credit_reason,
+            customer_id: originalInvoice.customer_id,
+            status: 'draft',
+            invoice_date: new Date().toISOString().split('T')[0],
+            bill_to_name: originalInvoice.bill_to_name,
+            bill_to_address1: originalInvoice.bill_to_address1,
+            bill_to_address2: originalInvoice.bill_to_address2,
+            bill_to_city: originalInvoice.bill_to_city,
+            bill_to_state: originalInvoice.bill_to_state,
+            bill_to_postal_code: originalInvoice.bill_to_postal_code,
+            bill_to_country: originalInvoice.bill_to_country,
+            tax_rate: originalInvoice.tax_rate || 0,
+            internal_notes: input.notes || `Credit note for ${originalInvoice.display_id}`,
+            created_by: context.userId,
+        })
+        .select('id, display_id')
+        .single()
+
+    if (createError) {
+        console.error('Create credit note error:', createError)
+        return { success: false, error: createError.message }
+    }
+
+    revalidatePath('/tasks/invoices')
+    revalidatePath(`/tasks/invoices/${input.original_invoice_id}`)
+    return { success: true, invoice_id: creditNote.id, display_id: creditNote.display_id }
+}
+
+// Add item to credit note (with negative amount)
+export async function addCreditNoteItem(
+    creditNoteId: string,
+    item: {
+        item_id?: string | null
+        item_name: string
+        sku?: string | null
+        description?: string | null
+        quantity: number
+        unit_price: number
+        tax_rate?: number
+    }
+): Promise<InvoiceResult> {
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
+
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    const ownershipResult = await verifyTenantOwnership('invoices', creditNoteId, context.tenantId)
+    if (!ownershipResult.success) return { success: false, error: ownershipResult.error }
+
+    const supabase = await createClient()
+
+    // Verify it's a credit note and in draft status
+    const { data: creditNote } = await (supabase as any)
+        .from('invoices')
+        .select('invoice_type, status, tax_rate')
+        .eq('id', creditNoteId)
+        .eq('tenant_id', context.tenantId)
+        .single()
+
+    if (!creditNote) {
+        return { success: false, error: 'Credit note not found' }
+    }
+
+    if (creditNote.invoice_type !== 'credit_note') {
+        return { success: false, error: 'Document is not a credit note' }
+    }
+
+    if (creditNote.status !== 'draft') {
+        return { success: false, error: 'Cannot add items to non-draft credit note' }
+    }
+
+    // Calculate line total (negative for credit notes)
+    const lineTotal = -(item.quantity * item.unit_price)
+    const taxRate = item.tax_rate ?? creditNote.tax_rate ?? 0
+    const taxAmount = Math.round(lineTotal * taxRate) / 100
+
+    const { error } = await (supabase as any)
+        .from('invoice_items')
+        .insert({
+            invoice_id: creditNoteId,
+            item_id: item.item_id || null,
+            item_name: item.item_name,
+            sku: item.sku || null,
+            description: item.description || null,
+            quantity: item.quantity,
+            unit_price: -item.unit_price, // Negative for credit
+            line_total: lineTotal,
+            tax_rate: taxRate,
+            tax_amount: taxAmount,
+        })
+
+    if (error) {
+        console.error('Add credit note item error:', error)
+        return { success: false, error: error.message }
+    }
+
+    revalidatePath(`/tasks/invoices/${creditNoteId}`)
+    return { success: true }
+}
+
+// Apply credit note to reduce original invoice balance
+export async function applyCreditNote(creditNoteId: string): Promise<InvoiceResult> {
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
+
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    const ownershipResult = await verifyTenantOwnership('invoices', creditNoteId, context.tenantId)
+    if (!ownershipResult.success) return { success: false, error: ownershipResult.error }
+
+    const supabase = await createClient()
+
+    // Get credit note
+    const { data: creditNote, error: fetchError } = await (supabase as any)
+        .from('invoices')
+        .select('id, invoice_type, status, total, original_invoice_id')
+        .eq('id', creditNoteId)
+        .eq('tenant_id', context.tenantId)
+        .single()
+
+    if (fetchError || !creditNote) {
+        return { success: false, error: 'Credit note not found' }
+    }
+
+    if (creditNote.invoice_type !== 'credit_note') {
+        return { success: false, error: 'Document is not a credit note' }
+    }
+
+    if (!['draft', 'pending'].includes(creditNote.status)) {
+        return { success: false, error: 'Credit note already applied or cancelled' }
+    }
+
+    if (creditNote.total >= 0) {
+        return { success: false, error: 'Credit note has no credit amount (total must be negative)' }
+    }
+
+    // Apply credit to original invoice if linked
+    if (creditNote.original_invoice_id) {
+        const creditAmount = Math.abs(creditNote.total)
+
+        const { data: originalInvoice } = await (supabase as any)
+            .from('invoices')
+            .select('id, total, amount_paid, balance_due')
+            .eq('id', creditNote.original_invoice_id)
+            .eq('tenant_id', context.tenantId)
+            .single()
+
+        if (originalInvoice) {
+            const newAmountPaid = Number(originalInvoice.amount_paid) + creditAmount
+            const newBalanceDue = Number(originalInvoice.total) - newAmountPaid
+            const newStatus = newBalanceDue <= 0 ? 'paid' : (newAmountPaid > 0 ? 'partial' : originalInvoice.status)
+
+            await (supabase as any)
+                .from('invoices')
+                .update({
+                    amount_paid: newAmountPaid,
+                    balance_due: Math.max(0, newBalanceDue),
+                    status: newStatus,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', creditNote.original_invoice_id)
+        }
+    }
+
+    // Mark credit note as applied (using 'paid' status)
+    const { error: updateError } = await (supabase as any)
+        .from('invoices')
+        .update({
+            status: 'paid',
+            amount_paid: Math.abs(creditNote.total),
+            balance_due: 0,
+            updated_at: new Date().toISOString()
+        })
+        .eq('id', creditNoteId)
+
+    if (updateError) {
+        console.error('Apply credit note error:', updateError)
+        return { success: false, error: updateError.message }
+    }
+
+    revalidatePath('/tasks/invoices')
+    revalidatePath(`/tasks/invoices/${creditNoteId}`)
+    if (creditNote.original_invoice_id) {
+        revalidatePath(`/tasks/invoices/${creditNote.original_invoice_id}`)
+    }
+    return { success: true }
 }

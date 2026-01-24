@@ -8,6 +8,9 @@ export interface InvoiceWithDetails {
   tenant_id: string
   display_id: string | null
   invoice_number: string | null
+  invoice_type: 'invoice' | 'credit_note'
+  original_invoice_id: string | null
+  credit_reason: string | null
   sales_order_id: string | null
   delivery_order_id: string | null
   customer_id: string

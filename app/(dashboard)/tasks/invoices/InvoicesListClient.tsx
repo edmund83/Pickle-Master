@@ -3,7 +3,7 @@
 import { useState, useCallback, useTransition } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowLeft, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Loader2, Search, Filter, X, FileText, Plus, Building2 } from 'lucide-react'
+import { ArrowLeft, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Loader2, Search, Filter, X, FileText, Plus, Building2, Receipt } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import {
@@ -28,7 +28,14 @@ interface InvoicesListClientProps {
     search: string
     sortColumn: string
     sortDirection: 'asc' | 'desc'
+    invoiceType: 'invoice' | 'credit_note' | 'all'
   }
+}
+
+const typeLabels: Record<string, string> = {
+  all: 'All Types',
+  invoice: 'Invoices',
+  credit_note: 'Credit Notes',
 }
 
 const statusLabels: Record<string, string> = {
@@ -130,16 +137,20 @@ export function InvoicesListClient({
     updateFilters({ customer: customerId })
   }
 
+  const handleTypeFilter = (type: string | undefined) => {
+    updateFilters({ type: type === 'all' ? undefined : type })
+  }
+
   const clearFilters = () => {
     setSearchInput('')
-    updateFilters({ status: undefined, customer: undefined, search: undefined })
+    updateFilters({ status: undefined, customer: undefined, search: undefined, type: undefined })
   }
 
   const goToPage = (page: number) => {
     updateFilters({ page: page.toString() })
   }
 
-  const hasActiveFilters = initialFilters.status || initialFilters.customerId || initialFilters.search
+  const hasActiveFilters = initialFilters.status || initialFilters.customerId || initialFilters.search || (initialFilters.invoiceType && initialFilters.invoiceType !== 'all')
 
   const selectedCustomer = customers.find(c => c.id === initialFilters.customerId)
 
@@ -246,6 +257,36 @@ export function InvoicesListClient({
                   {customer.name}
                 </DropdownMenuItem>
               ))}
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Type Filter */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="gap-2">
+                <Receipt className="h-4 w-4" />
+                Type
+                {initialFilters.invoiceType && initialFilters.invoiceType !== 'all' && (
+                  <span className="rounded bg-primary px-1.5 py-0.5 text-xs text-white">
+                    {typeLabels[initialFilters.invoiceType]}
+                  </span>
+                )}
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuLabel>Filter by Type</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={() => handleTypeFilter('all')}>
+                All Types
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleTypeFilter('invoice')}>
+                <FileText className="mr-2 h-4 w-4" />
+                Invoices
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleTypeFilter('credit_note')}>
+                <Receipt className="mr-2 h-4 w-4 text-red-500" />
+                Credit Notes
+              </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
 
@@ -380,8 +421,19 @@ function InvoiceRow({ invoice, onClick, formatCurrency }: InvoiceRowProps) {
     >
       <td className="px-4 py-4 md:py-3 font-medium text-neutral-900">
         <div className="flex items-center gap-2">
-          <FileText className="h-4 w-4 text-neutral-400" />
-          {invoice.display_id || `INV-${invoice.id.slice(0, 8)}`}
+          {invoice.invoice_type === 'credit_note' ? (
+            <Receipt className="h-4 w-4 text-red-500" />
+          ) : (
+            <FileText className="h-4 w-4 text-neutral-400" />
+          )}
+          <span className={invoice.invoice_type === 'credit_note' ? 'text-red-700' : ''}>
+            {invoice.display_id || `INV-${invoice.id.slice(0, 8)}`}
+          </span>
+          {invoice.invoice_type === 'credit_note' && (
+            <span className="rounded bg-red-100 px-1.5 py-0.5 text-xs font-medium text-red-700">
+              Credit
+            </span>
+          )}
         </div>
       </td>
       <td className="px-4 py-4 md:py-3">

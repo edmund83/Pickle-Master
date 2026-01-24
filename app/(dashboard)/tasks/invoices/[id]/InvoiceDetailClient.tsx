@@ -29,7 +29,8 @@ import {
   Users,
   Camera,
   X,
-  Zap
+  Zap,
+  Receipt
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -45,6 +46,10 @@ import {
   recordPayment,
   setInvoiceItemTax,
   searchInventoryItemsForInvoice,
+  createCreditNote,
+  applyCreditNote,
+  creditReasonLabels,
+  type CreditReason,
 } from '@/app/actions/invoices'
 import { BarcodeScanner, type ScanResult } from '@/components/scanner/BarcodeScanner'
 import type { InvoiceWithDetails, Customer } from './page'
@@ -113,6 +118,11 @@ export function InvoiceDetailClient({
   const [showSendConfirm, setShowSendConfirm] = useState(false)
   const [sendToEmail, setSendToEmail] = useState(invoice.customer?.email || '')
 
+  // Credit note state
+  const [showCreditNoteDialog, setShowCreditNoteDialog] = useState(false)
+  const [creditReason, setCreditReason] = useState<CreditReason>('return')
+  const [creditNotes, setCreditNotes] = useState('')
+
   // Item search state
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<Array<{
@@ -133,6 +143,11 @@ export function InvoiceDetailClient({
   const canEdit = ['draft', 'pending'].includes(status)
   const canRecordPayment = ['sent', 'partial', 'overdue'].includes(status)
   const canDownloadPdf = invoice.items.length > 0
+
+  // Credit note detection
+  const isCreditNote = invoice.invoice_type === 'credit_note'
+  const canCreateCreditNote = !isCreditNote && ['sent', 'partial', 'paid', 'overdue'].includes(status)
+  const canApplyCreditNote = isCreditNote && ['draft', 'pending'].includes(status) && invoice.total < 0
 
   // Validation for draft/pending invoices
   const missingFields: string[] = []
@@ -337,13 +352,54 @@ export function InvoiceDetailClient({
       )
       const baseName = invoice.display_id || invoice.invoice_number || invoice.id
       const safeName = baseName.replace(/\s+/g, '-').toLowerCase()
-      downloadPdfBlob(pdfBlob, `invoice-${safeName}.pdf`)
+      downloadPdfBlob(pdfBlob, `${isCreditNote ? 'credit-note' : 'invoice'}-${safeName}.pdf`)
     } catch (err) {
       console.error('Failed to generate invoice PDF:', err)
       feedback.error('Failed to generate PDF')
     } finally {
       setActionLoading(null)
     }
+  }
+
+  async function handleCreateCreditNote() {
+    setShowCreditNoteDialog(false)
+    setActionLoading('credit-note')
+    setError(null)
+
+    const result = await createCreditNote({
+      original_invoice_id: invoice.id,
+      credit_reason: creditReason,
+      notes: creditNotes || null,
+    })
+
+    if (result.success && result.invoice_id) {
+      feedback.success(`Credit Note ${result.display_id} created`)
+      router.push(`/tasks/invoices/${result.invoice_id}`)
+    } else {
+      const errorMsg = result.error || 'Failed to create credit note'
+      setError(errorMsg)
+      feedback.error(errorMsg)
+    }
+
+    setActionLoading(null)
+  }
+
+  async function handleApplyCreditNote() {
+    setActionLoading('apply-credit')
+    setError(null)
+
+    const result = await applyCreditNote(invoice.id)
+
+    if (result.success) {
+      feedback.success('Credit note applied')
+      router.refresh()
+    } else {
+      const errorMsg = result.error || 'Failed to apply credit note'
+      setError(errorMsg)
+      feedback.error(errorMsg)
+    }
+
+    setActionLoading(null)
   }
 
   async function handleUpdateItemTax(itemId: string, taxRateId: string | null) {
@@ -377,9 +433,15 @@ export function InvoiceDetailClient({
             </Link>
             <div>
               <div className="flex items-center gap-3">
-                <h1 className="text-xl font-semibold text-neutral-900">
-                  {invoice.display_id || `INV-${invoice.id.slice(0, 8)}`}
+                {isCreditNote && <Receipt className="h-5 w-5 text-red-500" />}
+                <h1 className={`text-xl font-semibold ${isCreditNote ? 'text-red-700' : 'text-neutral-900'}`}>
+                  {invoice.display_id || (isCreditNote ? `CN-${invoice.id.slice(0, 8)}` : `INV-${invoice.id.slice(0, 8)}`)}
                 </h1>
+                {isCreditNote && (
+                  <span className="rounded-full bg-red-100 px-2.5 py-1 text-xs font-medium text-red-700">
+                    Credit Note
+                  </span>
+                )}
                 <span className={`flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${statusConfig[status]?.bgColor} ${statusConfig[status]?.color}`}>
                   <StatusIcon className="h-3.5 w-3.5" />
                   {statusConfig[status]?.label || status}
@@ -390,6 +452,11 @@ export function InvoiceDetailClient({
                 {invoice.customer?.name && (
                   <span className="ml-2">
                     · For <span className="font-medium">{invoice.customer.name}</span>
+                  </span>
+                )}
+                {isCreditNote && invoice.credit_reason && (
+                  <span className="ml-2">
+                    · Reason: <span className="font-medium">{creditReasonLabels[invoice.credit_reason as CreditReason] || invoice.credit_reason}</span>
                   </span>
                 )}
               </p>
@@ -461,6 +528,21 @@ export function InvoiceDetailClient({
               </Button>
             )}
 
+            {canApplyCreditNote && (
+              <Button
+                onClick={handleApplyCreditNote}
+                disabled={actionLoading !== null}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                {actionLoading === 'apply-credit' ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Receipt className="mr-2 h-4 w-4" />
+                )}
+                Apply Credit
+              </Button>
+            )}
+
             {/* More menu */}
             <div className="relative">
               <Button
@@ -478,6 +560,19 @@ export function InvoiceDetailClient({
                     onClick={() => setShowMoreMenu(false)}
                   />
                   <div className="absolute top-full right-0 mt-1 z-20 w-48 rounded-lg border border-neutral-200 bg-white shadow-lg py-1">
+                    {canCreateCreditNote && (
+                      <button
+                        onClick={() => {
+                          setShowMoreMenu(false)
+                          setShowCreditNoteDialog(true)
+                        }}
+                        disabled={actionLoading !== null}
+                        className="w-full flex items-center gap-2 px-4 py-2 text-sm text-neutral-700 hover:bg-neutral-50 disabled:opacity-50"
+                      >
+                        <Receipt className="h-4 w-4" />
+                        Create Credit Note
+                      </button>
+                    )}
                     {isDraft && (
                       <button
                         onClick={() => {
@@ -1255,6 +1350,76 @@ export function InvoiceDetailClient({
           onScan={handleBarcodeScan}
           onClose={() => setIsScannerOpen(false)}
         />
+      )}
+
+      {/* Create Credit Note Dialog */}
+      {showCreditNoteDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowCreditNoteDialog(false)} />
+          <div className="relative w-full max-w-md rounded-2xl bg-white shadow-xl mx-4 p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-10 w-10 rounded-full bg-red-100 flex items-center justify-center">
+                <Receipt className="h-5 w-5 text-red-600" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-neutral-900">Create Credit Note</h2>
+                <p className="text-sm text-neutral-500">For invoice {invoice.display_id}</p>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                  Reason for Credit
+                </label>
+                <select
+                  value={creditReason}
+                  onChange={(e) => setCreditReason(e.target.value as CreditReason)}
+                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                >
+                  <option value="return">Customer Return</option>
+                  <option value="damaged">Damaged Goods</option>
+                  <option value="overcharge">Overcharge Correction</option>
+                  <option value="discount">Additional Discount</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                  Notes (optional)
+                </label>
+                <textarea
+                  value={creditNotes}
+                  onChange={(e) => setCreditNotes(e.target.value)}
+                  placeholder="Add any notes..."
+                  rows={3}
+                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm resize-none focus:border-primary focus:ring-1 focus:ring-primary"
+                />
+              </div>
+              <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
+                <p className="text-sm text-amber-800">
+                  A new credit note will be created. You can then add items and apply the credit to reduce the invoice balance.
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 mt-6">
+              <Button variant="outline" onClick={() => setShowCreditNoteDialog(false)}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleCreateCreditNote}
+                disabled={actionLoading === 'credit-note'}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                {actionLoading === 'credit-note' ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Receipt className="mr-2 h-4 w-4" />
+                )}
+                Create Credit Note
+              </Button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   )
