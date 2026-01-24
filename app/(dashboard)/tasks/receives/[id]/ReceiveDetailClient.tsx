@@ -22,7 +22,10 @@ import {
   X,
   Tag,
   Barcode,
-  List
+  List,
+  Search,
+  RotateCcw,
+  Settings2
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -36,10 +39,13 @@ import {
   addReceiveItemSerial,
   removeReceiveItemSerial,
   bulkAddReceiveItemSerials,
+  addStandaloneReceiveItem,
   type ReceiveWithDetails,
   type ReceiveItemWithDetails,
-  type ReceiveItemSerial
+  type ReceiveItemSerial,
+  type ReturnReason
 } from '@/app/actions/receives'
+import { Input } from '@/components/ui/input'
 import type { Location } from './page'
 import { ChatterPanel } from '@/components/chatter'
 import { ItemThumbnail } from '@/components/ui/item-thumbnail'
@@ -54,6 +60,20 @@ const statusConfig: Record<string, { icon: React.ElementType; color: string; bgC
   draft: { icon: Clock, color: 'text-blue-600', bgColor: 'bg-blue-100', label: 'Draft' },
   completed: { icon: CheckCircle, color: 'text-green-600', bgColor: 'bg-green-100', label: 'Completed' },
   cancelled: { icon: XCircle, color: 'text-red-600', bgColor: 'bg-red-100', label: 'Cancelled' },
+}
+
+const sourceTypeConfig: Record<string, { icon: React.ElementType; label: string; description: string }> = {
+  purchase_order: { icon: FileText, label: 'Purchase Order', description: 'From PO' },
+  customer_return: { icon: RotateCcw, label: 'Customer Return', description: 'Customer return' },
+  stock_adjustment: { icon: Settings2, label: 'Stock Adjustment', description: 'Stock adjustment' },
+}
+
+const returnReasonLabels: Record<ReturnReason, string> = {
+  defective: 'Defective',
+  wrong_item: 'Wrong Item',
+  changed_mind: 'Changed Mind',
+  damaged_in_transit: 'Damaged in Transit',
+  other: 'Other',
 }
 
 export function ReceiveDetailClient({
@@ -81,6 +101,7 @@ export function ReceiveDetailClient({
   const [editingItem, setEditingItem] = useState<ReceiveItemWithDetails | null>(null)
   const [editForm, setEditForm] = useState({
     quantity_received: 0,
+    return_reason: '' as ReturnReason | '',
     lot_number: '',
     batch_code: '',
     expiry_date: '',
@@ -103,9 +124,42 @@ export function ReceiveDetailClient({
   })
   const serialInputRef = useRef<HTMLInputElement>(null)
 
+  // Add Item modal state (for standalone receives)
+  const [showAddItemModal, setShowAddItemModal] = useState(false)
+  const [itemSearch, setItemSearch] = useState('')
+  const [searchResults, setSearchResults] = useState<Array<{
+    id: string
+    name: string
+    sku: string | null
+    quantity: number
+    image_url: string | null
+    tracking_mode: string | null
+  }>>([])
+  const [searchLoading, setSearchLoading] = useState(false)
+  const [selectedItem, setSelectedItem] = useState<{
+    id: string
+    name: string
+    sku: string | null
+    image_url: string | null
+    tracking_mode: string | null
+  } | null>(null)
+  const [addItemForm, setAddItemForm] = useState({
+    quantity_received: 1,
+    return_reason: '' as ReturnReason | '',
+    lot_number: '',
+    batch_code: '',
+    expiry_date: '',
+    location_id: '',
+    condition: 'good' as 'good' | 'damaged' | 'rejected',
+    notes: ''
+  })
+  const [addItemLoading, setAddItemLoading] = useState(false)
+
   const status = receive.status
   const isDraft = status === 'draft'
+  const isStandalone = receive.source_type !== 'purchase_order'
   const StatusIcon = statusConfig[status]?.icon || Clock
+  const SourceIcon = sourceTypeConfig[receive.source_type]?.icon || Package
 
   // Calculate totals
   const totalQuantity = items.reduce((sum, item) => sum + item.quantity_received, 0)
@@ -184,6 +238,7 @@ export function ReceiveDetailClient({
       setEditingItem(item)
       setEditForm({
         quantity_received: item.quantity_received,
+        return_reason: item.return_reason || '',
         lot_number: item.lot_number || '',
         batch_code: item.batch_code || '',
         expiry_date: item.expiry_date || '',
@@ -456,6 +511,115 @@ export function ReceiveDetailClient({
     router.refresh()
   }
 
+  // Search for items (for standalone receives)
+  async function handleItemSearch(query: string) {
+    setItemSearch(query)
+    if (query.length < 2) {
+      setSearchResults([])
+      return
+    }
+
+    setSearchLoading(true)
+    try {
+      const { createClient } = await import('@/lib/supabase/client')
+      const supabase = createClient()
+
+      const { data, error } = await supabase
+        .from('inventory_items')
+        .select('id, name, sku, quantity, image_url, tracking_mode')
+        .or(`name.ilike.%${query}%,sku.ilike.%${query}%`)
+        .limit(10)
+
+      if (!error && data) {
+        setSearchResults(data)
+      }
+    } catch (err) {
+      console.error('Search error:', err)
+    } finally {
+      setSearchLoading(false)
+    }
+  }
+
+  // Select an item from search results
+  function handleSelectItem(item: typeof searchResults[0]) {
+    setSelectedItem({
+      id: item.id,
+      name: item.name,
+      sku: item.sku,
+      image_url: item.image_url,
+      tracking_mode: item.tracking_mode
+    })
+    setItemSearch('')
+    setSearchResults([])
+    // Reset form for the new item
+    setAddItemForm({
+      quantity_received: 1,
+      return_reason: receive.source_type === 'customer_return' ? 'defective' : '',
+      lot_number: '',
+      batch_code: '',
+      expiry_date: '',
+      location_id: defaultLocationId || '',
+      condition: 'good',
+      notes: ''
+    })
+  }
+
+  // Add item to standalone receive
+  async function handleAddItem() {
+    if (!selectedItem) return
+
+    // Validate return reason for customer returns
+    if (receive.source_type === 'customer_return' && !addItemForm.return_reason) {
+      setError('Return reason is required for customer returns')
+      return
+    }
+
+    setAddItemLoading(true)
+    setError(null)
+
+    const result = await addStandaloneReceiveItem(receive.id, {
+      item_id: selectedItem.id,
+      quantity_received: addItemForm.quantity_received,
+      return_reason: addItemForm.return_reason as ReturnReason || undefined,
+      lot_number: addItemForm.lot_number || undefined,
+      batch_code: addItemForm.batch_code || undefined,
+      expiry_date: addItemForm.expiry_date || undefined,
+      location_id: addItemForm.location_id || undefined,
+      condition: addItemForm.condition,
+      notes: addItemForm.notes || undefined
+    })
+
+    setAddItemLoading(false)
+
+    if (!result.success) {
+      setError(result.error || 'Failed to add item')
+      return
+    }
+
+    // Close modal and refresh to get updated items
+    setShowAddItemModal(false)
+    setSelectedItem(null)
+    router.refresh()
+  }
+
+  // Reset add item modal
+  function closeAddItemModal() {
+    setShowAddItemModal(false)
+    setSelectedItem(null)
+    setItemSearch('')
+    setSearchResults([])
+    setAddItemForm({
+      quantity_received: 1,
+      return_reason: '',
+      lot_number: '',
+      batch_code: '',
+      expiry_date: '',
+      location_id: '',
+      condition: 'good',
+      notes: ''
+    })
+  }
+
   return (
     <div className="flex-1 overflow-y-auto">
       {/* Header */}
@@ -477,10 +641,22 @@ export function ReceiveDetailClient({
                   <StatusIcon className="h-3.5 w-3.5" />
                   {statusConfig[status]?.label || status}
                 </span>
+                {isStandalone && (
+                  <span className="flex items-center gap-1.5 rounded-full bg-purple-100 px-2.5 py-1 text-xs font-medium text-purple-600">
+                    <SourceIcon className="h-3.5 w-3.5" />
+                    {sourceTypeConfig[receive.source_type]?.label}
+                  </span>
+                )}
               </div>
               <p className="text-sm text-neutral-500">
-                from {receive.purchase_order.display_id || receive.purchase_order.order_number}
-                {receive.purchase_order.vendor_name && ` • ${receive.purchase_order.vendor_name}`}
+                {receive.purchase_order ? (
+                  <>
+                    from {receive.purchase_order.display_id || receive.purchase_order.order_number}
+                    {receive.purchase_order.vendor_name && ` • ${receive.purchase_order.vendor_name}`}
+                  </>
+                ) : (
+                  sourceTypeConfig[receive.source_type]?.description || 'Standalone receive'
+                )}
               </p>
             </div>
           </div>
@@ -542,8 +718,18 @@ export function ReceiveDetailClient({
           {/* Main Content - Items Table */}
           <div className="lg:col-span-2 space-y-6">
             <Card>
-              <CardHeader>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0">
                 <CardTitle>Items to Receive ({items.length})</CardTitle>
+                {isDraft && isStandalone && (
+                  <Button
+                    size="sm"
+                    onClick={() => setShowAddItemModal(true)}
+                    disabled={actionLoading !== null}
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Add Item
+                  </Button>
+                )}
               </CardHeader>
               <CardContent>
                 {items.length > 0 ? (
@@ -552,8 +738,15 @@ export function ReceiveDetailClient({
                       <thead className="bg-neutral-50 border-b border-neutral-200">
                         <tr>
                           <th className="px-4 py-3 text-left font-medium text-neutral-600">Item</th>
-                          <th className="px-4 py-3 text-center font-medium text-neutral-600 w-24">Ordered</th>
-                          <th className="px-4 py-3 text-center font-medium text-neutral-600 w-24">Already Rcvd</th>
+                          {!isStandalone && (
+                            <>
+                              <th className="px-4 py-3 text-center font-medium text-neutral-600 w-24">Ordered</th>
+                              <th className="px-4 py-3 text-center font-medium text-neutral-600 w-24">Already Rcvd</th>
+                            </>
+                          )}
+                          {isStandalone && receive.source_type === 'customer_return' && (
+                            <th className="px-4 py-3 text-left font-medium text-neutral-600 w-32">Reason</th>
+                          )}
                           <th className="px-4 py-3 text-center font-medium text-neutral-600 w-32">Receiving</th>
                           {isDraft && <th className="px-4 py-3 w-12"></th>}
                         </tr>
@@ -592,15 +785,32 @@ export function ReceiveDetailClient({
                               </div>
                             </td>
 
-                            {/* Ordered */}
-                            <td className="px-4 py-3 text-center font-medium">
-                              {item.ordered_quantity}
-                            </td>
+                            {/* Ordered (PO-linked only) */}
+                            {!isStandalone && (
+                              <>
+                                <td className="px-4 py-3 text-center font-medium">
+                                  {item.ordered_quantity}
+                                </td>
 
-                            {/* Already Received */}
-                            <td className="px-4 py-3 text-center">
-                              {item.already_received}
-                            </td>
+                                {/* Already Received */}
+                                <td className="px-4 py-3 text-center">
+                                  {item.already_received}
+                                </td>
+                              </>
+                            )}
+
+                            {/* Return Reason (Customer returns only) */}
+                            {isStandalone && receive.source_type === 'customer_return' && (
+                              <td className="px-4 py-3">
+                                {item.return_reason ? (
+                                  <span className="text-sm text-neutral-700">
+                                    {returnReasonLabels[item.return_reason] || item.return_reason}
+                                  </span>
+                                ) : (
+                                  <span className="text-neutral-400">—</span>
+                                )}
+                              </td>
+                            )}
 
                             {/* Receiving Quantity */}
                             <td className="px-4 py-3">
@@ -670,7 +880,13 @@ export function ReceiveDetailClient({
                       </tbody>
                       <tfoot className="border-t-2 border-neutral-200 bg-neutral-50">
                         <tr>
-                          <td colSpan={isDraft ? 4 : 3} className="px-4 py-3 text-right font-medium text-neutral-700">
+                          <td colSpan={
+                            // Calculate colspan based on visible columns
+                            1 + // Item column
+                            (isStandalone ? 0 : 2) + // Ordered + Already Rcvd (PO only)
+                            (isStandalone && receive.source_type === 'customer_return' ? 1 : 0) + // Return reason
+                            1 // Receiving column
+                          } className="px-4 py-3 text-right font-medium text-neutral-700">
                             Total: {items.length} item{items.length !== 1 ? 's' : ''}, {totalQuantity} units
                           </td>
                           {isDraft && <td></td>}
@@ -682,6 +898,15 @@ export function ReceiveDetailClient({
                   <div className="rounded-lg border border-dashed border-neutral-300 py-12 text-center">
                     <Package className="mx-auto h-10 w-10 text-neutral-400" />
                     <p className="mt-3 text-neutral-500">No items to receive</p>
+                    {isDraft && isStandalone && (
+                      <Button
+                        className="mt-4"
+                        onClick={() => setShowAddItemModal(true)}
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add First Item
+                      </Button>
+                    )}
                   </div>
                 )}
               </CardContent>
@@ -849,31 +1074,66 @@ export function ReceiveDetailClient({
               </CardContent>
             </Card>
 
-            {/* Source PO */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  Source PO
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <Link
-                  href={`/tasks/purchase-orders/${receive.purchase_order.id}`}
-                  className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
-                >
-                  {receive.purchase_order.display_id || receive.purchase_order.order_number}
-                </Link>
-                {receive.purchase_order.vendor_name && (
-                  <p className="text-sm text-neutral-500 mt-2">
-                    Vendor: {receive.purchase_order.vendor_name}
+            {/* Source PO (only for PO-linked receives) */}
+            {receive.purchase_order && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    Source PO
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Link
+                    href={`/tasks/purchase-orders/${receive.purchase_order.id}`}
+                    className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                  >
+                    {receive.purchase_order.display_id || receive.purchase_order.order_number}
+                  </Link>
+                  {receive.purchase_order.vendor_name && (
+                    <p className="text-sm text-neutral-500 mt-2">
+                      Vendor: {receive.purchase_order.vendor_name}
+                    </p>
+                  )}
+                  <p className="text-sm text-neutral-500">
+                    Status: <span className="capitalize">{receive.purchase_order.status}</span>
                   </p>
-                )}
-                <p className="text-sm text-neutral-500">
-                  Status: <span className="capitalize">{receive.purchase_order.status}</span>
-                </p>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Source Type Info (for standalone receives) */}
+            {isStandalone && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <SourceIcon className="h-4 w-4" />
+                    Receive Type
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-3">
+                    <div className={`rounded-lg p-2 ${
+                      receive.source_type === 'customer_return'
+                        ? 'bg-purple-100 text-purple-600'
+                        : 'bg-blue-100 text-blue-600'
+                    }`}>
+                      <SourceIcon className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <p className="font-medium text-neutral-900">
+                        {sourceTypeConfig[receive.source_type]?.label}
+                      </p>
+                      <p className="text-sm text-neutral-500">
+                        {receive.source_type === 'customer_return'
+                          ? 'Items returned by customers'
+                          : 'Manual stock corrections'}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
 
@@ -934,6 +1194,27 @@ export function ReceiveDetailClient({
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500"
                 />
               </div>
+
+              {/* Return Reason (for customer returns) */}
+              {isStandalone && receive.source_type === 'customer_return' && (
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Return Reason
+                  </label>
+                  <select
+                    value={editForm.return_reason}
+                    onChange={(e) => setEditForm({ ...editForm, return_reason: e.target.value as ReturnReason | '' })}
+                    className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500"
+                  >
+                    <option value="">Select reason...</option>
+                    <option value="defective">Defective</option>
+                    <option value="wrong_item">Wrong Item</option>
+                    <option value="changed_mind">Changed Mind</option>
+                    <option value="damaged_in_transit">Damaged in Transit</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              )}
 
               {/* Lot Number */}
               <div>
@@ -1143,25 +1424,34 @@ export function ReceiveDetailClient({
                     </div>
                   </div>
 
-                  {/* Progress indicator */}
-                  <div>
-                    <div className="flex items-center justify-between text-sm mb-1">
-                      <span className="text-neutral-600">
-                        Progress: {serials.length} of {serialEditItem.ordered_quantity - serialEditItem.already_received} serials entered
-                      </span>
-                      <span className="font-medium text-neutral-900">
-                        {Math.round((serials.length / Math.max(1, serialEditItem.ordered_quantity - serialEditItem.already_received)) * 100)}%
-                      </span>
+                  {/* Progress indicator (only for PO-linked items with ordered quantity) */}
+                  {serialEditItem.ordered_quantity !== null && serialEditItem.already_received !== null && (
+                    <div>
+                      <div className="flex items-center justify-between text-sm mb-1">
+                        <span className="text-neutral-600">
+                          Progress: {serials.length} of {serialEditItem.ordered_quantity - serialEditItem.already_received} serials entered
+                        </span>
+                        <span className="font-medium text-neutral-900">
+                          {Math.round((serials.length / Math.max(1, serialEditItem.ordered_quantity - serialEditItem.already_received)) * 100)}%
+                        </span>
+                      </div>
+                      <div className="h-2 bg-neutral-200 rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-green-500 rounded-full transition-all duration-300"
+                          style={{
+                            width: `${Math.min(100, (serials.length / Math.max(1, serialEditItem.ordered_quantity - serialEditItem.already_received)) * 100)}%`
+                          }}
+                        />
+                      </div>
                     </div>
-                    <div className="h-2 bg-neutral-200 rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-green-500 rounded-full transition-all duration-300"
-                        style={{
-                          width: `${Math.min(100, (serials.length / Math.max(1, serialEditItem.ordered_quantity - serialEditItem.already_received)) * 100)}%`
-                        }}
-                      />
+                  )}
+
+                  {/* Serial count (for standalone items) */}
+                  {(serialEditItem.ordered_quantity === null || serialEditItem.already_received === null) && (
+                    <div className="text-sm text-neutral-600">
+                      {serials.length} serial{serials.length !== 1 ? 's' : ''} entered
                     </div>
-                  </div>
+                  )}
 
                   {/* Serial list */}
                   {serials.length > 0 && (
@@ -1300,6 +1590,263 @@ export function ReceiveDetailClient({
                   Save
                 </Button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add Item Modal (for standalone receives) */}
+      {showAddItemModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md mx-4 max-h-[90vh] overflow-y-auto">
+            {/* Header */}
+            <div className="flex items-center justify-between border-b px-4 py-3 sticky top-0 bg-white z-10">
+              <h3 className="font-semibold text-neutral-900">Add Item to Receive</h3>
+              <button
+                onClick={closeAddItemModal}
+                className="p-1 text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 rounded"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Content */}
+            <div className="p-4 space-y-4">
+              {/* Item Search (when no item selected) */}
+              {!selectedItem && (
+                <div>
+                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                    Search for an item
+                  </label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+                    <Input
+                      type="text"
+                      value={itemSearch}
+                      onChange={(e) => handleItemSearch(e.target.value)}
+                      placeholder="Search by name or SKU..."
+                      className="pl-9"
+                    />
+                  </div>
+
+                  {/* Search Results */}
+                  {searchLoading && (
+                    <div className="flex items-center justify-center py-4">
+                      <Loader2 className="h-5 w-5 animate-spin text-neutral-400" />
+                    </div>
+                  )}
+
+                  {!searchLoading && searchResults.length > 0 && (
+                    <div className="mt-2 border border-neutral-200 rounded-lg max-h-48 overflow-y-auto divide-y divide-neutral-100">
+                      {searchResults.map((item) => (
+                        <button
+                          key={item.id}
+                          onClick={() => handleSelectItem(item)}
+                          className="w-full flex items-center gap-3 px-3 py-2 hover:bg-neutral-50 text-left"
+                        >
+                          <ItemThumbnail
+                            src={item.image_url}
+                            alt={item.name}
+                            size="sm"
+                          />
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium text-neutral-900 truncate">{item.name}</p>
+                            <p className="text-xs text-neutral-500">
+                              {item.sku && `SKU: ${item.sku} • `}
+                              Stock: {item.quantity}
+                            </p>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+
+                  {!searchLoading && itemSearch.length >= 2 && searchResults.length === 0 && (
+                    <p className="text-sm text-neutral-500 mt-2 text-center py-4">
+                      No items found matching "{itemSearch}"
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Selected Item */}
+              {selectedItem && (
+                <>
+                  {/* Item Info */}
+                  <div className="flex items-center gap-3 p-3 bg-neutral-50 rounded-lg">
+                    <ItemThumbnail
+                      src={selectedItem.image_url}
+                      alt={selectedItem.name}
+                      size="lg"
+                    />
+                    <div className="flex-1">
+                      <p className="font-medium text-neutral-900">{selectedItem.name}</p>
+                      {selectedItem.sku && (
+                        <p className="text-xs text-neutral-500">SKU: {selectedItem.sku}</p>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => setSelectedItem(null)}
+                      className="p-1 text-neutral-500 hover:text-neutral-700 hover:bg-neutral-200 rounded"
+                      title="Change item"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  {/* Quantity */}
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      Quantity
+                    </label>
+                    <Input
+                      type="number"
+                      min={1}
+                      value={addItemForm.quantity_received}
+                      onChange={(e) => setAddItemForm({
+                        ...addItemForm,
+                        quantity_received: parseInt(e.target.value) || 1
+                      })}
+                    />
+                  </div>
+
+                  {/* Return Reason (for customer returns) */}
+                  {receive.source_type === 'customer_return' && (
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Return Reason <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        value={addItemForm.return_reason}
+                        onChange={(e) => setAddItemForm({
+                          ...addItemForm,
+                          return_reason: e.target.value as ReturnReason
+                        })}
+                        className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500"
+                      >
+                        <option value="">Select reason...</option>
+                        <option value="defective">Defective</option>
+                        <option value="wrong_item">Wrong Item</option>
+                        <option value="changed_mind">Changed Mind</option>
+                        <option value="damaged_in_transit">Damaged in Transit</option>
+                        <option value="other">Other</option>
+                      </select>
+                    </div>
+                  )}
+
+                  {/* Location */}
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      Storage Location
+                    </label>
+                    <select
+                      value={addItemForm.location_id}
+                      onChange={(e) => setAddItemForm({ ...addItemForm, location_id: e.target.value })}
+                      className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500"
+                    >
+                      <option value="">Use default location</option>
+                      {locations.map(loc => (
+                        <option key={loc.id} value={loc.id}>{loc.name}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {/* Condition */}
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      Condition
+                    </label>
+                    <select
+                      value={addItemForm.condition}
+                      onChange={(e) => setAddItemForm({
+                        ...addItemForm,
+                        condition: e.target.value as 'good' | 'damaged' | 'rejected'
+                      })}
+                      className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500"
+                    >
+                      <option value="good">Good</option>
+                      <option value="damaged">Damaged</option>
+                      <option value="rejected">Rejected</option>
+                    </select>
+                  </div>
+
+                  {/* Lot/Batch (collapsible) */}
+                  {selectedItem.tracking_mode === 'lot_expiry' && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                          Lot Number
+                        </label>
+                        <Input
+                          type="text"
+                          value={addItemForm.lot_number}
+                          onChange={(e) => setAddItemForm({ ...addItemForm, lot_number: e.target.value })}
+                          placeholder="e.g., LOT-2024-001"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                          Batch Code
+                        </label>
+                        <Input
+                          type="text"
+                          value={addItemForm.batch_code}
+                          onChange={(e) => setAddItemForm({ ...addItemForm, batch_code: e.target.value })}
+                          placeholder="e.g., BATCH-A1"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-700 mb-1">
+                          Expiry Date
+                        </label>
+                        <Input
+                          type="date"
+                          value={addItemForm.expiry_date}
+                          onChange={(e) => setAddItemForm({ ...addItemForm, expiry_date: e.target.value })}
+                        />
+                      </div>
+                    </>
+                  )}
+
+                  {/* Notes */}
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      Notes (optional)
+                    </label>
+                    <textarea
+                      value={addItemForm.notes}
+                      onChange={(e) => setAddItemForm({ ...addItemForm, notes: e.target.value })}
+                      placeholder="Add any notes..."
+                      rows={2}
+                      className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm resize-none focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500"
+                    />
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Footer */}
+            <div className="flex justify-end gap-2 border-t px-4 py-3 sticky bottom-0 bg-white">
+              <Button
+                variant="outline"
+                onClick={closeAddItemModal}
+                disabled={addItemLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAddItem}
+                disabled={addItemLoading || !selectedItem}
+              >
+                {addItemLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Plus className="mr-2 h-4 w-4" />
+                )}
+                Add Item
+              </Button>
             </div>
           </div>
         </div>

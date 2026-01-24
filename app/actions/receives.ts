@@ -27,6 +27,12 @@ export type ReceiveResult = {
     po_fully_received?: boolean
 }
 
+// Source types for receives
+export type ReceiveSourceType = 'purchase_order' | 'customer_return' | 'stock_adjustment'
+
+// Return reasons for customer returns
+export type ReturnReason = 'defective' | 'wrong_item' | 'changed_mind' | 'damaged_in_transit' | 'other'
+
 // Validation schemas
 const conditionSchema = z.enum(['good', 'damaged', 'rejected'])
 
@@ -73,6 +79,29 @@ const updateReceiveSchema = z.object({
 
 const serialNumberSchema = z.string().min(1).max(255)
 
+// Standalone receive schemas
+const sourceTypeSchema = z.enum(['customer_return', 'stock_adjustment'])
+const returnReasonSchema = z.enum(['defective', 'wrong_item', 'changed_mind', 'damaged_in_transit', 'other'])
+
+const createStandaloneReceiveSchema = z.object({
+    source_type: sourceTypeSchema,
+    notes: z.string().max(2000).nullable().optional(),
+    default_location_id: optionalUuidSchema,
+})
+
+const addStandaloneReceiveItemSchema = z.object({
+    item_id: z.string().uuid(),
+    quantity_received: quantitySchema,
+    return_reason: returnReasonSchema.optional(),
+    lot_number: optionalStringSchema,
+    batch_code: optionalStringSchema,
+    expiry_date: optionalDateStringSchema,
+    manufactured_date: optionalDateStringSchema,
+    location_id: optionalUuidSchema,
+    condition: conditionSchema.default('good'),
+    notes: z.string().max(2000).nullable().optional(),
+})
+
 export interface CreateReceiveInput {
     purchase_order_id: string
     delivery_note_number?: string | null
@@ -114,6 +143,26 @@ export interface UpdateReceiveInput {
     notes?: string | null
 }
 
+// Standalone receive inputs
+export interface CreateStandaloneReceiveInput {
+    source_type: ReceiveSourceType
+    notes?: string | null
+    default_location_id?: string | null
+}
+
+export interface AddStandaloneReceiveItemInput {
+    item_id: string
+    quantity_received: number
+    return_reason?: ReturnReason | null
+    lot_number?: string | null
+    batch_code?: string | null
+    expiry_date?: string | null
+    manufactured_date?: string | null
+    location_id?: string | null
+    condition?: 'good' | 'damaged' | 'rejected'
+    notes?: string | null
+}
+
 // Serial number for serialized items
 export interface ReceiveItemSerial {
     id: string
@@ -127,6 +176,7 @@ export interface ReceiveWithDetails {
     id: string
     display_id: string | null
     status: 'draft' | 'completed' | 'cancelled'
+    source_type: ReceiveSourceType
     received_date: string
     delivery_note_number: string | null
     carrier: string | null
@@ -144,19 +194,20 @@ export interface ReceiveWithDetails {
         order_number: string | null
         status: string
         vendor_name: string | null
-    }
+    } | null
     items: ReceiveItemWithDetails[]
 }
 
 export interface ReceiveItemWithDetails {
     id: string
-    purchase_order_item_id: string
+    purchase_order_item_id: string | null
     item_id: string | null
     item_name: string
     item_sku: string | null
-    ordered_quantity: number
-    already_received: number
+    ordered_quantity: number | null
+    already_received: number | null
     quantity_received: number
+    return_reason: ReturnReason | null
     lot_number: string | null
     batch_code: string | null
     expiry_date: string | null
@@ -278,6 +329,142 @@ export async function createReceive(input: CreateReceiveInput): Promise<ReceiveR
     }
 }
 
+// Create a standalone receive (for customer returns or stock adjustments)
+export async function createStandaloneReceive(input: CreateStandaloneReceiveInput): Promise<ReceiveResult> {
+    // Feature gate: Receiving requires Growth+ plan
+    const featureCheck = await requireFeatureSafe('receiving')
+    if (featureCheck.error) return { success: false, error: featureCheck.error }
+
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
+
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // 3. Validate input
+    const validation = validateInput(createStandaloneReceiveSchema, input)
+    if (!validation.success) return { success: false, error: validation.error }
+    const validatedInput = validation.data
+
+    // 4. If location_id is provided, verify it belongs to the tenant
+    if (validatedInput.default_location_id) {
+        const locationCheck = await verifyRelatedTenantOwnership(
+            'locations',
+            validatedInput.default_location_id,
+            context.tenantId,
+            'Location'
+        )
+        if (!locationCheck.success) return { success: false, error: locationCheck.error }
+    }
+
+    const supabase = await createClient()
+
+    // Use the RPC function for standalone receives
+
+    const { data, error } = await (supabase as any).rpc('create_standalone_receive', {
+        p_source_type: validatedInput.source_type,
+        p_notes: validatedInput.notes || null,
+        p_default_location_id: validatedInput.default_location_id || null
+    })
+
+    if (error) {
+        console.error('Create standalone receive error:', error)
+        return { success: false, error: error.message }
+    }
+
+    if (data && !data.success) {
+        return { success: false, error: data.error || 'Failed to create receive' }
+    }
+
+    revalidatePath('/tasks/receives')
+    return {
+        success: true,
+        receive_id: data?.receive_id,
+        display_id: data?.display_id
+    }
+}
+
+// Add item to a standalone receive
+export async function addStandaloneReceiveItem(
+    receiveId: string,
+    input: AddStandaloneReceiveItemInput
+): Promise<ReceiveResult> {
+    // 1. Authenticate and get context
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
+
+    // 2. Check write permission
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // 3. Validate receiveId
+    const idValidation = z.string().uuid().safeParse(receiveId)
+    if (!idValidation.success) return { success: false, error: 'Invalid receive ID' }
+
+    // 4. Validate input
+    const validation = validateInput(addStandaloneReceiveItemSchema, input)
+    if (!validation.success) return { success: false, error: validation.error }
+    const validatedInput = validation.data
+
+    // 5. Verify receive belongs to user's tenant
+    const ownershipResult = await verifyTenantOwnership('receives', receiveId, context.tenantId)
+    if (!ownershipResult.success) return { success: false, error: ownershipResult.error }
+
+    // 6. Verify item belongs to user's tenant
+    const itemCheck = await verifyRelatedTenantOwnership(
+        'inventory_items',
+        validatedInput.item_id,
+        context.tenantId,
+        'Item'
+    )
+    if (!itemCheck.success) return { success: false, error: itemCheck.error }
+
+    // 7. If location_id is provided, verify it belongs to the tenant
+    if (validatedInput.location_id) {
+        const locationCheck = await verifyRelatedTenantOwnership(
+            'locations',
+            validatedInput.location_id,
+            context.tenantId,
+            'Location'
+        )
+        if (!locationCheck.success) return { success: false, error: locationCheck.error }
+    }
+
+    const supabase = await createClient()
+
+    // Use the RPC function
+
+    const { data, error } = await (supabase as any).rpc('add_standalone_receive_item', {
+        p_receive_id: receiveId,
+        p_item_id: validatedInput.item_id,
+        p_quantity_received: validatedInput.quantity_received,
+        p_return_reason: validatedInput.return_reason || null,
+        p_lot_number: validatedInput.lot_number || null,
+        p_batch_code: validatedInput.batch_code || null,
+        p_expiry_date: validatedInput.expiry_date || null,
+        p_manufactured_date: validatedInput.manufactured_date || null,
+        p_location_id: validatedInput.location_id || null,
+        p_condition: validatedInput.condition || 'good',
+        p_notes: validatedInput.notes || null
+    })
+
+    if (error) {
+        console.error('Add standalone receive item error:', error)
+        return { success: false, error: error.message }
+    }
+
+    if (data && !data.success) {
+        return { success: false, error: data.error || 'Failed to add receive item' }
+    }
+
+    revalidatePath(`/tasks/receives/${receiveId}`)
+    return { success: true }
+}
+
 // Get a single receive with all details
 export async function getReceive(receiveId: string): Promise<ReceiveWithDetails | null> {
     // 1. Authenticate and get context
@@ -313,6 +500,7 @@ export async function getReceive(receiveId: string): Promise<ReceiveWithDetails 
         id: data.receive.id,
         display_id: data.receive.display_id,
         status: data.receive.status,
+        source_type: data.receive.source_type || 'purchase_order',
         received_date: data.receive.received_date,
         delivery_note_number: data.receive.delivery_note_number,
         carrier: data.receive.carrier,
@@ -324,7 +512,7 @@ export async function getReceive(receiveId: string): Promise<ReceiveWithDetails 
         received_by_name: data.receive.received_by_name,
         created_by_name: data.receive.created_by_name,
         default_location_name: data.receive.default_location_name,
-        purchase_order: data.purchase_order,
+        purchase_order: data.purchase_order || null,
         items: data.items || []
     }
 }
@@ -1158,6 +1346,7 @@ export interface ReceiveListItem {
     id: string
     display_id: string | null
     status: 'draft' | 'completed' | 'cancelled'
+    source_type: ReceiveSourceType
     received_date: string
     delivery_note_number: string | null
     carrier: string | null
@@ -1176,6 +1365,7 @@ export interface ReceivesQueryParams {
     sortColumn?: string
     sortDirection?: 'asc' | 'desc'
     status?: 'draft' | 'completed' | 'cancelled'
+    sourceType?: ReceiveSourceType
     purchaseOrderId?: string
     search?: string
 }
@@ -1196,6 +1386,7 @@ export async function getPaginatedReceives(
         sortColumn = 'created_at',
         sortDirection = 'desc',
         status,
+        sourceType,
         purchaseOrderId,
         search
     } = params
@@ -1229,13 +1420,14 @@ export async function getPaginatedReceives(
         .eq('tenant_id', context.tenantId)
 
     // Build query for data
-     
+
     let dataQuery = (supabase as any)
         .from('receives')
         .select(`
             id,
             display_id,
             status,
+            source_type,
             received_date,
             delivery_note_number,
             carrier,
@@ -1255,6 +1447,14 @@ export async function getPaginatedReceives(
         if (statusValidation.success) {
             countQuery = countQuery.eq('status', statusValidation.data)
             dataQuery = dataQuery.eq('status', statusValidation.data)
+        }
+    }
+
+    if (sourceType) {
+        const sourceTypeValidation = z.enum(['purchase_order', 'customer_return', 'stock_adjustment']).safeParse(sourceType)
+        if (sourceTypeValidation.success) {
+            countQuery = countQuery.eq('source_type', sourceTypeValidation.data)
+            dataQuery = dataQuery.eq('source_type', sourceTypeValidation.data)
         }
     }
 
@@ -1286,6 +1486,7 @@ export async function getPaginatedReceives(
         id: string
         display_id: string | null
         status: 'draft' | 'completed' | 'cancelled'
+        source_type: ReceiveSourceType
         received_date: string
         delivery_note_number: string | null
         carrier: string | null
@@ -1298,6 +1499,7 @@ export async function getPaginatedReceives(
         id: r.id,
         display_id: r.display_id,
         status: r.status,
+        source_type: r.source_type || 'purchase_order',
         received_date: r.received_date,
         delivery_note_number: r.delivery_note_number,
         carrier: r.carrier,
