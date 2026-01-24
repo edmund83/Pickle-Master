@@ -225,6 +225,53 @@ Line items in a purchase order.
 | `received_quantity` | INTEGER | Quantity received |
 | `unit_price` | DECIMAL(12,2) | Unit price |
 
+### `receives`
+Goods receiving records (GRN). Can be linked to a PO or standalone for customer returns/stock adjustments.
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | UUID | Primary key |
+| `tenant_id` | UUID | FK to tenants |
+| `display_id` | VARCHAR(50) | Display ID (e.g., RCV-ACM01-A00001) |
+| `purchase_order_id` | UUID | FK to purchase_orders (nullable for standalone) |
+| `source_type` | VARCHAR(20) | purchase_order, customer_return, stock_adjustment |
+| `status` | receive_status | draft, completed |
+| `received_date` | DATE | Date goods received |
+| `default_location_id` | UUID | FK to locations (default storage) |
+| `delivery_note_number` | VARCHAR | Supplier delivery note reference |
+| `carrier` | VARCHAR | Shipping carrier name |
+| `tracking_number` | VARCHAR | Shipment tracking number |
+| `notes` | TEXT | Receiving notes |
+| `created_by` | UUID | FK to profiles |
+| `received_by` | UUID | FK to profiles (who completed) |
+| `completed_at` | TIMESTAMPTZ | Completion timestamp |
+| `created_at` | TIMESTAMPTZ | Creation timestamp |
+
+**Constraints:**
+- `receives_source_type_check` - Valid source types only
+- `receives_source_po_check` - PO required only for source_type = 'purchase_order'
+
+### `receive_items`
+Line items in a receive (GRN).
+
+| Column | Type | Description |
+|--------|------|-------------|
+| `id` | UUID | Primary key |
+| `receive_id` | UUID | FK to receives |
+| `purchase_order_item_id` | UUID | FK to purchase_order_items (nullable for standalone) |
+| `item_id` | UUID | FK to inventory_items |
+| `quantity_received` | INTEGER | Quantity received |
+| `return_reason` | VARCHAR(50) | Reason for return (defective, wrong_item, changed_mind, damaged_in_transit, other) |
+| `lot_number` | VARCHAR(100) | Lot/batch number |
+| `batch_code` | VARCHAR(100) | Batch code |
+| `expiry_date` | DATE | Expiration date |
+| `manufactured_date` | DATE | Manufacturing date |
+| `location_id` | UUID | FK to locations (item-specific) |
+| `condition` | receive_item_condition | good, damaged, rejected |
+| `notes` | TEXT | Item notes |
+
+**Constraint:** `receive_items_return_reason_check` - Valid return reasons only
+
 ---
 
 ## Vendor & Address Tables
@@ -551,6 +598,15 @@ item_tracking_mode: 'none', 'serialized', 'lot_expiry'
 
 -- Lot status
 lot_status: 'active', 'expired', 'depleted', 'blocked'
+
+-- Receive status
+receive_status: 'draft', 'completed'
+
+-- Receive item condition
+receive_item_condition: 'good', 'damaged', 'rejected'
+
+-- Receive source type (how the receive was created)
+receive_source_type: 'purchase_order', 'customer_return', 'stock_adjustment'
 ```
 
 ---
@@ -617,6 +673,17 @@ lot_status: 'active', 'expired', 'depleted', 'blocked'
 | `consume_lot_fefo(item_id, quantity)` | Consume from first-expiring lots (FEFO) |
 | `update_lot_status()` | Trigger: auto-expire and deplete lots |
 
+### Receiving Functions
+| Function | Description |
+|----------|-------------|
+| `create_receive_from_po(po_id)` | Create a receive (GRN) from a purchase order |
+| `add_receive_item(receive_id, po_item_id, qty, ...)` | Add item to PO-linked receive |
+| `validate_receive(receive_id)` | Validate receive before completion |
+| `complete_receive(receive_id)` | Complete receive and update inventory |
+| `create_standalone_receive(source_type, notes, ...)` | Create standalone receive (customer return/adjustment) |
+| `add_standalone_receive_item(receive_id, item_id, qty, ...)` | Add item to standalone receive |
+| `get_standalone_receives(source_type, status, ...)` | Query standalone receives with filtering |
+
 ### Quota Enforcement Functions
 | Function | Description |
 |----------|-------------|
@@ -674,6 +741,12 @@ Located in `supabase/migrations/`:
 | `00016_extended_inventory_fields.sql` | Shipping dimensions, tracking mode, cost_price |
 | `00017_allow_admin_update_tenant.sql` | Admin RLS policy for tenant settings |
 | `00018_quota_enforcement.sql` | Quota enforcement triggers and usage functions |
+| ... | (migrations 19-97 omitted for brevity) |
+| `00098_standalone_receives.sql` | Standalone receives for customer returns/adjustments |
+| `00099_extend_standalone_receive.sql` | Extended fields for standalone receives |
+| `00100_credit_notes.sql` | Credit notes as invoice type |
+| `00101_so_item_shipped_tracking.sql` | Sales order item shipped quantity tracking |
+| `00102_alphanumeric_display_id.sql` | Alphanumeric display ID format (A-Z, AA-ZZ) |
 
 ---
 

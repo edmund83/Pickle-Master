@@ -66,6 +66,45 @@ Added simple credit note functionality for mom and pop businesses. Credit notes 
 - `app/(dashboard)/tasks/invoices/[id]/page.tsx` - Updated interface with credit note fields
 - `app/(dashboard)/tasks/invoices/[id]/InvoiceDetailClient.tsx` - Added create/apply credit note UI
 
+#### Standalone Receives / Stock Returns
+Enable creating Receives without a Purchase Order - for customer returns, stock adjustments, and ad-hoc inventory additions.
+
+**Source Types**:
+- `customer_return` - Returned goods from customers (requires return reason)
+- `stock_adjustment` - Manual stock additions not tied to a PO
+
+**Return Reasons** (for customer returns):
+- Defective
+- Wrong Item
+- Changed Mind
+- Damaged in Transit
+- Other
+
+**Database Changes** (Migrations: `00098_standalone_receives.sql`, `00099_extend_standalone_receive.sql`):
+- Added `source_type` column to `receives` table (purchase_order, customer_return, stock_adjustment)
+- Made `purchase_order_id` nullable (previously required)
+- Added `return_reason` column to `receive_items` table
+- Added `delivery_note_number`, `carrier`, `tracking_number` fields for shipment tracking
+- New RPC functions:
+  - `create_standalone_receive()` - Create a new standalone receive with delivery details
+  - `add_standalone_receive_item()` - Add items with optional return reason
+  - `get_standalone_receives()` - Query standalone receives with source type and status filtering
+
+**Server Actions** (`app/actions/receives.ts`):
+- Updated to support standalone receive creation
+- Added return reason handling for customer returns
+- Integrated with existing complete_receive flow (stock updates work the same)
+
+**UI Changes**:
+- "New Receive" option without requiring a PO
+- Source type selector (Customer Return / Stock Adjustment)
+- Return reason dropdown for customer returns
+- Additional fields: delivery note number, carrier, tracking number
+
+**Workflow**:
+- PO-linked: Purchase Order → Receive (unchanged)
+- Standalone: Receives → New → Select Type → Add Items → Complete
+
 #### Region Change Confirmation Dialog
 Added a safety confirmation dialog when changing business region to prevent accidental data inconsistency.
 

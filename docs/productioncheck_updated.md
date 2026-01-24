@@ -525,3 +525,102 @@
   > ✓ app/error.tsx + app/global-error.tsx exist | Error boundaries with retry actions
 - [ ] Offline fallback page (public/offline.html — implemented)
   > ✓ public/offline.html exists | Auto-reload on reconnect | Retry button
+
+---
+## Phase 9 — Scale, Cost, Rate Limiting, and Database Performance (10k tenants × 10k records)
+> Scale target: **10,000 tenants**, each with **10,000+ records** (≈ **100M rows** potential).  
+> Goal: prove the system remains fast, safe, and affordable with **RLS ON**.
+
+### 9.1 Rate limiting & abuse protection (App + Auth + API)
+- [ ] Confirm Supabase Auth rate limits are understood and acceptable (sign-in, sign-up, reset, OTP flows)
+- [ ] Add **application-level rate limits** for:
+  - [ ] login/signup/reset endpoints (anti-abuse)
+  - [ ] write-heavy endpoints (create/update/delete)
+  - [ ] expensive read endpoints (search, reports, exports)
+- [ ] Rate limit keys support multiple strategies:
+  - [ ] per IP
+  - [ ] per user_id
+  - [ ] per tenant_id
+- [ ] Define throttling behavior: 429 response + Retry-After + friendly UI message
+- [ ] Add tests that intentionally exceed limits and confirm:
+  - [ ] correct 429 behavior
+  - [ ] no partial writes
+  - [ ] UI recovers gracefully
+
+### 9.2 API call volume & cost optimization (reduce “chatty” patterns)
+- [ ] Instrument API calls per page (log count per navigation + per workflow)
+- [ ] Set call budgets:
+  - [ ] P0 pages: max X calls on initial load
+  - [ ] P0 workflows: max Y calls end-to-end
+- [ ] Prevent “N+1 API calls” patterns (lists + per-row fetch)
+- [ ] Batch reads/writes where possible (RPC / stored procedures / server aggregation)
+- [ ] Use selective columns (avoid `select *` on large tables)
+- [ ] Avoid `count(*)` on massive tables for UI pagination; prefer:
+  - [ ] keyset pagination + “hasMore”
+  - [ ] estimated counts where acceptable
+- [ ] Add integration test to assert query limits (reject requests without `limit` / with huge page sizes)
+
+### 9.3 Pagination strategy (mandatory for 100M rows)
+- [ ] All list endpoints use **cursor/keyset pagination** (NOT offset for large datasets)
+- [ ] All list queries include:
+  - [ ] `tenant_id` filter
+  - [ ] deterministic order: `(created_at, id)` or similar for stable cursors
+- [ ] Search endpoints enforce:
+  - [ ] max page size cap
+  - [ ] timeouts handled + partial results UX
+
+### 9.4 Database indexing rules (RLS + tenant-first)
+> Indexing must match your WHERE clauses **and** your RLS predicates.
+- [ ] Every table has `tenant_id` (UUID) NOT NULL
+- [ ] Baseline index per table:
+  - [ ] `btree(tenant_id)`
+- [ ] Composite indexes for common access patterns (choose per table/query):
+  - [ ] `(tenant_id, created_at DESC)`
+  - [ ] `(tenant_id, updated_at DESC)`
+  - [ ] `(tenant_id, status, created_at DESC)` for operational queues
+  - [ ] `(tenant_id, sku)` / `(tenant_id, barcode)` / `(tenant_id, name_normalized)` as needed
+- [ ] Any column referenced in RLS policy predicates is indexed (unless already PK/unique)
+- [ ] Run an index coverage review for each P0 page’s queries (list/detail/search/report)
+
+### 9.5 Database performance verification (prove it, don’t guess)
+- [ ] Enable slow query visibility in staging:
+  - [ ] log slow queries / statement stats
+  - [ ] track top 20 slowest queries by total time
+- [ ] For each P0 query, record:
+  - [ ] P50 / P95 latency
+  - [ ] rows scanned vs rows returned (should be sane)
+  - [ ] query plan uses indexes (avoid surprise seq scans)
+- [ ] Add load tests:
+  - [ ] baseline concurrency (e.g., 50/100/300 concurrent users)
+  - [ ] burst spike test (short peak)
+  - [ ] soak test (30–60 minutes sustained)
+- [ ] Define acceptance targets (example):
+  - [ ] P95 list query < 300–600ms
+  - [ ] P95 write transaction < 300–800ms
+  - [ ] error rate < 0.1–1% under test
+
+### 9.6 Database scalability strategy (pick a growth path early)
+- [ ] Document the scaling path beyond ~100M rows:
+  - [ ] **A) Partitioning** (e.g., hash by tenant_id OR time partitions for event/log tables)
+  - [ ] **B) Read replicas** for read-heavy analytics/reporting (accept replication lag)
+  - [ ] **C) Sharding** tenants across multiple projects/DBs (cohort routing)
+- [ ] For heavy reporting/exports:
+  - [ ] use read replica and/or precomputed tables/materialized views
+  - [ ] run exports as background jobs (never synchronous web requests)
+
+### 9.7 Connection pooling & concurrency readiness
+- [ ] Confirm connection pooling strategy (pooler vs direct) is configured and safe at scale
+- [ ] Ensure server-side code does not open excessive DB connections per request
+- [ ] Validate platform limits and set safe thresholds (timeouts, max connections)
+
+### 9.8 Security at scale (multi-tenant defense in depth)
+- [ ] Tenant isolation enforced at DB (RLS) AND validated in server code (defense-in-depth)
+- [ ] Shared-device PWA test:
+  - [ ] user A logs out → user B logs in → cannot see cached A data
+- [ ] Logs/metrics do not leak PII or tenant-sensitive fields (mask tokens)
+
+### 9.9 Release gate — Scale readiness verdict (must be explicit)
+- [ ] Can the system handle **10k tenants**?
+- [ ] Can it handle **100M rows** in core tables at acceptable latency?
+- [ ] What breaks first (DB CPU, IO, query plans, caching, rate limits)?
+- [ ] Next scaling trigger defined (partition vs replica vs sharding) + criteria for when to do it
