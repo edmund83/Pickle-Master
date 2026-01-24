@@ -1,5 +1,7 @@
 import { getPaginatedPurchaseOrders, getVendors } from '@/app/actions/purchase-orders'
 import { PurchaseOrdersListClient } from './PurchaseOrdersListClient'
+import { checkFeatureAccess } from '@/lib/features'
+import { FeatureUpgradePrompt } from '@/components/FeatureUpgradePrompt'
 
 interface SearchParams {
   page?: string
@@ -15,6 +17,12 @@ export default async function PurchaseOrdersPage({
 }: {
   searchParams: Promise<SearchParams>
 }) {
+  // Feature gate: Purchase orders require Growth+ plan
+  const featureCheck = await checkFeatureAccess('purchase_orders')
+  if (!featureCheck.allowed) {
+    return <FeatureUpgradePrompt feature="purchase_orders" />
+  }
+
   const params = await searchParams
 
   // Parse URL params

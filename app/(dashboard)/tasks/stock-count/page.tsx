@@ -2,6 +2,8 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { getPaginatedStockCounts } from '@/app/actions/stock-counts'
 import { StockCountListClient } from './StockCountListClient'
+import { checkFeatureAccess } from '@/lib/features'
+import { FeatureUpgradePrompt } from '@/components/FeatureUpgradePrompt'
 
 interface SearchParams {
   page?: string
@@ -105,6 +107,12 @@ export default async function StockCountPage({
 }: {
   searchParams: Promise<SearchParams>
 }) {
+  // Feature gate: Stock counts require Growth+ plan
+  const featureCheck = await checkFeatureAccess('stock_counts')
+  if (!featureCheck.allowed) {
+    return <FeatureUpgradePrompt feature="stock_counts" />
+  }
+
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 

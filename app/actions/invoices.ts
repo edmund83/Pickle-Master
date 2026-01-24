@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { requireFeatureSafe } from '@/lib/features'
 import {
     getAuthContext,
     requireWritePermission,
@@ -136,6 +137,10 @@ export interface RecordPaymentInput {
 
 // Create a new invoice
 export async function createInvoice(input: CreateInvoiceInput): Promise<InvoiceResult> {
+    // Feature gate: Invoices require Growth+ plan
+    const featureCheck = await requireFeatureSafe('invoices')
+    if (featureCheck.error) return { success: false, error: featureCheck.error }
+
     const authResult = await getAuthContext()
     if (!authResult.success) return { success: false, error: authResult.error }
     const { context } = authResult

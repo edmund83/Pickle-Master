@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { requireFeatureSafe } from '@/lib/features'
 import { getAuthContext, requireWritePermission, requireOwnerPermission } from '@/lib/auth/server-auth'
 import { z } from 'zod'
 import { escapeSqlLike } from '@/lib/utils'
@@ -136,6 +137,10 @@ export async function createStockCount(input: {
   due_date?: string
   notes?: string
 }): Promise<{ success: boolean; id?: string; display_id?: string; error?: string }> {
+  // Feature gate: Stock counts require Growth+ plan
+  const featureCheck = await requireFeatureSafe('stock_counts')
+  if (featureCheck.error) return { success: false, error: featureCheck.error }
+
   // Auth check with write permission
   const authResult = await getAuthContext()
   if (!authResult.success) {

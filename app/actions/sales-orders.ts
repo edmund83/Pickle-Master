@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { requireFeatureSafe } from '@/lib/features'
 import {
     getAuthContext,
     requireWritePermission,
@@ -128,6 +129,10 @@ export interface SalesOrderItemInput {
 
 // Create a draft sales order
 export async function createDraftSalesOrder(): Promise<SalesOrderResult> {
+    // Feature gate: Sales orders require Growth+ plan
+    const featureCheck = await requireFeatureSafe('sales_orders')
+    if (featureCheck.error) return { success: false, error: featureCheck.error }
+
     const authResult = await getAuthContext()
     if (!authResult.success) return { success: false, error: authResult.error }
     const { context } = authResult
@@ -169,6 +174,10 @@ export async function createDraftSalesOrder(): Promise<SalesOrderResult> {
 
 // Create a new sales order with data
 export async function createSalesOrder(input: CreateSalesOrderInput): Promise<SalesOrderResult> {
+    // Feature gate: Sales orders require Growth+ plan
+    const featureCheck = await requireFeatureSafe('sales_orders')
+    if (featureCheck.error) return { success: false, error: featureCheck.error }
+
     const authResult = await getAuthContext()
     if (!authResult.success) return { success: false, error: authResult.error }
     const { context } = authResult

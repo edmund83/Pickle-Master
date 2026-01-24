@@ -13,7 +13,7 @@
 > **🚀 Early Access — Limited Spots**
 > Try StockZip free for 3 months. We're inviting a small group of early users to help shape the product.
 > - **3 months free access** — no credit card required
-> - **All Scale features included** — lot/serial tracking, audit trail, approvals
+> - **All Scale features included** — lot/serial tracking and all Growth features
 > - **500 AskZoe AI questions/month**
 > - **Brief survey each month** — your feedback helps us improve
 
@@ -58,20 +58,18 @@
 | **Purchasing — Vendors / Suppliers** | ✅ | ✅ | ✅ | ✅ |
 | **Purchasing — Purchase Orders (create, send, track)** | ✅ | ❌ | ✅ | ✅ |
 | **Purchasing — Receiving (partial receives, backorders)** | ✅ | ❌ | ✅ | ✅ |
-| **Operations — Pick Lists / Fulfillment workflow** | ✅ | ❌ | ✅ | ✅ |
+| **Operations — Pick Lists / Fulfillment workflow** | ✅ | ✅ | ✅ | ✅ |
 | **Operations — Stock Counts / Cycle counting** | ✅ | ❌ | ✅ | ✅ |
-| **Operations — Check-in / Check-out (asset style)** | ✅ | ❌ | ✅ | ✅ |
+| **Operations — Check-in / Check-out (asset style)** | ✅ | ✅ | ✅ | ✅ |
 | **Automation — Auto-reorder suggestions** | ✅ | ❌ | ✅ | ✅ |
+| **Sales — Sales Orders** | ✅ | ❌ | ✅ | ✅ |
+| **Sales — Delivery Orders** | ✅ | ❌ | ✅ | ✅ |
+| **Sales — Invoices** | ✅ | ❌ | ✅ | ✅ |
 | **Tracking — Lot / Batch tracking** | ✅ | ❌ | ❌ | ✅ |
 | **Tracking — Serial number tracking** | ✅ | ❌ | ❌ | ✅ |
 | **Reports — Inventory summary & low-stock** | ✅ | ◐ | ✅ | ✅ |
 | **Reports — Advanced reports & exports** | ✅ | ❌ | ✅ | ✅ |
 | **Team — Team roles (Owner/Admin/Staff/Viewer)** | ✅ | ◐ | ✅ | ✅ |
-| **Controls — Advanced role permissions** | ✅ | ❌ | ❌ | ✅ |
-| **Controls — Approvals (POs / adjustments)** | ✅ | ❌ | ❌ | ✅ |
-| **Controls — Audit trail (who changed what, when)** | ✅ | ❌ | ❌ | ✅ |
-| **Controls — Inventory lock / close period** | ✅ | ❌ | ❌ | ✅ |
-| **Management — Inventory snapshots & exception reports** | ✅ | ❌ | ❌ | ✅ |
 | **Support — Standard support** | ✅ | ✅ | ✅ | ✅ |
 | **Support — Priority support / onboarding** | ✅ | ❌ | ◐ | ✅ |
 | **AskZoe AI — Included monthly quota** | ✅ (500/mo) | ✅ (50/mo) | ✅ (100/mo) | ✅ (500/mo) |
@@ -83,5 +81,6 @@
 
 - **Early Access** is a limited-time promotional plan for early adopters — includes all Scale features for 3 months free, with a brief monthly survey requirement. No credit card required.
 - **PDF downloads** are available for document workflows (Purchase Orders, Pick Lists, Sales Orders, Delivery Orders, Invoices) wherever those features are enabled.
-- **Growth** is the best plan for most small businesses (operations features + higher limits).
-- **Scale** is for owners/managers who need controls (audit/approvals/permissions) and higher limits.
+- **Starter** — The essentials: Pick lists and check-in/check-out included. "Everyone needs to load the van."
+- **Growth** — Upgrade trigger for sales workflows: "Want to sell? Get Growth." Includes Sales Orders, Delivery Orders, and Invoices (Sortly charges $299 for this workflow; StockZip charges $39).
+- **Scale** — Full control: Lot/serial tracking for owners/managers who need compliance and traceability.

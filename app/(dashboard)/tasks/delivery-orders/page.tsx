@@ -1,5 +1,7 @@
 import { getPaginatedDeliveryOrders } from '@/app/actions/delivery-orders'
 import { DeliveryOrdersListClient } from './DeliveryOrdersListClient'
+import { checkFeatureAccess } from '@/lib/features'
+import { FeatureUpgradePrompt } from '@/components/FeatureUpgradePrompt'
 
 interface SearchParams {
   page?: string
@@ -14,6 +16,12 @@ export default async function DeliveryOrdersPage({
 }: {
   searchParams: Promise<SearchParams>
 }) {
+  // Feature gate: Delivery orders require Growth+ plan
+  const featureCheck = await checkFeatureAccess('delivery_orders')
+  if (!featureCheck.allowed) {
+    return <FeatureUpgradePrompt feature="delivery_orders" />
+  }
+
   const params = await searchParams
 
   // Parse URL params
