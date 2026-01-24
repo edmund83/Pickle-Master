@@ -24,6 +24,7 @@
     "@hookform/resolvers": "^3.9.1",
     "@iconify-json/tabler": "^1.2.10",
     "@iconify/tailwind4": "^1.2.0",
+    "@sentry/nextjs": "^10.36.0",
     "@supabase/ssr": "^0.5.2",
     "@supabase/supabase-js": "^2.47.10",
     "@tailwindcss/postcss": "^4.1.18",
