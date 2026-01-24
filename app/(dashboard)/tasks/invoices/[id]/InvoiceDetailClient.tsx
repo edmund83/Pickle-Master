@@ -42,15 +42,15 @@ import {
   updateInvoiceStatus,
   deleteInvoice,
   addInvoiceItem,
+  addCreditNoteItem,
   removeInvoiceItem,
   recordPayment,
   setInvoiceItemTax,
   searchInventoryItemsForInvoice,
   createCreditNote,
   applyCreditNote,
-  creditReasonLabels,
-  type CreditReason,
 } from '@/app/actions/invoices'
+import { creditReasonLabels, type CreditReason } from '@/lib/invoice-constants'
 import { BarcodeScanner, type ScanResult } from '@/components/scanner/BarcodeScanner'
 import type { InvoiceWithDetails, Customer } from './page'
 import { ChatterPanel } from '@/components/chatter'
@@ -192,7 +192,9 @@ export function InvoiceDetailClient({
   async function handleAddItem(item: { id: string; name: string; sku: string | null; price: number | null }) {
     setActionLoading('add-item')
     try {
-      const result = await addInvoiceItem(invoice.id, {
+      // Use addCreditNoteItem for credit notes (creates negative amounts)
+      const addItemFn = isCreditNote ? addCreditNoteItem : addInvoiceItem
+      const result = await addItemFn(invoice.id, {
         item_id: item.id,
         item_name: item.name,
         sku: item.sku,
