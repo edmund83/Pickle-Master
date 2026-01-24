@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { requireFeatureSafe } from '@/lib/features'
 import {
     getAuthContext,
     requireWritePermission,
@@ -281,6 +282,10 @@ export async function createVendor(input: CreateVendorInput): Promise<PurchaseOr
 // Create a draft purchase order with minimal data (for quick-create flow)
 // Uses RPC to generate display_id in format PO-{ORG_CODE}-{5-digit-number}
 export async function createDraftPurchaseOrder(): Promise<PurchaseOrderResult> {
+    // Feature gate: Purchase orders require Growth+ plan
+    const featureCheck = await requireFeatureSafe('purchase_orders')
+    if (featureCheck.error) return { success: false, error: featureCheck.error }
+
     // 1. Authenticate and get context
     const authResult = await getAuthContext()
     if (!authResult.success) return { success: false, error: authResult.error }

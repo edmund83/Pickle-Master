@@ -13,13 +13,16 @@ export interface PlanLimits {
   maxAiQuestions: number
 }
 
+import type { FeatureId } from '@/lib/features/gating'
+
 export interface PlanConfig {
   id: PlanId
   name: string
   description: string
   price: number // monthly price in dollars, 0 for free
   limits: PlanLimits
-  features: string[]
+  features: string[] // Display features for marketing
+  allowedFeatures: FeatureId[] // Machine-readable feature IDs for gating
   isPromotional?: boolean
   isPopular?: boolean
   trialDays: number
@@ -52,6 +55,18 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       '500 AskZoe AI questions/mo',
       '3 months free - then pick a plan',
     ],
+    allowedFeatures: [
+      'pick_lists',
+      'check_in_out',
+      'sales_orders',
+      'delivery_orders',
+      'invoices',
+      'stock_counts',
+      'purchase_orders',
+      'receiving',
+      'lot_tracking',
+      'serial_tracking',
+    ],
     isPromotional: true,
     trialDays: 90,
   },
@@ -72,6 +87,7 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       '50 AskZoe AI questions/mo',
       'Basic reports',
     ],
+    allowedFeatures: ['pick_lists', 'check_in_out'],
     trialDays: 14,
   },
   growth: {
@@ -91,6 +107,16 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       '100 AskZoe AI questions/mo',
       'Purchase orders & receiving',
       'Pick lists & fulfillment',
+    ],
+    allowedFeatures: [
+      'pick_lists',
+      'check_in_out',
+      'sales_orders',
+      'delivery_orders',
+      'invoices',
+      'stock_counts',
+      'purchase_orders',
+      'receiving',
     ],
     isPopular: true,
     trialDays: 14,
@@ -112,6 +138,18 @@ export const PLANS: Record<PlanId, PlanConfig> = {
       '500 AskZoe AI questions/mo',
       'Lot/Serial tracking',
       'Audit trail & Approvals',
+    ],
+    allowedFeatures: [
+      'pick_lists',
+      'check_in_out',
+      'sales_orders',
+      'delivery_orders',
+      'invoices',
+      'stock_counts',
+      'purchase_orders',
+      'receiving',
+      'lot_tracking',
+      'serial_tracking',
     ],
     trialDays: 14,
   },

@@ -1,6 +1,8 @@
 import { getPaginatedInvoices } from '@/app/actions/invoices'
 import { getCustomers } from '@/app/actions/customers'
 import { InvoicesListClient } from './InvoicesListClient'
+import { checkFeatureAccess } from '@/lib/features'
+import { FeatureUpgradePrompt } from '@/components/FeatureUpgradePrompt'
 
 interface SearchParams {
   page?: string
@@ -16,6 +18,12 @@ export default async function InvoicesPage({
 }: {
   searchParams: Promise<SearchParams>
 }) {
+  // Feature gate: Invoices require Growth+ plan
+  const featureCheck = await checkFeatureAccess('invoices')
+  if (!featureCheck.allowed) {
+    return <FeatureUpgradePrompt feature="invoices" />
+  }
+
   const params = await searchParams
 
   // Parse URL params

@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { requireFeatureSafe } from '@/lib/features'
 import {
     getAuthContext,
     requireWritePermission,
@@ -186,6 +187,10 @@ export interface ReceiveSummary {
 
 // Create a new receive from a PO with pre-populated items
 export async function createReceive(input: CreateReceiveInput): Promise<ReceiveResult> {
+    // Feature gate: Receiving requires Growth+ plan
+    const featureCheck = await requireFeatureSafe('receiving')
+    if (featureCheck.error) return { success: false, error: featureCheck.error }
+
     // 1. Authenticate and get context
     const authResult = await getAuthContext()
     if (!authResult.success) return { success: false, error: authResult.error }
