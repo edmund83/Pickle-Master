@@ -11,6 +11,7 @@ interface SearchParams {
   search?: string
   sort?: string
   order?: string
+  type?: string
 }
 
 export default async function InvoicesPage({
@@ -33,6 +34,7 @@ export default async function InvoicesPage({
   const search = params.search || undefined
   const sortColumn = params.sort || 'updated_at'
   const sortDirection = (params.order === 'asc' ? 'asc' : 'desc') as 'asc' | 'desc'
+  const invoiceType = (params.type === 'invoice' || params.type === 'credit_note') ? params.type : 'all'
 
   // Fetch data with pagination and filters
   const [invoicesData, customers] = await Promise.all([
@@ -43,7 +45,8 @@ export default async function InvoicesPage({
       customerId,
       search,
       sortColumn,
-      sortDirection
+      sortDirection,
+      invoiceType
     }),
     getCustomers()
   ])
@@ -57,7 +60,8 @@ export default async function InvoicesPage({
         customerId: customerId || '',
         search: search || '',
         sortColumn,
-        sortDirection
+        sortDirection,
+        invoiceType
       }}
     />
   )

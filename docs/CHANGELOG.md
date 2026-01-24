@@ -11,6 +11,34 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Added
 
+#### Credit Notes Support
+Added simple credit note functionality for mom and pop businesses. Credit notes are implemented as a type of invoice (not a separate entity) for simplicity.
+
+**Features**:
+- Credit notes have their own display ID prefix: `CN-XXX-00001`
+- Create credit notes from any sent/paid/partial invoice via "Create Credit Note" in the More menu
+- Specify credit reason (Return, Damaged, Overcharge, Discount, Other)
+- Add items to credit notes with negative amounts
+- Apply credit notes to reduce original invoice balance
+- Filter invoice list by type (Invoices / Credit Notes / All)
+- Visual distinction: Credit notes show red badge and icon in list and detail views
+
+**Database Changes**:
+- Added `invoice_type` column to invoices table (`invoice` or `credit_note`)
+- Added `original_invoice_id` to link credit notes to original invoices
+- Added `credit_reason` column for tracking why credit was issued
+- Added `credit_note` entity type to `generate_display_id` function
+
+**Files Added**:
+- `supabase/migrations/00100_credit_notes.sql` - Migration with columns, indexes, and RPC functions
+
+**Files Modified**:
+- `app/actions/invoices.ts` - Added credit note actions and updated types
+- `app/(dashboard)/tasks/invoices/InvoicesListClient.tsx` - Added type filter and credit note badge
+- `app/(dashboard)/tasks/invoices/page.tsx` - Added type filter parameter
+- `app/(dashboard)/tasks/invoices/[id]/page.tsx` - Updated interface with credit note fields
+- `app/(dashboard)/tasks/invoices/[id]/InvoiceDetailClient.tsx` - Added create/apply credit note UI
+
 #### Region Change Confirmation Dialog
 Added a safety confirmation dialog when changing business region to prevent accidental data inconsistency.
 
