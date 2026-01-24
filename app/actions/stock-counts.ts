@@ -2,7 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
-import { requireFeatureSafe } from '@/lib/features'
+import { requireFeatureSafe } from '@/lib/features/gating.server'
 import { getAuthContext, requireWritePermission, requireOwnerPermission } from '@/lib/auth/server-auth'
 import { z } from 'zod'
 import { escapeSqlLike } from '@/lib/utils'

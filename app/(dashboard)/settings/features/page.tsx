@@ -16,8 +16,12 @@ import {
   BarChart3,
   ScanLine,
   ShoppingCart,
+  LockKeyhole,
 } from 'lucide-react'
+import Link from 'next/link'
 import type { Tenant } from '@/types/database.types'
+import { hasFeature, getFeatureInfo } from '@/lib/features'
+import type { PlanId } from '@/lib/plans/config'
 
 interface FeaturesEnabled {
   shipping_dimensions: boolean
@@ -31,6 +35,7 @@ const defaultFeatures: FeaturesEnabled = {
 
 export default function FeaturesSettingsPage() {
   const [tenant, setTenant] = useState<Tenant | null>(null)
+  const [planId, setPlanId] = useState<PlanId>('starter')
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null)
@@ -55,7 +60,7 @@ export default function FeaturesSettingsPage() {
 
       if (!user) return
 
-       
+
       const { data: profile } = await (supabase as any)
         .from('profiles')
         .select('tenant_id')
@@ -63,7 +68,7 @@ export default function FeaturesSettingsPage() {
         .single()
 
       if (profile?.tenant_id) {
-         
+
         const { data: tenantData } = await (supabase as any)
           .from('tenants')
           .select('*')
@@ -72,6 +77,9 @@ export default function FeaturesSettingsPage() {
 
         if (tenantData) {
           setTenant(tenantData as Tenant)
+          // Get subscription tier for feature gating
+          const tier = (tenantData.subscription_tier as PlanId) || 'starter'
+          setPlanId(tier)
           const settings = tenantData.settings as Record<string, unknown> | null
           const enabledFeatures = settings?.features_enabled as FeaturesEnabled | undefined
           setFeatures({
@@ -200,13 +208,22 @@ export default function FeaturesSettingsPage() {
               onChange={() => toggleFeature('shipping_dimensions')}
             />
 
-            <SettingsToggle
-              icon={Calendar}
-              label="Lot & Expiry Tracking"
-              description="Track items by lot number, batch code, and expiry date. Get FEFO (First Expired First Out) suggestions."
-              checked={features.lot_tracking}
-              onChange={() => toggleFeature('lot_tracking')}
-            />
+            {hasFeature(planId, 'lot_tracking') ? (
+              <SettingsToggle
+                icon={Calendar}
+                label="Lot & Expiry Tracking"
+                description="Track items by lot number, batch code, and expiry date. Get FEFO (First Expired First Out) suggestions."
+                checked={features.lot_tracking}
+                onChange={() => toggleFeature('lot_tracking')}
+              />
+            ) : (
+              <LockedFeatureToggle
+                icon={Calendar}
+                label="Lot & Expiry Tracking"
+                description="Track items by lot number, batch code, and expiry date. Get FEFO (First Expired First Out) suggestions."
+                requiredPlan="Scale"
+              />
+            )}
           </div>
         </SettingsSection>
 
@@ -276,6 +293,48 @@ function ComingSoonFeature({ icon: Icon, label, description }: ComingSoonFeature
           </span>
         </div>
         <p className="mt-0.5 text-sm text-neutral-400">{description}</p>
+      </div>
+    </div>
+  )
+}
+
+interface LockedFeatureToggleProps {
+  icon: React.ComponentType<{ className?: string }>
+  label: string
+  description: string
+  requiredPlan: string
+}
+
+function LockedFeatureToggle({ icon: Icon, label, description, requiredPlan }: LockedFeatureToggleProps) {
+  return (
+    <div className="flex items-start justify-between gap-4 rounded-lg border border-neutral-200 bg-neutral-50/50 p-4">
+      <div className="flex items-start gap-3">
+        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-neutral-100 text-neutral-400">
+          <Icon className="h-4 w-4" />
+        </div>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <p className="font-medium text-neutral-500">{label}</p>
+            <span className="inline-flex items-center gap-1 rounded-full bg-neutral-100 px-2 py-0.5 text-xs font-medium text-neutral-500">
+              <LockKeyhole className="h-3 w-3" />
+              {requiredPlan}
+            </span>
+          </div>
+          <p className="mt-0.5 text-sm text-neutral-400">{description}</p>
+          <Link
+            href="/settings/billing"
+            className="mt-2 inline-flex items-center gap-1 text-sm font-medium text-primary hover:underline"
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            Upgrade to {requiredPlan}
+          </Link>
+        </div>
+      </div>
+      <div
+        className="relative inline-flex h-6 w-11 shrink-0 cursor-not-allowed items-center rounded-full bg-neutral-200 opacity-50"
+        title={`Requires ${requiredPlan} plan`}
+      >
+        <span className="pointer-events-none inline-block h-5 w-5 translate-x-0.5 transform rounded-full bg-white shadow-sm" />
       </div>
     </div>
   )
