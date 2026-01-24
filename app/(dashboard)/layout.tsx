@@ -8,6 +8,7 @@ import { GlobalSearchProvider } from '@/contexts/GlobalSearchContext'
 import { GlobalSearchModal } from '@/components/search/GlobalSearchModal'
 import { ZoeProvider } from '@/contexts/ZoeContext'
 import { ZoeChatPanel } from '@/components/search/ZoeChatPanel'
+import { FloatingReportButton } from '@/components/feedback/FloatingReportButton'
 
 export default function DashboardLayout({
   children,
@@ -26,6 +27,7 @@ export default function DashboardLayout({
                     {children}
                   </MobileLayoutWrapper>
                   <UndoToast />
+                  <FloatingReportButton />
                 </div>
                 <GlobalSearchModal />
                 <ZoeChatPanel />
