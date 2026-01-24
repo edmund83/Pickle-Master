@@ -82,7 +82,7 @@ const featureGroups: FeatureGroup[] = [
 const plans = [
   { id: 'starter', name: 'Starter', price: 18, href: '/signup?plan=starter', recommended: false },
   { id: 'growth', name: 'Growth', price: 39, href: '/signup?plan=growth', recommended: true },
-  { id: 'scale', name: 'Scale', price: 79, href: '/signup?plan=scale', recommended: false },
+  { id: 'scale', name: 'Scale', price: 89, href: '/signup?plan=scale', recommended: false },
 ] as const
 
 type PlanId = (typeof plans)[number]['id']

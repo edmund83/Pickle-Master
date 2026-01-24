@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { createClient, SupabaseClient } from '@supabase/supabase-js'
 import { getPlanByPriceId } from '@/lib/stripe/config'
+import { getPlanLimits } from '@/lib/plans/config'
 
 // Lazy initialize Stripe to avoid build-time errors when keys aren't configured
 function getStripe() {
@@ -126,7 +127,10 @@ async function handleCheckoutComplete(
     throw new Error(`Unknown price ID: ${priceId}`)
   }
 
-  // Update tenant with subscription info
+  // Get plan limits from config
+  const limits = getPlanLimits(planInfo.planId)
+
+  // Update tenant with subscription info AND limits
   const { error } = await supabaseAdmin
     .from('tenants')
     .update({
@@ -134,6 +138,9 @@ async function handleCheckoutComplete(
       subscription_tier: planInfo.planId,
       subscription_status: 'active',
       trial_ends_at: null, // Clear trial since they've paid
+      max_users: limits.maxUsers,
+      max_items: limits.maxItems,
+      max_folders: limits.maxFolders,
       updated_at: new Date().toISOString(),
     })
     .eq('id', tenantId)
@@ -169,6 +176,10 @@ async function handleSubscriptionUpdated(
 
   const priceId = subscription.items.data[0]?.price.id
   const planInfo = getPlanByPriceId(priceId)
+  const planId = planInfo?.planId || 'starter'
+
+  // Get plan limits from config
+  const limits = getPlanLimits(planId)
 
   let status: string
   switch (subscription.status) {
@@ -187,11 +198,15 @@ async function handleSubscriptionUpdated(
       status = 'paused'
   }
 
+  // Update tenant with subscription info AND limits
   const { error: updateError } = await supabaseAdmin
     .from('tenants')
     .update({
-      subscription_tier: planInfo?.planId || 'starter',
+      subscription_tier: planId,
       subscription_status: status,
+      max_users: limits.maxUsers,
+      max_items: limits.maxItems,
+      max_folders: limits.maxFolders,
       updated_at: new Date().toISOString(),
     })
     .eq('id', tenant.id)
