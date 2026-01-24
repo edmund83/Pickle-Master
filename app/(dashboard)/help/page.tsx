@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import {
   HelpCircle,
   BookOpen,
@@ -32,9 +33,11 @@ import {
   Sparkles,
   ArrowRight,
   Zap,
+  Bug,
   LucideIcon
 } from 'lucide-react'
 import Link from 'next/link'
+import { ReportProblemDialog } from '@/components/help/ReportProblemDialog'
 
 // Unified color scheme - minimal palette for visual calm
 const ICON_COLOR = 'bg-neutral-100 text-neutral-600 ring-neutral-200/50'
@@ -284,6 +287,8 @@ function SectionHeader({ title, description }: { title: string; description?: st
 }
 
 export default function HelpPage() {
+  const [showReportDialog, setShowReportDialog] = useState(false)
+
   return (
     <div className="flex-1 overflow-y-auto bg-gradient-to-b from-neutral-50/80 to-white">
       {/* Premium Hero Header */}
@@ -310,7 +315,7 @@ export default function HelpPage() {
             </p>
 
             {/* Quick search hint */}
-            <div className="mt-8 flex items-center justify-center gap-4">
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Link
                 href="/help/getting-started"
                 className="inline-flex items-center gap-2 rounded-xl bg-primary px-6 py-3 text-sm font-semibold text-white shadow-lg shadow-primary/25 transition-all hover:shadow-xl hover:shadow-primary/30"
@@ -319,7 +324,13 @@ export default function HelpPage() {
                 Get Started
                 <ArrowRight className="h-4 w-4" />
               </Link>
-              <span className="text-sm text-neutral-400">or browse topics below</span>
+              <button
+                onClick={() => setShowReportDialog(true)}
+                className="inline-flex items-center gap-2 rounded-xl border border-neutral-300 bg-white px-6 py-3 text-sm font-semibold text-neutral-700 transition-all hover:bg-neutral-50 hover:border-neutral-400"
+              >
+                <Bug className="h-4 w-4" />
+                Report a Problem
+              </button>
             </div>
           </div>
         </div>
@@ -457,6 +468,12 @@ export default function HelpPage() {
 
         </div>
       </div>
+
+      {/* Report Problem Dialog */}
+      <ReportProblemDialog
+        isOpen={showReportDialog}
+        onClose={() => setShowReportDialog(false)}
+      />
     </div>
   )
 }

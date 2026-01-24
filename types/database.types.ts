@@ -518,6 +518,70 @@ export type Database = {
           },
         ]
       }
+      bug_reports: {
+        Row: {
+          browser_info: string | null
+          category: string
+          created_at: string | null
+          description: string
+          id: string
+          page_url: string | null
+          status: string | null
+          subject: string
+          tenant_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          browser_info?: string | null
+          category?: string
+          created_at?: string | null
+          description: string
+          id?: string
+          page_url?: string | null
+          status?: string | null
+          subject: string
+          tenant_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          browser_info?: string | null
+          category?: string
+          created_at?: string | null
+          description?: string
+          id?: string
+          page_url?: string | null
+          status?: string | null
+          subject?: string
+          tenant_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bug_reports_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bug_reports_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenant_stats"
+            referencedColumns: ["tenant_id"]
+          },
+          {
+            foreignKeyName: "bug_reports_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       chatter_mentions: {
         Row: {
           created_at: string | null

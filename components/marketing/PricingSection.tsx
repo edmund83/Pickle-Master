@@ -86,7 +86,7 @@ export function PricingSection() {
                   <ul className="space-y-3 text-base-content/80">
                     <li className="flex gap-2"><span className="icon-[tabler--circle-check] text-primary size-5"></span>Barcode &amp; QR scanning</li>
                     <li className="flex gap-2"><span className="icon-[tabler--circle-check] text-primary size-5"></span>Mobile app + offline mode</li>
-                    <li className="flex gap-2"><span className="icon-[tabler--circle-check] text-primary size-5"></span>Low-stock alerts</li>
+                    <li className="flex gap-2"><span className="icon-[tabler--circle-check] text-primary size-5"></span>Pick lists &amp; check-in/out</li>
                   </ul>
                   <Link href="/signup?plan=starter" className="btn btn-primary mt-auto">
                     Start free trial
@@ -126,7 +126,7 @@ export function PricingSection() {
                   </div>
                   <ul className="space-y-3 text-base-content/80">
                     <li className="flex gap-2"><span className="icon-[tabler--circle-check] text-primary size-5"></span>Purchase orders &amp; receiving</li>
-                    <li className="flex gap-2"><span className="icon-[tabler--circle-check] text-primary size-5"></span>Pick lists &amp; fulfillment</li>
+                    <li className="flex gap-2"><span className="icon-[tabler--circle-check] text-primary size-5"></span>Sales orders &amp; invoices</li>
                     <li className="flex gap-2"><span className="icon-[tabler--circle-check] text-primary size-5"></span>100 AskZoe AI questions/mo</li>
                   </ul>
                   <Link href="/signup?plan=growth" className="btn btn-primary mt-auto">
