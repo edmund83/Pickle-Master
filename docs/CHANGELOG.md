@@ -11,11 +11,38 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Added
 
+#### Alphanumeric Display ID Format
+Updated display ID format to include alphanumeric prefix for increased capacity and better visual progression.
+
+**New Format**: `{PREFIX}-{ORGCODE}-{LETTER(S)}{5-digit}`
+
+**Examples**:
+- `SO-ACM01-A00001` → `SO-ACM01-A99999` (first 99,999 entries)
+- `SO-ACM01-B00001` → `SO-ACM01-B99999` (next 99,999 entries)
+- `SO-ACM01-Z99999` → `SO-ACM01-AA00001` (after 2.6M entries, extends to double letter)
+
+**Capacity**: ~70 million documents per entity type per tenant (A-Z + AA-ZZ)
+
+**Capacity Alerts**:
+- Automatic notification when reaching Y territory (92% of single-letter capacity)
+- Second alert at Z territory (96% - last single letter)
+- Final alert when transitioning to double-letter (AA+)
+- Admin RPC `get_display_id_capacity()` to check status of all entity types
+
+**Migration**:
+- Existing display IDs automatically backfilled with 'A' prefix (e.g., `SO-ACM01-00001` → `SO-ACM01-A00001`)
+- All entity types updated: Items, Folders, Pick Lists, Purchase Orders, Receives, Sales Orders, Delivery Orders, Invoices, Credit Notes, Customers
+
+**Files Added**:
+- `supabase/migrations/00102_alphanumeric_display_id.sql`
+
+---
+
 #### Credit Notes Support
 Added simple credit note functionality for mom and pop businesses. Credit notes are implemented as a type of invoice (not a separate entity) for simplicity.
 
 **Features**:
-- Credit notes have their own display ID prefix: `CN-XXX-00001`
+- Credit notes have their own display ID prefix: `CN-ACM01-A00001`
 - Create credit notes from any sent/paid/partial invoice via "Create Credit Note" in the More menu
 - Specify credit reason (Return, Damaged, Overcharge, Discount, Other)
 - Add items to credit notes with negative amounts
