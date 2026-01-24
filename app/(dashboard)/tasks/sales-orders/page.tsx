@@ -1,7 +1,7 @@
 import { getPaginatedSalesOrders } from '@/app/actions/sales-orders'
 import { getCustomers } from '@/app/actions/customers'
 import { SalesOrdersListClient } from './SalesOrdersListClient'
-import { checkFeatureAccess } from '@/lib/features'
+import { checkFeatureAccess } from '@/lib/features/gating.server'
 import { FeatureUpgradePrompt } from '@/components/FeatureUpgradePrompt'
 
 interface SearchParams {

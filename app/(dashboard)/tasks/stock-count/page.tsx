@@ -2,7 +2,7 @@ import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { getPaginatedStockCounts } from '@/app/actions/stock-counts'
 import { StockCountListClient } from './StockCountListClient'
-import { checkFeatureAccess } from '@/lib/features'
+import { checkFeatureAccess } from '@/lib/features/gating.server'
 import { FeatureUpgradePrompt } from '@/components/FeatureUpgradePrompt'
 
 interface SearchParams {

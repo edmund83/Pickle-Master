@@ -1,6 +1,6 @@
 import { getPaginatedDeliveryOrders } from '@/app/actions/delivery-orders'
 import { DeliveryOrdersListClient } from './DeliveryOrdersListClient'
-import { checkFeatureAccess } from '@/lib/features'
+import { checkFeatureAccess } from '@/lib/features/gating.server'
 import { FeatureUpgradePrompt } from '@/components/FeatureUpgradePrompt'
 
 interface SearchParams {

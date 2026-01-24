@@ -1,7 +1,7 @@
 import { getPaginatedInvoices } from '@/app/actions/invoices'
 import { getCustomers } from '@/app/actions/customers'
 import { InvoicesListClient } from './InvoicesListClient'
-import { checkFeatureAccess } from '@/lib/features'
+import { checkFeatureAccess } from '@/lib/features/gating.server'
 import { FeatureUpgradePrompt } from '@/components/FeatureUpgradePrompt'
 
 interface SearchParams {

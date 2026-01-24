@@ -1,6 +1,6 @@
 import { getPaginatedPurchaseOrders, getVendors } from '@/app/actions/purchase-orders'
 import { PurchaseOrdersListClient } from './PurchaseOrdersListClient'
-import { checkFeatureAccess } from '@/lib/features'
+import { checkFeatureAccess } from '@/lib/features/gating.server'
 import { FeatureUpgradePrompt } from '@/components/FeatureUpgradePrompt'
 
 interface SearchParams {

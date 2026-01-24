@@ -1,6 +1,6 @@
 import { getPaginatedReceives, type PaginatedReceivesResult, type ReceiveListItem } from '@/app/actions/receives'
 import { ReceivesListClient } from './ReceivesListClient'
-import { checkFeatureAccess } from '@/lib/features'
+import { checkFeatureAccess } from '@/lib/features/gating.server'
 import { FeatureUpgradePrompt } from '@/components/FeatureUpgradePrompt'
 
 interface SearchParams {
