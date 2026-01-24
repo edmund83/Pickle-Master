@@ -51,17 +51,17 @@ describe('Formatting Library', () => {
   describe('formatCurrency', () => {
     it('formats positive values correctly with default settings', () => {
       const result = formatCurrency(1234.56)
-      expect(result).toBe(`RM${NBSP}1,234.56`)
+      expect(result).toBe(`$${NBSP}1,234.56`)
     })
 
     it('formats negative values correctly', () => {
       const result = formatCurrency(-1234.56)
-      expect(result).toBe(`RM${NBSP}-1,234.56`)
+      expect(result).toBe(`$${NBSP}-1,234.56`)
     })
 
     it('formats zero correctly', () => {
       const result = formatCurrency(0)
-      expect(result).toBe(`RM${NBSP}0.00`)
+      expect(result).toBe(`$${NBSP}0.00`)
     })
 
     it('returns dash for null value', () => {
@@ -88,27 +88,27 @@ describe('Formatting Library', () => {
 
     it('respects decimal precision of 0', () => {
       const settings: Partial<TenantSettings> = { decimal_precision: '1' }
-      expect(formatCurrency(1234.56, settings)).toBe(`RM${NBSP}1,235`)
+      expect(formatCurrency(1234.56, settings)).toBe(`$${NBSP}1,235`)
     })
 
     it('respects decimal precision of 1', () => {
       const settings: Partial<TenantSettings> = { decimal_precision: '0.1' }
-      expect(formatCurrency(1234.56, settings)).toBe(`RM${NBSP}1,234.6`)
+      expect(formatCurrency(1234.56, settings)).toBe(`$${NBSP}1,234.6`)
     })
 
     it('respects decimal precision of 3', () => {
       const settings: Partial<TenantSettings> = { decimal_precision: '0.001' }
-      expect(formatCurrency(1234.5678, settings)).toBe(`RM${NBSP}1,234.568`)
+      expect(formatCurrency(1234.5678, settings)).toBe(`$${NBSP}1,234.568`)
     })
 
     it('handles large numbers', () => {
       const result = formatCurrency(1234567890.12)
-      expect(result).toBe(`RM${NBSP}1,234,567,890.12`)
+      expect(result).toBe(`$${NBSP}1,234,567,890.12`)
     })
 
     it('handles very small decimal values', () => {
       const settings: Partial<TenantSettings> = { decimal_precision: '0.01' }
-      expect(formatCurrency(0.01, settings)).toBe(`RM${NBSP}0.01`)
+      expect(formatCurrency(0.01, settings)).toBe(`$${NBSP}0.01`)
     })
   })
 
@@ -152,9 +152,9 @@ describe('Formatting Library', () => {
   describe('formatDate', () => {
     const testDate = '2025-12-25T14:30:00Z'
 
-    it('formats date with default DD/MM/YYYY format', () => {
+    it('formats date with default MM/DD/YYYY format', () => {
       const result = formatDate(testDate)
-      // Default timezone is Asia/Kuala_Lumpur (UTC+8)
+      // Default timezone is UTC
       expect(result).toMatch(/^\d{2}\/\d{2}\/\d{4}$/)
     })
 
@@ -324,7 +324,7 @@ describe('Formatting Library', () => {
     })
 
     it('returns default currency symbol when no settings', () => {
-      expect(getCurrencyDisplay()).toBe('RM')
+      expect(getCurrencyDisplay()).toBe('$')
     })
 
     it('returns currency symbol for various currencies', () => {
@@ -335,20 +335,20 @@ describe('Formatting Library', () => {
   })
 
   describe('DEFAULT_TENANT_SETTINGS', () => {
-    it('has correct default values', () => {
-      expect(DEFAULT_TENANT_SETTINGS.currency).toBe('MYR')
-      expect(DEFAULT_TENANT_SETTINGS.timezone).toBe('Asia/Kuala_Lumpur')
-      expect(DEFAULT_TENANT_SETTINGS.date_format).toBe('DD/MM/YYYY')
+    it('has correct default values (US-First)', () => {
+      expect(DEFAULT_TENANT_SETTINGS.currency).toBe('USD')
+      expect(DEFAULT_TENANT_SETTINGS.timezone).toBe('UTC')
+      expect(DEFAULT_TENANT_SETTINGS.date_format).toBe('MM/DD/YYYY')
       expect(DEFAULT_TENANT_SETTINGS.time_format).toBe('12-hour')
       expect(DEFAULT_TENANT_SETTINGS.decimal_precision).toBe('0.01')
-      expect(DEFAULT_TENANT_SETTINGS.country).toBe('MY')
+      expect(DEFAULT_TENANT_SETTINGS.country).toBe('US')
     })
   })
 
   describe('Edge Cases', () => {
     it('handles very large numbers in formatCurrency', () => {
       const result = formatCurrency(999999999999.99)
-      expect(result).toBe(`RM${NBSP}999,999,999,999.99`)
+      expect(result).toBe(`$${NBSP}999,999,999,999.99`)
     })
 
     it('handles empty string date', () => {
