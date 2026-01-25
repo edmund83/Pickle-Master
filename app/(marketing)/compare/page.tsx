@@ -33,7 +33,7 @@ export default function CompareHubPage() {
           Compare StockZip
         </h1>
         <p className="text-base-content/80 mt-3 max-w-3xl text-lg">
-          If you&apos;re switching tools, you probably care about predictable pricing, reliable scanning, and workflows
+          If you&apos;re evaluating tools, you probably care about predictable pricing, reliable scanning, and workflows
           that match real work (warehouses, jobsites, and small teams).
         </p>
 
@@ -48,7 +48,7 @@ export default function CompareHubPage() {
                 <span className="badge badge-primary badge-soft rounded-full">Most requested</span>
               </div>
               <p className="text-base-content/80">
-                See why teams switch: trust-first pricing, offline-first scanning, and real check-in/check-out.
+                A scan-first alternative focused on offline-first scanning and check-in/check-out workflows.
               </p>
               <span className="link link-primary link-animated mt-2 w-fit">View comparison</span>
             </div>
@@ -78,7 +78,7 @@ export default function CompareHubPage() {
                 <h2 className="text-base-content text-xl font-semibold">inFlow alternative</h2>
               </div>
               <p className="text-base-content/80">
-                Looking for simplicity over ERP complexity? See how StockZip compares.
+                Compare scan-first workflows and offline-first mobile scanning for small teams.
               </p>
               <span className="link link-primary link-animated mt-2 w-fit">View comparison</span>
             </div>
@@ -93,7 +93,7 @@ export default function CompareHubPage() {
                 <h2 className="text-base-content text-xl font-semibold">Fishbowl alternative</h2>
               </div>
               <p className="text-base-content/80">
-                Warehouse inventory for small teams without enterprise pricing or complexity.
+                Warehouse inventory for small teams focused on scan-first workflows.
               </p>
               <span className="link link-primary link-animated mt-2 w-fit">View comparison</span>
             </div>
@@ -119,4 +119,3 @@ export default function CompareHubPage() {
     </div>
   )
 }
-

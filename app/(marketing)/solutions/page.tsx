@@ -90,9 +90,9 @@ const FAQS: FaqItem[] = [
       'StockZip supports three scanning methods: (1) Phone cameras for 1D barcodes and QR codes, (2) Bluetooth barcode scanners from Socket Mobile, Zebra, and Honeywell for faster high-volume scanning, and (3) Rugged Android devices with built-in hardware scanners. Use whatever fits your workflow.',
   },
   {
-    question: 'How do I migrate from spreadsheets or Sortly to StockZip?',
+    question: 'How do I migrate from spreadsheets to StockZip?',
     answer:
-      'Import your existing inventory via CSV in minutes. StockZip provides templates and field mapping to match your current data structure. For Sortly users, we have a dedicated migration guide that maps Sortly fields to StockZip. Most teams are up and running in under 30 minutes.',
+      'Import your existing inventory via CSV in minutes. StockZip provides templates and field mapping to match your current data structure. Most teams are up and running in under 30 minutes.',
   },
   {
     question: 'Is there a free trial for StockZip inventory software?',
@@ -364,7 +364,7 @@ export default function SolutionsPage() {
                   <ul className="space-y-2">
                     <li className="flex items-center space-x-3 py-1">
                       <span className="icon-[tabler--circle-check-filled] text-primary size-5 shrink-0"></span>
-                      <span className="text-base-content/80">Import from CSV or Sortly</span>
+                      <span className="text-base-content/80">Import from CSV</span>
                     </li>
                     <li className="flex items-center space-x-3 py-1">
                       <span className="icon-[tabler--circle-check-filled] text-primary size-5 shrink-0"></span>

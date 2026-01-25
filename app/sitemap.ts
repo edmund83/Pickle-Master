@@ -28,7 +28,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/compare/fishbowl-alternative',
     '/compare/inflow-alternative',
     '/migration',
-    '/migration/sortly',
     '/integrations',
     '/security',
     '/learn',

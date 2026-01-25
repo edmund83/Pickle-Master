@@ -736,8 +736,8 @@ export default function PricingPage() {
                   Switching from Another Tool?
                 </h2>
                 <p className="text-base-content/80 mt-4 max-w-2xl text-lg">
-                  We make migration painless. Import your inventory from Sortly, spreadsheets, or any CSV in minutes.
-                  Business plan customers get hands-on migration help at no extra cost.
+                  We make migration painless. Import your inventory from spreadsheets or any CSV in minutes. Business plan
+                  customers get hands-on migration help at no extra cost.
                 </p>
                 <ul className="mt-6 grid gap-3 sm:grid-cols-2">
                   <li className="flex items-center gap-2">
@@ -746,7 +746,7 @@ export default function PricingPage() {
                   </li>
                   <li className="flex items-center gap-2">
                     <span className="icon-[tabler--check] text-success size-5"></span>
-                    <span className="text-base-content/80">Sortly migration guide</span>
+                    <span className="text-base-content/80">Step-by-step migration guide</span>
                   </li>
                   <li className="flex items-center gap-2">
                     <span className="icon-[tabler--check] text-success size-5"></span>
@@ -759,8 +759,8 @@ export default function PricingPage() {
                 </ul>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-                <Link href="/migration/sortly" className="btn btn-primary btn-lg">
-                  Migrate from Sortly
+                <Link href="/migration" className="btn btn-primary btn-lg">
+                  View migration guide
                   <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
                 </Link>
                 <Link href="/demo" className="btn btn-outline btn-secondary btn-lg">

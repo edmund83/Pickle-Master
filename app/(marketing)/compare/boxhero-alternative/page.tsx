@@ -18,9 +18,9 @@ import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/li
  */
 
 export const metadata: Metadata = marketingMetadata({
-  title: 'BoxHero alternative',
+  title: 'BoxHero Alternative | StockZip Offline Barcode Inventory',
   description:
-    'Switch from BoxHero to StockZip for offline-first barcode scanning, real check-in/check-out workflows, and trust-first pricing designed for growing teams.',
+    'Exploring BoxHero alternatives? StockZip is built for offline-first barcode scanning, tool check-in/check-out, and clear pricing for small teams.',
   pathname: '/compare/boxhero-alternative',
 })
 
@@ -29,7 +29,7 @@ const BOXHERO_FAQS: FaqItem[] = [
   {
     question: 'How is StockZip different from BoxHero?',
     answer:
-      'StockZip focuses on offline-first reliability, native check-in/check-out workflows, and trust-first pricing that scales predictably as your catalog grows. Unlike BoxHero, StockZip works seamlessly in warehouses and jobsites with unreliable internet.',
+      'BoxHero is a great fit for straightforward inventory tracking for small teams. StockZip focuses on scan-first, offline-first barcode workflows and tool/asset check-in/check-out accountability.',
   },
   {
     question: 'Can I scan barcodes offline with StockZip?',
@@ -49,7 +49,7 @@ const BOXHERO_FAQS: FaqItem[] = [
   {
     question: 'Is StockZip pricing predictable?',
     answer:
-      'Yes. StockZip uses trust-first pricing with no surprise tier jumps or hard SKU limits that force expensive upgrades as your business grows. Your price stays predictable.',
+      'Yes. StockZip uses clear pricing that scales predictably as your catalog grows.',
   },
   {
     question: 'What barcode scanners work with StockZip?',
@@ -59,7 +59,7 @@ const BOXHERO_FAQS: FaqItem[] = [
   {
     question: 'Can I export my data from StockZip anytime?',
     answer:
-      'Yes. Your data belongs to you. Export your full inventory as CSV anytime with no restrictions or fees. We believe in data ownership.',
+      'Yes. Export your full inventory as CSV anytime. We believe in data ownership.',
   },
 ]
 
@@ -68,37 +68,37 @@ const COMPARISON_ROWS = [
   {
     category: 'Offline reliability',
     stockzip: 'Offline-first mobile scanning with automatic sync',
-    boxhero: 'Requires stable internet for real-time updates',
+    boxhero: 'Cloud-first workflows for teams that work online',
     stockzipWins: true,
   },
   {
     category: 'Check-in / check-out',
     stockzip: 'Native issue/return workflow with due dates and accountability',
-    boxhero: 'Limited asset tracking workflows',
+    boxhero: 'Straightforward inventory tracking with flexible organization',
     stockzipWins: true,
   },
   {
     category: 'Pricing model',
     stockzip: 'Trust-first pricing with predictable scaling',
-    boxhero: 'Tiered pricing with feature gating',
+    boxhero: 'Plans designed for different team sizes and needs',
     stockzipWins: true,
   },
   {
     category: 'Bulk editing',
     stockzip: 'Excel-grade bulk updates with preview diffs and undo',
-    boxhero: 'Standard bulk operations',
+    boxhero: 'Simple bulk updates for routine changes',
     stockzipWins: true,
   },
   {
     category: 'Audit trail',
     stockzip: 'Full audit trail with "who changed what" accountability',
-    boxhero: 'Basic activity logging',
+    boxhero: 'Activity history to keep teams aligned',
     stockzipWins: true,
   },
   {
     category: 'Migration',
     stockzip: 'CSV import with guided field mapping + verification workflow',
-    boxhero: 'Standard export options',
+    boxhero: 'CSV export options to help move data',
     stockzipWins: true,
   },
 ]
@@ -117,14 +117,14 @@ const KEY_DIFFERENTIATORS = [
     icon: 'icon-[tabler--arrows-exchange]',
     title: 'Native Check-In/Check-Out',
     description:
-      'Issue tools and assets to staff with a scan. Set due dates, track overdue items, and see exactly who has what. No folder hacks or workarounds needed.',
+      'Issue tools and assets to staff with a scan. Set due dates, track overdue items, and see exactly who has what.',
   },
   {
     id: 'trust-pricing',
     icon: 'icon-[tabler--currency-dollar]',
     title: 'Trust-First Pricing',
     description:
-      'No surprise tier jumps. No hard SKU limits that force expensive upgrades. Your price scales predictably as your catalog grows, so you can focus on your business.',
+      'Clear pricing that scales predictably as your catalog grows, so you can budget with confidence.',
   },
 ]
 
@@ -166,16 +166,15 @@ export default function BoxHeroAlternativePage() {
               </h1>
               <p className="text-base-content/80 text-lg">
                 StockZip is built for barcode scanning that works offline, with native check-in/check-out workflows and
-                trust-first pricing that scales with your business. No surprise tier jumps. No internet dependency.
+                trust-first pricing that scales with your business.
               </p>
               <div className="flex flex-wrap items-center gap-4">
-                <Link href="/signup" className="btn btn-primary btn-lg">
-                  Start Free Trial
+                <Link href="#stockzip-alternative" className="btn btn-primary btn-lg">
+                  See StockZip as an alternative
                   <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
                 </Link>
-                <Link href="/demo" className="btn btn-outline btn-secondary btn-lg">
-                  <span className="icon-[tabler--player-play] size-5"></span>
-                  Watch Demo
+                <Link href="#boxhero-fit" className="btn btn-outline btn-secondary btn-lg">
+                  When BoxHero is a great fit
                 </Link>
               </div>
               {/* Trust indicators */}
@@ -195,34 +194,34 @@ export default function BoxHeroAlternativePage() {
               </div>
             </div>
 
-            {/* Right Content - Problem/Pain visualization */}
+            {/* Right Content - Competitor-first context */}
             <div className="bg-base-200 rounded-box flex flex-col justify-center p-6 sm:p-8">
-              <h2 className="text-base-content text-xl font-semibold">Common BoxHero frustrations</h2>
+              <h2 className="text-base-content text-xl font-semibold">Why teams choose BoxHero</h2>
               <ul className="mt-6 space-y-4">
                 <li className="flex items-start gap-3">
-                  <span className="icon-[tabler--wifi-off] text-error mt-0.5 size-5 shrink-0"></span>
+                  <span className="icon-[tabler--rocket] text-success mt-0.5 size-5 shrink-0"></span>
                   <div>
-                    <span className="text-base-content font-medium">Scanning fails without internet</span>
+                    <span className="text-base-content font-medium">Simple setup for small teams</span>
                     <p className="text-base-content/70 mt-1 text-sm">
-                      In warehouses and jobsites with poor connectivity, you lose real-time updates.
+                      Get inventory organized quickly and keep everyone aligned.
                     </p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="icon-[tabler--tool] text-error mt-0.5 size-5 shrink-0"></span>
+                  <span className="icon-[tabler--list-check] text-success mt-0.5 size-5 shrink-0"></span>
                   <div>
-                    <span className="text-base-content font-medium">No proper tool check-out tracking</span>
+                    <span className="text-base-content font-medium">Straightforward day-to-day workflows</span>
                     <p className="text-base-content/70 mt-1 text-sm">
-                      Workarounds and folder hacks to track who has what equipment.
+                      A clean, simple experience for routine inventory tracking.
                     </p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="icon-[tabler--trending-up] text-error mt-0.5 size-5 shrink-0"></span>
+                  <span className="icon-[tabler--cloud] text-success mt-0.5 size-5 shrink-0"></span>
                   <div>
-                    <span className="text-base-content font-medium">Pricing jumps as you grow</span>
+                    <span className="text-base-content font-medium">Cloud-first collaboration</span>
                     <p className="text-base-content/70 mt-1 text-sm">
-                      Hit a tier limit and suddenly face expensive upgrades.
+                      Shared visibility that works well for teams managing inventory together.
                     </p>
                   </div>
                 </li>
@@ -240,7 +239,7 @@ export default function BoxHeroAlternativePage() {
               Quick comparison: StockZip vs BoxHero
             </h2>
             <p className="text-base-content/80 mx-auto mt-3 max-w-2xl text-lg">
-              See how StockZip compares for small teams that need reliable scanning and accountability.
+              A quick overview to help you evaluate which product fits your workflows.
             </p>
           </div>
 
@@ -278,8 +277,8 @@ export default function BoxHeroAlternativePage() {
           </div>
 
           <p className="text-base-content/50 mt-6 text-center text-sm">
-            StockZip and BoxHero are trademarks of their respective owners. Comparison based on publicly available
-            information as of January 2026.
+            StockZip is not affiliated with or endorsed by BoxHero. BoxHero is a trademark of its respective owner.
+            Comparison is based on publicly available information as of January 2026; features and pricing may change.
           </p>
         </div>
       </section>
@@ -288,7 +287,7 @@ export default function BoxHeroAlternativePage() {
       <section className="bg-base-100 px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
         <div className="mx-auto max-w-7xl">
           <div className="mb-12 text-center">
-            <h2 className="text-base-content text-2xl font-semibold md:text-3xl">Why teams switch to StockZip</h2>
+            <h2 className="text-base-content text-2xl font-semibold md:text-3xl">What StockZip focuses on</h2>
             <p className="text-base-content/80 mx-auto mt-3 max-w-2xl text-lg">
               StockZip is purpose-built for teams that need reliability, accountability, and predictable pricing.
             </p>
@@ -311,7 +310,7 @@ export default function BoxHeroAlternativePage() {
       </section>
 
       {/* When to Switch / When BoxHero Works - Decision helper */}
-      <section className="bg-base-200 px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+      <section id="boxhero-fit" className="bg-base-200 px-4 py-16 sm:px-6 sm:py-20 lg:px-8 scroll-mt-28">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-8 lg:grid-cols-2">
             {/* When BoxHero works well */}
@@ -330,7 +329,7 @@ export default function BoxHeroAlternativePage() {
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="icon-[tabler--circle-check] text-success mt-0.5 size-5 shrink-0"></span>
-                    <span>Your catalog fits comfortably within their tier limits</span>
+                    <span>You&apos;ve found a plan that fits your catalog size</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="icon-[tabler--circle-check] text-success mt-0.5 size-5 shrink-0"></span>
@@ -340,11 +339,11 @@ export default function BoxHeroAlternativePage() {
               </div>
             </div>
 
-            {/* When you should switch */}
+            {/* When StockZip is a fit */}
             <div className="card border-primary/30 bg-base-100 border shadow-none">
               <div className="card-body">
-                <h2 className="text-base-content text-xl font-semibold">When you should switch to StockZip</h2>
-                <p className="text-base-content/70 mt-2">StockZip is the better choice when:</p>
+                <h2 className="text-base-content text-xl font-semibold">When StockZip is a great fit</h2>
+                <p className="text-base-content/70 mt-2">StockZip is a great fit when:</p>
                 <ul className="text-base-content/80 mt-4 space-y-3">
                   <li className="flex items-start gap-3">
                     <span className="icon-[tabler--alert-triangle] text-warning mt-0.5 size-5 shrink-0"></span>
@@ -356,21 +355,13 @@ export default function BoxHeroAlternativePage() {
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="icon-[tabler--alert-triangle] text-warning mt-0.5 size-5 shrink-0"></span>
-                    <span>You want pricing that scales predictably without tier jumps</span>
+                    <span>You want pricing that scales predictably</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="icon-[tabler--alert-triangle] text-warning mt-0.5 size-5 shrink-0"></span>
                     <span>You need &quot;who changed what&quot; accountability for inventory</span>
                   </li>
                 </ul>
-                <div className="mt-6 flex flex-wrap gap-3">
-                  <Link href="/demo" className="btn btn-primary">
-                    Watch demo
-                  </Link>
-                  <Link href="/pricing" className="btn btn-outline btn-secondary">
-                    See pricing
-                  </Link>
-                </div>
               </div>
             </div>
           </div>
@@ -384,7 +375,7 @@ export default function BoxHeroAlternativePage() {
             <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
               <div className="max-w-2xl">
                 <h2 className="text-base-content text-2xl font-semibold md:text-3xl">
-                  Ready to switch from BoxHero?
+                  A simple way to evaluate StockZip
                 </h2>
                 <p className="text-base-content/80 mt-3 text-lg">
                   Export your BoxHero data as CSV, import into StockZip, and run one scan-first verification count. Most
@@ -421,15 +412,6 @@ export default function BoxHeroAlternativePage() {
                   </ul>
                 </div>
               </div>
-              <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-                <Link href="/signup" className="btn btn-primary btn-lg">
-                  Start Free Trial
-                  <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
-                </Link>
-                <Link href="/features/barcode-scanning" className="btn btn-outline btn-secondary btn-lg">
-                  Barcode scanning
-                </Link>
-              </div>
             </div>
           </div>
         </div>
@@ -440,7 +422,7 @@ export default function BoxHeroAlternativePage() {
         <div className="mx-auto max-w-4xl">
           <div className="mb-12 text-center">
             <h2 className="text-base-content text-2xl font-semibold md:text-3xl">
-              Frequently asked questions about switching from BoxHero
+              Frequently asked questions about BoxHero alternatives
             </h2>
             <p className="text-base-content/80 mt-3 text-lg">
               Common questions from teams evaluating StockZip as a BoxHero alternative.
@@ -463,11 +445,9 @@ export default function BoxHeroAlternativePage() {
           <div className="mt-10 text-center">
             <p className="text-base-content/70">Have more questions?</p>
             <div className="mt-4 flex flex-wrap justify-center gap-3">
-              <Link href="/demo" className="btn btn-primary">
-                Watch demo
-              </Link>
-              <Link href="/pricing" className="btn btn-outline btn-secondary">
-                See pricing
+              <Link href="#stockzip-alternative" className="btn btn-primary">
+                See StockZip as an alternative
+                <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
               </Link>
             </div>
           </div>
@@ -475,22 +455,23 @@ export default function BoxHeroAlternativePage() {
       </section>
 
       {/* Final CTA */}
-      <section className="bg-base-100 px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+      <section id="stockzip-alternative" className="bg-base-100 px-4 py-16 sm:px-6 sm:py-20 lg:px-8 scroll-mt-28">
         <div className="mx-auto max-w-4xl text-center">
           <h2 className="text-base-content text-2xl font-semibold md:text-3xl">
-            Stop fighting unreliable scanning. Start with StockZip.
+            Explore StockZip as a BoxHero alternative
           </h2>
           <p className="text-base-content/80 mx-auto mt-4 max-w-2xl text-lg">
-            Join teams who switched from BoxHero for offline reliability, native check-in/check-out, and pricing that
-            grows with you.
+            If you like BoxHero&apos;s simplicity and want scan-first, offline-first barcode workflows with check-in/check-out
+            accountability, StockZip is worth trying.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <Link href="/signup" className="btn btn-primary btn-lg">
+            <Link href="/demo" className="btn btn-primary btn-lg">
+              Watch demo
+              <span className="icon-[tabler--player-play] size-5"></span>
+            </Link>
+            <Link href="/signup" className="btn btn-outline btn-secondary btn-lg">
               Start Free Trial
               <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
-            </Link>
-            <Link href="/compare" className="btn btn-outline btn-secondary btn-lg">
-              See all comparisons
             </Link>
           </div>
         </div>

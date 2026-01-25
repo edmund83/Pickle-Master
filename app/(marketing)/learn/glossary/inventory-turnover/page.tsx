@@ -9,7 +9,7 @@
  * Primary keyword: "inventory turnover ratio"
  * Secondary keywords: "inventory turnover formula", "how to calculate inventory turnover",
  *   "what is a good inventory turnover ratio", "inventory turnover calculator"
- * Est. volume: 1,100+ monthly (Sortly proof: 1,113 traffic, 248 keywords)
+ * Est. volume: 1,100+ monthly
  */
 
 import type { Metadata } from 'next'
