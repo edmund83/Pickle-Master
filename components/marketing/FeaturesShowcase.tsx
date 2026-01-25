@@ -38,7 +38,7 @@ const FEATURES: Feature[] = [
       },
     ],
     imageAlt: 'StockZip folder-style inventory with photo cards',
-    imageSrc: '/images/Folder Style Inventory.png',
+    imageSrc: '/images/folder-style-inventory.png',
   },
   {
     category: 'Scanning',
@@ -59,7 +59,7 @@ const FEATURES: Feature[] = [
       },
     ],
     imageAlt: 'StockZip barcode scanning and offline inventory tracking',
-    imageSrc: '/images/ScanBarCodeIMS.jpg',
+    imageSrc: '/images/scan-barcode-ims.jpg',
   },
   {
     category: 'Accountability',
@@ -80,7 +80,7 @@ const FEATURES: Feature[] = [
       },
     ],
     imageAlt: 'StockZip check-in check-out and audit trail features',
-    imageSrc: '/images/Tracerbility.png',
+    imageSrc: '/images/traceability.png',
   },
   {
     category: 'Team Sync',
@@ -101,7 +101,7 @@ const FEATURES: Feature[] = [
       },
     ],
     imageAlt: 'StockZip real-time team collaboration and multi-location tracking',
-    imageSrc: '/images/StockIMS.jpg',
+    imageSrc: '/images/stock-ims.jpg',
   },
 ]
 

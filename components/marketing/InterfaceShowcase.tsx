@@ -65,7 +65,7 @@ export function InterfaceShowcase() {
           {/* Feature Center - App Screenshot */}
           <div className="intersect-once intersect:motion-preset-expand intersect:motion-duration-[900ms] intersect:motion-opacity-in-0">
             <Image
-              src="/images/Mobile Inventory Management.png"
+              src="/images/mobile-inventory-management.png"
               alt="StockZip Inventory Management System"
               width={332}
               height={670}
