@@ -22,7 +22,7 @@ function LoginForm() {
   const [rememberMe, setRememberMe] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [oauthLoading, setOauthLoading] = useState<'google' | 'apple' | null>(null)
+  const [oauthLoading, setOauthLoading] = useState<'google' | null>(null)
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -67,25 +67,6 @@ function LoginForm() {
     }
   }
 
-  const handleAppleLogin = async () => {
-    setError(null)
-    setOauthLoading('apple')
-
-    try {
-      const supabase = createClient()
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'apple',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=${redirectTo}`,
-        },
-      })
-
-      if (error) throw error
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to sign in with Apple')
-      setOauthLoading(null)
-    }
-  }
 
   return (
     <div
@@ -157,12 +138,12 @@ function LoginForm() {
           )}
 
           {/* OAuth Buttons */}
-          <div className="flex w-full gap-3 max-sm:flex-col">
+          <div className="flex w-full">
             <button
               type="button"
               onClick={handleGoogleLogin}
               disabled={oauthLoading !== null || loading}
-              className="btn btn-outline btn-secondary grow"
+              className="btn btn-outline btn-secondary w-full"
             >
               {oauthLoading === 'google' ? (
                 <span className="loading loading-spinner loading-sm"></span>
@@ -175,20 +156,7 @@ function LoginForm() {
                   className="size-5 object-cover"
                 />
               )}
-              Google
-            </button>
-            <button
-              type="button"
-              onClick={handleAppleLogin}
-              disabled={oauthLoading !== null || loading}
-              className="btn btn-outline btn-secondary grow"
-            >
-              {oauthLoading === 'apple' ? (
-                <span className="loading loading-spinner loading-sm"></span>
-              ) : (
-                <span className="icon-[tabler--brand-apple] size-5"></span>
-              )}
-              Apple
+              Continue with Google
             </button>
           </div>
 
