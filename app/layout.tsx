@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import { GoogleAnalytics } from '@/components/analytics/GoogleAnalytics'
 
 export const metadata: Metadata = {
   title: 'StockZip - Simple Inventory Management',
@@ -44,6 +45,7 @@ export default function RootLayout({
         <meta name="mobile-web-app-capable" content="yes" />
       </head>
       <body className="min-h-screen bg-base-100 font-sans antialiased" suppressHydrationWarning>
+        <GoogleAnalytics />
         {children}
       </body>
     </html>
