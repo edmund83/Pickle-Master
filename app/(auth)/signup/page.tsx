@@ -53,7 +53,7 @@ function SignupForm() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [oauthLoading, setOauthLoading] = useState<'google' | 'apple' | null>(null)
+  const [oauthLoading, setOauthLoading] = useState<'google' | null>(null)
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -116,25 +116,6 @@ function SignupForm() {
     }
   }
 
-  const handleAppleSignup = async () => {
-    setError(null)
-    setOauthLoading('apple')
-
-    try {
-      const supabase = createClient()
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'apple',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
-        },
-      })
-
-      if (error) throw error
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to sign up with Apple')
-      setOauthLoading(null)
-    }
-  }
 
   if (success) {
     return (
@@ -214,12 +195,12 @@ function SignupForm() {
           )}
 
           {/* Social Login Buttons */}
-          <div className="flex w-full gap-3 max-sm:flex-col">
+          <div className="flex w-full">
             <button
               type="button"
               onClick={handleGoogleSignup}
               disabled={oauthLoading !== null || loading}
-              className="btn btn-outline btn-secondary grow"
+              className="btn btn-outline btn-secondary w-full"
             >
               {oauthLoading === 'google' ? (
                 <span className="loading loading-spinner loading-sm"></span>
@@ -232,20 +213,7 @@ function SignupForm() {
                   className="size-5 object-cover"
                 />
               )}
-              Google
-            </button>
-            <button
-              type="button"
-              onClick={handleAppleSignup}
-              disabled={oauthLoading !== null || loading}
-              className="btn btn-outline btn-secondary grow"
-            >
-              {oauthLoading === 'apple' ? (
-                <span className="loading loading-spinner loading-sm"></span>
-              ) : (
-                <span className="icon-[tabler--brand-apple] size-5"></span>
-              )}
-              Apple
+              Continue with Google
             </button>
           </div>
 
@@ -479,10 +447,7 @@ function SignupFormSkeleton() {
             <div className="h-5 w-72 rounded bg-neutral-200"></div>
           </div>
           <div className="h-8 w-56 rounded-full bg-neutral-200"></div>
-          <div className="flex gap-3">
-            <div className="h-10 flex-1 rounded-lg bg-neutral-200"></div>
-            <div className="h-10 flex-1 rounded-lg bg-neutral-200"></div>
-          </div>
+          <div className="h-10 w-full rounded-lg bg-neutral-200"></div>
           <div className="h-4 w-full rounded bg-neutral-200"></div>
           <div className="space-y-4">
             <div className="h-10 w-full rounded-lg bg-neutral-200"></div>
