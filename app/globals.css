@@ -62,7 +62,7 @@
 }
 
 @plugin "flyonui" {
-  themes: stockzip --default, dark --prefersdark;
+  themes: stockzip --default;
 }
 
 @plugin "@iconify/tailwind4";
