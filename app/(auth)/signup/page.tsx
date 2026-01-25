@@ -41,7 +41,7 @@ type PlanType = keyof typeof PLAN_DETAILS
 function SignupForm() {
   const searchParams = useSearchParams()
   const planParam = searchParams.get('plan') as PlanType | null
-  const selectedPlan = planParam && PLAN_DETAILS[planParam] ? planParam : 'growth'
+  const selectedPlan = planParam && PLAN_DETAILS[planParam] ? planParam : 'early_access'
   const planInfo = PLAN_DETAILS[selectedPlan]
 
   const [fullName, setFullName] = useState('')
