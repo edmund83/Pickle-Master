@@ -18,9 +18,9 @@ import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/li
  */
 
 export const metadata: Metadata = marketingMetadata({
-  title: 'inFlow alternative',
+  title: 'inFlow Alternative | StockZip Offline Barcode Inventory',
   description:
-    'Switch from inFlow to StockZip for simpler inventory management with offline barcode scanning, check-in/check-out workflows, and predictable pricing.',
+    'Exploring inFlow alternatives? StockZip focuses on scan-first barcode workflows, offline-first mobile scanning, and check-in/check-out accountability for small teams.',
   pathname: '/compare/inflow-alternative',
 })
 
@@ -29,7 +29,7 @@ const INFLOW_FAQS: FaqItem[] = [
   {
     question: 'How is StockZip different from inFlow?',
     answer:
-      'StockZip is designed for small teams that need mobile-first scanning, offline reliability, and simple workflows without the complexity of full ERP features. We focus on doing fewer things exceptionally well.',
+      'inFlow is a strong fit for teams that want inventory plus purchasing and sales order workflows. StockZip focuses on scan-first barcode workflows, offline-first mobile scanning, and tool/asset check-in/check-out accountability.',
   },
   {
     question: 'Does StockZip work offline?',
@@ -44,12 +44,12 @@ const INFLOW_FAQS: FaqItem[] = [
   {
     question: 'Is StockZip easier to set up than inFlow?',
     answer:
-      'Yes. StockZip focuses on simplicity — import your CSV, label top movers, and start scanning. No complex configuration, no ERP-style setup wizard, no weeks of implementation.',
+      'Yes. StockZip is quick to roll out — import your CSV, label top movers, and start scanning. Most teams get value on day one.',
   },
   {
     question: 'How does StockZip pricing compare to inFlow?',
     answer:
-      'StockZip uses trust-first pricing that scales predictably. No surprise tier jumps or feature gating as your business grows. Your price stays fair as your catalog expands.',
+      'StockZip uses clear pricing that scales predictably as your catalog grows.',
   },
   {
     question: 'Can I migrate my data from inFlow?',
@@ -59,46 +59,46 @@ const INFLOW_FAQS: FaqItem[] = [
   {
     question: 'Does StockZip have purchase orders and sales orders?',
     answer:
-      'StockZip focuses on core inventory accuracy, scanning, and accountability. If you need full ERP features like POs and sales orders, inFlow may be a better fit. We do what we do exceptionally well.',
+      'StockZip focuses on inventory accuracy, scanning, and accountability. If you need purchasing and sales order workflows in the same system, inFlow may be a great fit.',
   },
 ]
 
 // Comparison data following WebsiteGuideline.md comparison template
 const COMPARISON_ROWS = [
   {
-    category: 'Complexity',
-    stockzip: 'Simple, staff-friendly UI focused on scanning and counts',
-    inflow: 'Full-featured with ERP-like complexity',
+    category: 'Scope',
+    stockzip: 'Focused on scanning, counts, and accountability',
+    inflow: 'Broader workflows including purchasing and sales orders',
     stockzipWins: true,
   },
   {
-    category: 'Offline mode',
+    category: 'Offline-first workflows',
     stockzip: 'Offline-first mobile scanning with automatic sync',
-    inflow: 'Desktop-focused with limited offline capability',
+    inflow: 'Desktop + mobile access for day-to-day inventory tasks',
     stockzipWins: true,
   },
   {
-    category: 'Check-in / check-out',
+    category: 'Tools & assets',
     stockzip: 'Native issue/return workflow with due dates',
-    inflow: 'Requires workarounds for asset tracking',
+    inflow: 'Inventory management designed for operations and order workflows',
     stockzipWins: true,
   },
   {
-    category: 'Mobile experience',
+    category: 'Mobile workflows',
     stockzip: 'Touch-first, camera scanning, works offline',
-    inflow: 'Mobile app available but desktop-centric design',
+    inflow: 'Desktop-first management with mobile access',
     stockzipWins: true,
   },
   {
-    category: 'Setup time',
+    category: 'Getting started',
     stockzip: 'Import CSV and start scanning in minutes',
-    inflow: 'Longer setup for full feature configuration',
+    inflow: 'Configurable setup for teams with broader workflows',
     stockzipWins: true,
   },
   {
-    category: 'Pricing',
-    stockzip: 'Trust-first pricing with predictable scaling',
-    inflow: 'Tiered pricing with feature-based gating',
+    category: 'Pricing approach',
+    stockzip: 'Clear pricing with predictable scaling',
+    inflow: 'Multiple plan options for different needs',
     stockzipWins: true,
   },
 ]
@@ -108,9 +108,9 @@ const KEY_DIFFERENTIATORS = [
   {
     id: 'simplicity',
     icon: 'icon-[tabler--sparkles]',
-    title: 'Simplicity Over Complexity',
+    title: 'Focused workflows',
     description:
-      'StockZip does fewer things, but does them exceptionally well. No ERP feature bloat. No weeks of configuration. Just fast, reliable inventory tracking that your whole team can use in minutes.',
+      'StockZip focuses on scan-first inventory accuracy — fast scanning, counts, and accountability — so your team can be productive quickly.',
   },
   {
     id: 'mobile-first',
@@ -124,7 +124,7 @@ const KEY_DIFFERENTIATORS = [
     icon: 'icon-[tabler--arrows-exchange]',
     title: 'Native Check-In/Check-Out',
     description:
-      'Issue tools and assets to staff with a scan. Set due dates, track overdue items, and maintain accountability. No workarounds or folder hacks required.',
+      'Issue tools and assets to staff with a scan. Set due dates, track overdue items, and maintain accountability.',
   },
 ]
 
@@ -143,7 +143,7 @@ export default function InFlowAlternativePage() {
         data={softwareApplicationJsonLd({
           name: 'StockZip Inventory',
           description:
-            'Simple inventory management with barcode scanning and offline reliability. An inFlow alternative for small teams.',
+            'Scan-first barcode inventory with offline-first mobile workflows. An inFlow alternative for small teams.',
           pathname: '/compare/inflow-alternative',
         })}
       />
@@ -163,17 +163,16 @@ export default function InFlowAlternativePage() {
                 <span className="from-primary to-secondary bg-gradient-to-r bg-clip-text text-transparent">simple</span>
               </h1>
               <p className="text-base-content/80 text-lg">
-                StockZip gives you barcode scanning, offline reliability, and check-in/check-out workflows without the
-                complexity of a full ERP. We do fewer things, but do them exceptionally well.
+                inFlow is a strong option for teams that want inventory plus purchasing and sales order workflows. StockZip
+                focuses on scan-first barcode workflows, offline-first scanning, and check-in/check-out accountability.
               </p>
               <div className="flex flex-wrap items-center gap-4">
-                <Link href="/signup" className="btn btn-primary btn-lg">
-                  Start Free Trial
+                <Link href="#stockzip-alternative" className="btn btn-primary btn-lg">
+                  See StockZip as an alternative
                   <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
                 </Link>
-                <Link href="/demo" className="btn btn-outline btn-secondary btn-lg">
-                  <span className="icon-[tabler--player-play] size-5"></span>
-                  Watch Demo
+                <Link href="#inflow-fit" className="btn btn-outline btn-secondary btn-lg">
+                  When inFlow works well
                 </Link>
               </div>
               {/* Trust indicators */}
@@ -193,34 +192,34 @@ export default function InFlowAlternativePage() {
               </div>
             </div>
 
-            {/* Right Content - Problem/Pain visualization */}
+            {/* Right Content - Competitor-first context */}
             <div className="bg-base-200 rounded-box flex flex-col justify-center p-6 sm:p-8">
-              <h2 className="text-base-content text-xl font-semibold">Common inFlow frustrations</h2>
+              <h2 className="text-base-content text-xl font-semibold">Why teams choose inFlow</h2>
               <ul className="mt-6 space-y-4">
                 <li className="flex items-start gap-3">
-                  <span className="icon-[tabler--puzzle] text-error mt-0.5 size-5 shrink-0"></span>
+                  <span className="icon-[tabler--layers] text-success mt-0.5 size-5 shrink-0"></span>
                   <div>
-                    <span className="text-base-content font-medium">Too many features you don&apos;t need</span>
+                    <span className="text-base-content font-medium">All-in-one workflows</span>
                     <p className="text-base-content/70 mt-1 text-sm">
-                      ERP-style complexity when all you need is fast scanning and accurate counts.
+                      Helpful when you want inventory alongside purchasing and sales order processes.
                     </p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="icon-[tabler--device-desktop] text-error mt-0.5 size-5 shrink-0"></span>
+                  <span className="icon-[tabler--device-desktop] text-success mt-0.5 size-5 shrink-0"></span>
                   <div>
-                    <span className="text-base-content font-medium">Desktop-centric design</span>
+                    <span className="text-base-content font-medium">Desktop-first management</span>
                     <p className="text-base-content/70 mt-1 text-sm">
-                      Mobile feels like an afterthought when you need to scan on the floor.
+                      A strong fit for teams that prefer managing inventory from a desk.
                     </p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="icon-[tabler--clock] text-error mt-0.5 size-5 shrink-0"></span>
+                  <span className="icon-[tabler--report-analytics] text-success mt-0.5 size-5 shrink-0"></span>
                   <div>
-                    <span className="text-base-content font-medium">Long setup and configuration</span>
+                    <span className="text-base-content font-medium">Operational breadth</span>
                     <p className="text-base-content/70 mt-1 text-sm">
-                      Weeks of setup when you just want to start scanning and tracking.
+                      Often chosen by teams that want broader workflows beyond scanning.
                     </p>
                   </div>
                 </li>
@@ -238,7 +237,7 @@ export default function InFlowAlternativePage() {
               Quick comparison: StockZip vs inFlow
             </h2>
             <p className="text-base-content/80 mx-auto mt-3 max-w-2xl text-lg">
-              See how StockZip compares for teams that want simplicity over ERP complexity.
+              A quick overview to help you evaluate which product fits your workflows.
             </p>
           </div>
 
@@ -276,8 +275,8 @@ export default function InFlowAlternativePage() {
           </div>
 
           <p className="text-base-content/50 mt-6 text-center text-sm">
-            StockZip and inFlow are trademarks of their respective owners. Comparison based on publicly available
-            information as of January 2026.
+            StockZip is not affiliated with or endorsed by inFlow. inFlow is a trademark of its respective owner.
+            Comparison is based on publicly available information as of January 2026; features and pricing may change.
           </p>
         </div>
       </section>
@@ -309,7 +308,7 @@ export default function InFlowAlternativePage() {
       </section>
 
       {/* When to Switch / When inFlow Works - Decision helper */}
-      <section className="bg-base-200 px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+      <section id="inflow-fit" className="bg-base-200 px-4 py-16 sm:px-6 sm:py-20 lg:px-8 scroll-mt-28">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-8 lg:grid-cols-2">
             {/* When inFlow works well */}
@@ -320,7 +319,7 @@ export default function InFlowAlternativePage() {
                 <ul className="text-base-content/80 mt-4 space-y-3">
                   <li className="flex items-start gap-3">
                     <span className="icon-[tabler--circle-check] text-success mt-0.5 size-5 shrink-0"></span>
-                    <span>You need full ERP features (purchasing, sales orders)</span>
+                    <span>You want inventory with purchasing and sales order workflows</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="icon-[tabler--circle-check] text-success mt-0.5 size-5 shrink-0"></span>
@@ -328,7 +327,7 @@ export default function InFlowAlternativePage() {
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="icon-[tabler--circle-check] text-success mt-0.5 size-5 shrink-0"></span>
-                    <span>You have time for complex configuration</span>
+                    <span>You want a configurable system that matches your workflows</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="icon-[tabler--circle-check] text-success mt-0.5 size-5 shrink-0"></span>
@@ -338,15 +337,15 @@ export default function InFlowAlternativePage() {
               </div>
             </div>
 
-            {/* When you should switch */}
+            {/* When StockZip is a fit */}
             <div className="card border-primary/30 bg-base-100 border shadow-none">
               <div className="card-body">
-                <h2 className="text-base-content text-xl font-semibold">When you should switch to StockZip</h2>
-                <p className="text-base-content/70 mt-2">StockZip is the better choice when:</p>
+                <h2 className="text-base-content text-xl font-semibold">When StockZip is a great fit</h2>
+                <p className="text-base-content/70 mt-2">StockZip is a great fit when:</p>
                 <ul className="text-base-content/80 mt-4 space-y-3">
                   <li className="flex items-start gap-3">
                     <span className="icon-[tabler--alert-triangle] text-warning mt-0.5 size-5 shrink-0"></span>
-                    <span>You want simplicity over ERP complexity</span>
+                    <span>You want scan-first barcode workflows</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="icon-[tabler--alert-triangle] text-warning mt-0.5 size-5 shrink-0"></span>
@@ -358,17 +357,9 @@ export default function InFlowAlternativePage() {
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="icon-[tabler--alert-triangle] text-warning mt-0.5 size-5 shrink-0"></span>
-                    <span>You want to be up and running in minutes, not weeks</span>
+                    <span>You want a lightweight rollout that gets value quickly</span>
                   </li>
                 </ul>
-                <div className="mt-6 flex flex-wrap gap-3">
-                  <Link href="/demo" className="btn btn-primary">
-                    Watch demo
-                  </Link>
-                  <Link href="/pricing" className="btn btn-outline btn-secondary">
-                    See pricing
-                  </Link>
-                </div>
               </div>
             </div>
           </div>
@@ -381,10 +372,10 @@ export default function InFlowAlternativePage() {
           <div className="bg-base-200 rounded-box p-8 sm:p-12">
             <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
               <div className="max-w-2xl">
-                <h2 className="text-base-content text-2xl font-semibold md:text-3xl">Simplicity without sacrifice</h2>
+                <h2 className="text-base-content text-2xl font-semibold md:text-3xl">A focused way to run inventory</h2>
                 <p className="text-base-content/80 mt-3 text-lg">
                   StockZip focuses on what small teams actually need: fast scanning, reliable counts, and accountability.
-                  No weeks of setup, no feature bloat. Start scanning today.
+                  Get started quickly with a CSV import, then run your first scan-first verification count.
                 </p>
                 <div className="mt-6 grid gap-2 sm:grid-cols-2">
                   <ul className="space-y-2">
@@ -394,7 +385,7 @@ export default function InFlowAlternativePage() {
                     </li>
                     <li className="flex items-center gap-2">
                       <span className="icon-[tabler--circle-check-filled] text-primary size-5"></span>
-                      <span className="text-base-content/80">No complex configuration</span>
+                      <span className="text-base-content/80">Guided field mapping</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <span className="icon-[tabler--circle-check-filled] text-primary size-5"></span>
@@ -417,15 +408,6 @@ export default function InFlowAlternativePage() {
                   </ul>
                 </div>
               </div>
-              <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-                <Link href="/signup" className="btn btn-primary btn-lg">
-                  Start Free Trial
-                  <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
-                </Link>
-                <Link href="/solutions/small-business" className="btn btn-outline btn-secondary btn-lg">
-                  Small business solution
-                </Link>
-              </div>
             </div>
           </div>
         </div>
@@ -436,7 +418,7 @@ export default function InFlowAlternativePage() {
         <div className="mx-auto max-w-4xl">
           <div className="mb-12 text-center">
             <h2 className="text-base-content text-2xl font-semibold md:text-3xl">
-              Frequently asked questions about switching from inFlow
+              Frequently asked questions about inFlow alternatives
             </h2>
             <p className="text-base-content/80 mt-3 text-lg">
               Common questions from teams evaluating StockZip as an inFlow alternative.
@@ -459,11 +441,9 @@ export default function InFlowAlternativePage() {
           <div className="mt-10 text-center">
             <p className="text-base-content/70">Have more questions?</p>
             <div className="mt-4 flex flex-wrap justify-center gap-3">
-              <Link href="/demo" className="btn btn-primary">
-                Watch demo
-              </Link>
-              <Link href="/pricing" className="btn btn-outline btn-secondary">
-                See pricing
+              <Link href="#stockzip-alternative" className="btn btn-primary">
+                See StockZip as an alternative
+                <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
               </Link>
             </div>
           </div>
@@ -471,21 +451,23 @@ export default function InFlowAlternativePage() {
       </section>
 
       {/* Final CTA */}
-      <section className="bg-base-100 px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+      <section id="stockzip-alternative" className="bg-base-100 px-4 py-16 sm:px-6 sm:py-20 lg:px-8 scroll-mt-28">
         <div className="mx-auto max-w-4xl text-center">
           <h2 className="text-base-content text-2xl font-semibold md:text-3xl">
-            Ready for inventory management that just works?
+            Explore StockZip as an inFlow alternative
           </h2>
           <p className="text-base-content/80 mx-auto mt-4 max-w-2xl text-lg">
-            Join teams who switched from inFlow for simplicity, offline reliability, and pricing that grows with you.
+            If you want scan-first barcode workflows with offline-first mobile scanning and check-in/check-out accountability,
+            StockZip is worth trying.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <Link href="/signup" className="btn btn-primary btn-lg">
+            <Link href="/demo" className="btn btn-primary btn-lg">
+              Watch demo
+              <span className="icon-[tabler--player-play] size-5"></span>
+            </Link>
+            <Link href="/signup" className="btn btn-outline btn-secondary btn-lg">
               Start Free Trial
               <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
-            </Link>
-            <Link href="/compare" className="btn btn-outline btn-secondary btn-lg">
-              See all comparisons
             </Link>
           </div>
         </div>

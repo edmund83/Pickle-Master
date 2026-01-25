@@ -36,9 +36,9 @@ const FEATURES = [
   },
   {
     icon: 'icon-[tabler--switch-3]',
-    title: '1-click migration',
-    description: 'Bring your data over fast — especially from Sortly.',
-    href: '/migration/sortly',
+    title: 'Guided migration',
+    description: 'Bring your data over fast with CSV import and field mapping.',
+    href: '/migration',
   },
 ]
 

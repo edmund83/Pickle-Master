@@ -358,13 +358,13 @@ export default function AssetTrackingSolutionPage() {
               </div>
             </Link>
             <Link
-              href="/compare/sortly-alternative"
+              href="/compare"
               className="card card-border shadow-none transition-colors hover:border-primary/30"
             >
               <div className="card-body">
                 <span className="icon-[tabler--exchange] text-primary size-8"></span>
-                <h3 className="text-base-content mt-4 text-lg font-semibold">Sortly alternative</h3>
-                <p className="text-base-content/80 mt-2">Compare StockZip to Sortly for asset tracking.</p>
+                <h3 className="text-base-content mt-4 text-lg font-semibold">Compare options</h3>
+                <p className="text-base-content/80 mt-2">See how StockZip compares for asset tracking workflows.</p>
               </div>
             </Link>
           </div>

@@ -56,9 +56,9 @@ const FEATURES_FAQS: FaqItem[] = [
       'Yes. Bulk editing shows a preview of changes before applying. After applying, you can undo the entire batch if something went wrong. No more spreadsheet disasters.',
   },
   {
-    question: 'How does StockZip compare to Sortly?',
+    question: 'How does StockZip compare to other inventory tools?',
     answer:
-      'StockZip offers similar features to Sortly — barcode scanning, offline mode, check-in/check-out — but with transparent pricing (no SKU limits or surprise fees). See our detailed comparison at /compare/sortly-alternative.',
+      'StockZip focuses on scan-first barcode workflows, offline-first mobile reliability, and check-in/check-out accountability for tools and assets. See comparisons at /compare.',
   },
   {
     question: 'Can I use StockZip to track construction tools?',
@@ -528,14 +528,14 @@ export default function FeaturesPage() {
             </Link>
 
             <Link
-              href="/compare/sortly-alternative"
+              href="/compare"
               className="card bg-base-100 shadow-sm transition-all duration-300 hover:shadow-md hover:border-primary"
             >
               <div className="card-body">
                 <span className="icon-[tabler--arrows-exchange-2] text-primary size-8"></span>
-                <h3 className="text-base-content mt-4 text-lg font-semibold">Compare to Sortly</h3>
+                <h3 className="text-base-content mt-4 text-lg font-semibold">Compare options</h3>
                 <p className="text-base-content/80 mt-2">
-                  See how StockZip stacks up against Sortly on features and pricing.
+                  See how StockZip compares across features, workflows, and pricing.
                 </p>
               </div>
             </Link>

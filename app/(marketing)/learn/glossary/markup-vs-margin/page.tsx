@@ -9,7 +9,7 @@
  * Primary keyword: "markup vs margin"
  * Secondary keywords: "markup vs margin calculator", "difference between markup and margin",
  *   "margin vs markup formula", "how to calculate markup", "how to calculate margin"
- * Est. volume: 1,916+ monthly (inFlow proof: 1,916 traffic, 1,108 keywords)
+ * Est. volume: 1,916+ monthly
  */
 
 import type { Metadata } from 'next'

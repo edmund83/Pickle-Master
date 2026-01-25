@@ -7,7 +7,7 @@ import { breadcrumbJsonLd, softwareApplicationJsonLd } from '@/lib/marketing/jso
 export const metadata: Metadata = marketingMetadata({
   title: 'Migration',
   description:
-    'Migration guides and checklists to help you switch inventory tools quickly — including a Sortly migration guide built for small teams.',
+    'Migration guides and checklists to help you move inventory data quickly and confidently.',
   pathname: '/migration',
 })
 
@@ -36,30 +36,30 @@ export default function MigrationHubPage() {
         </p>
 
         <div className="mt-10 grid gap-6 md:grid-cols-2">
-          <Link
-            href="/migration/sortly"
-            className="card card-border shadow-none hover:border-primary transition-colors"
-          >
+          <div className="card card-border shadow-none">
             <div className="card-body">
               <div className="flex items-center justify-between gap-3">
-                <h2 className="text-base-content text-xl font-semibold">Sortly migration</h2>
-                <span className="badge badge-primary badge-soft rounded-full">Step-by-step</span>
+                <h2 className="text-base-content text-xl font-semibold">CSV migration checklist</h2>
+                <span className="badge badge-primary badge-soft rounded-full">Recommended</span>
               </div>
               <p className="text-base-content/80">
-                Export your catalog, import via CSV, label items, and run a scan-first verification count.
+                Export your catalog to CSV, map fields, import into StockZip, then run a scan-first verification count.
               </p>
-              <span className="link link-primary link-animated mt-2 w-fit">Open guide</span>
+              <span className="text-base-content/60 mt-2 text-sm">
+                Need help with mapping or cleanup? Request a demo for guided migration support.
+              </span>
             </div>
-          </Link>
+          </div>
 
           <div className="card card-border shadow-none border-base-content/10">
             <div className="card-body">
               <div className="flex items-center justify-between gap-3">
-                <h2 className="text-base-content text-xl font-semibold">More migrations</h2>
-                <span className="badge badge-outline badge-secondary rounded-full">Coming soon</span>
+                <h2 className="text-base-content text-xl font-semibold">Templates &amp; field mapping</h2>
+                <span className="badge badge-outline badge-secondary rounded-full">Included</span>
               </div>
               <p className="text-base-content/80">
-                We&apos;re adding migration playbooks for BoxHero, inFlow, and spreadsheets.
+                StockZip supports CSV import with field mapping, so you can match your existing columns to the right
+                fields.
               </p>
             </div>
           </div>
@@ -84,4 +84,3 @@ export default function MigrationHubPage() {
     </div>
   )
 }
-

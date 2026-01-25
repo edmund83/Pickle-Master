@@ -343,8 +343,8 @@ export default function DemoPage() {
                   Start Free Trial
                   <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
                 </Link>
-                <Link href="/migration/sortly" className="btn btn-outline btn-secondary btn-lg">
-                  Migrate from Sortly
+                <Link href="/migration" className="btn btn-outline btn-secondary btn-lg">
+                  Migration guide
                 </Link>
               </div>
             </div>

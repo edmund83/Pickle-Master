@@ -18,9 +18,9 @@ import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/li
  */
 
 export const metadata: Metadata = marketingMetadata({
-  title: 'Fishbowl alternative',
+  title: 'Fishbowl Alternative | StockZip Warehouse Barcode Inventory',
   description:
-    'Looking for a Fishbowl alternative? StockZip offers warehouse inventory management with barcode scanning, offline mode, and simpler pricing for small teams.',
+    'Exploring Fishbowl alternatives? StockZip focuses on warehouse barcode scanning, offline-first mobile workflows, and scan-first verification for small teams.',
   pathname: '/compare/fishbowl-alternative',
 })
 
@@ -29,7 +29,7 @@ const FISHBOWL_FAQS: FaqItem[] = [
   {
     question: 'How is StockZip different from Fishbowl?',
     answer:
-      'StockZip is designed for small teams that need warehouse scanning and accountability without the complexity and cost of enterprise software like Fishbowl. We focus on core inventory accuracy, not ERP features.',
+      'Fishbowl is a comprehensive inventory system used by teams with advanced workflows. StockZip is a focused alternative built for small teams that want warehouse barcode scanning, offline-first mobile workflows, and fast rollout.',
   },
   {
     question: 'Does StockZip integrate with QuickBooks?',
@@ -42,9 +42,8 @@ const FISHBOWL_FAQS: FaqItem[] = [
       'Yes. StockZip supports multi-location hierarchies (warehouse → shelf → bin), barcode scanning, cycle counts, receiving workflows, and full audit trails for warehouse operations.',
   },
   {
-    question: 'Is StockZip cheaper than Fishbowl?',
-    answer:
-      'StockZip uses trust-first pricing designed for small teams. No enterprise licensing fees, no per-seat costs that scale unpredictably, no implementation consultants required.',
+    question: 'How does StockZip pricing work?',
+    answer: 'StockZip uses clear pricing designed for small teams and predictable growth.',
   },
   {
     question: 'Can I migrate from Fishbowl to StockZip?',
@@ -66,39 +65,39 @@ const FISHBOWL_FAQS: FaqItem[] = [
 // Comparison data following WebsiteGuideline.md comparison template
 const COMPARISON_ROWS = [
   {
-    category: 'Target audience',
-    stockzip: 'Small teams and growing businesses',
-    fishbowl: 'Mid-market and enterprise companies',
+    category: 'Best fit',
+    stockzip: 'Small teams wanting scan-first warehouse workflows',
+    fishbowl: 'Teams wanting a comprehensive platform for advanced workflows',
     stockzipWins: true,
   },
   {
-    category: 'Complexity',
-    stockzip: 'Simple, staff-friendly interface',
-    fishbowl: 'Full-featured with steep learning curve',
-    stockzipWins: true,
-  },
-  {
-    category: 'Pricing model',
-    stockzip: 'Trust-first, predictable scaling',
-    fishbowl: 'Enterprise licensing with per-seat costs',
+    category: 'Getting started',
+    stockzip: 'Self-serve rollout with CSV import and scanning',
+    fishbowl: 'Structured setup for full-featured workflows',
     stockzipWins: true,
   },
   {
     category: 'Mobile scanning',
-    stockzip: 'Offline-first, camera + Bluetooth scanners',
-    fishbowl: 'Mobile app with hardware requirements',
+    stockzip: 'Mobile-first, offline-first scanning',
+    fishbowl: 'Configurable warehouse scanning workflows',
     stockzipWins: true,
   },
   {
-    category: 'Setup time',
-    stockzip: 'Import and scan in minutes',
-    fishbowl: 'Days to weeks for full implementation',
+    category: 'Manufacturing',
+    stockzip: 'Focused on inventory tracking',
+    fishbowl: 'Manufacturing and BOM capabilities',
     stockzipWins: true,
   },
   {
-    category: 'Check-in / check-out',
-    stockzip: 'Native asset workflow with accountability',
-    fishbowl: 'Requires additional modules',
+    category: 'Team scale',
+    stockzip: 'Designed for small teams',
+    fishbowl: 'Often used by mid-size operations',
+    stockzipWins: true,
+  },
+  {
+    category: 'Pricing approach',
+    stockzip: 'Clear pricing that scales predictably',
+    fishbowl: 'Multiple plan options for different needs',
     stockzipWins: true,
   },
 ]
@@ -115,16 +114,16 @@ const KEY_DIFFERENTIATORS = [
   {
     id: 'fast-setup',
     icon: 'icon-[tabler--rocket]',
-    title: 'Minutes, Not Weeks',
+    title: 'Fast rollout',
     description:
-      'No implementation consultants. No weeks of training. Import your CSV, label your top movers, and start scanning. Your team can be productive on day one.',
+      'Import your CSV, label your top movers, and start scanning. Your team can be productive on day one.',
   },
   {
     id: 'predictable-pricing',
     icon: 'icon-[tabler--currency-dollar]',
-    title: 'No Enterprise Pricing',
+    title: 'Clear pricing',
     description:
-      'No per-seat licensing that scales unpredictably. No surprise tier jumps. StockZip uses trust-first pricing that stays fair as your business grows.',
+      'Clear pricing designed for small teams, with predictable scaling as your catalog grows.',
   },
 ]
 
@@ -143,7 +142,7 @@ export default function FishbowlAlternativePage() {
         data={softwareApplicationJsonLd({
           name: 'StockZip Inventory',
           description:
-            'Warehouse inventory management with barcode scanning for small teams. A Fishbowl alternative without enterprise complexity.',
+            'Warehouse barcode inventory management for small teams. A Fishbowl alternative focused on scan-first workflows.',
           pathname: '/compare/fishbowl-alternative',
         })}
       />
@@ -165,17 +164,17 @@ export default function FishbowlAlternativePage() {
                 </span>
               </h1>
               <p className="text-base-content/80 text-lg">
-                StockZip gives you warehouse inventory management with barcode scanning — without the enterprise
-                complexity and pricing of Fishbowl. Right-sized for growing businesses.
+                Fishbowl is a comprehensive inventory system used by teams with advanced workflows. StockZip is a focused
+                alternative for small teams that want scan-first warehouse barcode workflows with offline-first mobile
+                scanning.
               </p>
               <div className="flex flex-wrap items-center gap-4">
-                <Link href="/signup" className="btn btn-primary btn-lg">
-                  Start Free Trial
+                <Link href="#stockzip-alternative" className="btn btn-primary btn-lg">
+                  See StockZip as an alternative
                   <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
                 </Link>
-                <Link href="/demo" className="btn btn-outline btn-secondary btn-lg">
-                  <span className="icon-[tabler--player-play] size-5"></span>
-                  Watch Demo
+                <Link href="#fishbowl-fit" className="btn btn-outline btn-secondary btn-lg">
+                  When Fishbowl works well
                 </Link>
               </div>
               {/* Trust indicators */}
@@ -186,7 +185,7 @@ export default function FishbowlAlternativePage() {
                 </span>
                 <span className="flex items-center gap-1">
                   <span className="icon-[tabler--check] text-success size-4"></span>
-                  No per-seat licensing
+                  Clear team pricing
                 </span>
                 <span className="flex items-center gap-1">
                   <span className="icon-[tabler--check] text-success size-4"></span>
@@ -195,34 +194,34 @@ export default function FishbowlAlternativePage() {
               </div>
             </div>
 
-            {/* Right Content - Problem/Pain visualization */}
+            {/* Right Content - Competitor-first context */}
             <div className="bg-base-200 rounded-box flex flex-col justify-center p-6 sm:p-8">
-              <h2 className="text-base-content text-xl font-semibold">Common Fishbowl frustrations</h2>
+              <h2 className="text-base-content text-xl font-semibold">Why teams choose Fishbowl</h2>
               <ul className="mt-6 space-y-4">
                 <li className="flex items-start gap-3">
-                  <span className="icon-[tabler--building-2] text-error mt-0.5 size-5 shrink-0"></span>
+                  <span className="icon-[tabler--settings] text-success mt-0.5 size-5 shrink-0"></span>
                   <div>
-                    <span className="text-base-content font-medium">Overkill for your team size</span>
+                    <span className="text-base-content font-medium">Comprehensive workflows</span>
                     <p className="text-base-content/70 mt-1 text-sm">
-                      Enterprise features you don&apos;t need when you just want scanning and counts.
+                      Designed for teams that want deeper configuration and advanced operations.
                     </p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="icon-[tabler--receipt-2] text-error mt-0.5 size-5 shrink-0"></span>
+                  <span className="icon-[tabler--tools] text-success mt-0.5 size-5 shrink-0"></span>
                   <div>
-                    <span className="text-base-content font-medium">Complex pricing and licensing</span>
+                    <span className="text-base-content font-medium">Manufacturing and BOM support</span>
                     <p className="text-base-content/70 mt-1 text-sm">
-                      Per-seat costs, implementation fees, and unpredictable scaling.
+                      Useful when your inventory workflows include production and assembly.
                     </p>
                   </div>
                 </li>
                 <li className="flex items-start gap-3">
-                  <span className="icon-[tabler--calendar-time] text-error mt-0.5 size-5 shrink-0"></span>
+                  <span className="icon-[tabler--building-factory] text-success mt-0.5 size-5 shrink-0"></span>
                   <div>
-                    <span className="text-base-content font-medium">Long implementation timeline</span>
+                    <span className="text-base-content font-medium">Built for growing operations</span>
                     <p className="text-base-content/70 mt-1 text-sm">
-                      Weeks or months to get fully operational with training requirements.
+                      Often chosen by teams with more locations, products, and process needs.
                     </p>
                   </div>
                 </li>
@@ -240,7 +239,7 @@ export default function FishbowlAlternativePage() {
               Quick comparison: StockZip vs Fishbowl
             </h2>
             <p className="text-base-content/80 mx-auto mt-3 max-w-2xl text-lg">
-              See how StockZip compares for teams that don&apos;t need enterprise-grade complexity.
+              A quick overview to help you evaluate which product fits your workflows.
             </p>
           </div>
 
@@ -278,8 +277,8 @@ export default function FishbowlAlternativePage() {
           </div>
 
           <p className="text-base-content/50 mt-6 text-center text-sm">
-            StockZip and Fishbowl are trademarks of their respective owners. Comparison based on publicly available
-            information as of January 2026.
+            StockZip is not affiliated with or endorsed by Fishbowl. Fishbowl is a trademark of its respective owner.
+            Comparison is based on publicly available information as of January 2026; features and pricing may change.
           </p>
         </div>
       </section>
@@ -290,7 +289,7 @@ export default function FishbowlAlternativePage() {
           <div className="mb-12 text-center">
             <h2 className="text-base-content text-2xl font-semibold md:text-3xl">Why small teams choose StockZip</h2>
             <p className="text-base-content/80 mx-auto mt-3 max-w-2xl text-lg">
-              StockZip is purpose-built for teams that need warehouse-grade features without enterprise overhead.
+              StockZip is designed for small teams that want warehouse-grade scanning with a staff-friendly experience.
             </p>
           </div>
 
@@ -311,7 +310,7 @@ export default function FishbowlAlternativePage() {
       </section>
 
       {/* When to Switch / When Fishbowl Works - Decision helper */}
-      <section className="bg-base-200 px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+      <section id="fishbowl-fit" className="bg-base-200 px-4 py-16 sm:px-6 sm:py-20 lg:px-8 scroll-mt-28">
         <div className="mx-auto max-w-7xl">
           <div className="grid gap-8 lg:grid-cols-2">
             {/* When Fishbowl works well */}
@@ -340,19 +339,19 @@ export default function FishbowlAlternativePage() {
               </div>
             </div>
 
-            {/* When you should switch */}
+            {/* When StockZip is a fit */}
             <div className="card border-primary/30 bg-base-100 border shadow-none">
               <div className="card-body">
-                <h2 className="text-base-content text-xl font-semibold">When you should switch to StockZip</h2>
-                <p className="text-base-content/70 mt-2">StockZip is the better choice when:</p>
+                <h2 className="text-base-content text-xl font-semibold">When StockZip is a great fit</h2>
+                <p className="text-base-content/70 mt-2">StockZip is a great fit when:</p>
                 <ul className="text-base-content/80 mt-4 space-y-3">
                   <li className="flex items-start gap-3">
                     <span className="icon-[tabler--alert-triangle] text-warning mt-0.5 size-5 shrink-0"></span>
-                    <span>Fishbowl is overkill for your team size</span>
+                    <span>You want scan-first warehouse barcode workflows</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="icon-[tabler--alert-triangle] text-warning mt-0.5 size-5 shrink-0"></span>
-                    <span>You want faster setup without consultants</span>
+                    <span>You want a self-serve setup your team can learn quickly</span>
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="icon-[tabler--alert-triangle] text-warning mt-0.5 size-5 shrink-0"></span>
@@ -360,17 +359,9 @@ export default function FishbowlAlternativePage() {
                   </li>
                   <li className="flex items-start gap-3">
                     <span className="icon-[tabler--alert-triangle] text-warning mt-0.5 size-5 shrink-0"></span>
-                    <span>You want predictable pricing without per-seat fees</span>
+                    <span>You want clear pricing that scales predictably</span>
                   </li>
                 </ul>
-                <div className="mt-6 flex flex-wrap gap-3">
-                  <Link href="/demo" className="btn btn-primary">
-                    Watch demo
-                  </Link>
-                  <Link href="/pricing" className="btn btn-outline btn-secondary">
-                    See pricing
-                  </Link>
-                </div>
               </div>
             </div>
           </div>
@@ -385,7 +376,7 @@ export default function FishbowlAlternativePage() {
               Warehouse-grade features, small-team simplicity
             </h2>
             <p className="text-base-content/80 mx-auto mt-3 max-w-2xl text-lg">
-              StockZip includes the warehouse inventory management features you need without the enterprise overhead.
+              StockZip includes warehouse-grade inventory features in a staff-friendly experience.
             </p>
           </div>
 
@@ -453,11 +444,11 @@ export default function FishbowlAlternativePage() {
                   <ul className="space-y-2">
                     <li className="flex items-center gap-2">
                       <span className="icon-[tabler--circle-check-filled] text-primary size-5"></span>
-                      <span className="text-base-content/80">No implementation consultants</span>
+                      <span className="text-base-content/80">Guided CSV import with field mapping</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <span className="icon-[tabler--circle-check-filled] text-primary size-5"></span>
-                      <span className="text-base-content/80">No per-seat licensing</span>
+                      <span className="text-base-content/80">Scan-first verification workflow</span>
                     </li>
                     <li className="flex items-center gap-2">
                       <span className="icon-[tabler--circle-check-filled] text-primary size-5"></span>
@@ -480,15 +471,6 @@ export default function FishbowlAlternativePage() {
                   </ul>
                 </div>
               </div>
-              <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-                <Link href="/signup" className="btn btn-primary btn-lg">
-                  Start Free Trial
-                  <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
-                </Link>
-                <Link href="/solutions/warehouse-inventory" className="btn btn-outline btn-secondary btn-lg">
-                  Warehouse solution
-                </Link>
-              </div>
             </div>
           </div>
         </div>
@@ -499,7 +481,7 @@ export default function FishbowlAlternativePage() {
         <div className="mx-auto max-w-4xl">
           <div className="mb-12 text-center">
             <h2 className="text-base-content text-2xl font-semibold md:text-3xl">
-              Frequently asked questions about switching from Fishbowl
+              Frequently asked questions about Fishbowl alternatives
             </h2>
             <p className="text-base-content/80 mt-3 text-lg">
               Common questions from teams evaluating StockZip as a Fishbowl alternative.
@@ -522,11 +504,9 @@ export default function FishbowlAlternativePage() {
           <div className="mt-10 text-center">
             <p className="text-base-content/70">Have more questions?</p>
             <div className="mt-4 flex flex-wrap justify-center gap-3">
-              <Link href="/demo" className="btn btn-primary">
-                Watch demo
-              </Link>
-              <Link href="/pricing" className="btn btn-outline btn-secondary">
-                See pricing
+              <Link href="#stockzip-alternative" className="btn btn-primary">
+                See StockZip as an alternative
+                <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
               </Link>
             </div>
           </div>
@@ -534,22 +514,23 @@ export default function FishbowlAlternativePage() {
       </section>
 
       {/* Final CTA */}
-      <section className="bg-base-200 px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+      <section id="stockzip-alternative" className="bg-base-200 px-4 py-16 sm:px-6 sm:py-20 lg:px-8 scroll-mt-28">
         <div className="mx-auto max-w-4xl text-center">
           <h2 className="text-base-content text-2xl font-semibold md:text-3xl">
-            Get warehouse-grade features without enterprise overhead
+            Explore StockZip as a Fishbowl alternative
           </h2>
           <p className="text-base-content/80 mx-auto mt-4 max-w-2xl text-lg">
-            Join teams who switched from Fishbowl for simpler pricing, faster setup, and the features they actually
-            need.
+            If you want scan-first warehouse barcode workflows with offline-first mobile scanning for a small team, StockZip
+            is worth trying.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-4">
-            <Link href="/signup" className="btn btn-primary btn-lg">
+            <Link href="/demo" className="btn btn-primary btn-lg">
+              Watch demo
+              <span className="icon-[tabler--player-play] size-5"></span>
+            </Link>
+            <Link href="/signup" className="btn btn-outline btn-secondary btn-lg">
               Start Free Trial
               <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
-            </Link>
-            <Link href="/compare" className="btn btn-outline btn-secondary btn-lg">
-              See all comparisons
             </Link>
           </div>
         </div>

@@ -8,7 +8,7 @@
  *
  * Primary keyword: "economic order quantity"
  * Secondary keywords: "EOQ formula", "economic order quantity calculator", "EOQ model", "how to calculate EOQ"
- * Est. volume: 837+ monthly (Sortly proof: 837 traffic, 79 keywords)
+ * Est. volume: 837+ monthly
  */
 
 import type { Metadata } from 'next'

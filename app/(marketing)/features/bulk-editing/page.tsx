@@ -474,7 +474,7 @@ export default function BulkEditingFeaturePage() {
               </div>
             </Link>
 
-            <Link href="/migration/sortly" className="card bg-base-100 card-border shadow-sm hover:shadow-md">
+            <Link href="/migration" className="card bg-base-100 card-border shadow-sm hover:shadow-md">
               <div className="card-body">
                 <span className="icon-[tabler--database-import] text-primary size-8"></span>
                 <h3 className="text-base-content mt-2 text-lg font-semibold">Data Migration</h3>

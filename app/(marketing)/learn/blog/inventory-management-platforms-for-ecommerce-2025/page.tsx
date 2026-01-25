@@ -29,7 +29,7 @@ const ARTICLE_FAQS: FaqItem[] = [
   {
     question: 'What is the best inventory management platform for small ecommerce businesses?',
     answer:
-      'For small ecommerce businesses, look for platforms that offer easy setup, barcode scanning, low-stock alerts, and predictable pricing. Avoid enterprise tools with features you will never use. StockZip, Sortly, and inFlow are popular choices for small sellers.',
+      'For small ecommerce businesses, look for platforms that offer easy setup, barcode scanning, low-stock alerts, and predictable pricing. Start with a tool your team will actually use daily, and prioritize fast receiving and cycle counts.',
   },
   {
     question: 'How much does ecommerce inventory software cost in 2025?',
@@ -63,36 +63,36 @@ const PLATFORMS = [
     pricing: 'From $19/month',
   },
   {
-    name: 'Sortly',
-    focus: 'Visual inventory',
-    bestFor: 'Photo-heavy catalogs, asset tracking',
-    strengths: ['Photo-centric UI', 'QR code labels', 'Folder organization', 'Mobile app'],
-    considerations: ['Price tier jumps', 'SKU limits on lower tiers', 'Reported sync issues'],
-    pricing: 'From $29/month (limited SKUs)',
+    name: 'Photo-first inventory app',
+    focus: 'Visual organization',
+    bestFor: 'Photo-heavy catalogs, basic asset tracking',
+    strengths: ['Photo-centric UI', 'Label printing', 'Folders or categories', 'Mobile app'],
+    considerations: ['May prioritize visuals over scan-first workflows', 'Limits vary by plan'],
+    pricing: 'Varies',
   },
   {
-    name: 'inFlow Inventory',
-    focus: 'Order management',
-    bestFor: 'B2B sellers, wholesale operations',
+    name: 'Order-centric inventory system',
+    focus: 'Purchasing + sales workflows',
+    bestFor: 'Wholesale and B2B sellers',
     strengths: ['Purchase orders', 'Sales orders', 'Reporting', 'Integrations'],
-    considerations: ['Desktop-centric', 'Steeper learning curve', 'Higher price point'],
-    pricing: 'From $89/month',
+    considerations: ['Often requires more configuration', 'Mobile experience varies'],
+    pricing: 'Varies',
   },
   {
-    name: 'Fishbowl',
-    focus: 'Manufacturing + warehousing',
-    bestFor: 'Manufacturers, QuickBooks users',
-    strengths: ['Deep QuickBooks integration', 'Manufacturing workflows', 'Multi-warehouse'],
-    considerations: ['Complex setup', 'Enterprise pricing', 'Overkill for simple ecommerce'],
-    pricing: 'From $349/month',
+    name: 'Manufacturing & warehouse suite',
+    focus: 'Production workflows',
+    bestFor: 'Manufacturers and advanced warehouse operations',
+    strengths: ['Manufacturing/BOM workflows', 'Multi-warehouse', 'Deep controls'],
+    considerations: ['Typically longer setup', 'Broader scope than many ecommerce sellers need'],
+    pricing: 'Varies',
   },
   {
-    name: 'Cin7',
-    focus: 'Omnichannel commerce',
-    bestFor: 'Multi-channel sellers with high volume',
-    strengths: ['Native sales channel integrations', '3PL support', 'Automation', 'EDI'],
-    considerations: ['High price', 'Long implementation', 'Complex for small sellers'],
-    pricing: 'From $349/month',
+    name: 'Omnichannel inventory platform',
+    focus: 'Multi-channel sync + integrations',
+    bestFor: 'High-volume sellers across multiple channels',
+    strengths: ['Sales channel integrations', '3PL support', 'Automation', 'EDI'],
+    considerations: ['More moving parts', 'Implementation effort varies'],
+    pricing: 'Varies',
   },
 ]
 
@@ -296,39 +296,38 @@ export default function EcommerceInventoryPlatforms2025Page() {
         {/* Section 4: Recommendations */}
         <section id="recommendations" className="mb-12">
           <h2 className="text-base-content mb-6 text-2xl font-semibold">Recommendations by business size</h2>
-          <div className="grid gap-6 md:grid-cols-3">
-            <div className="card card-border bg-base-100">
-              <div className="card-body">
-                <span className="icon-[tabler--user] text-primary size-8"></span>
-                <h3 className="text-base-content mt-4 text-lg font-semibold">Solo seller</h3>
-                <p className="text-base-content/80 mt-2 text-sm">
-                  Start with a free tier to validate your workflow. StockZip or Sortly work well for under 500 items.
-                  Prioritize mobile scanning and easy CSV import.
-                </p>
-              </div>
-            </div>
-            <div className="card card-border bg-base-100">
-              <div className="card-body">
-                <span className="icon-[tabler--users] text-primary size-8"></span>
-                <h3 className="text-base-content mt-4 text-lg font-semibold">Small team (2-10)</h3>
-                <p className="text-base-content/80 mt-2 text-sm">
-                  Need multi-user access and role permissions. StockZip, inFlow, or Sortly Team plans. Watch for per-user
-                  pricing that scales poorly.
-                </p>
-              </div>
-            </div>
-            <div className="card card-border bg-base-100">
-              <div className="card-body">
-                <span className="icon-[tabler--building] text-primary size-8"></span>
-                <h3 className="text-base-content mt-4 text-lg font-semibold">Multi-location / high volume</h3>
-                <p className="text-base-content/80 mt-2 text-sm">
-                  Need robust multi-warehouse, integrations, and automation. Cin7 or Fishbowl if budget allows. inFlow
-                  for mid-market.
-                </p>
-              </div>
-            </div>
-          </div>
-        </section>
+	          <div className="grid gap-6 md:grid-cols-3">
+	            <div className="card card-border bg-base-100">
+	              <div className="card-body">
+	                <span className="icon-[tabler--user] text-primary size-8"></span>
+	                <h3 className="text-base-content mt-4 text-lg font-semibold">Solo seller</h3>
+	                <p className="text-base-content/80 mt-2 text-sm">
+	                  Start with a free trial to validate your workflow. Prioritize mobile scanning, easy CSV import, and a
+	                  workflow you can run daily.
+	                </p>
+	              </div>
+	            </div>
+	            <div className="card card-border bg-base-100">
+	              <div className="card-body">
+	                <span className="icon-[tabler--users] text-primary size-8"></span>
+	                <h3 className="text-base-content mt-4 text-lg font-semibold">Small team (2-10)</h3>
+	                <p className="text-base-content/80 mt-2 text-sm">
+	                  Look for multi-user access, role permissions, and activity history. Watch for per-user pricing that
+	                  grows faster than your team.
+	                </p>
+	              </div>
+	            </div>
+	            <div className="card card-border bg-base-100">
+	              <div className="card-body">
+	                <span className="icon-[tabler--building] text-primary size-8"></span>
+	                <h3 className="text-base-content mt-4 text-lg font-semibold">Multi-location / high volume</h3>
+	                <p className="text-base-content/80 mt-2 text-sm">
+	                  Prioritize multi-warehouse support, integrations, automation, and a clear implementation plan.
+	                </p>
+	              </div>
+	            </div>
+	          </div>
+	        </section>
 
         {/* CTA Section */}
         <section className="rounded-box bg-base-200 mb-12 p-8">

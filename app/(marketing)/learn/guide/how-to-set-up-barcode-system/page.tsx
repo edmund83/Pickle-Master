@@ -8,7 +8,7 @@
  *
  * Primary keyword: "how to set up a barcode system"
  * Secondary keywords: "barcode system for small business", "barcode inventory system", "barcode setup guide"
- * Est. volume: 720+ monthly (Sortly proof: 720 traffic)
+ * Est. volume: 720+ monthly
  */
 import type { Metadata } from 'next'
 import Link from 'next/link'

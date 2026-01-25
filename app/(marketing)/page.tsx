@@ -14,7 +14,7 @@ import { marketingMetadata } from '@/lib/marketing/metadata'
 import { faqPageJsonLd, organizationJsonLd, softwareApplicationJsonLd, websiteJsonLd } from '@/lib/marketing/jsonld'
 import { DEFAULT_FAQS } from '@/lib/marketing/faqs'
 import { SolutionsGrid } from '@/components/marketing/SolutionsGrid'
-import { SortlyCta } from '@/components/marketing/SortlyCta'
+import { MigrationCta } from '@/components/marketing/MigrationCta'
 import { FinalCta } from '@/components/marketing/FinalCta'
 
 export const metadata: Metadata = marketingMetadata({
@@ -46,7 +46,7 @@ export default function MarketingHomePage() {
       <FeatureGrid />
       <StatsSection />
       <SolutionsGrid />
-      <SortlyCta />
+      <MigrationCta />
       <TestimonialGrid />
       <PricingSection />
       <FaqBlock />

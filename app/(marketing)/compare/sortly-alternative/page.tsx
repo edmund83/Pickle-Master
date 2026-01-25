@@ -7,7 +7,7 @@
  * - FAQ: /marketing-ui/faq/faq-1 (collapsible FAQ accordion)
  *
  * Primary keyword: "Sortly alternative"
- * Secondary keywords: "Sortly vs StockZip", "better than Sortly", "switch from Sortly"
+ * Secondary keywords: "Sortly vs StockZip", "Sortly alternative comparison", "barcode inventory app"
  */
 
 import type { Metadata } from 'next'
@@ -19,17 +19,17 @@ import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/lib/marketing/jsonld'
 
 export const metadata: Metadata = marketingMetadata({
-  title: 'Sortly Alternative | Switch to StockZip for Better Inventory Management',
+  title: 'Sortly Alternative | StockZip Offline Barcode Inventory',
   description:
-    'Switch from Sortly to StockZip for trust-first pricing, offline-first barcode scanning, and real check-in/check-out workflows built for small teams.',
+    'Exploring Sortly alternatives? StockZip is built for offline-first barcode scanning, check-in/check-out workflows, and clear pricing for small teams.',
   pathname: '/compare/sortly-alternative',
 })
 
 const SORTLY_FAQS: FaqItem[] = [
   {
-    question: 'Do you have hard SKU limits or surprise tier jumps?',
+    question: 'How does StockZip pricing scale as you grow?',
     answer:
-      'No. StockZip is designed to scale predictably so you aren’t forced into a huge tier jump just because your catalog grows.',
+      'StockZip uses clear pricing that scales predictably with your catalog and team.',
   },
   {
     question: 'Can my team scan and update inventory offline?',
@@ -55,34 +55,34 @@ const SORTLY_FAQS: FaqItem[] = [
 
 const COMPARISON_ROWS = [
   {
-    category: 'Pricing trust',
-    stockzip: 'Predictable scaling; no “punished for growth” surprises',
-    sortly: 'Users frequently cite price hikes and SKU caps as pain points',
+    category: 'Best for',
+    stockzip: 'Scan-first barcode inventory for teams in the field',
+    sortly: 'Visual inventory organization with photos and folders',
   },
   {
-    category: 'Offline reliability',
-    stockzip: 'Offline-first mobile scanning + sync when back online',
-    sortly: 'Users report sync delays and trust issues in the field',
+    category: 'Mobile workflows',
+    stockzip: 'Offline-first scanning and fast updates on the go',
+    sortly: 'Mobile-friendly organization for day-to-day tracking',
   },
   {
-    category: 'Check-in / check-out',
-    stockzip: 'Native issue/return workflow (assets, tools, staff)',
-    sortly: 'Often requires workarounds for asset workflows',
+    category: 'Tools & assets',
+    stockzip: 'Built-in check-in/check-out with due dates and accountability',
+    sortly: 'Flexible fields for organizing items and locations',
   },
   {
-    category: 'Bulk editing',
-    stockzip: 'Excel-grade bulk updates with guardrails (preview/undo)',
-    sortly: 'Bulk workflows can be limiting as catalogs grow',
+    category: 'Bulk updates',
+    stockzip: 'Bulk editing with preview diffs and undo',
+    sortly: 'Simple editing for routine inventory changes',
   },
   {
-    category: 'Inventory trust layer',
-    stockzip: 'Audit trail + “who changed what” accountability',
-    sortly: 'Teams often double-check counts due to trust gaps',
+    category: 'Audit history',
+    stockzip: 'Item history and audit trail for inventory confidence',
+    sortly: 'Inventory records designed for easy reference',
   },
   {
-    category: 'Switching',
-    stockzip: 'Migration path designed for Sortly switchers',
-    sortly: 'Leaving can feel risky without a clear migration plan',
+    category: 'Getting started',
+    stockzip: 'Guided import + scan-first verification',
+    sortly: 'Quick setup for small teams',
   },
 ]
 
@@ -110,20 +110,20 @@ export default function SortlyAlternativePage() {
           <div>
             <p className="badge badge-soft badge-primary rounded-full font-medium uppercase">Comparison</p>
             <h1 className="text-base-content mt-4 text-3xl font-semibold md:text-4xl">
-              A Sortly alternative built for real inventory work
+              A Sortly alternative for scan-first inventory workflows
             </h1>
             <p className="text-base-content/80 mt-3 max-w-3xl text-lg">
-              StockZip is built for barcode scanning, offline reliability, and accountability workflows (check-in/check-out)
-              — with pricing that doesn&apos;t punish growth.
+              StockZip is built for barcode scanning, offline-first reliability, and check-in/check-out accountability — with
+              clear pricing that scales predictably.
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
-            <Link href="/signup" className="btn btn-primary btn-lg">
-              Start Free Trial
+            <Link href="#stockzip-alternative" className="btn btn-primary btn-lg">
+              See the StockZip alternative
               <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
             </Link>
-            <Link href="/migration/sortly" className="btn btn-outline btn-secondary btn-lg">
-              Migrate from Sortly
+            <Link href="#sortly-fit" className="btn btn-outline btn-secondary btn-lg">
+              When Sortly is a great fit
             </Link>
           </div>
         </div>
@@ -131,8 +131,9 @@ export default function SortlyAlternativePage() {
         <div className="mt-10 rounded-box bg-base-200 p-6 sm:p-8">
           <h2 className="text-base-content text-xl font-semibold sm:text-2xl">Quick verdict</h2>
           <p className="text-base-content/80 mt-2 max-w-3xl">
-            If you&apos;re feeling price shock, need offline scanning, or you track tools/assets checked out to staff, StockZip
-            is purpose-built for that reality.
+            Sortly is a popular choice for visual, photo-first inventory organization. If you&apos;re exploring an alternative
+            built around scan-first barcode workflows, offline-first scanning, and tool check-in/check-out accountability,
+            StockZip is worth a look.
           </p>
 
           <div className="mt-6 overflow-x-auto">
@@ -141,7 +142,7 @@ export default function SortlyAlternativePage() {
                 <tr>
                   <th className="text-base-content">Category</th>
                   <th className="text-base-content">StockZip</th>
-                  <th className="text-base-content">Sortly (common complaints)</th>
+                  <th className="text-base-content">Sortly</th>
                 </tr>
               </thead>
               <tbody>
@@ -157,27 +158,27 @@ export default function SortlyAlternativePage() {
           </div>
 
           <p className="text-base-content/60 mt-4 text-sm">
-            StockZip and Sortly are trademarks of their respective owners. This page is based on publicly available
-            information and recurring user-reported pain points.
+            StockZip is not affiliated with or endorsed by Sortly. Sortly is a trademark of its respective owner.
+            Comparison is based on publicly available information as of January 2026; features and pricing may change.
           </p>
         </div>
 
-        <div className="mt-12 grid gap-6 lg:grid-cols-2">
+        <div id="sortly-fit" className="mt-12 grid gap-6 lg:grid-cols-2 scroll-mt-28">
           <div className="card card-border shadow-none">
             <div className="card-body">
-              <h2 className="text-base-content text-xl font-semibold">When Sortly is enough</h2>
+              <h2 className="text-base-content text-xl font-semibold">When Sortly is a great fit</h2>
               <ul className="text-base-content/80 mt-4 space-y-3">
                 <li className="flex gap-2">
                   <span className="icon-[tabler--circle-check] text-success size-5"></span>
-                  You have a small catalog and stable connectivity
+                  You prefer visual organization with photos and folders
                 </li>
                 <li className="flex gap-2">
                   <span className="icon-[tabler--circle-check] text-success size-5"></span>
-                  You don&apos;t need tool issue/return accountability
+                  You want straightforward tracking for a small team
                 </li>
                 <li className="flex gap-2">
                   <span className="icon-[tabler--circle-check] text-success size-5"></span>
-                  You rarely bulk edit or run frequent counts
+                  Your workflows are mostly online and office-based
                 </li>
               </ul>
             </div>
@@ -185,48 +186,52 @@ export default function SortlyAlternativePage() {
 
           <div className="card card-border shadow-none border-primary/20">
             <div className="card-body">
-              <h2 className="text-base-content text-xl font-semibold">When you should switch</h2>
+              <h2 className="text-base-content text-xl font-semibold">When StockZip is a great fit</h2>
               <ul className="text-base-content/80 mt-4 space-y-3">
                 <li className="flex gap-2">
                   <span className="icon-[tabler--alert-triangle] text-warning size-5"></span>
-                  You&apos;ve been hit by pricing jumps or SKU/user caps
+                  You want scan-first barcode workflows
                 </li>
                 <li className="flex gap-2">
                   <span className="icon-[tabler--alert-triangle] text-warning size-5"></span>
-                  Your team scans in warehouses/jobsites with unreliable internet
+                  You need offline-first scanning in warehouses or jobsites
                 </li>
                 <li className="flex gap-2">
                   <span className="icon-[tabler--alert-triangle] text-warning size-5"></span>
-                  You need real check-in/check-out workflows to stop losses and disputes
+                  You need tool and asset check-in/check-out accountability
                 </li>
               </ul>
-              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-                <Link href="/demo" className="btn btn-primary">
-                  Watch demo
-                </Link>
-                <Link href="/pricing" className="btn btn-outline btn-secondary">
-                  See pricing
-                </Link>
-              </div>
             </div>
           </div>
         </div>
 
-        <div className="mt-12 rounded-box bg-base-200 p-8">
-          <h2 className="text-base-content text-2xl font-semibold">Switch without the risk</h2>
+        <div id="stockzip-alternative" className="mt-12 rounded-box bg-base-200 p-8 scroll-mt-28">
+          <h2 className="text-base-content text-2xl font-semibold">Try StockZip as an alternative</h2>
           <p className="text-base-content/80 mt-3 max-w-3xl text-lg">
-            The fastest way to build confidence is to migrate a small subset of items, label them, and run one scan-first
-            cycle count. It takes minutes — and it&apos;s usually enough to feel the difference.
+            The fastest way to evaluate StockZip is a small pilot: import a subset of items, label your top movers, and run
+            a scan-first count. You&apos;ll know quickly whether the workflow fits your team.
           </p>
           <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-            <Link href="/migration/sortly" className="btn btn-primary btn-lg">
-              Follow the migration guide
+            <Link href="/demo" className="btn btn-primary btn-lg">
+              Watch demo
+              <span className="icon-[tabler--player-play] size-5"></span>
+            </Link>
+            <Link href="/signup" className="btn btn-outline btn-secondary btn-lg">
+              Start Free Trial
               <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
             </Link>
-            <Link href="/solutions/construction-tools" className="btn btn-outline btn-secondary btn-lg">
-              Track tools &amp; assets
-            </Link>
           </div>
+          <p className="text-base-content/70 mt-4 text-sm">
+            Already using Sortly? Follow the{' '}
+            <Link href="/migration/sortly" className="link link-primary">
+              Sortly migration guide
+            </Link>{' '}
+            or explore{' '}
+            <Link href="/solutions/construction-tools" className="link link-primary">
+              tool &amp; asset tracking
+            </Link>
+            .
+          </p>
         </div>
       </div>
 
@@ -234,4 +239,3 @@ export default function SortlyAlternativePage() {
     </div>
   )
 }
-

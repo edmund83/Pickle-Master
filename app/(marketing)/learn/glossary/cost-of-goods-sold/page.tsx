@@ -9,7 +9,7 @@
  * Primary keyword: "cost of goods sold"
  * Secondary keywords: "COGS formula", "how to calculate COGS", "cost of goods sold formula",
  *   "COGS calculator", "what is COGS"
- * Est. volume: 2,047+ monthly (inFlow proof: 2,047 traffic, 382 keywords)
+ * Est. volume: 2,047+ monthly
  */
 
 import type { Metadata } from 'next'

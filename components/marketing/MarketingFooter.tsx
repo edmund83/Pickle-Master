@@ -47,7 +47,7 @@ export function MarketingFooter() {
                 <li><Link href="/pricing" className="link link-animated text-base-content/80">Pricing</Link></li>
                 <li><Link href="/pricing/free-inventory-software" className="link link-animated text-base-content/80">Free inventory software</Link></li>
                 <li><Link href="/demo" className="link link-animated text-base-content/80">Demo</Link></li>
-                <li><Link href="/migration/sortly" className="link link-animated text-base-content/80">Sortly migration</Link></li>
+                <li><Link href="/migration" className="link link-animated text-base-content/80">Migration guide</Link></li>
               </ul>
             </div>
 
@@ -55,26 +55,7 @@ export function MarketingFooter() {
             <div className="space-y-5">
               <h4 className="text-base-content text-lg font-medium">Compare</h4>
               <ul className="space-y-3">
-                <li>
-                  <Link href="/compare/sortly-alternative" className="link link-animated text-base-content/80">
-                    Sortly alternative
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/compare/boxhero-alternative" className="link link-animated text-base-content/80">
-                    BoxHero alternative
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/compare/fishbowl-alternative" className="link link-animated text-base-content/80">
-                    Fishbowl alternative
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/compare/inflow-alternative" className="link link-animated text-base-content/80">
-                    inFlow alternative
-                  </Link>
-                </li>
+                <li><Link href="/compare" className="link link-animated text-base-content/80">All comparisons</Link></li>
               </ul>
             </div>
 
