@@ -52,7 +52,9 @@ export default function ScanPage() {
   } = useOfflineSync()
   const { tenantId, userId, fetchAuthIfNeeded } = useAuth()
 
-  const supabase = createClient()
+  // Use a ref for supabase client to prevent recreating on every render
+  const supabaseRef = useRef(createClient())
+  const supabase = supabaseRef.current
 
   const resolveScope = useCallback(async () => {
     if (tenantId) {
@@ -67,6 +69,9 @@ export default function ScanPage() {
   // Note: The hook is always active but we only render the UI on desktop
   // The handleScan callback is defined below, so we need to use a ref pattern
   const handleScanRef = useRef<(result: ScanResult) => void>(() => {})
+
+  // Guard to prevent concurrent lookups
+  const isLookingUpRef = useRef(false)
 
   const { isListening: isHardwareScannerListening, lastScan: hardwareLastScan } =
     useHardwareScanner({
@@ -236,35 +241,46 @@ export default function ScanPage() {
   // Handle scan result
   const handleScan = useCallback(
     async (result: ScanResult) => {
+      // Prevent concurrent lookups - this guards against rapid re-scans
+      // caused by callback recreations or scanner restarts
+      if (isLookingUpRef.current) {
+        return
+      }
+
       const barcode = result.code
+      isLookingUpRef.current = true
       setLastBarcode(barcode)
       setIsLookingUp(true)
 
-      const item = await lookupItem(barcode)
-      setScannedItem(item)
-      setIsLookingUp(false)
+      try {
+        const item = await lookupItem(barcode)
+        setScannedItem(item)
 
-      if (mode === 'batch') {
-        // In batch mode, add to list and continue scanning
-        const alreadyScanned = batchItems.some((bi) => bi.barcode === barcode)
-        if (!alreadyScanned) {
-          setBatchItems((prev) => [
-            {
-              barcode,
-              item,
-              scannedAt: new Date(),
-              verified: false,
-            },
-            ...prev,
-          ])
+        if (mode === 'batch') {
+          // In batch mode, add to list and continue scanning
+          const alreadyScanned = batchItems.some((bi) => bi.barcode === barcode)
+          if (!alreadyScanned) {
+            setBatchItems((prev) => [
+              {
+                barcode,
+                item,
+                scannedAt: new Date(),
+                verified: false,
+              },
+              ...prev,
+            ])
+          }
+          // Stay in scanning view for continuous scanning
+        } else if (mode === 'quick-adjust' && item) {
+          // Go directly to adjust modal
+          setViewState('adjust')
+        } else {
+          // Single mode - show result
+          setViewState('result')
         }
-        // Stay in scanning view for continuous scanning
-      } else if (mode === 'quick-adjust' && item) {
-        // Go directly to adjust modal
-        setViewState('adjust')
-      } else {
-        // Single mode - show result
-        setViewState('result')
+      } finally {
+        setIsLookingUp(false)
+        isLookingUpRef.current = false
       }
     },
     [mode, batchItems, lookupItem]
@@ -369,6 +385,8 @@ export default function ScanPage() {
     if (viewState === 'scanning') {
       router.back()
     } else {
+      // Reset the lookup guard when returning to scanning
+      isLookingUpRef.current = false
       setViewState('scanning')
       setScannedItem(null)
       setLastBarcode(null)
@@ -386,6 +404,8 @@ export default function ScanPage() {
   }
 
   const handleScanAgain = () => {
+    // Reset the lookup guard to allow new scans
+    isLookingUpRef.current = false
     setViewState('scanning')
     setScannedItem(null)
     setLastBarcode(null)
