@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useId, useState, useRef } from 'react'
+import { useEffect, useId, useState, useRef, useCallback } from 'react'
 import { Camera, CameraOff, RefreshCw, X, Loader2 } from 'lucide-react'
 import { useBarcodeScanner, type ScanResult } from '@/lib/scanner/useBarcodeScanner'
 
@@ -26,6 +26,7 @@ export function BarcodeScanner({
   const scannerId = useId().replace(/:/g, '')
   const scannerElementId = `scanner-${scannerId}`
   const containerRef = useRef<HTMLDivElement>(null)
+  const hasStartedRef = useRef(false)
 
   // Responsive scan box size (70% of smaller dimension)
   const [scanBoxSize, setScanBoxSize] = useState(250)
@@ -43,6 +44,15 @@ export function BarcodeScanner({
     clearLastScan,
     clearError,
   } = useBarcodeScanner(onScan)
+
+  // Store functions in refs to avoid dependency issues
+  const startScanningRef = useRef(startScanning)
+  const stopScanningRef = useRef(stopScanning)
+
+  useEffect(() => {
+    startScanningRef.current = startScanning
+    stopScanningRef.current = stopScanning
+  }, [startScanning, stopScanning])
 
   // Calculate responsive scan box size
   useEffect(() => {
@@ -69,16 +79,22 @@ export function BarcodeScanner({
   }, [])
 
   // Auto-start scanning when component mounts
+  // Using refs to avoid re-triggering on callback recreation
   useEffect(() => {
+    // Prevent double-start in React Strict Mode or re-renders
+    if (hasStartedRef.current) return
+    hasStartedRef.current = true
+
     const timer = setTimeout(() => {
-      startScanning(scannerElementId)
+      startScanningRef.current(scannerElementId)
     }, 100)
 
     return () => {
       clearTimeout(timer)
-      stopScanning()
+      hasStartedRef.current = false
+      stopScanningRef.current()
     }
-  }, [scannerElementId, startScanning, stopScanning])
+  }, [scannerElementId])
 
   // Auto-clear last scan in continuous mode
   useEffect(() => {
@@ -90,10 +106,11 @@ export function BarcodeScanner({
     }
   }, [continuous, lastScan, clearLastScan])
 
-  const handleRetry = async () => {
+  const handleRetry = useCallback(async () => {
     clearError()
-    await startScanning(scannerElementId)
-  }
+    hasStartedRef.current = false // Allow restart
+    await startScanningRef.current(scannerElementId)
+  }, [scannerElementId, clearError])
 
   return (
     <div ref={containerRef} className={cn('relative flex flex-col bg-black', className)}>
