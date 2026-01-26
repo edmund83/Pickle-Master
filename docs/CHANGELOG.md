@@ -9,6 +9,46 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Added
+
+#### Admin Email Notifications
+Added email notifications to admin for new user signups and bug report submissions.
+
+**New Features**:
+- **Signup Notifications**: Receive email when a new user registers (includes name, email, company, plan)
+- **Bug Report Notifications**: Receive email when a user submits a bug report (includes category, subject, description, page URL)
+
+**Files Added**:
+- `app/api/webhooks/supabase-auth/route.ts` - Webhook endpoint for Supabase Auth events
+
+**Files Modified**:
+- `app/actions/email.ts` - Added `sendAdminNewUserNotification()` and `sendAdminBugReportNotification()` functions
+- `app/actions/bug-reports.ts` - Integrated admin notification on bug report submission
+- `.env.example` - Added SMTP and admin notification variables
+
+**Setup Required**:
+1. Add to `.env.local`:
+   - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM` - Your SMTP server credentials
+   - `ADMIN_EMAIL` - Your email for receiving notifications
+   - `SUPABASE_AUTH_WEBHOOK_SECRET` - Random secret for webhook verification
+2. Configure Supabase Database Webhook:
+   - Go to Supabase Dashboard → Database → Webhooks
+   - Create webhook on `auth.users` table for `INSERT` events
+   - URL: `https://your-domain.com/api/webhooks/supabase-auth`
+   - Add the same secret as `SUPABASE_AUTH_WEBHOOK_SECRET`
+
+#### Migrated Email from Resend to SMTP
+Switched email sending from Resend API to standard SMTP for more flexibility.
+
+**Files Modified**:
+- `lib/resend.ts` - Replaced Resend with nodemailer SMTP transport (maintains backwards-compatible interface)
+- `app/actions/email.ts` - Updated to use SMTP configuration
+- `app/api/labels/email/route.ts` - Updated to use SMTP configuration
+- `.env.example` - Replaced `RESEND_API_KEY` with SMTP variables
+
+**Dependencies Changed**:
+- Added: `nodemailer`, `@types/nodemailer`
+
 ### Changed
 
 #### Barcode Scanner "Holy Grail" PWA Polyfill Architecture

@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { getAuthContext } from '@/lib/auth/server-auth'
 import { z } from 'zod'
+import { sendAdminBugReportNotification } from './email'
 
 // ============================================
 // Types
@@ -94,6 +95,22 @@ export async function submitBugReport(input: BugReportInput): Promise<{
     console.error('Failed to submit bug report:', error)
     return { success: false, error: 'Failed to submit report. Please try again.' }
   }
+
+  // 4. Send admin email notification (non-blocking)
+  const { data: userData } = await supabase.auth.getUser()
+  const userEmail = userData?.user?.email || 'unknown'
+
+  sendAdminBugReportNotification(
+    data.id,
+    validation.data.category,
+    validation.data.subject,
+    validation.data.description,
+    userEmail,
+    validation.data.pageUrl || null
+  ).catch((err) => {
+    // Log but don't fail the request
+    console.error('Failed to send admin notification:', err)
+  })
 
   return { success: true, data: { id: data.id } }
 }
