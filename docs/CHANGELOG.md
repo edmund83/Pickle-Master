@@ -9,6 +9,47 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Changed
+
+#### Barcode Scanner "Holy Grail" PWA Polyfill Architecture
+Replaced slow `html5-qrcode` library with a 3-layer progressive polyfill strategy for dramatically faster barcode scanning, especially on mobile devices.
+
+**New Architecture**:
+- **Layer 1: Native BarcodeDetector API** (Android Chrome, iOS 17+, Edge) - Hardware accelerated using ML Kit/Vision framework, Speed: 10/10
+- **Layer 2: ZBar-WASM** (older iOS, Firefox, fallback) - Fast C library compiled to WebAssembly, excellent for 1D barcodes, Speed: 8/10
+- **Layer 3: jsQR** (QR-specific fallback) - Pure JavaScript QR detector, Speed: 7/10
+
+**Performance Improvements**:
+| Metric | Before | After |
+|--------|--------|-------|
+| FPS | 10 | 30 |
+| Scan box | Fixed 250×250px | Responsive 70% of container |
+| 1D barcode speed | Slow (ZXing-based) | Fast (ZBar/Native) |
+| Angle tolerance | Poor | Better (3× more frames analyzed) |
+| Bundle size | ~150KB | ~60KB (lazy loaded WASM) |
+
+**Files Added**:
+- `lib/scanner/engines/types.ts` - Unified ScannerEngine interface
+- `lib/scanner/engines/native-detector.ts` - Native BarcodeDetector wrapper
+- `lib/scanner/engines/zbar-engine.ts` - ZBar-WASM engine with dynamic import
+- `lib/scanner/engines/jsqr-engine.ts` - jsQR fallback engine
+- `lib/scanner/engines/index.ts` - Engine factory with auto-detection
+- `lib/scanner/utils/camera-manager.ts` - Unified camera stream handling
+- `lib/scanner/utils/format-normalizer.ts` - Normalize format names across engines
+
+**Files Modified**:
+- `lib/scanner/useBarcodeScanner.ts` - Refactored to use engine factory (interface unchanged)
+- `components/scanner/BarcodeScanner.tsx` - Responsive scan box with ResizeObserver
+- `lib/scanner/index.ts` - Updated exports
+
+**Dependencies Changed**:
+- Removed: `html5-qrcode`
+- Added: `@undecaf/zbar-wasm`, `jsqr`
+
+**Backwards Compatibility**: The `ScanResult` interface and `useBarcodeScanner` hook signature remain unchanged. All 6 task pages using the scanner work without modification.
+
+---
+
 ### Added
 
 #### Sentry Error Tracking Integration

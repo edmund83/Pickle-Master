@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useId } from 'react'
+import { useEffect, useId, useState, useRef } from 'react'
 import { Camera, CameraOff, RefreshCw, X, Loader2 } from 'lucide-react'
 import { useBarcodeScanner, type ScanResult } from '@/lib/scanner/useBarcodeScanner'
 
@@ -25,6 +25,10 @@ export function BarcodeScanner({
 }: BarcodeScannerProps) {
   const scannerId = useId().replace(/:/g, '')
   const scannerElementId = `scanner-${scannerId}`
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  // Responsive scan box size (70% of smaller dimension)
+  const [scanBoxSize, setScanBoxSize] = useState(250)
 
   const {
     isScanning,
@@ -39,6 +43,30 @@ export function BarcodeScanner({
     clearLastScan,
     clearError,
   } = useBarcodeScanner(onScan)
+
+  // Calculate responsive scan box size
+  useEffect(() => {
+    const calculateScanBoxSize = () => {
+      const container = containerRef.current
+      if (container) {
+        const { clientWidth, clientHeight } = container
+        const smaller = Math.min(clientWidth, clientHeight)
+        // 70% of smaller dimension, with min 200 and max 350
+        const size = Math.max(200, Math.min(350, Math.floor(smaller * 0.7)))
+        setScanBoxSize(size)
+      }
+    }
+
+    calculateScanBoxSize()
+
+    // Recalculate on resize
+    const resizeObserver = new ResizeObserver(calculateScanBoxSize)
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current)
+    }
+
+    return () => resizeObserver.disconnect()
+  }, [])
 
   // Auto-start scanning when component mounts
   useEffect(() => {
@@ -68,7 +96,7 @@ export function BarcodeScanner({
   }
 
   return (
-    <div className={cn('relative flex flex-col bg-black', className)}>
+    <div ref={containerRef} className={cn('relative flex flex-col bg-black', className)}>
       {/* Header */}
       <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between p-4 bg-gradient-to-b from-black/70 to-transparent">
         {showCloseButton && onClose ? (
@@ -104,17 +132,17 @@ export function BarcodeScanner({
       {/* Scanner viewport */}
       <div className="relative flex-1 min-h-[300px]">
         {/* Camera feed container */}
-        <div
-          id={scannerElementId}
-          className="w-full h-full"
-        />
+        <div id={scannerElementId} className="w-full h-full" />
 
         {/* Scanning overlay frame */}
         {isScanning && !error && (
           <div className="absolute inset-0 pointer-events-none">
             <div className="absolute inset-0 flex items-center justify-center">
-              {/* Scan target frame */}
-              <div className="relative w-64 h-64">
+              {/* Scan target frame - now responsive */}
+              <div
+                className="relative"
+                style={{ width: scanBoxSize, height: scanBoxSize }}
+              >
                 {/* Corner brackets */}
                 <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-primary rounded-tl-lg" />
                 <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-primary rounded-tr-lg" />
@@ -127,9 +155,19 @@ export function BarcodeScanner({
             </div>
 
             {/* Semi-transparent overlay outside scan area */}
-            <div className="absolute inset-0 bg-black/40" style={{
-              clipPath: 'polygon(0 0, 100% 0, 100% 100%, 0 100%, 0 0, calc(50% - 128px) calc(50% - 128px), calc(50% - 128px) calc(50% + 128px), calc(50% + 128px) calc(50% + 128px), calc(50% + 128px) calc(50% - 128px), calc(50% - 128px) calc(50% - 128px))'
-            }} />
+            <div
+              className="absolute inset-0 bg-black/40"
+              style={{
+                clipPath: `polygon(
+                  0 0, 100% 0, 100% 100%, 0 100%, 0 0,
+                  calc(50% - ${scanBoxSize / 2}px) calc(50% - ${scanBoxSize / 2}px),
+                  calc(50% - ${scanBoxSize / 2}px) calc(50% + ${scanBoxSize / 2}px),
+                  calc(50% + ${scanBoxSize / 2}px) calc(50% + ${scanBoxSize / 2}px),
+                  calc(50% + ${scanBoxSize / 2}px) calc(50% - ${scanBoxSize / 2}px),
+                  calc(50% - ${scanBoxSize / 2}px) calc(50% - ${scanBoxSize / 2}px)
+                )`,
+              }}
+            />
           </div>
         )}
 
@@ -183,8 +221,8 @@ export function BarcodeScanner({
           {isScanning
             ? 'Point camera at a barcode or QR code'
             : isInitializing
-            ? 'Initializing...'
-            : 'Camera not available'}
+              ? 'Initializing...'
+              : 'Camera not available'}
         </p>
       </div>
     </div>
