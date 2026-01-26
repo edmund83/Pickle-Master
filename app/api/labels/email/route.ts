@@ -48,7 +48,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (!resend) {
-      console.warn('Email skipped: RESEND_API_KEY not configured')
+      console.warn('Email skipped: SMTP not configured')
       return NextResponse.json({ error: 'Email service not configured' }, { status: 503 })
     }
 
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
     const safeItemName = escapeHtml(trimmedName)
 
     const { data, error } = await resend.emails.send({
-      from: 'StockZip <onboarding@resend.dev>',
+      from: process.env.SMTP_FROM || 'StockZip <noreply@stockzip.com>',
       to: [email],
       subject: `Label for ${safeItemName}`,
       html: `
@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
     })
 
     if (error) {
-      console.error('Resend Error:', error)
+      console.error('SMTP Error:', error)
       return NextResponse.json({ error: error.message }, { status: 500 })
     }
 
