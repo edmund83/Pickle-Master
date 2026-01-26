@@ -228,25 +228,28 @@ export function useBarcodeScanner(onScanSuccess?: (result: ScanResult) => void):
         engineRef.current = await createScannerEngine()
 
         // 2. Initialize camera manager
-        cameraManagerRef.current = new CameraManager()
+        const cameraManager = new CameraManager()
+        cameraManagerRef.current = cameraManager
 
-        // 3. Enumerate cameras if not done
-        if (availableCameras.length === 0) {
-          const cameras = await cameraManagerRef.current.enumerateCameras()
-          if (cameras.length === 0) {
-            throw new Error('No cameras found on this device')
-          }
-          setAvailableCameras(cameras.map((c) => ({ id: c.id, label: c.label })))
+        // 3. Enumerate cameras - always enumerate fresh to get permission
+        const cameras = await cameraManager.enumerateCameras()
 
-          const backCamera = cameras.find((c) => c.facing === 'environment')
-          setCurrentCameraId(backCamera?.id || cameras[0].id)
-          setHasPermission(true)
+        if (cameras.length === 0) {
+          throw new Error('No cameras found on this device')
         }
 
-        // 4. Start camera stream
-        const cameraId = currentCameraId || availableCameras[0]?.id
-        await cameraManagerRef.current.startStream({
-          deviceId: cameraId,
+        // Update state for UI
+        setAvailableCameras(cameras.map((c) => ({ id: c.id, label: c.label })))
+
+        // Find best camera (prefer back/environment camera)
+        const backCamera = cameras.find((c) => c.facing === 'environment')
+        const selectedCameraId = backCamera?.id || cameras[0].id
+        setCurrentCameraId(selectedCameraId)
+        setHasPermission(true)
+
+        // 4. Start camera stream with the camera ID we just determined (not from stale state)
+        await cameraManager.startStream({
+          deviceId: selectedCameraId,
           width: SCANNER_CONFIG.camera.width,
           height: SCANNER_CONFIG.camera.height,
           frameRate: SCANNER_CONFIG.camera.frameRate,
@@ -256,6 +259,11 @@ export function useBarcodeScanner(onScanSuccess?: (result: ScanResult) => void):
         const container = document.getElementById(elementId)
         if (!container) {
           throw new Error(`Container element not found: ${elementId}`)
+        }
+
+        // Check if camera manager is still valid (could be nulled by cleanup)
+        if (!cameraManagerRef.current) {
+          throw new Error('Scanner initialization aborted')
         }
 
         const video = document.createElement('video')
@@ -269,6 +277,11 @@ export function useBarcodeScanner(onScanSuccess?: (result: ScanResult) => void):
         container.appendChild(video)
         videoRef.current = video
 
+        // Bind video to camera - check ref is still valid
+        if (!cameraManagerRef.current) {
+          video.remove()
+          throw new Error('Scanner initialization aborted')
+        }
         cameraManagerRef.current.bindToVideo(video)
 
         // Wait for video to be ready
@@ -289,11 +302,21 @@ export function useBarcodeScanner(onScanSuccess?: (result: ScanResult) => void):
           }
         })
 
+        // Check if still valid after async wait (component could have unmounted)
+        if (!cameraManagerRef.current) {
+          throw new Error('Scanner initialization aborted')
+        }
+
         // 6. Start detection loop
         startDetectionLoop()
         setIsScanning(true)
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Failed to start scanner'
+
+        // Don't show error if we were just aborted (component unmounted)
+        if (message === 'Scanner initialization aborted') {
+          return
+        }
 
         // Provide user-friendly error messages
         if (message.includes('Permission denied') || message.includes('NotAllowedError')) {
@@ -316,11 +339,15 @@ export function useBarcodeScanner(onScanSuccess?: (result: ScanResult) => void):
           engineRef.current.dispose()
           engineRef.current = null
         }
+        if (videoRef.current) {
+          videoRef.current.remove()
+          videoRef.current = null
+        }
       } finally {
         setIsInitializing(false)
       }
     },
-    [isScanning, isInitializing, availableCameras, currentCameraId, startDetectionLoop]
+    [isScanning, isInitializing, startDetectionLoop]
   )
 
   // ============================================================================
