@@ -1,6 +1,6 @@
 'use client'
 
-import { Package, Plus, Search, Edit3, ExternalLink, Loader2 } from 'lucide-react'
+import { Package, Plus, Search, Edit3, ExternalLink, Loader2, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
@@ -18,10 +18,21 @@ export interface ScannedItem {
   updated_at?: string | null
 }
 
+export interface ValidationWarning {
+  /** Whether the check digit validation failed */
+  isInvalid: boolean
+  /** Error message explaining the validation failure */
+  message?: string
+  /** The barcode format that was validated */
+  format?: string
+}
+
 interface ScanResultModalProps {
   barcode: string
   item: ScannedItem | null
   isLoading: boolean
+  /** Validation warning for invalid check digit */
+  validationWarning?: ValidationWarning
   onAdjustQuantity: () => void
   onViewDetails: () => void
   onAddNew: () => void
@@ -33,6 +44,7 @@ export function ScanResultModal({
   barcode,
   item,
   isLoading,
+  validationWarning,
   onAdjustQuantity,
   onViewDetails,
   onAddNew,
@@ -48,6 +60,30 @@ export function ScanResultModal({
     )
   }
 
+  // Validation warning banner component
+  const ValidationBanner = () => {
+    if (!validationWarning?.isInvalid) return null
+
+    return (
+      <div className="mx-4 mt-4 mb-0 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3">
+        <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-medium text-amber-800">
+            Check digit validation failed
+          </p>
+          <p className="text-xs text-amber-700 mt-0.5">
+            {validationWarning.message || 'The barcode may be damaged or misread. Consider rescanning.'}
+          </p>
+          {validationWarning.format && (
+            <p className="text-xs text-amber-600 mt-1">
+              Format: {validationWarning.format}
+            </p>
+          )}
+        </div>
+      </div>
+    )
+  }
+
   // Item found
   if (item) {
     const stockStatus = item.min_stock_level
@@ -59,7 +95,9 @@ export function ScanResultModal({
       : 'ok'
 
     return (
-      <div className={cn('p-4', className)}>
+      <div className={cn('pb-4', className)}>
+        <ValidationBanner />
+        <div className="p-4 pt-4">
         <Card className="overflow-hidden">
           <CardContent className="p-0">
             <div className="flex gap-4 p-4">
@@ -148,13 +186,16 @@ export function ScanResultModal({
             </div>
           </CardContent>
         </Card>
+        </div>
       </div>
     )
   }
 
   // Item not found
   return (
-    <div className={cn('p-4', className)}>
+    <div className={cn('pb-4', className)}>
+      <ValidationBanner />
+      <div className="p-4 pt-4">
       <Card>
         <CardContent className="p-6 text-center">
           <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-neutral-100 flex items-center justify-center">
@@ -180,6 +221,7 @@ export function ScanResultModal({
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   )
 }

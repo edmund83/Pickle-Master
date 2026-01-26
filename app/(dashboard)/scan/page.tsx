@@ -22,6 +22,8 @@ import {
 } from '@/lib/offline/db'
 import type { ScanResult } from '@/lib/scanner/useBarcodeScanner'
 import { useHardwareScanner } from '@/lib/scanner/useHardwareScanner'
+import { validateBarcode, validateBarcodeAutoDetect } from '@/lib/scanner'
+import type { ValidationWarning } from '@/components/scanner/ScanResultModal'
 import { useAuth } from '@/lib/stores/auth-store'
 
 type ScanMode = 'single' | 'quick-adjust' | 'batch'
@@ -113,6 +115,7 @@ export default function ScanPage() {
   const [scannedItem, setScannedItem] = useState<ScannedItem | null>(null)
   const [isLookingUp, setIsLookingUp] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [validationWarning, setValidationWarning] = useState<ValidationWarning | null>(null)
 
   // Batch mode state
   const [batchItems, setBatchItems] = useState<BatchScanItem[]>([])
@@ -150,6 +153,7 @@ export default function ScanPage() {
 
   // Guard to prevent concurrent lookups
   const isLookingUpRef = useRef(false)
+  const lastProcessedBarcodeRef = useRef<{ code: string; time: number } | null>(null)
 
   // Hardware scanner should be enabled on ALL devices (including PDAs like Zebra TC22)
   // The hook listens globally for rapid keystrokes regardless of screen size
@@ -258,96 +262,119 @@ export default function ScanPage() {
     persistSession()
   }, [batchItems, mode, sessionId, resolveScope])
 
-  // Look up item by barcode or SKU - uses offline cache first
+  // Look up item by barcode or SKU
   const lookupItem = useCallback(
     async (barcode: string): Promise<ScannedItem | null> => {
-      // Try offline cache first
-      const offlineItem = await lookupItemOffline(barcode)
-      if (offlineItem) {
-        return {
-          id: offlineItem.id,
-          name: offlineItem.name,
-          sku: offlineItem.sku,
-          barcode: offlineItem.barcode,
-          quantity: offlineItem.quantity,
-          min_stock_level: offlineItem.min_quantity,
-          unit_cost: offlineItem.price,
-          photo_url: offlineItem.image_url,
-          folder_name: offlineItem.folder_name,
-          updated_at: offlineItem.updated_at,
-        }
-      }
-
-      // If online, try server
+      // Skip offline cache - go directly to Supabase (offline cache seems to hang)
       if (isOnline) {
-         
-        const { data, error } = await (supabase as any)
-          .from('inventory_items')
-          .select(
+        try {
+          const { data } = await supabase
+            .from('inventory_items')
+            .select(
+              `
+              id,
+              name,
+              sku,
+              barcode,
+              quantity,
+              min_quantity,
+              price,
+              image_urls,
+              updated_at,
+              folders (name)
             `
-            id,
-            name,
-            sku,
-            barcode,
-            quantity,
-            min_quantity,
-            price,
-            image_urls,
-            folder_id,
-            updated_at,
-            folders (name)
-          `
-          )
-          .or(`barcode.eq.${barcode},sku.eq.${barcode}`)
-          .is('deleted_at', null)
-          .limit(1)
-          .single()
+            )
+            .or(`barcode.eq.${barcode},sku.eq.${barcode}`)
+            .is('deleted_at', null)
+            .limit(1)
+            .maybeSingle()
 
-        if (error || !data) return null
-
-         
-        const item = data as any
-
-        return {
-          id: item.id,
-          name: item.name,
-          sku: item.sku,
-          barcode: item.barcode,
-          quantity: item.quantity,
-          min_stock_level: item.min_quantity,
-          unit_cost: item.price,
-          photo_url: item.image_urls?.[0] || null,
-          folder_name: item.folders?.name || null,
-          updated_at: item.updated_at || null,
+          if (data) {
+            return {
+              id: data.id,
+              name: data.name,
+              sku: data.sku,
+              barcode: data.barcode,
+              quantity: data.quantity,
+              min_stock_level: data.min_quantity,
+              unit_cost: data.price,
+              photo_url: data.image_urls?.[0] || null,
+              folder_name: (data.folders as any)?.name || null,
+              updated_at: data.updated_at || null,
+            }
+          }
+        } catch (err) {
+          console.error('Supabase lookup error:', err)
         }
       }
 
-      // Offline and not in cache
       return null
     },
-    [supabase, isOnline, lookupItemOffline]
+    [supabase, isOnline]
   )
 
   // Handle scan result
   const handleScan = useCallback(
     async (result: ScanResult) => {
-      // Prevent concurrent lookups - this guards against rapid re-scans
-      // caused by callback recreations or scanner restarts
+      const now = Date.now()
+      const barcode = result.code
+
+      // Debounce: Skip if same barcode was processed within 2 seconds
+      const lastProcessed = lastProcessedBarcodeRef.current
+      if (lastProcessed && lastProcessed.code === barcode && now - lastProcessed.time < 2000) {
+        return
+      }
+
+      // Prevent concurrent lookups
       if (isLookingUpRef.current) {
         return
       }
 
-      const barcode = result.code
+      // Set guards immediately
       isLookingUpRef.current = true
-      setLastBarcode(barcode)
-      setIsLookingUp(true)
+      lastProcessedBarcodeRef.current = { code: barcode, time: now }
 
+      // Wrap EVERYTHING in try-finally to guarantee guard release
       try {
-        const item = await lookupItem(barcode)
+        setLastBarcode(barcode)
+        // Clear stale item state so the result view doesn't show old data
+        setScannedItem(null)
+        setIsLookingUp(true)
+        setValidationWarning(null)
+
+        // Show the result view immediately (loading state) for non-batch modes
+        // so users get instant feedback after a scan.
+        if (mode !== 'batch') {
+          setViewState('result')
+        }
+
+        // Validate barcode check digit
+        try {
+          const validation =
+            result.format === 'HARDWARE' || !result.format
+              ? validateBarcodeAutoDetect(barcode)
+              : validateBarcode(barcode, result.format)
+
+          if (!validation.isValid && validation.supportsValidation) {
+            setValidationWarning({
+              isInvalid: true,
+              message: validation.error,
+              format: validation.format,
+            })
+          }
+        } catch (validationError) {
+          console.warn('Barcode validation failed:', validationError)
+        }
+
+        // Lookup item with timeout
+        const item = await Promise.race([
+          lookupItem(barcode),
+          new Promise<null>((resolve) => setTimeout(() => resolve(null), 3000))
+        ])
+
         setScannedItem(item)
 
         if (mode === 'batch') {
-          // In batch mode, add to list and continue scanning
           const alreadyScanned = batchItems.some((bi) => bi.barcode === barcode)
           if (!alreadyScanned) {
             setBatchItems((prev) => [
@@ -360,14 +387,13 @@ export default function ScanPage() {
               ...prev,
             ])
           }
-          // Stay in scanning view for continuous scanning
         } else if (mode === 'quick-adjust' && item) {
-          // Go directly to adjust modal
           setViewState('adjust')
         } else {
-          // Single mode - show result
           setViewState('result')
         }
+      } catch (err) {
+        console.error('Scan error:', err)
       } finally {
         setIsLookingUp(false)
         isLookingUpRef.current = false
@@ -480,6 +506,7 @@ export default function ScanPage() {
       setViewState('scanning')
       setScannedItem(null)
       setLastBarcode(null)
+      setValidationWarning(null)
     }
   }
 
@@ -499,6 +526,7 @@ export default function ScanPage() {
     setViewState('scanning')
     setScannedItem(null)
     setLastBarcode(null)
+    setValidationWarning(null)
   }
 
   if (!isMounted) {
@@ -678,6 +706,7 @@ export default function ScanPage() {
             barcode={lastBarcode}
             item={scannedItem}
             isLoading={isLookingUp}
+            validationWarning={validationWarning ?? undefined}
             onAdjustQuantity={() => setViewState('adjust')}
             onViewDetails={handleViewDetails}
             onAddNew={handleAddNew}

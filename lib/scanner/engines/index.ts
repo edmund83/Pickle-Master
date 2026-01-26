@@ -106,17 +106,20 @@ export async function createScannerEngine(preferredEngine?: EngineType): Promise
     try {
       const engine = new ZBarEngine()
       await engine.initialize()
-      console.log('[Scanner] Using ZBar-WASM engine')
+      console.log('[Scanner] Using ZBar-WASM engine (supports UPC, EAN, Code128, QR and more)')
       return engine
     } catch (error) {
-      console.warn('[Scanner] ZBar engine failed to initialize:', error)
+      console.error('[Scanner] ZBar engine failed to initialize. Will fall back to jsQR (QR codes only):', error)
     }
+  } else {
+    console.warn('[Scanner] ZBar not supported (WebAssembly unavailable)')
   }
 
   // Layer 3: Fallback to jsQR
   const engine = new JsQREngine()
   await engine.initialize()
-  console.log('[Scanner] Using jsQR engine (QR codes only)')
+  console.warn('[Scanner] ⚠️ Using jsQR engine - ONLY QR CODES will be detected! Traditional barcodes (UPC, EAN, Code128) will NOT work.')
+  console.warn('[Scanner] For full barcode support, use a device with native BarcodeDetector (iOS 17+, Chrome 83+ Android) or check if ZBar WASM loaded correctly.')
   return engine
 }
 

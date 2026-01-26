@@ -38,6 +38,8 @@ export function BarcodeScanner({
     lastScan,
     hasPermission,
     availableCameras,
+    engineName,
+    supports1DBarcodes,
     startScanning,
     stopScanning,
     switchCamera,
@@ -78,6 +80,9 @@ export function BarcodeScanner({
     return () => resizeObserver.disconnect()
   }, [])
 
+  // Track if scanning actually started (not just scheduled)
+  const scanningStartedRef = useRef(false)
+
   // Auto-start scanning when component mounts
   // Using refs to avoid re-triggering on callback recreation
   useEffect(() => {
@@ -85,14 +90,19 @@ export function BarcodeScanner({
     if (hasStartedRef.current) return
     hasStartedRef.current = true
 
-    const timer = setTimeout(() => {
-      startScanningRef.current(scannerElementId)
+    const timer = setTimeout(async () => {
+      scanningStartedRef.current = true
+      await startScanningRef.current(scannerElementId)
     }, 100)
 
     return () => {
       clearTimeout(timer)
       hasStartedRef.current = false
-      stopScanningRef.current()
+      // Only stop scanning if it actually started
+      if (scanningStartedRef.current) {
+        scanningStartedRef.current = false
+        stopScanningRef.current()
+      }
     }
   }, [scannerElementId])
 
@@ -232,11 +242,21 @@ export function BarcodeScanner({
         )}
       </div>
 
+      {/* Warning banner for limited engine */}
+      {isScanning && !supports1DBarcodes && (
+        <div className="absolute top-16 left-4 right-4 z-20 bg-amber-500/95 text-white text-xs px-3 py-2 rounded-lg text-center shadow-lg">
+          <strong>QR codes only</strong> — Traditional barcodes (UPC, EAN) not supported on this device.
+          {engineName && <span className="opacity-75 block mt-0.5">Engine: {engineName}</span>}
+        </div>
+      )}
+
       {/* Footer instructions */}
       <div className="absolute bottom-0 left-0 right-0 z-10 p-4 bg-gradient-to-t from-black/70 to-transparent">
         <p className="text-white/80 text-center text-sm">
           {isScanning
-            ? 'Point camera at a barcode or QR code'
+            ? supports1DBarcodes
+              ? 'Point camera at a barcode or QR code'
+              : 'Point camera at a QR code'
             : isInitializing
               ? 'Initializing...'
               : 'Camera not available'}
