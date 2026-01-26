@@ -11,6 +11,50 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Added
 
+#### Scanner Diagnostics & Engine Status
+Added comprehensive diagnostics to identify barcode scanning issues and improved user feedback.
+
+**New Features**:
+- **Engine Status UI**: Shows warning banner when using jsQR engine (QR codes only)
+- **Console Logging**: Detailed logs for engine selection, frame capture, and detection activity
+- **Video Stream Diagnostics**: Logs camera resolution, frame rate, and video dimensions
+
+**UI Changes**:
+- Added amber warning banner when scanner falls back to jsQR (QR codes only mode)
+- Updated footer text to show "Point camera at a QR code" when 1D barcodes not supported
+- Added `engineName` and `supports1DBarcodes` to scanner hook interface
+
+**Files Modified**:
+- `lib/scanner/useBarcodeScanner.ts` - Added engine name state, frame capture diagnostics
+- `lib/scanner/engines/index.ts` - Enhanced logging for engine selection
+- `lib/scanner/utils/camera-manager.ts` - Added video stream and capture diagnostics
+- `components/scanner/BarcodeScanner.tsx` - Added engine status warning banner
+
+#### Barcode Check Digit Validation
+Added check digit validation for scanned barcodes to catch scanning errors before they enter the database.
+
+**Supported Formats**:
+- UPC-A (12 digits) - Modulo 10 check digit
+- UPC-E (8 digits) - Expanded to UPC-A for validation
+- EAN-13 (13 digits) - Modulo 10 check digit
+- EAN-8 (8 digits) - Modulo 10 check digit
+- ISBN-10 (10 characters) - Modulo 11 check digit
+- ISBN-13 (13 digits) - Uses EAN-13 validation
+
+**Features**:
+- Validates barcodes immediately after scanning
+- Shows warning banner when check digit is invalid
+- Auto-detects format for hardware scanners
+- Allows proceeding despite warning (barcode may be valid but non-standard)
+
+**Files Added**:
+- `lib/scanner/utils/checkdigit-validator.ts` - Validation functions for all supported formats
+
+**Files Modified**:
+- `lib/scanner/index.ts` - Exported validation functions
+- `app/(dashboard)/scan/page.tsx` - Integrated validation into scan flow
+- `components/scanner/ScanResultModal.tsx` - Added validation warning UI
+
 #### Admin Email Notifications
 Added email notifications to admin for new user signups and bug report submissions.
 

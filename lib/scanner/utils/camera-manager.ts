@@ -106,6 +106,14 @@ export class CameraManager {
 
     try {
       this.stream = await navigator.mediaDevices.getUserMedia(constraints)
+
+      // Log stream info for debugging
+      const videoTrack = this.stream.getVideoTracks()[0]
+      if (videoTrack) {
+        const settings = videoTrack.getSettings()
+        console.log(`[CameraManager] Stream started: ${settings.width}x${settings.height} @ ${settings.frameRate}fps, device: ${videoTrack.label}`)
+      }
+
       return this.stream
     } catch (error) {
       // If specific device fails, try without device constraint
@@ -136,6 +144,29 @@ export class CameraManager {
     this.canvasCtx = this.canvas.getContext('2d', {
       willReadFrequently: true, // Hint for optimization
     })
+
+    console.log('[CameraManager] Video element bound to stream')
+
+    // Log when video metadata loads
+    video.addEventListener('loadedmetadata', () => {
+      console.log(`[CameraManager] Video metadata loaded: ${video.videoWidth}x${video.videoHeight}`)
+    }, { once: true })
+
+    // Log when video can play
+    video.addEventListener('canplay', () => {
+      console.log(`[CameraManager] Video can play: ${video.videoWidth}x${video.videoHeight}, readyState: ${video.readyState}`)
+    }, { once: true })
+  }
+
+  // Diagnostic counters for debugging
+  private captureFailureReason: string | null = null
+  private lastFailureLogTime = 0
+
+  /**
+   * Get the last reason why frame capture failed (for debugging)
+   */
+  getLastCaptureFailure(): string | null {
+    return this.captureFailureReason
   }
 
   /**
@@ -144,11 +175,17 @@ export class CameraManager {
    */
   captureFrame(): ImageData | null {
     if (!this.videoElement || !this.canvas || !this.canvasCtx) {
+      this.captureFailureReason = !this.videoElement
+        ? 'no video element'
+        : !this.canvas
+          ? 'no canvas'
+          : 'no canvas context'
       return null
     }
 
     const video = this.videoElement
     if (video.readyState < video.HAVE_CURRENT_DATA) {
+      this.captureFailureReason = `video not ready (readyState=${video.readyState}, need ${video.HAVE_CURRENT_DATA})`
       return null
     }
 
@@ -156,8 +193,17 @@ export class CameraManager {
     const height = video.videoHeight
 
     if (width === 0 || height === 0) {
+      this.captureFailureReason = `video dimensions are 0 (${width}x${height})`
+      // Log this once per second to avoid spam
+      const now = Date.now()
+      if (now - this.lastFailureLogTime > 1000) {
+        console.warn(`[CameraManager] Video has zero dimensions: ${width}x${height}. Video readyState: ${video.readyState}`)
+        this.lastFailureLogTime = now
+      }
       return null
     }
+
+    this.captureFailureReason = null
 
     // Resize canvas if needed
     if (this.canvas.width !== width || this.canvas.height !== height) {
@@ -231,6 +277,8 @@ export class CameraManager {
 
     this.canvas = null
     this.canvasCtx = null
+    this.captureFailureReason = null
+    this.lastFailureLogTime = 0
   }
 
   /**

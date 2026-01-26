@@ -33,6 +33,10 @@ export interface UseBarcodeScanner {
   hasPermission: boolean | null
   availableCameras: { id: string; label: string }[]
   currentCameraId: string | null
+  /** The scanner engine being used (native, zbar, or jsqr) */
+  engineName: string | null
+  /** Whether the current engine supports 1D barcodes (UPC, EAN, etc.) */
+  supports1DBarcodes: boolean
   startScanning: (elementId: string) => Promise<void>
   stopScanning: () => Promise<void>
   switchCamera: () => Promise<void>
@@ -72,6 +76,7 @@ export function useBarcodeScanner(onScanSuccess?: (result: ScanResult) => void):
   const [hasPermission, setHasPermission] = useState<boolean | null>(null)
   const [availableCameras, setAvailableCameras] = useState<{ id: string; label: string }[]>([])
   const [currentCameraId, setCurrentCameraId] = useState<string | null>(null)
+  const [engineName, setEngineName] = useState<string | null>(null)
 
   // Refs
   const engineRef = useRef<ScannerEngine | null>(null)
@@ -94,25 +99,50 @@ export function useBarcodeScanner(onScanSuccess?: (result: ScanResult) => void):
   const startDetectionLoop = useCallback(() => {
     const frameInterval = 1000 / SCANNER_CONFIG.fps
     let lastFrameTime = 0
+    let frameCount = 0
+    let nullFrameCount = 0
 
     const loop = async (timestamp: number) => {
+      // CRITICAL: Stop loop if engine was disposed (component unmounted or stopped)
+      if (!engineRef.current) {
+        console.log('[Scanner] Detection loop stopped - engine disposed')
+        return // Don't schedule next frame
+      }
+
       // Throttle to target FPS
       if (timestamp - lastFrameTime < frameInterval) {
         scanLoopRef.current = requestAnimationFrame(loop)
         return
       }
       lastFrameTime = timestamp
+      frameCount++
 
       // Capture frame
       const imageData = cameraManagerRef.current?.captureFrame()
-      if (!imageData || !engineRef.current) {
+      if (!imageData) {
+        nullFrameCount++
+        // Log every 100 null frames to help diagnose
+        if (nullFrameCount === 1 || nullFrameCount % 100 === 0) {
+          const reason = cameraManagerRef.current?.getLastCaptureFailure?.() ?? 'unknown'
+          console.warn(`[Scanner] Frame capture failed (${nullFrameCount} null frames). Reason: ${reason}`)
+        }
         scanLoopRef.current = requestAnimationFrame(loop)
         return
+      }
+
+      // Log first successful frame capture
+      if (frameCount === 1 || (frameCount <= 10 && nullFrameCount > 0)) {
+        console.log(`[Scanner] Frame captured: ${imageData.width}x${imageData.height}, engine: ${engineRef.current.name}`)
       }
 
       try {
         // Run detection
         const results = await engineRef.current.detect(imageData)
+
+        // Log detection activity periodically (every 5 seconds)
+        if (frameCount % (SCANNER_CONFIG.fps * 5) === 0) {
+          console.log(`[Scanner] Detection active - ${frameCount} frames processed, engine: ${engineRef.current.name}, formats: ${engineRef.current.getSupportedFormats().slice(0, 3).join(', ')}...`)
+        }
 
         if (results.length > 0) {
           const now = Date.now()
@@ -225,7 +255,10 @@ export function useBarcodeScanner(onScanSuccess?: (result: ScanResult) => void):
 
       try {
         // 1. Initialize the best available scanner engine
+        console.log('[Scanner] Creating scanner engine...')
         engineRef.current = await createScannerEngine()
+        setEngineName(engineRef.current.name)
+        console.log(`[Scanner] Engine created: ${engineRef.current.name}`)
 
         // 2. Initialize camera manager
         const cameraManager = new CameraManager()
@@ -355,6 +388,7 @@ export function useBarcodeScanner(onScanSuccess?: (result: ScanResult) => void):
   // ============================================================================
 
   const stopScanning = useCallback(async () => {
+    console.log('[Scanner] Stopping scanner...')
     stopDetectionLoop()
 
     if (cameraManagerRef.current) {
@@ -363,6 +397,7 @@ export function useBarcodeScanner(onScanSuccess?: (result: ScanResult) => void):
     }
 
     if (engineRef.current) {
+      console.log(`[Scanner] Disposing engine: ${engineRef.current.name}`)
       engineRef.current.dispose()
       engineRef.current = null
     }
@@ -373,6 +408,8 @@ export function useBarcodeScanner(onScanSuccess?: (result: ScanResult) => void):
     }
 
     setIsScanning(false)
+    setEngineName(null)
+    console.log('[Scanner] Scanner stopped')
   }, [stopDetectionLoop])
 
   // ============================================================================
@@ -414,6 +451,9 @@ export function useBarcodeScanner(onScanSuccess?: (result: ScanResult) => void):
   // Return Hook Interface (UNCHANGED)
   // ============================================================================
 
+  // jsQR only supports QR codes, not 1D barcodes
+  const supports1DBarcodes = engineName !== 'jsqr'
+
   return {
     isScanning,
     isInitializing,
@@ -422,6 +462,8 @@ export function useBarcodeScanner(onScanSuccess?: (result: ScanResult) => void):
     hasPermission,
     availableCameras,
     currentCameraId,
+    engineName,
+    supports1DBarcodes,
     startScanning,
     stopScanning,
     switchCamera,
