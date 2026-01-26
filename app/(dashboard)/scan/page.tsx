@@ -290,17 +290,30 @@ export default function ScanPage() {
             .maybeSingle()
 
           if (data) {
+            // Type assertion needed due to Supabase .or() filter type inference issue
+            const item = data as {
+              id: string
+              name: string
+              sku: string | null
+              barcode: string | null
+              quantity: number
+              min_quantity: number | null
+              price: number | null
+              image_urls: string[] | null
+              updated_at: string | null
+              folders: { name: string } | null
+            }
             return {
-              id: data.id,
-              name: data.name,
-              sku: data.sku,
-              barcode: data.barcode,
-              quantity: data.quantity,
-              min_stock_level: data.min_quantity,
-              unit_cost: data.price,
-              photo_url: data.image_urls?.[0] || null,
-              folder_name: (data.folders as any)?.name || null,
-              updated_at: data.updated_at || null,
+              id: item.id,
+              name: item.name,
+              sku: item.sku,
+              barcode: item.barcode,
+              quantity: item.quantity,
+              min_stock_level: item.min_quantity,
+              unit_cost: item.price,
+              photo_url: item.image_urls?.[0] || null,
+              folder_name: item.folders?.name || null,
+              updated_at: item.updated_at || null,
             }
           }
         } catch (err) {
@@ -529,6 +542,31 @@ export default function ScanPage() {
     setValidationWarning(null)
   }
 
+  // Quick action to set quantity to zero (common stocktake action)
+  const handleSetToZero = useCallback(async () => {
+    if (!scannedItem || scannedItem.quantity === 0) return
+
+    setIsSaving(true)
+    try {
+      await queueQuantityAdjustment({
+        item_id: scannedItem.id,
+        previous_quantity: scannedItem.quantity,
+        new_quantity: 0,
+        adjustment: -scannedItem.quantity,
+        reason: 'Set to zero via scanner',
+        last_known_updated_at: scannedItem.updated_at ?? null,
+      })
+
+      // Update local state and go back to scanning
+      setScannedItem((prev) => (prev ? { ...prev, quantity: 0 } : null))
+      handleScanAgain()
+    } catch (error) {
+      console.error('Failed to set quantity to zero:', error)
+    } finally {
+      setIsSaving(false)
+    }
+  }, [scannedItem, queueQuantityAdjustment])
+
   if (!isMounted) {
     return (
       <div className="flex flex-1 items-center justify-center bg-neutral-100">
@@ -700,6 +738,25 @@ export default function ScanPage() {
           </button>
         )}
 
+        {/* Floating batch counter - prominent access to batch list */}
+        {viewState === 'scanning' && mode === 'batch' && batchItems.length > 0 && (
+          <button
+            onClick={() => setViewState('batch-list')}
+            className={cn(
+              'absolute left-4 z-10',
+              'bottom-[calc(16px+64px+env(safe-area-inset-bottom,0px))] lg:bottom-4',
+              'flex items-center gap-2 px-4 py-3',
+              'bg-primary text-white rounded-full shadow-lg',
+              'text-base font-semibold',
+              'active:scale-95 transition-transform',
+              'animate-in fade-in slide-in-from-left-4 duration-300'
+            )}
+          >
+            <ListChecks className="h-5 w-5" />
+            <span>{batchItems.length} scanned</span>
+          </button>
+        )}
+
         {/* Result view (single mode) */}
         {viewState === 'result' && lastBarcode && (
           <ScanResultModal
@@ -711,6 +768,7 @@ export default function ScanPage() {
             onViewDetails={handleViewDetails}
             onAddNew={handleAddNew}
             onScanAgain={handleScanAgain}
+            onSetToZero={handleSetToZero}
           />
         )}
 

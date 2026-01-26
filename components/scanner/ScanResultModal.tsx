@@ -1,6 +1,6 @@
 'use client'
 
-import { Package, Plus, Search, Edit3, ExternalLink, Loader2, AlertTriangle } from 'lucide-react'
+import { Package, Plus, Edit3, ExternalLink, Loader2, AlertTriangle, CircleOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
@@ -37,6 +37,8 @@ interface ScanResultModalProps {
   onViewDetails: () => void
   onAddNew: () => void
   onScanAgain: () => void
+  /** Quick action to set quantity to zero (stocktake) */
+  onSetToZero?: () => void
   className?: string
 }
 
@@ -49,6 +51,7 @@ export function ScanResultModal({
   onViewDetails,
   onAddNew,
   onScanAgain,
+  onSetToZero,
   className,
 }: ScanResultModalProps) {
   if (isLoading) {
@@ -166,21 +169,24 @@ export function ScanResultModal({
                 Adjust Quantity
               </Button>
               <div className="flex gap-2">
+                {/* Set to 0 - common stocktake action */}
+                {onSetToZero && item.quantity > 0 && (
+                  <Button
+                    onClick={onSetToZero}
+                    variant="outline"
+                    className="flex-1 gap-2 text-red-600 hover:text-red-700 hover:bg-red-50 border-red-200"
+                  >
+                    <CircleOff className="h-4 w-4" />
+                    Set to 0
+                  </Button>
+                )}
                 <Button
                   onClick={onViewDetails}
                   variant="outline"
                   className="flex-1 gap-2"
                 >
                   <ExternalLink className="h-4 w-4" />
-                  View Details
-                </Button>
-                <Button
-                  onClick={onScanAgain}
-                  variant="ghost"
-                  className="flex-1 gap-2"
-                >
-                  <Search className="h-4 w-4" />
-                  Scan Again
+                  Details
                 </Button>
               </div>
             </div>
@@ -209,16 +215,10 @@ export function ScanResultModal({
             {barcode}
           </p>
 
-          <div className="flex flex-col gap-2">
-            <Button onClick={onAddNew} className="w-full gap-2" size="lg">
-              <Plus className="h-4 w-4" />
-              Add New Item
-            </Button>
-            <Button onClick={onScanAgain} variant="ghost" className="w-full gap-2">
-              <Search className="h-4 w-4" />
-              Scan Again
-            </Button>
-          </div>
+          <Button onClick={onAddNew} className="w-full gap-2" size="lg">
+            <Plus className="h-4 w-4" />
+            Add New Item
+          </Button>
         </CardContent>
       </Card>
       </div>
