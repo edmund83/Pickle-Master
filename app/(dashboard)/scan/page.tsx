@@ -497,7 +497,7 @@ export default function ScanPage() {
   }
 
   return (
-    <div className="flex flex-col flex-1 min-h-0 bg-neutral-100">
+    <div className="flex flex-col flex-1 h-full min-h-0 bg-neutral-100">
       {/* Header - Mobile optimized with larger touch targets */}
       <div className="flex items-center justify-between px-4 py-2 lg:py-3 bg-white border-b">
         <Button
@@ -627,7 +627,7 @@ export default function ScanPage() {
               onScan={handleScan}
               showCloseButton={false}
               continuous={mode === 'batch'}
-              className="h-full"
+              className="h-[clamp(300px,60svh,520px)] lg:h-full"
             />
           ))}
 
@@ -636,7 +636,8 @@ export default function ScanPage() {
           <button
             onClick={toggleScannerType}
             className={cn(
-              'absolute bottom-4 right-4 z-10',
+              'absolute right-4 z-10',
+              'bottom-[calc(16px+64px+env(safe-area-inset-bottom,0px))] lg:bottom-4',
               'flex items-center gap-2 px-4 py-2',
               'bg-white/90 backdrop-blur-sm rounded-full shadow-lg',
               'text-sm font-medium text-neutral-700',
