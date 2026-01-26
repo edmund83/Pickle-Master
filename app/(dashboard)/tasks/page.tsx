@@ -4,6 +4,9 @@ import { ClipboardList, PackageOpen, ArrowRightLeft, Clock, User, FileText, Pack
 import { getTaskSummary } from '@/app/actions/task-summaries'
 import { FormattedShortDate } from '@/components/formatting/FormattedDate'
 
+// This page uses cookies for authentication, so it must be rendered dynamically
+export const dynamic = 'force-dynamic'
+
 const categories = [
   {
     href: '/tasks/inbound',
