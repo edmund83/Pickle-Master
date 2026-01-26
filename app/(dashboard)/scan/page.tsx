@@ -66,10 +66,15 @@ export default function ScanPage() {
   const isDesktop = useIsDesktop()
   const [mode, setMode] = useState<ScanMode>('single')
   const [viewState, setViewState] = useState<ViewState>('scanning')
+  const [isMounted, setIsMounted] = useState(false)
 
   // PDA detection state - starts null to avoid hydration mismatch
   const [isPDA, setIsPDA] = useState<boolean | null>(null)
   const [scannerType, setScannerType] = useState<ScannerType | null>(null)
+
+  useEffect(() => {
+    setIsMounted(true)
+  }, [])
 
   // Detect PDA and set scanner type on client only (after hydration)
   useEffect(() => {
@@ -494,6 +499,14 @@ export default function ScanPage() {
     setViewState('scanning')
     setScannedItem(null)
     setLastBarcode(null)
+  }
+
+  if (!isMounted) {
+    return (
+      <div className="flex flex-1 items-center justify-center bg-neutral-100">
+        <div className="text-neutral-500">Initializing scanner...</div>
+      </div>
+    )
   }
 
   return (
