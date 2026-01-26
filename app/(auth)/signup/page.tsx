@@ -98,18 +98,48 @@ function SignupForm() {
 
     try {
       const supabase = createClient()
-      const { error } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
-          queryParams: {
-            access_type: 'offline',
-            prompt: 'consent',
-          },
-        },
-      })
 
-      if (error) throw error
+      // Detect if running as installed PWA on Android
+      const isStandalonePWA = window.matchMedia('(display-mode: standalone)').matches
+      const isAndroid = /android/i.test(navigator.userAgent)
+      const needsExternalBrowser = isStandalonePWA && isAndroid
+
+      if (needsExternalBrowser) {
+        // On Android PWA, get the OAuth URL and open in external browser
+        // This ensures the redirect back works properly
+        const { data, error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+            queryParams: {
+              access_type: 'offline',
+              prompt: 'consent',
+            },
+            skipBrowserRedirect: true,
+          },
+        })
+
+        if (error) throw error
+        if (data?.url) {
+          // Open in external browser - this allows proper redirect back to PWA
+          window.open(data.url, '_blank')
+          setOauthLoading(null)
+        }
+      } else {
+        // Standard OAuth flow for browsers and iOS
+        const { error } = await supabase.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+            queryParams: {
+              access_type: 'offline',
+              prompt: 'consent',
+            },
+          },
+        })
+
+        if (error) throw error
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to sign up with Google')
       setOauthLoading(null)
