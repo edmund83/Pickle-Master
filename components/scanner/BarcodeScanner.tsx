@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useId, useState, useRef, useCallback } from 'react'
-import { Camera, CameraOff, RefreshCw, X, Loader2 } from 'lucide-react'
+import { Camera, CameraOff, RefreshCw, X, Loader2, Flashlight, FlashlightOff } from 'lucide-react'
 import { useBarcodeScanner, type ScanResult } from '@/lib/scanner/useBarcodeScanner'
 
 export type { ScanResult }
@@ -40,9 +40,12 @@ export function BarcodeScanner({
     availableCameras,
     engineName,
     supports1DBarcodes,
+    hasTorch,
+    isTorchOn,
     startScanning,
     stopScanning,
     switchCamera,
+    toggleTorch,
     clearLastScan,
     clearError,
   } = useBarcodeScanner(onScan)
@@ -141,19 +144,43 @@ export function BarcodeScanner({
 
         <h2 className="text-white font-semibold text-lg">Scan</h2>
 
-        {availableCameras.length > 1 ? (
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={switchCamera}
-            className="text-white hover:bg-white/20"
-            disabled={!isScanning}
-          >
-            <RefreshCw className="h-5 w-5" />
-          </Button>
-        ) : (
-          <div className="w-10" />
-        )}
+        <div className="flex items-center gap-1">
+          {/* Torch toggle - only show when available */}
+          {hasTorch && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTorch}
+              className={cn(
+                'text-white hover:bg-white/20',
+                isTorchOn && 'bg-yellow-500/30 text-yellow-300'
+              )}
+              disabled={!isScanning}
+              title={isTorchOn ? 'Turn off flashlight' : 'Turn on flashlight'}
+            >
+              {isTorchOn ? (
+                <Flashlight className="h-5 w-5" />
+              ) : (
+                <FlashlightOff className="h-5 w-5" />
+              )}
+            </Button>
+          )}
+
+          {/* Camera switch */}
+          {availableCameras.length > 1 ? (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={switchCamera}
+              className="text-white hover:bg-white/20"
+              disabled={!isScanning}
+            >
+              <RefreshCw className="h-5 w-5" />
+            </Button>
+          ) : !hasTorch ? (
+            <div className="w-10" />
+          ) : null}
+        </div>
       </div>
 
       {/* Scanner viewport */}

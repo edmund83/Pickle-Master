@@ -37,9 +37,15 @@ export interface UseBarcodeScanner {
   engineName: string | null
   /** Whether the current engine supports 1D barcodes (UPC, EAN, etc.) */
   supports1DBarcodes: boolean
+  /** Whether the camera has torch/flashlight capability */
+  hasTorch: boolean
+  /** Whether the torch is currently enabled */
+  isTorchOn: boolean
   startScanning: (elementId: string) => Promise<void>
   stopScanning: () => Promise<void>
   switchCamera: () => Promise<void>
+  /** Toggle the torch/flashlight on or off */
+  toggleTorch: () => Promise<void>
   clearLastScan: () => void
   clearError: () => void
 }
@@ -61,6 +67,63 @@ const SCANNER_CONFIG = {
     height: 720,
     frameRate: 30,
   },
+
+  /** Audio feedback settings */
+  audio: {
+    /** Enable audio beep on successful scan */
+    enabled: true,
+    /** Frequency in Hz (A5 note = 880Hz, more pleasant than harsh beep) */
+    frequency: 880,
+    /** Duration in seconds */
+    duration: 0.1,
+    /** Volume (0 to 1) */
+    volume: 0.3,
+  },
+}
+
+// ============================================================================
+// Audio Feedback
+// ============================================================================
+
+let audioContext: AudioContext | null = null
+
+/**
+ * Play a short beep sound on successful scan.
+ * Uses Web Audio API for low latency and no external assets.
+ */
+function playBeep(): void {
+  if (!SCANNER_CONFIG.audio.enabled) return
+
+  try {
+    // Lazily create AudioContext (must be after user interaction)
+    if (!audioContext) {
+      audioContext = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
+    }
+
+    // Resume context if suspended (browser autoplay policy)
+    if (audioContext.state === 'suspended') {
+      audioContext.resume()
+    }
+
+    const oscillator = audioContext.createOscillator()
+    const gainNode = audioContext.createGain()
+
+    oscillator.connect(gainNode)
+    gainNode.connect(audioContext.destination)
+
+    oscillator.type = 'sine'
+    oscillator.frequency.setValueAtTime(SCANNER_CONFIG.audio.frequency, audioContext.currentTime)
+
+    // Quick fade out to avoid click
+    gainNode.gain.setValueAtTime(SCANNER_CONFIG.audio.volume, audioContext.currentTime)
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + SCANNER_CONFIG.audio.duration)
+
+    oscillator.start(audioContext.currentTime)
+    oscillator.stop(audioContext.currentTime + SCANNER_CONFIG.audio.duration)
+  } catch (err) {
+    // Audio not critical - fail silently
+    console.warn('[Scanner] Audio beep failed:', err)
+  }
 }
 
 // ============================================================================
@@ -77,6 +140,8 @@ export function useBarcodeScanner(onScanSuccess?: (result: ScanResult) => void):
   const [availableCameras, setAvailableCameras] = useState<{ id: string; label: string }[]>([])
   const [currentCameraId, setCurrentCameraId] = useState<string | null>(null)
   const [engineName, setEngineName] = useState<string | null>(null)
+  const [hasTorchCapability, setHasTorchCapability] = useState(false)
+  const [isTorchOn, setIsTorchOn] = useState(false)
 
   // Refs
   const engineRef = useRef<ScannerEngine | null>(null)
@@ -164,6 +229,9 @@ export function useBarcodeScanner(onScanSuccess?: (result: ScanResult) => void):
             if (navigator.vibrate) {
               navigator.vibrate(100)
             }
+
+            // Play audio beep
+            playBeep()
 
             // Call success callback
             onScanSuccessRef.current?.(scanResult)
@@ -340,7 +408,15 @@ export function useBarcodeScanner(onScanSuccess?: (result: ScanResult) => void):
           throw new Error('Scanner initialization aborted')
         }
 
-        // 6. Start detection loop
+        // 6. Check torch capability
+        const torchAvailable = cameraManagerRef.current.hasTorch()
+        setHasTorchCapability(torchAvailable)
+        setIsTorchOn(false) // Reset torch state
+        if (torchAvailable) {
+          console.log('[Scanner] Torch/flashlight is available')
+        }
+
+        // 7. Start detection loop
         startDetectionLoop()
         setIsScanning(true)
       } catch (err) {
@@ -391,6 +467,15 @@ export function useBarcodeScanner(onScanSuccess?: (result: ScanResult) => void):
     console.log('[Scanner] Stopping scanner...')
     stopDetectionLoop()
 
+    // Turn off torch before stopping stream
+    if (cameraManagerRef.current && isTorchOn) {
+      try {
+        await cameraManagerRef.current.setTorch(false)
+      } catch {
+        // Ignore torch errors during cleanup
+      }
+    }
+
     if (cameraManagerRef.current) {
       cameraManagerRef.current.stopStream()
       cameraManagerRef.current = null
@@ -409,8 +494,10 @@ export function useBarcodeScanner(onScanSuccess?: (result: ScanResult) => void):
 
     setIsScanning(false)
     setEngineName(null)
+    setHasTorchCapability(false)
+    setIsTorchOn(false)
     console.log('[Scanner] Scanner stopped')
-  }, [stopDetectionLoop])
+  }, [stopDetectionLoop, isTorchOn])
 
   // ============================================================================
   // Switch Camera
@@ -433,6 +520,23 @@ export function useBarcodeScanner(onScanSuccess?: (result: ScanResult) => void):
       await startScanning(elementIdRef.current)
     }
   }, [availableCameras, currentCameraId, isScanning, stopScanning, startScanning])
+
+  // ============================================================================
+  // Toggle Torch
+  // ============================================================================
+
+  const toggleTorch = useCallback(async () => {
+    if (!cameraManagerRef.current || !hasTorchCapability) return
+
+    const newState = !isTorchOn
+    try {
+      await cameraManagerRef.current.setTorch(newState)
+      setIsTorchOn(newState)
+      console.log(`[Scanner] Torch ${newState ? 'ON' : 'OFF'}`)
+    } catch (error) {
+      console.warn('[Scanner] Failed to toggle torch:', error)
+    }
+  }, [hasTorchCapability, isTorchOn])
 
   // ============================================================================
   // Utility Methods
@@ -464,9 +568,12 @@ export function useBarcodeScanner(onScanSuccess?: (result: ScanResult) => void):
     currentCameraId,
     engineName,
     supports1DBarcodes,
+    hasTorch: hasTorchCapability,
+    isTorchOn,
     startScanning,
     stopScanning,
     switchCamera,
+    toggleTorch,
     clearLastScan,
     clearError,
   }
