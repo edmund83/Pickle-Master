@@ -2,7 +2,7 @@
 
 import React, { useState, useCallback, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowLeft, Scan, Edit3, ListChecks } from 'lucide-react'
+import { ArrowLeft, Scan, Edit3, ListChecks, Camera, ScanBarcode } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { BarcodeScanner } from '@/components/scanner/BarcodeScanner'
 import { HardwareScannerInput } from '@/components/scanner/HardwareScannerInput'
@@ -26,12 +26,82 @@ import { useAuth } from '@/lib/stores/auth-store'
 
 type ScanMode = 'single' | 'quick-adjust' | 'batch'
 type ViewState = 'scanning' | 'result' | 'adjust' | 'batch-list'
+type ScannerType = 'camera' | 'hardware'
+
+/**
+ * Detect if running on an enterprise PDA with built-in scanner
+ * (Zebra, Honeywell, Datalogic, etc.)
+ * Note: Only call this in useEffect to avoid hydration mismatch
+ */
+function detectEnterprisePDA(): boolean {
+  if (typeof navigator === 'undefined') return false
+  const ua = navigator.userAgent.toLowerCase()
+  return (
+    ua.includes('tc20') ||
+    ua.includes('tc21') ||
+    ua.includes('tc22') ||
+    ua.includes('tc25') ||
+    ua.includes('tc26') ||
+    ua.includes('tc51') ||
+    ua.includes('tc52') ||
+    ua.includes('tc53') ||
+    ua.includes('tc56') ||
+    ua.includes('tc57') ||
+    ua.includes('tc72') ||
+    ua.includes('tc73') ||
+    ua.includes('tc77') ||
+    ua.includes('tc8300') ||
+    ua.includes('mc33') ||
+    ua.includes('mc93') ||
+    ua.includes('zebra') ||
+    ua.includes('symbol') ||
+    ua.includes('honeywell') ||
+    ua.includes('datalogic') ||
+    ua.includes('intermec')
+  )
+}
 
 export default function ScanPage() {
   const router = useRouter()
   const isDesktop = useIsDesktop()
   const [mode, setMode] = useState<ScanMode>('single')
   const [viewState, setViewState] = useState<ViewState>('scanning')
+
+  // PDA detection state - starts null to avoid hydration mismatch
+  const [isPDA, setIsPDA] = useState<boolean | null>(null)
+  const [scannerType, setScannerType] = useState<ScannerType | null>(null)
+
+  // Detect PDA and set scanner type on client only (after hydration)
+  useEffect(() => {
+    const detectedPDA = detectEnterprisePDA()
+    setIsPDA(detectedPDA)
+
+    // Set scanner type from localStorage or default based on device
+    const saved = localStorage.getItem('preferred-scanner-type')
+    if (saved === 'camera' || saved === 'hardware') {
+      setScannerType(saved)
+    } else {
+      // Default: hardware for desktop/PDA, camera for mobile phones
+      setScannerType(detectedPDA ? 'hardware' : 'camera')
+    }
+  }, [])
+
+  // Use hardware scanner UI on desktop, PDA, or when user selected it
+  // During initial render (before useEffect), all values are null - show loading state
+  const useHardwareScannerUI =
+    scannerType === 'hardware' || (scannerType !== null && isDesktop !== null && (isDesktop || isPDA))
+
+  // Toggle scanner type and persist preference
+  const toggleScannerType = useCallback(() => {
+    setScannerType((prev) => {
+      const next = prev === 'camera' ? 'hardware' : 'camera'
+      localStorage.setItem('preferred-scanner-type', next)
+      return next
+    })
+  }, [])
+
+  // Show loading state while detecting device (wait for both media query and PDA detection)
+  const isInitializing = scannerType === null || isDesktop === null
 
   // Scan result state
   const [lastBarcode, setLastBarcode] = useState<string | null>(null)
@@ -70,14 +140,29 @@ export default function ScanPage() {
   // The handleScan callback is defined below, so we need to use a ref pattern
   const handleScanRef = useRef<(result: ScanResult) => void>(() => {})
 
+  // Ref for the scanner input field (for Zebra DataWedge)
+  const scannerInputRef = useRef<HTMLInputElement>(null)
+
   // Guard to prevent concurrent lookups
   const isLookingUpRef = useRef(false)
 
+  // Hardware scanner should be enabled on ALL devices (including PDAs like Zebra TC22)
+  // The hook listens globally for rapid keystrokes regardless of screen size
   const { isListening: isHardwareScannerListening, lastScan: hardwareLastScan } =
     useHardwareScanner({
       onScan: (result) => handleScanRef.current(result),
-      enabled: isDesktop && viewState === 'scanning',
+      enabled: viewState === 'scanning', // Removed isDesktop check
+      inputRef: scannerInputRef, // Pass ref for DataWedge input capture
     })
+
+  // Handle scan from the input field (for Zebra DataWedge)
+  const handleScanFromInput = useCallback((code: string) => {
+    handleScanRef.current({
+      code,
+      format: 'HARDWARE',
+      timestamp: new Date(),
+    })
+  }, [])
 
   // Restore batch session from IndexedDB on mount
   useEffect(() => {
@@ -412,7 +497,7 @@ export default function ScanPage() {
   }
 
   return (
-    <div className="flex flex-col h-full bg-neutral-100">
+    <div className="flex flex-col flex-1 min-h-0 bg-neutral-100">
       {/* Header - Mobile optimized with larger touch targets */}
       <div className="flex items-center justify-between px-4 py-2 lg:py-3 bg-white border-b">
         <Button
@@ -520,13 +605,21 @@ export default function ScanPage() {
       )}
 
       {/* Main content */}
-      <div className="flex-1 overflow-hidden">
-        {/* Scanner view - Desktop uses hardware scanner, Mobile uses camera */}
+      <div className="flex-1 min-h-0 overflow-y-auto relative">
+        {/* Scanner view - Desktop/PDA uses hardware scanner, Mobile uses camera */}
+        {viewState === 'scanning' && isInitializing && (
+          <div className="h-full flex items-center justify-center bg-neutral-100">
+            <div className="text-neutral-500">Initializing scanner...</div>
+          </div>
+        )}
         {viewState === 'scanning' &&
-          (isDesktop ? (
+          !isInitializing &&
+          (useHardwareScannerUI ? (
             <HardwareScannerInput
               isListening={isHardwareScannerListening}
               lastScan={hardwareLastScan}
+              inputRef={scannerInputRef}
+              onScanFromInput={handleScanFromInput}
               className="h-full"
             />
           ) : (
@@ -537,6 +630,33 @@ export default function ScanPage() {
               className="h-full"
             />
           ))}
+
+        {/* Scanner type toggle - only show on mobile (not desktop, not detected PDA) */}
+        {viewState === 'scanning' && !isInitializing && !isDesktop && !isPDA && (
+          <button
+            onClick={toggleScannerType}
+            className={cn(
+              'absolute bottom-4 right-4 z-10',
+              'flex items-center gap-2 px-4 py-2',
+              'bg-white/90 backdrop-blur-sm rounded-full shadow-lg',
+              'text-sm font-medium text-neutral-700',
+              'border border-neutral-200',
+              'active:scale-95 transition-transform'
+            )}
+          >
+            {scannerType === 'camera' ? (
+              <>
+                <ScanBarcode className="h-4 w-4" />
+                <span>Use External Scanner</span>
+              </>
+            ) : (
+              <>
+                <Camera className="h-4 w-4" />
+                <span>Use Camera</span>
+              </>
+            )}
+          </button>
+        )}
 
         {/* Result view (single mode) */}
         {viewState === 'result' && lastBarcode && (
