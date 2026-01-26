@@ -16,8 +16,12 @@ export function MobileLayoutWrapper({ children }: MobileLayoutWrapperProps) {
   const isDesktop = useIsDesktop()
   const { isExpanded, toggle } = useSidebarState()
 
+  // During SSR/hydration, render mobile layout as default (most common case)
+  // This ensures consistent HTML between server and client
+  // The layout will switch to desktop after hydration if needed
+
   // Desktop layout: sidebar on left
-  if (isDesktop) {
+  if (isDesktop === true) {
     return (
       <div className="flex h-screen bg-neutral-50">
         <PrimarySidebar isExpanded={isExpanded} onToggle={toggle} />
@@ -28,7 +32,7 @@ export function MobileLayoutWrapper({ children }: MobileLayoutWrapperProps) {
     )
   }
 
-  // Mobile/Tablet layout: header on top, bottom nav bar
+  // Mobile/Tablet layout (also used during SSR when isDesktop is null): header on top, bottom nav bar
   return (
     <div className="flex flex-col min-h-screen bg-neutral-50">
       <MobileHeader />
