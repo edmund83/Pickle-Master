@@ -14,6 +14,7 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
 import { createScannerEngine, type ScannerEngine, type EngineType } from './engines'
 import { CameraManager } from './utils/camera-manager'
+import { scanSuccessFeedback, initAudioContext } from '@/lib/utils/feedback'
 
 // ============================================================================
 // Types (UNCHANGED - Critical for backwards compatibility)
@@ -81,50 +82,6 @@ const SCANNER_CONFIG = {
   },
 }
 
-// ============================================================================
-// Audio Feedback
-// ============================================================================
-
-let audioContext: AudioContext | null = null
-
-/**
- * Play a short beep sound on successful scan.
- * Uses Web Audio API for low latency and no external assets.
- */
-function playBeep(): void {
-  if (!SCANNER_CONFIG.audio.enabled) return
-
-  try {
-    // Lazily create AudioContext (must be after user interaction)
-    if (!audioContext) {
-      audioContext = new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)()
-    }
-
-    // Resume context if suspended (browser autoplay policy)
-    if (audioContext.state === 'suspended') {
-      audioContext.resume()
-    }
-
-    const oscillator = audioContext.createOscillator()
-    const gainNode = audioContext.createGain()
-
-    oscillator.connect(gainNode)
-    gainNode.connect(audioContext.destination)
-
-    oscillator.type = 'sine'
-    oscillator.frequency.setValueAtTime(SCANNER_CONFIG.audio.frequency, audioContext.currentTime)
-
-    // Quick fade out to avoid click
-    gainNode.gain.setValueAtTime(SCANNER_CONFIG.audio.volume, audioContext.currentTime)
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + SCANNER_CONFIG.audio.duration)
-
-    oscillator.start(audioContext.currentTime)
-    oscillator.stop(audioContext.currentTime + SCANNER_CONFIG.audio.duration)
-  } catch (err) {
-    // Audio not critical - fail silently
-    console.warn('[Scanner] Audio beep failed:', err)
-  }
-}
 
 // ============================================================================
 // Hook Implementation
@@ -225,13 +182,8 @@ export function useBarcodeScanner(onScanSuccess?: (result: ScanResult) => void):
 
             setLastScan(scanResult)
 
-            // Trigger haptic feedback if available
-            if (navigator.vibrate) {
-              navigator.vibrate(100)
-            }
-
-            // Play audio beep
-            playBeep()
+            // Trigger haptic + audio feedback
+            scanSuccessFeedback()
 
             // Call success callback
             onScanSuccessRef.current?.(scanResult)
@@ -322,6 +274,9 @@ export function useBarcodeScanner(onScanSuccess?: (result: ScanResult) => void):
       elementIdRef.current = elementId
 
       try {
+        // 0. Initialize audio context early (must be from user interaction)
+        initAudioContext()
+
         // 1. Initialize the best available scanner engine
         console.log('[Scanner] Creating scanner engine...')
         engineRef.current = await createScannerEngine()

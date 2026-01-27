@@ -18,6 +18,7 @@ import { checkoutItem, checkoutWithSerials } from '@/app/actions/checkouts'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import type { Profile, Job, Folder, InventoryItem } from '@/types/database.types'
+import { successFeedback, errorFeedback, selectionFeedback } from '@/lib/utils/feedback'
 
 interface CheckOutModalProps {
   item: InventoryItem
@@ -112,6 +113,7 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
   }
 
   function toggleSerial(serialId: string) {
+    selectionFeedback()
     setSelectedSerialIds((prev) => {
       const next = new Set(prev)
       if (next.has(serialId)) {
@@ -124,11 +126,13 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
   }
 
   function selectAllSerials() {
+    selectionFeedback()
     const filtered = filteredSerials
     setSelectedSerialIds(new Set(filtered.map((s) => s.id)))
   }
 
   function clearSerialSelection() {
+    selectionFeedback()
     setSelectedSerialIds(new Set())
   }
 
@@ -290,13 +294,16 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
       }
 
       if (result.success) {
+        successFeedback()
         onSuccess()
         onClose()
       } else {
+        errorFeedback()
         setError(result.error || 'Failed to check out item')
       }
     } catch (err) {
       console.error('Checkout error:', err)
+      errorFeedback()
       setError('An error occurred while checking out the item')
     } finally {
       setSubmitting(false)

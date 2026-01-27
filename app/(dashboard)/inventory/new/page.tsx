@@ -24,11 +24,11 @@ export default function NewItemPage() {
     name: '',
     sku: '',
     description: '',
-    quantity: 0,
+    quantity: '' as string | number,
     unit: 'pcs',
-    min_quantity: 0,
-    price: 0,
-    cost_price: 0,
+    min_quantity: '' as string | number,
+    price: '' as string | number,
+    cost_price: '' as string | number,
     location: '',
     notes: '',
   })
@@ -68,16 +68,22 @@ export default function NewItemPage() {
         throw new Error('No tenant found')
       }
 
+      // Convert empty strings to numbers for numeric fields
+      const quantity = formData.quantity === '' ? 0 : Number(formData.quantity)
+      const minQuantity = formData.min_quantity === '' ? 0 : Number(formData.min_quantity)
+      const price = formData.price === '' ? 0 : Number(formData.price)
+      const costPrice = formData.cost_price === '' ? 0 : Number(formData.cost_price)
+
       // Determine status based on quantity and min_quantity
       let status = 'in_stock'
-      if (formData.quantity <= 0) {
+      if (quantity <= 0) {
         status = 'out_of_stock'
-      } else if (formData.min_quantity > 0 && formData.quantity <= formData.min_quantity) {
+      } else if (minQuantity > 0 && quantity <= minQuantity) {
         status = 'low_stock'
       }
 
       // Create the item
-       
+
       const { error: insertError } = await (supabase as any)
         .from('inventory_items')
         .insert({
@@ -85,11 +91,11 @@ export default function NewItemPage() {
           name: formData.name,
           sku: formData.sku || null,
           description: formData.description || null,
-          quantity: formData.quantity,
+          quantity,
           unit: formData.unit,
-          min_quantity: formData.min_quantity,
-          price: formData.price,
-          cost_price: formData.cost_price || null,
+          min_quantity: minQuantity,
+          price,
+          cost_price: costPrice || null,
           location: formData.location || null,
           notes: formData.notes || null,
           image_urls: images.length > 0 ? images : null,
@@ -116,7 +122,7 @@ export default function NewItemPage() {
     const { name, value, type } = e.target
     setFormData((prev) => ({
       ...prev,
-      [name]: type === 'number' ? parseFloat(value) || 0 : value,
+      [name]: type === 'number' ? (value === '' ? '' : parseFloat(value)) : value,
     }))
   }
 
@@ -321,12 +327,12 @@ export default function NewItemPage() {
                   <p className="mt-1 text-xs text-neutral-500">For margin calculation</p>
                 </div>
               </div>
-              {formData.price > 0 && formData.cost_price > 0 && (
+              {Number(formData.price) > 0 && Number(formData.cost_price) > 0 && (
                 <div className="rounded-lg bg-neutral-50 p-3">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-neutral-600">Margin</span>
                     <span className="font-medium text-primary">
-                      {formatNumber(((formData.price - formData.cost_price) / formData.cost_price) * 100)}% / {formatCurrency(formData.price - formData.cost_price)}
+                      {formatNumber(((Number(formData.price) - Number(formData.cost_price)) / Number(formData.cost_price)) * 100)}% / {formatCurrency(Number(formData.price) - Number(formData.cost_price))}
                     </span>
                   </div>
                 </div>

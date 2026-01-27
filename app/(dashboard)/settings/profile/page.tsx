@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { SettingsSection } from '@/components/settings'
+import { FeedbackPreferences } from '@/components/settings/FeedbackPreferences'
 import { Save, User, Lock, Camera, Check, AlertCircle, Eye, EyeOff, Loader2 } from 'lucide-react'
 import { compressImage } from '@/lib/image-compression'
 import Link from 'next/link'
@@ -539,6 +540,9 @@ export default function ProfileSettingsPage() {
             </div>
           </form>
         </SettingsSection>
+
+        {/* Feedback Preferences Section */}
+        <FeedbackPreferences />
       </div>
     </div>
   )

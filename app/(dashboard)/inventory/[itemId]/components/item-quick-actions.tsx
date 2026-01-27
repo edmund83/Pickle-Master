@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Plus, Minus, Loader2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { updateItemQuantity } from '@/app/actions/inventory'
 import { ItemDetailCard } from './item-detail-card'
 
@@ -64,43 +63,41 @@ export function ItemQuickActions({
       </div>
 
       <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2 rounded-lg border border-neutral-200 bg-neutral-50 p-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-9 w-9 p-0 hover:bg-neutral-200"
+        <div className="flex items-center gap-1 rounded-xl border border-neutral-200 bg-neutral-50 p-1">
+          <button
+            type="button"
+            className="flex h-11 w-11 items-center justify-center rounded-lg text-neutral-600 transition-colors hover:bg-neutral-200 active:bg-neutral-300 disabled:opacity-40 disabled:pointer-events-none"
             onClick={() => handleAdjust(-1)}
             disabled={loading || quantity <= 0}
             aria-label="Decrease quantity"
           >
             {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
-              <Minus className="h-4 w-4" />
+              <Minus className="h-5 w-5" strokeWidth={2.5} />
             )}
-          </Button>
+          </button>
 
-          <div className="min-w-[4.5rem] text-center">
+          <div className="min-w-[5rem] text-center px-2">
             <div className="text-2xl font-bold tabular-nums text-neutral-900">
               {quantity}
             </div>
             <div className="text-xs text-neutral-500">{unit || 'units'}</div>
           </div>
 
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-9 w-9 p-0 hover:bg-neutral-200"
+          <button
+            type="button"
+            className="flex h-11 w-11 items-center justify-center rounded-lg text-neutral-600 transition-colors hover:bg-neutral-200 active:bg-neutral-300 disabled:opacity-40 disabled:pointer-events-none"
             onClick={() => handleAdjust(1)}
             disabled={loading}
             aria-label="Increase quantity"
           >
             {loading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Loader2 className="h-5 w-5 animate-spin" />
             ) : (
-              <Plus className="h-4 w-4" />
+              <Plus className="h-5 w-5" strokeWidth={2.5} />
             )}
-          </Button>
+          </button>
         </div>
       </div>
     </div>

@@ -3,6 +3,7 @@
 import { useState, useCallback } from 'react'
 import { Minus, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { increaseFeedback, decreaseFeedback, boundaryFeedback } from '@/lib/utils/feedback'
 
 interface QuantityAdjusterProps {
   value: number
@@ -34,13 +35,18 @@ export function QuantityAdjuster({
         setIsAnimating(delta > 0 ? 'increase' : 'decrease')
         onChange(newValue)
 
-        // Trigger haptic feedback if available
-        if (navigator.vibrate) {
-          navigator.vibrate(10)
+        // Trigger appropriate haptic + sound feedback
+        if (delta > 0) {
+          increaseFeedback()
+        } else {
+          decreaseFeedback()
         }
 
         // Reset animation
         setTimeout(() => setIsAnimating(null), 200)
+      } else {
+        // Hit boundary - provide feedback
+        boundaryFeedback()
       }
     },
     [value, min, max, onChange]
@@ -171,9 +177,15 @@ export function QuantityAdjusterCompact({
       const newValue = Math.max(min, Math.min(max, value + delta))
       if (newValue !== value) {
         onChange(newValue)
-        if (navigator.vibrate) {
-          navigator.vibrate(10)
+        // Trigger appropriate haptic + sound feedback
+        if (delta > 0) {
+          increaseFeedback()
+        } else {
+          decreaseFeedback()
         }
+      } else {
+        // Hit boundary - provide feedback
+        boundaryFeedback()
       }
     },
     [value, min, max, onChange]
