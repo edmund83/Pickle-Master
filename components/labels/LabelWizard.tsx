@@ -376,7 +376,7 @@ export default function LabelWizard({ item, tenantLogo, userEmail, onClose, onSa
 
     try {
       const supabase = createClient()
-      const { error } = await supabase
+      const { error } = await (supabase as any)
         .from('inventory_items')
         .update({ barcode: barcodeValue })
         .eq('id', item.id)
