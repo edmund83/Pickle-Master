@@ -28,6 +28,7 @@ import {
   isNumericOnlyFormat,
 } from '@/lib/labels/barcode-generator'
 import { cn } from '@/lib/utils'
+import { createClient } from '@/lib/supabase/client'
 import {
   generateLabelPDF,
   calculateLabelsPerSheet,
@@ -366,6 +367,31 @@ export default function LabelWizard({ item, tenantLogo, userEmail, onClose, onSa
     }
   }, [config.type, config.barcodeFormat, config.barcodeSource, item.barcode])
 
+  // Save barcode to database if item doesn't have one
+  async function saveBarcodeToItem(barcodeValue: string): Promise<boolean> {
+    // Only save if item doesn't have a barcode and we're using auto or manual
+    if (item.barcode || config.barcodeSource === 'existing') {
+      return true // Nothing to save
+    }
+
+    try {
+      const supabase = createClient()
+      const { error } = await supabase
+        .from('inventory_items')
+        .update({ barcode: barcodeValue })
+        .eq('id', item.id)
+
+      if (error) {
+        console.error('Failed to save barcode:', error)
+        return false
+      }
+      return true
+    } catch (e) {
+      console.error('Error saving barcode:', e)
+      return false
+    }
+  }
+
   async function handleGeneratePDF(): Promise<Blob | null> {
     setError(null)
 
@@ -486,6 +512,14 @@ export default function LabelWizard({ item, tenantLogo, userEmail, onClose, onSa
     setGenerating(true)
     const blob = await handleGeneratePDF()
     if (blob) {
+      // Save barcode to item if using auto/manual and item has no barcode
+      if (config.type === 'barcode' && !item.barcode && config.barcodeSource !== 'existing') {
+        const barcodeValue = getBarcodeCandidateValue()
+        const format = resolveBarcodeFormat(barcodeValue)
+        const normalizedValue = normalizeBarcodeValue(barcodeValue, format)
+        await saveBarcodeToItem(normalizedValue)
+      }
+
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
@@ -503,6 +537,14 @@ export default function LabelWizard({ item, tenantLogo, userEmail, onClose, onSa
     const blob = await handleGeneratePDF()
 
     if (blob) {
+      // Save barcode to item if using auto/manual and item has no barcode
+      if (config.type === 'barcode' && !item.barcode && config.barcodeSource !== 'existing') {
+        const barcodeValue = getBarcodeCandidateValue()
+        const format = resolveBarcodeFormat(barcodeValue)
+        const normalizedValue = normalizeBarcodeValue(barcodeValue, format)
+        await saveBarcodeToItem(normalizedValue)
+      }
+
       // Open print dialog
       const url = URL.createObjectURL(blob)
       const printWindow = window.open(url, '_blank')
@@ -970,6 +1012,14 @@ export default function LabelWizard({ item, tenantLogo, userEmail, onClose, onSa
                     onChange={(e) => setConfig({ ...config, manualBarcode: e.target.value })}
                     placeholder="Enter barcode value…"
                   />
+                )}
+
+                {/* Info: barcode will be saved to item */}
+                {!item.barcode && config.barcodeSource !== 'existing' && (
+                  <div className="flex items-start gap-2 rounded-xl border border-primary/30 bg-primary/5 p-3 text-sm text-primary">
+                    <Info className="h-4 w-4 mt-0.5 shrink-0" />
+                    <span>This barcode will be saved to the item for future scanning.</span>
+                  </div>
                 )}
               </div>
             )}
