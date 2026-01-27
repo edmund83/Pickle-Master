@@ -14,6 +14,8 @@ interface BarcodeScannerProps {
   className?: string
   showCloseButton?: boolean
   continuous?: boolean
+  /** Additional actions to render in the header alongside torch/camera buttons */
+  headerActions?: React.ReactNode
 }
 
 export function BarcodeScanner({
@@ -22,6 +24,7 @@ export function BarcodeScanner({
   className,
   showCloseButton = true,
   continuous = false,
+  headerActions,
 }: BarcodeScannerProps) {
   const scannerId = useId().replace(/:/g, '')
   const scannerElementId = `scanner-${scannerId}`
@@ -145,6 +148,9 @@ export function BarcodeScanner({
         <h2 className="text-white font-semibold text-lg">Scan</h2>
 
         <div className="flex items-center gap-1">
+          {/* Additional header actions (e.g., scanner type toggle) */}
+          {headerActions}
+
           {/* Torch toggle - only show when available */}
           {hasTorch && (
             <Button

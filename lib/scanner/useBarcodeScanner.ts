@@ -41,7 +41,7 @@ export interface UseBarcodeScanner {
   hasTorch: boolean
   /** Whether the torch is currently enabled */
   isTorchOn: boolean
-  startScanning: (elementId: string) => Promise<void>
+  startScanning: (elementId: string, preferredCameraId?: string) => Promise<void>
   stopScanning: () => Promise<void>
   switchCamera: () => Promise<void>
   /** Toggle the torch/flashlight on or off */
@@ -314,7 +314,7 @@ export function useBarcodeScanner(onScanSuccess?: (result: ScanResult) => void):
   // ============================================================================
 
   const startScanning = useCallback(
-    async (elementId: string) => {
+    async (elementId: string, preferredCameraId?: string) => {
       if (isScanning || isInitializing) return
 
       setIsInitializing(true)
@@ -342,9 +342,13 @@ export function useBarcodeScanner(onScanSuccess?: (result: ScanResult) => void):
         // Update state for UI
         setAvailableCameras(cameras.map((c) => ({ id: c.id, label: c.label })))
 
-        // Find best camera (prefer back/environment camera)
-        const backCamera = cameras.find((c) => c.facing === 'environment')
-        const selectedCameraId = backCamera?.id || cameras[0].id
+        // Use preferred camera if provided and valid, otherwise find best camera
+        let selectedCameraId = preferredCameraId
+        if (!selectedCameraId || !cameras.find((c) => c.id === selectedCameraId)) {
+          // Find best camera (prefer back/environment camera)
+          const backCamera = cameras.find((c) => c.facing === 'environment')
+          selectedCameraId = backCamera?.id || cameras[0].id
+        }
         setCurrentCameraId(selectedCameraId)
         setHasPermission(true)
 
@@ -517,7 +521,7 @@ export function useBarcodeScanner(onScanSuccess?: (result: ScanResult) => void):
       await stopScanning()
       // Small delay to ensure camera is released
       await new Promise((resolve) => setTimeout(resolve, 300))
-      await startScanning(elementIdRef.current)
+      await startScanning(elementIdRef.current, nextCameraId)
     }
   }, [availableCameras, currentCameraId, isScanning, stopScanning, startScanning])
 

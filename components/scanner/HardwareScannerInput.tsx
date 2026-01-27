@@ -20,6 +20,8 @@ interface HardwareScannerInputProps {
   autoSubmitDelay?: number
   /** Minimum characters required before auto-submit. Default: 4 */
   minLength?: number
+  /** Header actions (e.g., scanner type toggle) */
+  headerActions?: React.ReactNode
 }
 
 export function HardwareScannerInput({
@@ -30,6 +32,7 @@ export function HardwareScannerInput({
   onScanFromInput,
   autoSubmitDelay = 150, // Auto-submit 150ms after last keystroke
   minLength = 4,
+  headerActions,
 }: HardwareScannerInputProps) {
   const [showSuccess, setShowSuccess] = useState(false)
   const [displayedCode, setDisplayedCode] = useState<string | null>(null)
@@ -140,6 +143,13 @@ export function HardwareScannerInput({
         className
       )}
     >
+      {/* Header actions (e.g., scanner type toggle) */}
+      {headerActions && (
+        <div className="absolute top-4 right-4 z-10">
+          {headerActions}
+        </div>
+      )}
+
       {/* Main scanner icon with pulse animation */}
       <div className="relative mb-6">
         <div
