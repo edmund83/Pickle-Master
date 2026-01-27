@@ -103,6 +103,6 @@ export const config = {
      * - public folder assets
      * - api routes (handled separately)
      */
-    '/((?!_next/static|_next/image|favicon.ico|manifest\\.json|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|json)$).*)',
+    '/((?!_next/static|_next/image|favicon\\.ico|manifest\\.json|robots\\.txt|sitemap\\.xml|sw\\.js|swe-worker.*\\.js|workbox.*\\.js|fallback.*\\.js|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|json|txt|xml)$).*)',
   ],
 }

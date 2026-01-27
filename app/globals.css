@@ -564,3 +564,30 @@
   scroll-behavior: smooth;
   scroll-padding-top: 6rem;
 }
+
+/* Hero section CSS animations (Server Component compatible) */
+@keyframes hero-fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-hero-fade-in {
+  animation: hero-fade-in-up 0.5s ease-out forwards;
+}
+
+/* Arrow bounce animation for CTA button */
+@keyframes arrow-bounce-x {
+  0%, 100% { transform: translateX(0); }
+  50% { transform: translateX(4px); }
+}
+
+.animate-arrow-bounce {
+  animation: arrow-bounce-x 1.2s ease-in-out infinite;
+  animation-delay: 1.5s;
+}
