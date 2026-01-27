@@ -1,39 +1,36 @@
 import Link from 'next/link'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { ClipboardList, PackageOpen, ArrowRightLeft, Clock, User, FileText, Package, CheckSquare, BarChart3, ChevronRight } from 'lucide-react'
+import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { ClipboardList, Clock, User, FileText, Package, BarChart3, ChevronRight, PackagePlus, PackageMinus, SlidersHorizontal, RefreshCw } from 'lucide-react'
 import { getTaskSummary } from '@/app/actions/task-summaries'
 import { FormattedShortDate } from '@/components/formatting/FormattedDate'
 
 // This page uses cookies for authentication, so it must be rendered dynamically
 export const dynamic = 'force-dynamic'
 
-const categories = [
+const quickActions = [
   {
     href: '/tasks/inbound',
-    title: 'Inbound',
-    description: 'Purchase orders and receiving stock from suppliers',
-    icon: PackageOpen,
-    color: 'text-neutral-600',
-    bgColor: 'bg-neutral-100',
-    tasks: ['Purchase Orders', 'Receives'],
+    title: 'Stock In',
+    description: 'Receive inventory from purchases',
+    icon: PackagePlus,
   },
   {
     href: '/tasks/fulfillment',
-    title: 'Fulfillment',
-    description: 'Pick lists for order processing and shipping',
-    icon: ClipboardList,
-    color: 'text-neutral-600',
-    bgColor: 'bg-neutral-100',
-    tasks: ['Pick Lists'],
+    title: 'Stock Out',
+    description: 'Fulfill orders and shipments',
+    icon: PackageMinus,
   },
   {
     href: '/tasks/inventory-operations',
-    title: 'Inventory Operations',
-    description: 'Asset tracking, transfers, moves, and stock counts',
-    icon: ArrowRightLeft,
-    color: 'text-neutral-600',
-    bgColor: 'bg-neutral-100',
-    tasks: ['Check-In/Out', 'Transfers', 'Moves', 'Stock Count'],
+    title: 'Adjustments',
+    description: 'Modify stock levels and corrections',
+    icon: SlidersHorizontal,
+  },
+  {
+    href: '/tasks/reorder-suggestions',
+    title: 'Reorder',
+    description: 'Items running low and need restocking',
+    icon: RefreshCw,
   },
 ]
 
@@ -52,8 +49,8 @@ const typeLabels = {
 }
 
 const statusColors: Record<string, string> = {
-  draft: 'bg-neutral-100 text-neutral-700',
-  in_progress: 'bg-blue-100 text-blue-700',
+  draft: 'bg-neutral-100 text-neutral-600',
+  in_progress: 'bg-primary/10 text-primary',
   review: 'bg-amber-100 text-amber-700',
 }
 
@@ -67,13 +64,13 @@ export default async function TasksPage() {
         <p className="text-neutral-500">Manage inventory operations</p>
       </div>
 
-      <div className="p-6 space-y-6">
+      <div className="space-y-6 p-6">
         {/* Recent Drafts Section */}
         {summary.recentDrafts.length > 0 && (
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <Clock className="h-4 w-4 text-neutral-500" />
-              <h2 className="text-sm font-semibold text-neutral-700 uppercase tracking-wide">Recent Drafts</h2>
+              <Clock className="h-4 w-4 text-neutral-400" />
+              <h2 className="text-xs font-semibold tracking-wider text-primary uppercase">Recent Drafts</h2>
             </div>
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
               {summary.recentDrafts.map((draft) => {
@@ -83,13 +80,13 @@ export default async function TasksPage() {
                     key={draft.id}
                     href={draft.href}
                     aria-label={`Continue ${typeLabels[draft.type]}: ${draft.title}`}
-                    className="group flex items-center gap-3 rounded-lg border border-neutral-200 bg-white p-3 hover:border-neutral-300 hover:shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    className="group flex items-center gap-3 rounded-lg border border-neutral-200 bg-white p-3 transition-all hover:border-neutral-300 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                   >
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-neutral-100 group-hover:bg-neutral-200 transition-colors" aria-hidden="true">
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-neutral-100 transition-colors group-hover:bg-neutral-200" aria-hidden="true">
                       <Icon className="h-4 w-4 text-neutral-600" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-neutral-900 truncate">{draft.title}</p>
+                      <p className="truncate text-sm font-medium text-neutral-900">{draft.title}</p>
                       <p className="text-xs text-neutral-500">
                         {typeLabels[draft.type]} · <FormattedShortDate date={draft.updated_at} />
                       </p>
@@ -106,8 +103,8 @@ export default async function TasksPage() {
         {summary.assignedTasks.length > 0 && (
           <div>
             <div className="flex items-center gap-2 mb-3">
-              <User className="h-4 w-4 text-neutral-500" />
-              <h2 className="text-sm font-semibold text-neutral-700 uppercase tracking-wide">Assigned to Me</h2>
+              <User className="h-4 w-4 text-neutral-400" />
+              <h2 className="text-xs font-semibold tracking-wider text-primary uppercase">Assigned to Me</h2>
             </div>
             <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
               {summary.assignedTasks.slice(0, 8).map((task) => {
@@ -117,13 +114,13 @@ export default async function TasksPage() {
                     key={task.id}
                     href={task.href}
                     aria-label={`View assigned ${task.type === 'pick_list' ? 'Pick List' : 'Stock Count'}: ${task.title}`}
-                    className="group flex items-center gap-3 rounded-lg border border-neutral-200 bg-white p-3 hover:border-neutral-300 hover:shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    className="group flex items-center gap-3 rounded-lg border border-neutral-200 bg-white p-3 transition-all hover:border-neutral-300 hover:shadow-sm focus:outline-none focus:ring-2 focus:ring-primary/40"
                   >
-                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-blue-50 group-hover:bg-blue-100 transition-colors" aria-hidden="true">
-                      <Icon className="h-4 w-4 text-blue-600" />
+                    <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 transition-colors group-hover:bg-primary/15" aria-hidden="true">
+                      <Icon className="h-4 w-4 text-primary" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-neutral-900 truncate">{task.title}</p>
+                      <p className="truncate text-sm font-medium text-neutral-900">{task.title}</p>
                       <div className="flex items-center gap-2 mt-0.5">
                         <span className={`text-xs px-1.5 py-0.5 rounded ${statusColors[task.status] || 'bg-neutral-100 text-neutral-600'}`}>
                           {task.status.replace('_', ' ')}
@@ -143,44 +140,24 @@ export default async function TasksPage() {
           </div>
         )}
 
-        {/* Category Cards */}
-        <div>
-          <div className="flex items-center gap-2 mb-3">
-            <CheckSquare className="h-4 w-4 text-neutral-500" />
-            <h2 className="text-sm font-semibold text-neutral-700 uppercase tracking-wide">Task Categories</h2>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {categories.map((category) => {
-              const Icon = category.icon
-              return (
-                <Link key={category.href} href={category.href}>
-                  <Card className="h-full transition-shadow hover:shadow-md">
-                    <CardHeader>
-                      <div
-                        className={`mb-2 flex h-12 w-12 items-center justify-center rounded-lg ${category.bgColor}`}
-                      >
-                        <Icon className={`h-6 w-6 ${category.color}`} />
-                      </div>
-                      <CardTitle>{category.title}</CardTitle>
-                      <CardDescription>{category.description}</CardDescription>
-                    </CardHeader>
-                    <CardContent className="pt-0">
-                      <div className="flex flex-wrap gap-1.5">
-                        {category.tasks.map((task) => (
-                          <span
-                            key={task}
-                            className="inline-flex items-center rounded-full bg-neutral-100 px-2.5 py-0.5 text-xs font-medium text-neutral-600"
-                          >
-                            {task}
-                          </span>
-                        ))}
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              )
-            })}
-          </div>
+        {/* Quick Actions */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {quickActions.map((action) => {
+            const Icon = action.icon
+            return (
+              <Link key={action.href} href={action.href}>
+                <Card className="h-full transition-shadow hover:shadow-md">
+                  <CardHeader>
+                    <div className="mb-2 flex h-10 w-10 items-center justify-center rounded-lg bg-neutral-100">
+                      <Icon className="h-5 w-5 text-neutral-600" />
+                    </div>
+                    <CardTitle className="text-lg">{action.title}</CardTitle>
+                    <CardDescription>{action.description}</CardDescription>
+                  </CardHeader>
+                </Card>
+              </Link>
+            )
+          })}
         </div>
       </div>
     </div>
