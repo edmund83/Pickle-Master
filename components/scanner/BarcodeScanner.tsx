@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useId, useState, useRef, useCallback } from 'react'
-import { Camera, CameraOff, RefreshCw, X, Loader2, Flashlight, FlashlightOff } from 'lucide-react'
+import { Camera, CameraOff, X, Loader2, Flashlight, FlashlightOff } from 'lucide-react'
 import { useBarcodeScanner, type ScanResult } from '@/lib/scanner/useBarcodeScanner'
 
 export type { ScanResult }
@@ -40,14 +40,12 @@ export function BarcodeScanner({
     error,
     lastScan,
     hasPermission,
-    availableCameras,
     engineName,
     supports1DBarcodes,
     hasTorch,
     isTorchOn,
     startScanning,
     stopScanning,
-    switchCamera,
     toggleTorch,
     clearLastScan,
     clearError,
@@ -172,20 +170,8 @@ export function BarcodeScanner({
             </Button>
           )}
 
-          {/* Camera switch */}
-          {availableCameras.length > 1 ? (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={switchCamera}
-              className="text-white hover:bg-white/20"
-              disabled={!isScanning}
-            >
-              <RefreshCw className="h-5 w-5" />
-            </Button>
-          ) : !hasTorch ? (
-            <div className="w-10" />
-          ) : null}
+          {/* Spacer when no torch */}
+          {!hasTorch && !headerActions && <div className="w-10" />}
         </div>
       </div>
 
