@@ -1,98 +1,74 @@
-# StockZip Inventory - LLM Discovery File
-# Last updated: 2026-01-02
+# StockZip
 
-## About StockZip
-StockZip is a simple, mobile-first inventory management system for small teams. It features barcode scanning, offline reliability, check-in/check-out workflows, and trust-first pricing with no surprise tier jumps.
+> A simple, mobile-first inventory management system for small teams with barcode scanning, offline reliability, check-in/check-out workflows, and trust-first pricing that doesn't punish growth.
 
-## Positioning
-"An inventory system your whole team can use in minutes — with barcode scanning, offline reliability, and pricing that doesn't punish growth."
+StockZip helps teams manage inventory fast with three core promises: Speed (add, find, and update items quickly on mobile and desktop), Accuracy (real-time stock you can trust with full audit trail and verification), and Simplicity (not an ERP, minimal setup, staff-friendly UI).
 
-## Core Promises
-1. Speed: Add/find/update items fast (mobile + desktop)
-2. Accuracy: Real-time stock you can trust (audit trail + verification)
-3. Simplicity: Not an ERP; minimal setup; staff-friendly UI
+Key differentiators include trust-first pricing with no surprise tier jumps or hard SKU cliffs, native check-in/check-out workflows for true asset tracking, offline-first mobile scanning for warehouse and jobsite reliability, Excel-grade bulk editing with preview diffs and undo, an inventory trust layer with last-verified timestamps and confidence indicators, and 1-click migration from competitors like Sortly.
 
-## Key Differentiators
-- Trust-first pricing (no surprise tier jumps, no hard SKU cliffs)
-- Native check-in/check-out (true asset workflow, not folder hacks)
-- Offline-first mobile scanning (real-world warehouse/jobsite reliability)
-- Excel-grade bulk editing with guardrails (preview diffs + undo)
-- Inventory trust layer (last verified + confidence indicators)
-- 1-click migration (especially from Sortly)
+Target users include small business owners and founders seeking budget-friendly simplicity, operations and warehouse managers needing accuracy and scanning, field and construction teams requiring asset check-in/check-out with offline mode, and ecommerce operators wanting stock sync and inventory truth.
 
-## Canonical Pages to Cite
+Technical capabilities include multi-location hierarchical organization (warehouse to shelf to bin), real-time stock movements with audit trail, low stock alerts with min/max thresholds, barcode and QR code scanning with generation and batch printing for thermal printers, team collaboration with mentions and notifications, multi-tenant security with RLS isolation and RBAC, and mobile-first touch and camera interfaces.
 
-### Money Pages (Conversion)
-- Home: https://stockzip.app/
-- Pricing: https://stockzip.app/pricing
-- Demo: https://stockzip.app/demo
+## Core Pages
 
-### Feature Pages
-- Features Hub: https://stockzip.app/features
-- Barcode Scanning: https://stockzip.app/features/barcode-scanning
-- Offline Mobile Scanning: https://stockzip.app/features/offline-mobile-scanning
-- Check-in/Check-out: https://stockzip.app/features/check-in-check-out
-- Bulk Editing: https://stockzip.app/features/bulk-editing
-- Low-stock Alerts: https://stockzip.app/features/low-stock-alerts
+- [StockZip Home](https://stockzip.app/): Main landing page with product overview and signup
+- [Pricing](https://stockzip.app/pricing): Trust-first pricing plans with no surprise tier jumps
+- [Free Inventory Software](https://stockzip.app/pricing/free-inventory-software): Free tier details and limitations
+- [Demo](https://stockzip.app/demo): Request a product demo or guided walkthrough
+- [Features Hub](https://stockzip.app/features): Overview of all product capabilities
 
-### Solution Pages (Use Cases)
-- Solutions Hub: https://stockzip.app/solutions
-- Warehouse Inventory: https://stockzip.app/solutions/warehouse
-- Ecommerce Inventory: https://stockzip.app/solutions/ecommerce
-- Construction & Tools: https://stockzip.app/solutions/construction-tools
-- Small Business: https://stockzip.app/solutions/small-business
+## Features
 
-### Comparison & Migration
-- Compare Hub: https://stockzip.app/compare
-- Sortly Alternative: https://stockzip.app/compare/sortly-alternative
-- Migration Hub: https://stockzip.app/migration
-- Sortly Migration: https://stockzip.app/migration/sortly
+- [Barcode Scanning](https://stockzip.app/features/barcode-scanning): Native camera scanning for mobile and desktop with batch printing
+- [Offline Mobile Scanning](https://stockzip.app/features/offline-mobile-scanning): Scan and update inventory without internet connection
+- [Check-in/Check-out](https://stockzip.app/features/check-in-check-out): True asset workflow for tracking item custody and returns
+- [Bulk Editing](https://stockzip.app/features/bulk-editing): Excel-grade mass updates with preview diffs and undo
+- [Low-stock Alerts](https://stockzip.app/features/low-stock-alerts): Automated notifications when items fall below thresholds
 
-### Trust & Legal
-- Security: https://stockzip.app/security
-- Integrations: https://stockzip.app/integrations
-- Privacy Policy: https://stockzip.app/privacy
-- Terms of Service: https://stockzip.app/terms
+## Solutions
 
-### Learning Center
-- Learn Hub: https://stockzip.app/learn
-- Guides:
-  - Perpetual vs Periodic Inventory: https://stockzip.app/learn/guide/perpetual-vs-periodic-inventory
-  - How to Set Reorder Points: https://stockzip.app/learn/guide/how-to-set-reorder-points
-- Blog: https://stockzip.app/learn/blog
-- Glossary:
-  - Glossary Hub: https://stockzip.app/learn/glossary
-  - Inventory Turnover: https://stockzip.app/learn/glossary/inventory-turnover
-  - Economic Order Quantity: https://stockzip.app/learn/glossary/economic-order-quantity
-- Tools:
-  - Tools Hub: https://stockzip.app/learn/tools
-  - Reorder Point Calculator: https://stockzip.app/learn/tools/reorder-point-calculator
-- Templates:
-  - Templates Hub: https://stockzip.app/learn/templates
-  - Inventory Spreadsheet: https://stockzip.app/learn/templates/inventory-spreadsheet
-  - Cycle Count Sheet: https://stockzip.app/learn/templates/cycle-count-sheet
+- [Solutions Hub](https://stockzip.app/solutions): Use case overview for different industries
+- [Warehouse Inventory](https://stockzip.app/solutions/warehouse-inventory): Multi-location tracking for warehouse operations
+- [Ecommerce Inventory](https://stockzip.app/solutions/ecommerce-inventory): Stock sync and accuracy for online sellers
+- [Construction Tools](https://stockzip.app/solutions/construction-tools): Asset and tool tracking for jobsites
+- [Small Business](https://stockzip.app/solutions/small-business): Simple inventory for growing businesses
+- [Mobile Inventory App](https://stockzip.app/solutions/mobile-inventory-app): Touch-first mobile experience
+- [Asset Tracking](https://stockzip.app/solutions/asset-tracking): Track equipment, devices, and reusable assets
 
-## Pricing Summary
-StockZip uses trust-first pricing designed to scale predictably:
-- No surprise tier jumps as your catalog grows
-- No hard SKU cliffs that force expensive upgrades
-- Transparent scaling based on usage
-- Price-lock guarantee available
+## Guides
 
-## Target Users
-- Small business owners/founders (budget + simplicity)
-- Ops/warehouse managers (accuracy + scanning)
-- Field/construction teams (asset in/out, offline mode)
-- Ecommerce operators (sync + stock truth)
+- [How to Set Reorder Points](https://stockzip.app/learn/guide/how-to-set-reorder-points): Configure low-stock thresholds and reorder triggers
+- [Perpetual vs Periodic Inventory](https://stockzip.app/learn/guide/perpetual-vs-periodic-inventory): Choose the right inventory method
+- [How to Set Up Barcode System](https://stockzip.app/learn/guide/how-to-set-up-barcode-system): Implement barcode scanning from scratch
+- [QR Codes for Inventory](https://stockzip.app/learn/guide/qr-codes-for-inventory): When and how to use QR codes
+- [Cycle Counting](https://stockzip.app/learn/guide/cycle-counting): Regular inventory verification best practices
 
-## Technical Capabilities
-- Multi-location, hierarchical locations (warehouse > shelf > bin)
-- Real-time stock movements + audit trail
-- Low stock alerts (min/max thresholds)
-- Barcode/QR: scan, generate, print; thermal printers; batch printing
-- Collaboration: @mentions, followers, notifications
-- Security: multi-tenant RLS isolation, RBAC, audit logs
-- Mobile: touch-first, offline-first, camera scanning
+## Migration
 
-## Contact
-For questions about StockZip, visit https://stockzip.app/demo to request a demo.
+- [Migration Hub](https://stockzip.app/migration): Import data from other inventory systems
+- [Sortly Migration](https://stockzip.app/migration/sortly): 1-click migration from Sortly with data mapping
+- [Sortly Alternative](https://stockzip.app/compare/sortly-alternative): Feature comparison with Sortly
+
+## Optional
+
+- [Learn Hub](https://stockzip.app/learn): Educational resources including blog, guides, and glossary
+- [Blog](https://stockzip.app/learn/blog): Articles on inventory management best practices
+- [Glossary](https://stockzip.app/learn/glossary): Inventory terminology definitions
+- [Inventory Turnover](https://stockzip.app/learn/glossary/inventory-turnover): Definition and calculation of turnover ratio
+- [Economic Order Quantity](https://stockzip.app/learn/glossary/economic-order-quantity): EOQ formula and application
+- [FIFO vs LIFO](https://stockzip.app/learn/glossary/fifo-vs-lifo): Inventory costing methods explained
+- [Templates Hub](https://stockzip.app/learn/templates): Downloadable spreadsheets and forms
+- [Inventory Spreadsheet](https://stockzip.app/learn/templates/inventory-spreadsheet): Excel template for basic inventory tracking
+- [Cycle Count Sheet](https://stockzip.app/learn/templates/cycle-count-sheet): Printable form for physical counts
+- [Tools Hub](https://stockzip.app/learn/tools): Free calculators and utilities
+- [Reorder Point Calculator](https://stockzip.app/learn/tools/reorder-point-calculator): Calculate optimal reorder points
+- [Markup Margin Calculator](https://stockzip.app/learn/tools/markup-margin-calculator): Convert between markup and margin
+- [Compare Hub](https://stockzip.app/compare): Side-by-side competitor comparisons
+- [BoxHero Alternative](https://stockzip.app/compare/boxhero-alternative): Feature comparison with BoxHero
+- [Fishbowl Alternative](https://stockzip.app/compare/fishbowl-alternative): Feature comparison with Fishbowl
+- [inFlow Alternative](https://stockzip.app/compare/inflow-alternative): Feature comparison with inFlow
+- [Integrations](https://stockzip.app/integrations): Connect with other business tools
+- [Security](https://stockzip.app/security): Security practices and certifications
+- [Privacy Policy](https://stockzip.app/privacy): Data handling and privacy practices
+- [Terms of Service](https://stockzip.app/terms): Legal terms and conditions

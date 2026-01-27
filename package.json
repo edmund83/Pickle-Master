@@ -82,5 +82,13 @@
     "typescript": "5.9.3",
     "vite": "^7.3.0",
     "vitest": "^4.0.16"
-  }
+  },
+  "browserslist": [
+    "chrome >= 92",
+    "edge >= 92",
+    "firefox >= 91",
+    "safari >= 15.4",
+    "ios_saf >= 15.4",
+    "not dead"
+  ]
 }
