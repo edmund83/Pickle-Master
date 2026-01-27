@@ -31,9 +31,30 @@ const withPWA = withPWAInit({
   },
 })
 
+const devPort = process.env.PORT ?? '3000'
+const extraAllowedOrigins = (process.env.SERVER_ACTIONS_ALLOWED_ORIGINS || '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean)
+
+const devAllowedOrigins = [
+  `localhost:${devPort}`,
+  `127.0.0.1:${devPort}`,
+]
+
+const allowedServerActionOrigins =
+  process.env.NODE_ENV === 'production'
+    ? extraAllowedOrigins
+    : Array.from(new Set([...devAllowedOrigins, ...extraAllowedOrigins]))
+
 const nextConfig: NextConfig = {
   // Add empty turbopack config to satisfy Next.js 16
   turbopack: {},
+  experimental: {
+    serverActions: {
+      allowedOrigins: allowedServerActionOrigins.length > 0 ? allowedServerActionOrigins : undefined,
+    },
+  },
   async redirects() {
     return [
       {

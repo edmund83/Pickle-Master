@@ -1,7 +1,7 @@
 'use client'
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useState, useEffect } from 'react'
+import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Save, Package, ImageIcon } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -20,9 +20,12 @@ export default function NewItemPage() {
   const [images, setImages] = useState<string[]>([])
   const { currencySymbol, formatCurrency, formatNumber } = useFormatting()
 
+  const searchParams = useSearchParams()
+
   const [formData, setFormData] = useState({
     name: '',
     sku: '',
+    barcode: '',
     description: '',
     quantity: '' as string | number,
     unit: 'pcs',
@@ -33,6 +36,14 @@ export default function NewItemPage() {
     notes: '',
   })
   const [customFields, setCustomFields] = useState<Record<string, unknown>>({})
+
+  // Pre-fill barcode from URL param (when coming from scan page)
+  useEffect(() => {
+    const barcodeParam = searchParams.get('barcode')
+    if (barcodeParam) {
+      setFormData(prev => ({ ...prev, barcode: barcodeParam }))
+    }
+  }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -90,6 +101,7 @@ export default function NewItemPage() {
           tenant_id: profile.tenant_id,
           name: formData.name,
           sku: formData.sku || null,
+          barcode: formData.barcode || null,
           description: formData.description || null,
           quantity,
           unit: formData.unit,
@@ -208,15 +220,27 @@ export default function NewItemPage() {
                 </div>
                 <div>
                   <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-                    Location
+                    Barcode
                   </label>
                   <Input
-                    name="location"
-                    value={formData.location}
+                    name="barcode"
+                    value={formData.barcode}
                     onChange={handleChange}
-                    placeholder="e.g., Warehouse A, Shelf B3"
+                    placeholder="e.g., 1234567890123"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                  Location
+                </label>
+                <Input
+                  name="location"
+                  value={formData.location}
+                  onChange={handleChange}
+                  placeholder="e.g., Warehouse A, Shelf B3"
+                />
               </div>
 
               <div>
