@@ -4,7 +4,7 @@ import Image from 'next/image'
 export function HomeHero() {
   return (
     <div className="bg-primary">
-      <main className="pb-10 pt-32 md:pt-36">
+      <main className="pb-10 pt-40 md:pt-44">
         <div className="mx-auto flex max-w-7xl flex-col items-center gap-4 px-4 text-center sm:px-6 lg:gap-5 lg:px-8">
           {/* Logo with staggered animation */}
           <div className="motion-safe:animate-hero-fade-in motion-safe:[animation-delay:0ms]">
