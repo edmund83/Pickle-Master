@@ -151,14 +151,14 @@ export default function NewItemPage() {
           </Link>
           <h1 className="text-xl font-semibold text-neutral-900">Add New Item</h1>
         </div>
-        <Button type="submit" form="item-form" loading={loading}>
+        <Button type="submit" form="item-form" loading={loading} className="hidden sm:flex">
           <Save className="mr-2 h-4 w-4" />
           Save Item
         </Button>
       </div>
 
       {/* Form */}
-      <div className="p-6">
+      <div className="p-6 pb-24 sm:pb-6">
         <form id="item-form" onSubmit={handleSubmit} className="mx-auto max-w-3xl space-y-6">
           {error && (
             <div className="rounded-lg bg-red-50 p-4 text-sm text-red-600">
@@ -388,6 +388,17 @@ export default function NewItemPage() {
             disabled={loading}
           />
         </form>
+      </div>
+
+      {/* Mobile Sticky Footer - positioned above bottom nav bar */}
+      <div
+        className="fixed left-0 right-0 z-40 flex items-center justify-end gap-4 px-6 py-4 border-t border-neutral-200 bg-white shadow-[0_-4px_20px_rgba(0,0,0,0.08)] sm:hidden"
+        style={{ bottom: 'calc(64px + env(safe-area-inset-bottom, 0px))' }}
+      >
+        <Button type="submit" form="item-form" loading={loading}>
+          <Save className="mr-2 h-4 w-4" />
+          Save Item
+        </Button>
       </div>
     </div>
   )

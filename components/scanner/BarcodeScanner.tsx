@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useId, useState, useRef, useCallback } from 'react'
-import { Camera, CameraOff, X, Loader2, Flashlight, FlashlightOff } from 'lucide-react'
+import { Camera, CameraOff, X, Loader2, Flashlight, FlashlightOff, RefreshCw } from 'lucide-react'
 import { useBarcodeScanner, type ScanResult } from '@/lib/scanner/useBarcodeScanner'
 
 export type { ScanResult }
