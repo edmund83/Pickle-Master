@@ -12,7 +12,7 @@ export const DEFAULT_FAQS: FaqItem[] = [
       "Yes. StockZip is built for offline-first mobile workflows. You can keep scanning and updating, then sync when you're back online.",
   },
   {
-    question: 'Can I migrate from Sortly?',
+    question: 'Can I migrate from other tools?',
     answer:
       "Yes. Import via CSV and we'll help map fields, folders/locations, tags, and custom data so you can go live quickly.",
   },

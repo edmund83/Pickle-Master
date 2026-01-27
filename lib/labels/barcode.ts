@@ -26,7 +26,7 @@ export const PAPER_SIZES = {
   label_printer: { width: 2, height: 0.75, name: 'Label Printer (DYMO)' },
 }
 
-// Sortly-compatible label sizes
+// Standard label sizes
 export const LABEL_SIZES = {
   // QR Label sizes (US Letter)
   extra_large: { width: 5.5, height: 8.5, name: 'Extra Large (5 1/2in x 8 1/2in)', perSheet: 2, cols: 1, rows: 2 },
