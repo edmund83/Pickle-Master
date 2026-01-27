@@ -25,6 +25,7 @@ import { Button } from '@/components/ui/button'
 import { QuantityAdjuster } from '@/components/ui/QuantityAdjuster'
 import { CompletionModal } from '@/components/stock-count/unified/CompletionModal'
 import { FormattedShortDate } from '@/components/formatting/FormattedDate'
+import { successFeedback, completeFeedback, errorFeedback } from '@/lib/utils/feedback'
 import {
   startStockCount,
   recordCount,
@@ -203,11 +204,6 @@ export function StockCountMobileClient({ data, teamMembers, folders, currentUser
       const result = await recordCount(activeItemId, countValue)
 
       if (result.success) {
-        // Haptic feedback
-        if (navigator.vibrate) {
-          navigator.vibrate([50, 30, 50])
-        }
-
         // Show success animation
         setShowSaveSuccess(true)
 
@@ -221,16 +217,20 @@ export function StockCountMobileClient({ data, teamMembers, folders, currentUser
         setShowSaveSuccess(false)
 
         if (nextPending) {
-          // Advance to next item
+          // Advance to next item - regular success feedback
+          successFeedback()
           setActiveItemId(nextPending.id)
           setCountValue(nextPending.expected_quantity)
         } else {
-          // All done
+          // All done - completion feedback (celebratory pattern)
+          completeFeedback()
           setActiveItemId(null)
           setShowCompletion(true)
         }
 
         router.refresh()
+      } else {
+        errorFeedback()
       }
     } finally {
       setActionLoading(null)

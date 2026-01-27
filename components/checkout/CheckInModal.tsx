@@ -14,6 +14,7 @@ import {
 import { Button } from '@/components/ui/button'
 import type { ItemCondition } from '@/types/database.types'
 import { useFormatting } from '@/hooks/useFormatting'
+import { successFeedback, errorFeedback, selectionFeedback } from '@/lib/utils/feedback'
 
 interface CheckoutInfo {
   id: string
@@ -133,6 +134,7 @@ export function CheckInModal({ checkout, isOpen, onClose, onSuccess }: CheckInMo
   }
 
   function setSerialCondition(serialId: string, cond: ItemCondition) {
+    selectionFeedback()
     setSerialConditions((prev) => ({
       ...prev,
       [serialId]: cond,
@@ -140,6 +142,7 @@ export function CheckInModal({ checkout, isOpen, onClose, onSuccess }: CheckInMo
   }
 
   function setAllSerialsCondition(cond: ItemCondition) {
+    selectionFeedback()
     const updated: Record<string, ItemCondition> = {}
     checkoutSerials.forEach((s) => {
       updated[s.serial_id] = cond
@@ -168,13 +171,16 @@ export function CheckInModal({ checkout, isOpen, onClose, onSuccess }: CheckInMo
       }
 
       if (result.success) {
+        successFeedback()
         onSuccess()
         onClose()
       } else {
+        errorFeedback()
         setError(result.error || 'Failed to check in item')
       }
     } catch (err) {
       console.error('Check-in error:', err)
+      errorFeedback()
       setError('An error occurred while checking in the item')
     } finally {
       setSubmitting(false)

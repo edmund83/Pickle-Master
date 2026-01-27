@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { X, AlertTriangle, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { warningFeedback, deleteFeedback, tapFeedback } from '@/lib/utils/feedback'
 
 interface ConfirmDialogProps {
   isOpen: boolean
@@ -39,19 +40,32 @@ export function ConfirmDialog({
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [isOpen, isLoading, onClose])
 
-  // Prevent body scroll when open
+  // Prevent body scroll when open + haptic feedback on open
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden'
+      // Haptic feedback when dialog opens (warning for destructive, tap for others)
+      if (variant === 'destructive') {
+        warningFeedback()
+      } else {
+        tapFeedback()
+      }
     } else {
       document.body.style.overflow = ''
     }
     return () => {
       document.body.style.overflow = ''
     }
-  }, [isOpen])
+  }, [isOpen, variant])
 
   async function handleConfirm() {
+    // Haptic feedback on confirm
+    if (variant === 'destructive') {
+      deleteFeedback()
+    } else {
+      tapFeedback()
+    }
+
     setIsLoading(true)
     try {
       await onConfirm()
