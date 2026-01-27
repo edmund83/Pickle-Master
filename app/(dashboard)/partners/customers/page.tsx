@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import {
@@ -21,6 +22,7 @@ import {
   Users,
   AlertCircle,
 } from 'lucide-react'
+import { useIsDesktop } from '@/lib/hooks/useMediaQuery'
 
 interface PaymentTermOption {
   id: string
@@ -28,6 +30,9 @@ interface PaymentTermOption {
 }
 
 export default function CustomersPage() {
+  const router = useRouter()
+  const isDesktop = useIsDesktop()
+
   const [customers, setCustomers] = useState<CustomerListItem[]>([])
   const [paymentTerms, setPaymentTerms] = useState<PaymentTermOption[]>([])
   const [loading, setLoading] = useState(true)
@@ -117,16 +122,24 @@ export default function CustomersPage() {
     loadCustomers()
   }, [loadCustomers])
 
-  // Open dialog for creating new customer
+  // Open dialog for creating new customer (desktop) or navigate (mobile)
   function handleAddCustomer() {
-    setEditingCustomer(null)
-    setDialogOpen(true)
+    if (isDesktop === true) {
+      setEditingCustomer(null)
+      setDialogOpen(true)
+    } else {
+      router.push('/partners/customers/new')
+    }
   }
 
-  // Open dialog for editing existing customer
+  // Open dialog for editing existing customer (desktop) or navigate (mobile)
   function handleEditCustomer(customer: CustomerListItem) {
-    setEditingCustomer(customer)
-    setDialogOpen(true)
+    if (isDesktop === true) {
+      setEditingCustomer(customer)
+      setDialogOpen(true)
+    } else {
+      router.push(`/partners/customers/${customer.id}/edit`)
+    }
   }
 
   // Handle save from dialog (create or update)

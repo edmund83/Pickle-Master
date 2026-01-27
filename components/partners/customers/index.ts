@@ -1,3 +1,4 @@
 export { CustomersDataTable } from './CustomersDataTable'
-export { CustomerFormDialog, type CustomerFormData } from './CustomerFormDialog'
+export { CustomerForm, emptyCustomerFormData, type CustomerFormData } from './CustomerForm'
+export { CustomerFormDialog } from './CustomerFormDialog'
 export { getCustomerColumns } from './columns'

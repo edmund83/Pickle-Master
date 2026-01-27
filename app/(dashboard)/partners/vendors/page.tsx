@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import {
@@ -14,6 +15,7 @@ import {
   Truck,
   AlertCircle,
 } from 'lucide-react'
+import { useIsDesktop } from '@/lib/hooks/useMediaQuery'
 import type { Vendor } from '@/types/database.types'
 
 interface PaymentTermOption {
@@ -22,6 +24,9 @@ interface PaymentTermOption {
 }
 
 export default function PartnersVendorsPage() {
+  const router = useRouter()
+  const isDesktop = useIsDesktop()
+
   const [vendors, setVendors] = useState<Vendor[]>([])
   const [paymentTerms, setPaymentTerms] = useState<PaymentTermOption[]>([])
   const [loading, setLoading] = useState(true)
@@ -89,16 +94,24 @@ export default function PartnersVendorsPage() {
     loadVendors()
   }, [loadVendors])
 
-  // Open dialog for creating new vendor
+  // Open dialog for creating new vendor (desktop) or navigate (mobile)
   function handleAddVendor() {
-    setEditingVendor(null)
-    setDialogOpen(true)
+    if (isDesktop === true) {
+      setEditingVendor(null)
+      setDialogOpen(true)
+    } else {
+      router.push('/partners/vendors/new')
+    }
   }
 
-  // Open dialog for editing existing vendor
+  // Open dialog for editing existing vendor (desktop) or navigate (mobile)
   function handleEditVendor(vendor: Vendor) {
-    setEditingVendor(vendor)
-    setDialogOpen(true)
+    if (isDesktop === true) {
+      setEditingVendor(vendor)
+      setDialogOpen(true)
+    } else {
+      router.push(`/partners/vendors/${vendor.id}/edit`)
+    }
   }
 
   // Handle save from dialog (create or update)
