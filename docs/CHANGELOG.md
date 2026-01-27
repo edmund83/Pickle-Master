@@ -11,6 +11,27 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Added
 
+#### AI Request Timeouts
+Added timeout protection to all AI API calls to prevent runaway costs and improve reliability.
+
+**Features**:
+- 30-second timeout for chat requests (Gemini and OpenRouter)
+- 15-second timeout for quick operations (insights, label scanning, summaries)
+- Graceful error messages when timeouts occur
+- AbortController-based cancellation for fetch requests
+
+**Files Added**:
+- `lib/ai/timeout.ts` - Timeout utilities (`withTimeout`, `fetchWithTimeout`, `AiTimeoutError`)
+
+**Files Modified**:
+- `lib/ai/gemini.ts` - Added timeouts to all Gemini SDK calls
+- `lib/ai/openrouter.ts` - Added timeouts to all OpenRouter fetch calls
+
+**Why This Matters**:
+- Prevents serverless functions from running indefinitely when AI providers hang
+- Protects against unexpected cost accumulation
+- Improves UX with clear timeout messages instead of infinite loading
+
 #### Scanner Diagnostics & Engine Status
 Added comprehensive diagnostics to identify barcode scanning issues and improved user feedback.
 

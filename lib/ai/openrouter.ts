@@ -11,6 +11,7 @@ import {
   formatRelevantTopics
 } from './help-knowledge'
 import { ManagedHistory } from './history-manager'
+import { fetchWithTimeout, AI_REQUEST_TIMEOUT_MS } from './timeout'
 
 export interface InventoryItem {
   id: string
@@ -139,19 +140,24 @@ export async function inventoryChatOpenRouter(
     { role: 'user', content: query }
   ]
 
-  const response = await fetch(OPENROUTER_API_URL, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-      'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'https://stockzip.app',
-      'X-Title': 'StockZip - Ask Zoe'
+  // Use fetchWithTimeout to prevent hanging requests
+  const response = await fetchWithTimeout(
+    OPENROUTER_API_URL,
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'https://stockzip.app',
+        'X-Title': 'StockZip - Ask Zoe'
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        messages
+      })
     },
-    body: JSON.stringify({
-      model: MODEL,
-      messages
-    })
-  })
+    AI_REQUEST_TIMEOUT_MS
+  )
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}))
@@ -226,20 +232,25 @@ ${queryType === 'mixed' ? 'Balance feature explanations with data insights.' : '
     { role: 'user', content: query }
   ]
 
-  const response = await fetch(OPENROUTER_API_URL, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-      'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'https://stockzip.app',
-      'X-Title': 'StockZip - Ask Zoe'
+  // Use fetchWithTimeout to prevent hanging requests
+  const response = await fetchWithTimeout(
+    OPENROUTER_API_URL,
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'https://stockzip.app',
+        'X-Title': 'StockZip - Ask Zoe'
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        messages,
+        max_tokens: 1500 // Allow longer responses for complex queries
+      })
     },
-    body: JSON.stringify({
-      model: MODEL,
-      messages,
-      max_tokens: 1500 // Allow longer responses for complex queries
-    })
-  })
+    AI_REQUEST_TIMEOUT_MS
+  )
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}))
@@ -409,20 +420,25 @@ export async function inventoryChatOpenRouterOptimized(
     { role: 'user', content: query }
   ]
 
-  const response = await fetch(OPENROUTER_API_URL, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json',
-      'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'https://stockzip.app',
-      'X-Title': 'StockZip - Ask Zoe'
+  // Use fetchWithTimeout to prevent hanging requests
+  const response = await fetchWithTimeout(
+    OPENROUTER_API_URL,
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'HTTP-Referer': process.env.NEXT_PUBLIC_APP_URL || 'https://stockzip.app',
+        'X-Title': 'StockZip - Ask Zoe'
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        messages,
+        max_tokens: maxTokens
+      })
     },
-    body: JSON.stringify({
-      model: MODEL,
-      messages,
-      max_tokens: maxTokens
-    })
-  })
+    AI_REQUEST_TIMEOUT_MS
+  )
 
   if (!response.ok) {
     const errorData = await response.json().catch(() => ({}))

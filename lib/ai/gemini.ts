@@ -7,6 +7,7 @@ import {
   formatRelevantTopics
 } from './help-knowledge'
 import { ManagedHistory, formatHistoryForPrompt } from './history-manager'
+import { withTimeout, AI_REQUEST_TIMEOUT_MS, AI_QUICK_TIMEOUT_MS } from './timeout'
 
 /**
  * Check if Gemini is configured
@@ -72,7 +73,11 @@ Example format:
 Return ONLY the JSON array, no other text.`
 
   try {
-    const result = await model.generateContent(prompt)
+    // Add timeout to prevent hanging requests
+    const result = await withTimeout(
+      model.generateContent(prompt),
+      AI_QUICK_TIMEOUT_MS // 15s for quick insights
+    )
     const response = result.response
     const text = response.text()
 
@@ -86,11 +91,14 @@ Return ONLY the JSON array, no other text.`
     return insights.slice(0, 3)
   } catch (error) {
     console.error('Error analyzing inventory:', error)
-    // Return fallback insights
+    // Return fallback insights with timeout-specific message
+    const isTimeout = error instanceof Error && error.name === 'AiTimeoutError'
     return [
       {
-        title: 'Analysis Unavailable',
-        description: 'Unable to analyze inventory at this time. Please try again later.',
+        title: isTimeout ? 'Request Timed Out' : 'Analysis Unavailable',
+        description: isTimeout
+          ? 'AI took too long to respond. Please try again.'
+          : 'Unable to analyze inventory at this time. Please try again later.',
         severity: 'low',
         actionType: 'review'
       }
@@ -197,11 +205,18 @@ export async function inventoryChat(
       }
     })
 
-    const result = await chat.sendMessage(systemPrompt)
+    // Add timeout to prevent hanging requests
+    const result = await withTimeout(
+      chat.sendMessage(systemPrompt),
+      AI_REQUEST_TIMEOUT_MS
+    )
     return result.response.text()
   } catch (error) {
     console.error('Error in inventory chat:', error)
-    return 'I apologize, but I encountered an error processing your request. Please try again.'
+    const isTimeout = error instanceof Error && error.name === 'AiTimeoutError'
+    return isTimeout
+      ? 'I apologize, but the request timed out. Please try again with a simpler question.'
+      : 'I apologize, but I encountered an error processing your request. Please try again.'
   }
 }
 
@@ -263,11 +278,18 @@ User Query: ${query}`
       }
     })
 
-    const result = await chat.sendMessage(systemPrompt)
+    // Add timeout to prevent hanging requests
+    const result = await withTimeout(
+      chat.sendMessage(systemPrompt),
+      AI_REQUEST_TIMEOUT_MS
+    )
     return result.response.text()
   } catch (error) {
     console.error('Error in inventory chat with context:', error)
-    return 'I apologize, but I encountered an error processing your request. Please try again.'
+    const isTimeout = error instanceof Error && error.name === 'AiTimeoutError'
+    return isTimeout
+      ? 'I apologize, but the request timed out. Please try again with a simpler question.'
+      : 'I apologize, but I encountered an error processing your request. Please try again.'
   }
 }
 
@@ -298,15 +320,19 @@ Return ONLY the raw JSON object, no other text. If you can't identify a field, o
 Example: {"productName": "Widget A", "sku": "WDG-001", "quantity": 10}`
 
   try {
-    const result = await model.generateContent([
-      {
-        inlineData: {
-          data: base64Image,
-          mimeType
-        }
-      },
-      prompt
-    ])
+    // Add timeout for label scanning
+    const result = await withTimeout(
+      model.generateContent([
+        {
+          inlineData: {
+            data: base64Image,
+            mimeType
+          }
+        },
+        prompt
+      ]),
+      AI_QUICK_TIMEOUT_MS // 15s for quick scans
+    )
 
     const text = result.response.text()
     const cleanedText = text
@@ -346,7 +372,11 @@ Write a 2-3 sentence professional summary highlighting key concerns and recommen
 Keep it concise and actionable. Do not use markdown.`
 
   try {
-    const result = await model.generateContent(prompt)
+    // Add timeout for summary generation
+    const result = await withTimeout(
+      model.generateContent(prompt),
+      AI_QUICK_TIMEOUT_MS
+    )
     return result.response.text()
   } catch (error) {
     console.error('Error generating summary:', error)
@@ -511,10 +541,17 @@ export async function inventoryChatOptimized(
       }
     })
 
-    const result = await chat.sendMessage(systemPrompt)
+    // Add timeout to prevent hanging requests
+    const result = await withTimeout(
+      chat.sendMessage(systemPrompt),
+      AI_REQUEST_TIMEOUT_MS
+    )
     return result.response.text()
   } catch (error) {
     console.error('Error in optimized inventory chat:', error)
-    return 'I apologize, but I encountered an error processing your request. Please try again.'
+    const isTimeout = error instanceof Error && error.name === 'AiTimeoutError'
+    return isTimeout
+      ? 'I apologize, but the request timed out. Please try again with a simpler question.'
+      : 'I apologize, but I encountered an error processing your request. Please try again.'
   }
 }
