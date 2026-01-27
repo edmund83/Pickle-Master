@@ -700,6 +700,19 @@ export default function ScanPage() {
               inputRef={scannerInputRef}
               onScanFromInput={handleScanFromInput}
               className="h-full"
+              headerActions={
+                !isDesktop && !isPDA ? (
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={toggleScannerType}
+                    className="bg-white"
+                    title="Use Camera"
+                  >
+                    <Camera className="h-5 w-5" />
+                  </Button>
+                ) : undefined
+              }
             />
           ) : (
             <BarcodeScanner
@@ -707,43 +720,29 @@ export default function ScanPage() {
               showCloseButton={false}
               continuous={mode === 'batch'}
               className="h-[clamp(300px,60svh,520px)] lg:h-full"
+              headerActions={
+                !isDesktop && !isPDA ? (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={toggleScannerType}
+                    className="text-white hover:bg-white/20"
+                    title="Use External Scanner"
+                  >
+                    <ScanBarcode className="h-5 w-5" />
+                  </Button>
+                ) : undefined
+              }
             />
           ))}
 
-        {/* Scanner type toggle - only show on mobile (not desktop, not detected PDA) */}
-        {viewState === 'scanning' && !isInitializing && !isDesktop && !isPDA && (
-          <button
-            onClick={toggleScannerType}
-            className={cn(
-              'absolute right-4 z-10',
-              'bottom-[calc(16px+64px+env(safe-area-inset-bottom,0px))] lg:bottom-4',
-              'flex items-center gap-2 px-4 py-2',
-              'bg-white/90 backdrop-blur-sm rounded-full shadow-lg',
-              'text-sm font-medium text-neutral-700',
-              'border border-neutral-200',
-              'active:scale-95 transition-transform'
-            )}
-          >
-            {scannerType === 'camera' ? (
-              <>
-                <ScanBarcode className="h-4 w-4" />
-                <span>Use External Scanner</span>
-              </>
-            ) : (
-              <>
-                <Camera className="h-4 w-4" />
-                <span>Use Camera</span>
-              </>
-            )}
-          </button>
-        )}
 
         {/* Floating batch counter - prominent access to batch list */}
         {viewState === 'scanning' && mode === 'batch' && batchItems.length > 0 && (
           <button
             onClick={() => setViewState('batch-list')}
             className={cn(
-              'absolute left-4 z-10',
+              'absolute left-4 z-30',
               'bottom-[calc(16px+64px+env(safe-area-inset-bottom,0px))] lg:bottom-4',
               'flex items-center gap-2 px-4 py-3',
               'bg-primary text-white rounded-full shadow-lg',
