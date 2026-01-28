@@ -31,7 +31,7 @@
       "Edit",
       "Write",
       "Read",
-      "Bash(TEST_EMAIL='REDACTED_EMAIL' TEST_PASSWORD='REDACTED' python3:*)"
+      "Bash(python3:*)"
     ],
     "deny": []
   },
