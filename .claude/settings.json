@@ -30,7 +30,8 @@
       "Bash(prettier:*)",
       "Edit",
       "Write",
-      "Read"
+      "Read",
+      "Bash(TEST_EMAIL='REDACTED_EMAIL' TEST_PASSWORD='REDACTED' python3:*)"
     ],
     "deny": []
   },

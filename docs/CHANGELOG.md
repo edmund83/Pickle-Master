@@ -11,6 +11,17 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Added
 
+#### Authenticated User Landing Page Redirect
+Added redirect logic to automatically redirect signed-in users from the landing page to the dashboard.
+
+**Features**:
+- Proxy checks auth status before page renders (no flash of landing page content)
+- Uses `getUser()` for secure session validation with Supabase server
+- Only redirects from the landing page (`/`), other marketing pages remain accessible
+
+**Files Modified**:
+- `proxy.ts` - Added redirect for authenticated users on landing page
+
 #### AI Request Timeouts
 Added timeout protection to all AI API calls to prevent runaway costs and improve reliability.
 

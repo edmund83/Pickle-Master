@@ -69,8 +69,13 @@ export async function proxy(request: NextRequest) {
     (route) => pathname === route || pathname.startsWith(route + '/')
   )
 
-  // Marketing routes are always accessible (logged in or not)
+  // Marketing routes are accessible to everyone, but redirect authenticated users
+  // from the landing page to dashboard
   if (isMarketingRoute) {
+    // If authenticated user visits landing page, redirect to dashboard
+    if (user && pathname === '/') {
+      return NextResponse.redirect(new URL('/dashboard', request.url))
+    }
     return response
   }
 
