@@ -9,6 +9,23 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+
+#### Stripe Webhook 307 Redirect Issue
+Fixed billing plan changes (upgrade/downgrade) not updating the database because Stripe webhooks were being redirected by the auth middleware.
+
+**Root Cause**:
+- The `proxy.ts` middleware was checking auth on all routes including `/api/*`
+- Stripe webhook POST requests have no auth cookies
+- Middleware returned 307 redirect to `/login` instead of letting webhooks through
+
+**Solution**:
+- Added early return in `proxy.ts` to skip auth checks for `/api/` routes
+- Webhooks now return 200 and correctly update tenant subscription data
+
+**Files Modified**:
+- `proxy.ts` - Skip auth middleware for API routes
+
 ### Added
 
 #### Authenticated User Landing Page Redirect

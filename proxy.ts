@@ -8,6 +8,17 @@ interface CookieToSet {
 }
 
 export async function proxy(request: NextRequest) {
+  const pathname = request.nextUrl.pathname
+
+  // Skip auth check for API routes (webhooks, etc.)
+  if (pathname.startsWith('/api/')) {
+    return NextResponse.next({
+      request: {
+        headers: request.headers,
+      },
+    })
+  }
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -43,8 +54,6 @@ export async function proxy(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-
-  const pathname = request.nextUrl.pathname
 
   // Public routes that don't require authentication
   const publicRoutes = ['/login', '/signup', '/forgot-password', '/reset-password', '/auth/callback', '/accept-invite']

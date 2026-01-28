@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import {
   CreditCard,
@@ -15,6 +16,9 @@ import {
   Rocket,
   Receipt,
   FileText,
+  X,
+  CheckCircle2,
+  XCircle,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -128,6 +132,8 @@ const PLANS = [
 ]
 
 export default function BillingPage() {
+  const searchParams = useSearchParams()
+  const router = useRouter()
   const [subscription, setSubscription] = useState<TenantSubscription | null>(
     null
   )
@@ -139,7 +145,41 @@ export default function BillingPage() {
   const [loading, setLoading] = useState(true)
   const [userEmail, setUserEmail] = useState<string>('')
   const [upgradingPlan, setUpgradingPlan] = useState<string | null>(null)
+  const [feedbackMessage, setFeedbackMessage] = useState<{
+    type: 'success' | 'canceled'
+    message: string
+  } | null>(null)
   const { formatCurrency, formatDate } = useFormatting()
+
+  // Handle success/canceled query params from Stripe redirect
+  useEffect(() => {
+    const success = searchParams.get('success')
+    const canceled = searchParams.get('canceled')
+
+    if (success === 'true') {
+      setFeedbackMessage({
+        type: 'success',
+        message: 'Your subscription has been updated successfully!',
+      })
+      // Clear the query params from URL
+      router.replace('/settings/billing', { scroll: false })
+    } else if (canceled === 'true') {
+      setFeedbackMessage({
+        type: 'canceled',
+        message: 'Checkout was canceled. No changes were made.',
+      })
+      // Clear the query params from URL
+      router.replace('/settings/billing', { scroll: false })
+    }
+  }, [searchParams, router])
+
+  // Auto-dismiss feedback after 5 seconds
+  useEffect(() => {
+    if (feedbackMessage) {
+      const timer = setTimeout(() => setFeedbackMessage(null), 5000)
+      return () => clearTimeout(timer)
+    }
+  }, [feedbackMessage])
 
   useEffect(() => {
     loadBillingData()
@@ -262,12 +302,51 @@ export default function BillingPage() {
     (isTrialing && trialDaysLeft > 0)
   const hasStripeSubscription = !!subscription?.stripe_customer_id
 
+  // Feedback banner component to reuse in both loading and loaded states
+  const FeedbackBanner = feedbackMessage && (
+    <div
+      className={`mb-6 flex items-center justify-between rounded-lg p-4 ${
+        feedbackMessage.type === 'success'
+          ? 'bg-green-50 text-green-800'
+          : 'bg-amber-50 text-amber-800'
+      }`}
+    >
+      <div className="flex items-center gap-3">
+        {feedbackMessage.type === 'success' ? (
+          <CheckCircle2 className="h-5 w-5 text-green-600" />
+        ) : (
+          <XCircle className="h-5 w-5 text-amber-600" />
+        )}
+        <span className="font-medium">{feedbackMessage.message}</span>
+      </div>
+      <button
+        onClick={() => setFeedbackMessage(null)}
+        className={`rounded-full p-1 hover:bg-opacity-20 ${
+          feedbackMessage.type === 'success'
+            ? 'hover:bg-green-600'
+            : 'hover:bg-amber-600'
+        }`}
+      >
+        <X className="h-4 w-4" />
+      </button>
+    </div>
+  )
+
   if (loading) {
     return (
       <div className="p-6">
+        {/* Page Header */}
+        <div className="mb-8">
+          <h1 className="text-2xl font-semibold text-neutral-900">Billing</h1>
+          <p className="mt-1 text-neutral-500">
+            Manage your subscription and billing information
+          </p>
+        </div>
+
+        {/* Show feedback banner even during loading */}
+        {FeedbackBanner}
+
         <div className="animate-pulse space-y-6">
-          <div className="h-8 w-48 rounded bg-neutral-200" />
-          <div className="h-4 w-64 rounded bg-neutral-200" />
           <div className="h-32 rounded-2xl bg-neutral-200" />
           <div className="grid gap-4 sm:grid-cols-3">
             <div className="h-40 rounded-xl bg-neutral-200" />
@@ -288,6 +367,9 @@ export default function BillingPage() {
           Manage your subscription and billing information
         </p>
       </div>
+
+      {/* Feedback Message from Stripe Redirect */}
+      {FeedbackBanner}
 
       <div className="mx-auto max-w-4xl space-y-6">
         {/* Status Banners */}
