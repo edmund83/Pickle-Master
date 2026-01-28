@@ -138,6 +138,7 @@ export default function BillingPage() {
   })
   const [loading, setLoading] = useState(true)
   const [userEmail, setUserEmail] = useState<string>('')
+  const [upgradingPlan, setUpgradingPlan] = useState<string | null>(null)
   const { formatCurrency, formatDate } = useFormatting()
 
   useEffect(() => {
@@ -217,6 +218,27 @@ export default function BillingPage() {
       }
     } catch (err) {
       console.error('Failed to open portal:', err)
+    }
+  }
+
+  async function handleUpgrade(planId: string) {
+    try {
+      setUpgradingPlan(planId)
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ planId }),
+      })
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else if (data.error) {
+        console.error('Checkout error:', data.error)
+      }
+    } catch (err) {
+      console.error('Failed to start checkout:', err)
+    } finally {
+      setUpgradingPlan(null)
     }
   }
 
@@ -448,13 +470,16 @@ export default function BillingPage() {
                       <Button
                         variant={isCurrent ? 'outline' : 'default'}
                         className="w-full"
-                        disabled={isCurrent || !canUpgrade}
+                        disabled={isCurrent || !canUpgrade || upgradingPlan === plan.id}
+                        onClick={() => canUpgrade && handleUpgrade(plan.id)}
                       >
-                        {isCurrent
-                          ? 'Your Current Plan'
-                          : canUpgrade
-                            ? 'Upgrade'
-                            : 'Not Available'}
+                        {upgradingPlan === plan.id
+                          ? 'Redirecting...'
+                          : isCurrent
+                            ? 'Your Current Plan'
+                            : canUpgrade
+                              ? 'Upgrade'
+                              : 'Not Available'}
                       </Button>
                     </div>
                   )

@@ -12,7 +12,7 @@ export function MarketingNavbar() {
               alt="StockZip"
               width={48}
               height={48}
-              className="h-12 w-12 object-contain"
+              className="h-12 w-12 shrink-0 object-contain p-0.5"
             />
             StockZip<span className="text-[10px] font-light align-super opacity-70">™</span>
           </Link>
