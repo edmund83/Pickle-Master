@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import {
@@ -15,7 +15,6 @@ import {
   FolderOpen,
   Rocket,
   Receipt,
-  FileText,
   X,
   CheckCircle2,
   XCircle,
@@ -131,7 +130,7 @@ const PLANS = [
   },
 ]
 
-export default function BillingPage() {
+function BillingPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const [subscription, setSubscription] = useState<TenantSubscription | null>(
@@ -448,38 +447,291 @@ export default function BillingPage() {
 
         {/* Upgrade Section */}
         <div id="upgrade" className="scroll-mt-8">
+          {hasStripeSubscription ? (
+            // User has a Stripe subscription - show consolidated billing card
+            <>
+            <div className="rounded-2xl border border-neutral-200 bg-white p-6">
+              <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+                {/* Subscription Info */}
+                <div className="flex items-center gap-4">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
+                    <CreditCard className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-neutral-900">
+                        {currentPlan.name} Plan
+                      </span>
+                      <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700">
+                        Active
+                      </span>
+                    </div>
+                    <p className="text-sm text-neutral-500">
+                      {formatPrice(currentPlan.price)}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Single CTA */}
+                <Button onClick={openStripePortal} className="shrink-0">
+                  Manage Subscription
+                  <ExternalLink className="ml-2 h-4 w-4" />
+                </Button>
+              </div>
+
+              {/* Quick Actions */}
+              <div className="mt-6 grid gap-3 border-t border-neutral-100 pt-6 sm:grid-cols-3">
+                <button
+                  onClick={openStripePortal}
+                  className="flex items-center gap-3 rounded-lg p-3 text-left transition-colors hover:bg-neutral-50"
+                >
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-neutral-100">
+                    <Zap className="h-4 w-4 text-neutral-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-neutral-900">Change Plan</p>
+                    <p className="text-xs text-neutral-500">Upgrade or downgrade</p>
+                  </div>
+                </button>
+                <button
+                  onClick={openStripePortal}
+                  className="flex items-center gap-3 rounded-lg p-3 text-left transition-colors hover:bg-neutral-50"
+                >
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-neutral-100">
+                    <CreditCard className="h-4 w-4 text-neutral-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-neutral-900">Payment Method</p>
+                    <p className="text-xs text-neutral-500">Update card details</p>
+                  </div>
+                </button>
+                <button
+                  onClick={openStripePortal}
+                  className="flex items-center gap-3 rounded-lg p-3 text-left transition-colors hover:bg-neutral-50"
+                >
+                  <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-neutral-100">
+                    <Receipt className="h-4 w-4 text-neutral-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-neutral-900">Invoices</p>
+                    <p className="text-xs text-neutral-500">View billing history</p>
+                  </div>
+                </button>
+              </div>
+            </div>
+
+            {/* Plans Reference Table */}
+            <div className="mt-6 rounded-2xl border border-neutral-200 bg-white">
+              <div className="border-b border-neutral-100 px-6 py-4">
+                <h3 className="font-semibold text-neutral-900">Available Plans</h3>
+                <p className="text-sm text-neutral-500">Compare features across all plans</p>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-neutral-100 bg-neutral-50/50">
+                      <th className="min-w-[140px] px-6 py-3 text-left font-medium text-neutral-500">Feature</th>
+                      {PLANS.filter(p => !p.promotional).map((plan) => {
+                        const isCurrent = plan.id === subscription?.subscription_tier
+                        return (
+                          <th
+                            key={plan.id}
+                            className={`min-w-[100px] px-4 py-3 text-center font-medium ${isCurrent ? 'bg-primary/5 text-primary' : 'text-neutral-900'}`}
+                          >
+                            <div className="flex flex-col items-center gap-1">
+                              <span>{plan.name}</span>
+                              <span className="text-xs font-normal text-neutral-500">{formatPrice(plan.price)}</span>
+                              {isCurrent && (
+                                <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-medium text-primary">
+                                  Current
+                                </span>
+                              )}
+                            </div>
+                          </th>
+                        )
+                      })}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-neutral-100">
+                    {/* Limits Section */}
+                    <tr className="bg-neutral-50/30">
+                      <td colSpan={4} className="px-6 py-2 text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                        Limits
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-3 text-neutral-600">Inventory Items</td>
+                      {PLANS.filter(p => !p.promotional).map((plan) => (
+                        <td key={plan.id} className={`px-4 py-3 text-center ${plan.id === subscription?.subscription_tier ? 'bg-primary/5 font-medium text-neutral-900' : 'text-neutral-600'}`}>
+                          {plan.limits.items.toLocaleString()}
+                        </td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-3 text-neutral-600">Team Members</td>
+                      {PLANS.filter(p => !p.promotional).map((plan) => (
+                        <td key={plan.id} className={`px-4 py-3 text-center ${plan.id === subscription?.subscription_tier ? 'bg-primary/5 font-medium text-neutral-900' : 'text-neutral-600'}`}>
+                          {plan.limits.users}
+                        </td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-3 text-neutral-600">Folders</td>
+                      {PLANS.filter(p => !p.promotional).map((plan) => (
+                        <td key={plan.id} className={`px-4 py-3 text-center ${plan.id === subscription?.subscription_tier ? 'bg-primary/5 font-medium text-neutral-900' : 'text-neutral-600'}`}>
+                          {plan.limits.folders === -1 ? 'Unlimited' : plan.limits.folders}
+                        </td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-3 text-neutral-600">AskZoe AI Questions</td>
+                      {PLANS.filter(p => !p.promotional).map((plan) => (
+                        <td key={plan.id} className={`px-4 py-3 text-center ${plan.id === subscription?.subscription_tier ? 'bg-primary/5 font-medium text-neutral-900' : 'text-neutral-600'}`}>
+                          {plan.features.find(f => f.includes('AskZoe'))?.match(/\d+/)?.[0] || '—'}/mo
+                        </td>
+                      ))}
+                    </tr>
+                    {/* Features Section */}
+                    <tr className="bg-neutral-50/30">
+                      <td colSpan={4} className="px-6 py-2 text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                        Features
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-3 text-neutral-600">Reports</td>
+                      {PLANS.filter(p => !p.promotional).map((plan) => (
+                        <td key={plan.id} className={`px-4 py-3 text-center ${plan.id === subscription?.subscription_tier ? 'bg-primary/5 font-medium text-neutral-900' : 'text-neutral-600'}`}>
+                          {plan.features.find(f => f.includes('reports'))?.replace(' reports', '') || '—'}
+                        </td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-3 text-neutral-600">Support</td>
+                      {PLANS.filter(p => !p.promotional).map((plan) => (
+                        <td key={plan.id} className={`px-4 py-3 text-center ${plan.id === subscription?.subscription_tier ? 'bg-primary/5 font-medium text-neutral-900' : 'text-neutral-600'}`}>
+                          {plan.features.find(f => f.toLowerCase().includes('support'))?.replace(' support', '') || '—'}
+                        </td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-3 text-neutral-600">Lot/Serial Tracking</td>
+                      {PLANS.filter(p => !p.promotional).map((plan) => (
+                        <td key={plan.id} className={`px-4 py-3 text-center ${plan.id === subscription?.subscription_tier ? 'bg-primary/5' : ''}`}>
+                          {plan.features.some(f => f.includes('Lot/Serial')) ? (
+                            <Check className="mx-auto h-5 w-5 text-green-600" />
+                          ) : (
+                            <X className="mx-auto h-5 w-5 text-neutral-300" />
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-3 text-neutral-600">Audit Trail & Approvals</td>
+                      {PLANS.filter(p => !p.promotional).map((plan) => (
+                        <td key={plan.id} className={`px-4 py-3 text-center ${plan.id === subscription?.subscription_tier ? 'bg-primary/5' : ''}`}>
+                          {plan.features.some(f => f.includes('Audit trail')) ? (
+                            <Check className="mx-auto h-5 w-5 text-green-600" />
+                          ) : (
+                            <X className="mx-auto h-5 w-5 text-neutral-300" />
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                    {/* Tasks Section */}
+                    <tr className="bg-neutral-50/30">
+                      <td colSpan={4} className="px-6 py-2 text-xs font-semibold uppercase tracking-wider text-neutral-400">
+                        Tasks & Workflows
+                      </td>
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-3 text-neutral-600">Pick Lists</td>
+                      {PLANS.filter(p => !p.promotional).map((plan) => (
+                        <td key={plan.id} className={`px-4 py-3 text-center ${plan.id === subscription?.subscription_tier ? 'bg-primary/5' : ''}`}>
+                          <Check className="mx-auto h-5 w-5 text-green-600" />
+                        </td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-3 text-neutral-600">Check-In / Check-Out</td>
+                      {PLANS.filter(p => !p.promotional).map((plan) => (
+                        <td key={plan.id} className={`px-4 py-3 text-center ${plan.id === subscription?.subscription_tier ? 'bg-primary/5' : ''}`}>
+                          <Check className="mx-auto h-5 w-5 text-green-600" />
+                        </td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-3 text-neutral-600">Purchase Orders</td>
+                      {PLANS.filter(p => !p.promotional).map((plan) => (
+                        <td key={plan.id} className={`px-4 py-3 text-center ${plan.id === subscription?.subscription_tier ? 'bg-primary/5' : ''}`}>
+                          {['growth', 'scale'].includes(plan.id) ? (
+                            <Check className="mx-auto h-5 w-5 text-green-600" />
+                          ) : (
+                            <X className="mx-auto h-5 w-5 text-neutral-300" />
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-3 text-neutral-600">Sales Orders</td>
+                      {PLANS.filter(p => !p.promotional).map((plan) => (
+                        <td key={plan.id} className={`px-4 py-3 text-center ${plan.id === subscription?.subscription_tier ? 'bg-primary/5' : ''}`}>
+                          {['growth', 'scale'].includes(plan.id) ? (
+                            <Check className="mx-auto h-5 w-5 text-green-600" />
+                          ) : (
+                            <X className="mx-auto h-5 w-5 text-neutral-300" />
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-3 text-neutral-600">Receiving (GRN)</td>
+                      {PLANS.filter(p => !p.promotional).map((plan) => (
+                        <td key={plan.id} className={`px-4 py-3 text-center ${plan.id === subscription?.subscription_tier ? 'bg-primary/5' : ''}`}>
+                          {['growth', 'scale'].includes(plan.id) ? (
+                            <Check className="mx-auto h-5 w-5 text-green-600" />
+                          ) : (
+                            <X className="mx-auto h-5 w-5 text-neutral-300" />
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                    <tr>
+                      <td className="px-6 py-3 text-neutral-600">Stock Counts</td>
+                      {PLANS.filter(p => !p.promotional).map((plan) => (
+                        <td key={plan.id} className={`px-4 py-3 text-center ${plan.id === subscription?.subscription_tier ? 'bg-primary/5' : ''}`}>
+                          {['growth', 'scale'].includes(plan.id) ? (
+                            <Check className="mx-auto h-5 w-5 text-green-600" />
+                          ) : (
+                            <X className="mx-auto h-5 w-5 text-neutral-300" />
+                          )}
+                        </td>
+                      ))}
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div className="border-t border-neutral-100 px-6 py-3">
+                <p className="text-xs text-neutral-400">
+                  To change your plan, click &quot;Manage Subscription&quot; above
+                </p>
+              </div>
+            </div>
+            </>
+          ) : (
           <SettingsSection
             title={
-              hasStripeSubscription
-                ? 'Change Plan'
-                : hasActiveSubscription
+              hasActiveSubscription
                   ? 'Upgrade Your Plan'
                   : 'Choose Your Plan'
             }
             description={
-              hasStripeSubscription
-                ? 'Use the Manage Subscription button below to change your plan'
-                : hasActiveSubscription
+              hasActiveSubscription
                   ? 'Upgrade to unlock more features'
                   : 'Choose a plan that fits your needs'
             }
             icon={Zap}
           >
-            {hasStripeSubscription ? (
-              // User has a Stripe subscription - direct to portal for changes
-              <div className="rounded-xl border border-neutral-200 bg-gradient-to-br from-primary/5 to-transparent py-10 text-center">
-                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10">
-                  <Check className="h-8 w-8 text-primary" />
-                </div>
-                <p className="mt-4 font-semibold text-neutral-900">
-                  You&apos;re subscribed to {currentPlan.name}
-                </p>
-                <p className="mt-1 text-sm text-neutral-500">
-                  Use the &quot;Manage Subscription&quot; button below to change
-                  plans, update payment, or view invoices.
-                </p>
-              </div>
-            ) : hasActiveSubscription ? (
+            {hasActiveSubscription ? (
               // User has active subscription without Stripe (e.g., early access, trial)
               // Show plan cards but clearly mark current plan and disable subscribe for it
               <div className="grid gap-4 sm:grid-cols-2">
@@ -668,45 +920,16 @@ export default function BillingPage() {
               </>
             )}
           </SettingsSection>
+          )}
         </div>
 
-        {/* Billing History */}
-        <SettingsSection
-          title="Billing History"
-          description="Your recent invoices and payments"
-          icon={Receipt}
-          headerAction={
-            subscription?.stripe_customer_id && (
-              <Button variant="outline" size="sm" onClick={openStripePortal}>
-                View All
-                <ExternalLink className="ml-2 h-4 w-4" />
-              </Button>
-            )
-          }
-        >
-          {subscription?.stripe_customer_id ? (
-            <div className="divide-y divide-neutral-100">
-              <div className="flex items-center justify-center py-8 text-center">
-                <div>
-                  <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-100">
-                    <FileText className="h-6 w-6 text-neutral-400" />
-                  </div>
-                  <p className="mt-3 text-sm text-neutral-500">
-                    View your complete billing history in the Stripe portal
-                  </p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="mt-3"
-                    onClick={openStripePortal}
-                  >
-                    Open Billing Portal
-                    <ExternalLink className="ml-2 h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ) : (
+        {/* Billing History - Only show when no Stripe subscription */}
+        {!subscription?.stripe_customer_id && (
+          <SettingsSection
+            title="Billing History"
+            description="Your recent invoices and payments"
+            icon={Receipt}
+          >
             <div className="flex items-center justify-center py-8 text-center">
               <div>
                 <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-neutral-100">
@@ -717,39 +940,40 @@ export default function BillingPage() {
                 </p>
               </div>
             </div>
-          )}
-        </SettingsSection>
-
-        {/* Manage Subscription */}
-        {subscription?.stripe_customer_id && (
-          <SettingsSection
-            title="Manage Subscription"
-            description="Update payment method, view invoices, or cancel subscription"
-            icon={CreditCard}
-          >
-            <div className="rounded-xl bg-gradient-to-r from-primary/5 to-transparent p-[1px]">
-              <div className="flex items-center gap-4 rounded-[11px] bg-white p-4">
-                <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10">
-                  <CreditCard className="h-6 w-6 text-primary" />
-                </div>
-                <div className="flex-1">
-                  <p className="font-medium text-neutral-900">
-                    Subscription Active
-                  </p>
-                  <p className="text-sm text-neutral-500">
-                    Manage your payment method, view invoices, or update your
-                    plan
-                  </p>
-                </div>
-                <Button variant="outline" onClick={openStripePortal}>
-                  Manage Subscription
-                  <ExternalLink className="ml-2 h-4 w-4" />
-                </Button>
-              </div>
-            </div>
           </SettingsSection>
         )}
       </div>
     </div>
+  )
+}
+
+// Loading skeleton for Suspense fallback
+function BillingPageSkeleton() {
+  return (
+    <div className="p-6">
+      <div className="mb-8">
+        <h1 className="text-2xl font-semibold text-neutral-900">Billing</h1>
+        <p className="mt-1 text-neutral-500">
+          Manage your subscription and billing information
+        </p>
+      </div>
+      <div className="mx-auto max-w-4xl animate-pulse space-y-6">
+        <div className="h-32 rounded-2xl bg-neutral-200" />
+        <div className="grid gap-4 sm:grid-cols-3">
+          <div className="h-40 rounded-xl bg-neutral-200" />
+          <div className="h-40 rounded-xl bg-neutral-200" />
+          <div className="h-40 rounded-xl bg-neutral-200" />
+        </div>
+        <div className="h-48 rounded-2xl bg-neutral-200" />
+      </div>
+    </div>
+  )
+}
+
+export default function BillingPage() {
+  return (
+    <Suspense fallback={<BillingPageSkeleton />}>
+      <BillingPageContent />
+    </Suspense>
   )
 }
