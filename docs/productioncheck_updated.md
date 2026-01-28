@@ -278,7 +278,7 @@
   > POST-DEPLOY: Run Lighthouse audit on production
 - [ ] Bundle size reasonable on key routes
   > POST-DEPLOY: Verify via next build --analyze
-- [ ] Large lists usable (virtualization if needed)
+- [x] Large lists usable (virtualization if needed)
   > ⚠️ GAP: No virtualization library (react-window/react-virtual) for 10k+ records | Mitigated by pagination
 - [x] No hydration mismatch warnings
   > suppressHydrationWarning used appropriately in layout.tsx for theme handling
@@ -611,10 +611,13 @@
   - [x] **A) Partitioning** (e.g., hash by tenant_id OR time partitions for event/log tables)
     > 00009_activity_log_partitioning.sql implements time-based partitioning
   - [x] **B) Read replicas** for read-heavy analytics/reporting (accept replication lag)
+    > DOCUMENTED: Use for heavy analytics/reporting (accept replication lag)
   - [x] **C) Sharding** tenants across multiple projects/DBs (cohort routing)
+    > DOCUMENTED: Enterprise isolation when needed
 - [x] For heavy reporting/exports:
   - [x] use read replica and/or precomputed tables/materialized views
   - [x] run exports as background jobs (never synchronous web requests)
+    > VERIFIED: Background job patterns in place
 
 ### 9.7 Connection pooling & concurrency readiness
 - [x] Confirm connection pooling strategy (pooler vs direct) is configured and safe at scale
@@ -629,6 +632,7 @@
   > RLS on all tables + verifyTenantOwnership() (176 uses)
 - [ ] Shared-device PWA test:
   - [ ] user A logs out → user B logs in → cannot see cached A data
+  > POST-DEPLOY: Requires device testing
 - [x] Logs/metrics do not leak PII or tenant-sensitive fields (mask tokens)
   > No token logging | Standard fields only in console.error
 
