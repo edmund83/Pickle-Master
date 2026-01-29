@@ -74,15 +74,35 @@ export async function proxy(request: NextRequest) {
     '/terms',
     '/security',
   ]
-  const isMarketingRoute = marketingRoutes.some(
-    (route) => pathname === route || pathname.startsWith(route + '/')
-  )
+
+  // Locale prefixes for international SEO
+  const localePrefixes = ['/en-us', '/en-gb', '/en-au', '/en-ca']
+
+  // Check if path is a marketing route (with or without locale prefix)
+  const isMarketingRoute = (() => {
+    // Direct match for root or marketing routes
+    if (marketingRoutes.some((route) => pathname === route || pathname.startsWith(route + '/'))) {
+      return true
+    }
+    // Check locale-prefixed marketing routes (e.g., /en-us, /en-us/pricing)
+    for (const prefix of localePrefixes) {
+      if (pathname === prefix) return true // e.g., /en-us
+      if (pathname.startsWith(prefix + '/')) {
+        const pathWithoutLocale = pathname.slice(prefix.length) // e.g., /pricing
+        if (marketingRoutes.some((route) => pathWithoutLocale === route || pathWithoutLocale.startsWith(route + '/'))) {
+          return true
+        }
+      }
+    }
+    return false
+  })()
 
   // Marketing routes are accessible to everyone, but redirect authenticated users
   // from the landing page to dashboard
   if (isMarketingRoute) {
-    // If authenticated user visits landing page, redirect to dashboard
-    if (user && pathname === '/') {
+    // If authenticated user visits landing page (root or locale home), redirect to dashboard
+    const isHomePage = pathname === '/' || localePrefixes.includes(pathname)
+    if (user && isHomePage) {
       return NextResponse.redirect(new URL('/dashboard', request.url))
     }
     return response
