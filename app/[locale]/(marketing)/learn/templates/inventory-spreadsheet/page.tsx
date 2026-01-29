@@ -11,15 +11,25 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import { breadcrumbJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Free Inventory Spreadsheet Template | Excel & Google Sheets',
-  description:
-    'Download a free inventory spreadsheet template for Excel or Google Sheets. Track items, quantities, locations, and values. Ready to import into StockZip.',
-  pathname: '/templates/inventory-spreadsheet',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/learn/templates/inventory-spreadsheet',
+    title: 'Free Inventory Spreadsheet Template | Excel & Google Sheets',
+    description:
+      'Download a free inventory spreadsheet template for Excel or Google Sheets. Track items, quantities, locations, and values. Ready to import into StockZip.',
+  })
+}
 
 const COLUMNS = [
   { name: 'Item Name', description: 'The name or description of the item', example: 'Widget A' },

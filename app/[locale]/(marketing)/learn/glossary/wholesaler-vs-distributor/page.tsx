@@ -9,16 +9,26 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FaqBlock } from '@/components/marketing/FaqBlock'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Wholesaler vs Distributor | Key Differences Explained',
-  description:
-    'Learn the difference between wholesalers and distributors, when to use each, and how they affect your supply chain. Includes comparison table and examples.',
-  pathname: '/learn/glossary/wholesaler-vs-distributor',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/learn/glossary/wholesaler-vs-distributor',
+    title: 'Wholesaler vs Distributor | Key Differences Explained',
+    description:
+      'Learn the difference between wholesalers and distributors, when to use each, and how they affect your supply chain. Includes comparison table and examples.',
+  })
+}
 
 const FAQS: FaqItem[] = [
   {

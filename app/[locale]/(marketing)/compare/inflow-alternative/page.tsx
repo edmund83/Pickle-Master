@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/lib/marketing/jsonld'
 
@@ -17,12 +17,22 @@ import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/li
  * Secondary keywords: inventory scanner software, simple inventory tracking
  */
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'inFlow Alternative | StockZip Offline Barcode Inventory',
-  description:
-    'Exploring inFlow alternatives? StockZip focuses on scan-first barcode workflows, offline-first mobile scanning, and check-in/check-out accountability for small teams.',
-  pathname: '/compare/inflow-alternative',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/compare/inflow-alternative',
+    title: 'inFlow Alternative | StockZip Offline Barcode Inventory',
+    description:
+      'Exploring inFlow alternatives? StockZip focuses on scan-first barcode workflows, offline-first mobile scanning, and check-in/check-out accountability for small teams.',
+  })
+}
 
 // FAQ items following FlyonUI faq-1 template structure
 const INFLOW_FAQS: FaqItem[] = [

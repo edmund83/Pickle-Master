@@ -14,16 +14,26 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FaqBlock } from '@/components/marketing/FaqBlock'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Asset Tracking Software | Track Equipment, Tools & Devices',
-  description:
-    'Asset tracking software with check-in/check-out, barcode scanning, and full custody chain. Know who has what, where it is, and when it is due back.',
-  pathname: '/solutions/asset-tracking',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/solutions/asset-tracking',
+    title: 'Asset Tracking Software | Track Equipment, Tools & Devices',
+    description:
+      'Asset tracking software with check-in/check-out, barcode scanning, and full custody chain. Know who has what, where it is, and when it is due back.',
+  })
+}
 
 const ASSET_TRACKING_FAQS: FaqItem[] = [
   {

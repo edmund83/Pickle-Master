@@ -14,16 +14,26 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FaqBlock } from '@/components/marketing/FaqBlock'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, softwareApplicationJsonLd, faqPageJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Inventory Management Software Use Cases',
-  description:
-    'Find the right inventory solution for warehouses, ecommerce, construction, small business, and mobile teams. Barcode scanning, offline mode, and team accountability.',
-  pathname: '/solutions',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/solutions',
+    title: 'Inventory Management Software Use Cases',
+    description:
+      'Find the right inventory solution for warehouses, ecommerce, construction, small business, and mobile teams. Barcode scanning, offline mode, and team accountability.',
+  })
+}
 
 const SOLUTIONS = [
   {

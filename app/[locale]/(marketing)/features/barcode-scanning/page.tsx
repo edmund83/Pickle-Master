@@ -20,15 +20,25 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import { breadcrumbJsonLd, softwareApplicationJsonLd, faqPageJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Barcode Scanning Inventory Software | Scan Barcodes & QR Codes',
-  description:
-    'Scan barcodes and QR codes to find, update, and verify inventory instantly. Works with phone cameras and Bluetooth scanners. Free 14-day trial.',
-  pathname: '/features/barcode-scanning',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/features/barcode-scanning',
+    title: 'Barcode Scanning Inventory Software | Scan Barcodes & QR Codes',
+    description:
+      'Scan barcodes and QR codes to find, update, and verify inventory instantly. Works with phone cameras and Bluetooth scanners. Free 14-day trial.',
+  })
+}
 
 const faqs = [
   {

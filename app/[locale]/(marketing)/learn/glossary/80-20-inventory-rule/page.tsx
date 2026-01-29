@@ -9,16 +9,26 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FaqBlock } from '@/components/marketing/FaqBlock'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = marketingMetadata({
-  title: '80/20 Inventory Rule | Pareto Principle for Inventory Management',
-  description:
-    'Learn how the 80/20 rule (Pareto Principle) applies to inventory management. Focus on the vital few items that drive most of your revenue.',
-  pathname: '/learn/glossary/80-20-inventory-rule',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/learn/glossary/80-20-inventory-rule',
+    title: '80/20 Inventory Rule | Pareto Principle for Inventory Management',
+    description:
+      'Learn how the 80/20 rule (Pareto Principle) applies to inventory management. Focus on the vital few items that drive most of your revenue.',
+  })
+}
 
 const FAQS: FaqItem[] = [
   {

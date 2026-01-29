@@ -1,17 +1,27 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import { breadcrumbJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = {
-  ...marketingMetadata({
-    title: 'Terms of service',
-    description:
-      'Terms of service for StockZip Inventory. Service rules, acceptable use, and customer responsibilities.',
-    pathname: '/terms',
-  }),
-  robots: { index: false, follow: true },
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return {
+    ...buildInternationalMetadata({
+      locale: validLocale,
+      pathname: '/terms',
+      title: 'Terms of service',
+      description:
+        'Terms of service for StockZip Inventory. Service rules, acceptable use, and customer responsibilities.',
+    }),
+    robots: { index: false, follow: true },
+  }
 }
 
 export default function TermsPage() {

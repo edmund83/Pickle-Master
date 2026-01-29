@@ -14,16 +14,26 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FaqBlock } from '@/components/marketing/FaqBlock'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Free Warehouse Inventory Software | No Credit Card Required',
-  description:
-    'Free warehouse inventory software with barcode scanning, low-stock alerts, and offline mode. Start tracking inventory without paying—upgrade only when you grow.',
-  pathname: '/pricing/free-inventory-software',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/pricing/free-inventory-software',
+    title: 'Free Warehouse Inventory Software | No Credit Card Required',
+    description:
+      'Free warehouse inventory software with barcode scanning, low-stock alerts, and offline mode. Start tracking inventory without paying—upgrade only when you grow.',
+  })
+}
 
 const FREE_TIER_FAQS: FaqItem[] = [
   {

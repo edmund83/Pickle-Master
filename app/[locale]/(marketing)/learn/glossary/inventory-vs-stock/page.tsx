@@ -9,16 +9,26 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FaqBlock } from '@/components/marketing/FaqBlock'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Inventory vs Stock | What is the Difference?',
-  description:
-    'Learn the difference between inventory and stock. In most contexts they mean the same thing, but there are important distinctions in accounting and regional usage.',
-  pathname: '/learn/glossary/inventory-vs-stock',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/learn/glossary/inventory-vs-stock',
+    title: 'Inventory vs Stock | What is the Difference?',
+    description:
+      'Learn the difference between inventory and stock. In most contexts they mean the same thing, but there are important distinctions in accounting and regional usage.',
+  })
+}
 
 const FAQS: FaqItem[] = [
   {

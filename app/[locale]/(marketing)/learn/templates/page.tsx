@@ -11,15 +11,25 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import { breadcrumbJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Free Inventory Templates | Spreadsheets, Cycle Count Sheets & More',
-  description:
-    'Download free inventory management templates. Inventory spreadsheets, cycle count sheets, and more. Ready to use or import into StockZip.',
-  pathname: '/templates',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/learn/templates',
+    title: 'Free Inventory Templates | Spreadsheets, Cycle Count Sheets & More',
+    description:
+      'Download free inventory management templates. Inventory spreadsheets, cycle count sheets, and more. Ready to use or import into StockZip.',
+  })
+}
 
 const TEMPLATES = [
   {

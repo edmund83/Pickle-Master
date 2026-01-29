@@ -13,15 +13,25 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import { breadcrumbJsonLd, softwareApplicationJsonLd, faqPageJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Bulk Inventory Update Software | Mass Editing with Preview & Undo',
-  description:
-    'Make Excel-grade bulk edits with guardrails: preview diffs, avoid mistakes, and undo changes when needed. Update thousands of items in seconds.',
-  pathname: '/features/bulk-editing',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/features/bulk-editing',
+    title: 'Bulk Inventory Update Software | Mass Editing with Preview & Undo',
+    description:
+      'Make Excel-grade bulk edits with guardrails: preview diffs, avoid mistakes, and undo changes when needed. Update thousands of items in seconds.',
+  })
+}
 
 const faqs = [
   {

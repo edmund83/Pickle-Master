@@ -9,16 +9,26 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FaqBlock } from '@/components/marketing/FaqBlock'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Types of Inventory | The 4 Categories Explained',
-  description:
-    'Learn about the 4 types of inventory: raw materials, work-in-progress, finished goods, and MRO. Understand how to manage each type effectively.',
-  pathname: '/learn/glossary/types-of-inventory',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/learn/glossary/types-of-inventory',
+    title: 'Types of Inventory | The 4 Categories Explained',
+    description:
+      'Learn about the 4 types of inventory: raw materials, work-in-progress, finished goods, and MRO. Understand how to manage each type effectively.',
+  })
+}
 
 const FAQS: FaqItem[] = [
   {

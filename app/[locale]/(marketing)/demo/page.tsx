@@ -20,16 +20,26 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FaqBlock } from '@/components/marketing/FaqBlock'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Inventory Management Software Demo | See StockZip in Action',
-  description:
-    'Watch a quick demo of StockZip inventory management: barcode scanning, stock adjustments, check-in/check-out workflows, and offline mobile mode.',
-  pathname: '/demo',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/demo',
+    title: 'Inventory Management Software Demo | See StockZip in Action',
+    description:
+      'Watch a quick demo of StockZip inventory management: barcode scanning, stock adjustments, check-in/check-out workflows, and offline mobile mode.',
+  })
+}
 
 const DEMO_FAQS: FaqItem[] = [
   {

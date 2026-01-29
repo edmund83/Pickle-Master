@@ -13,15 +13,25 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import { breadcrumbJsonLd, softwareApplicationJsonLd, faqPageJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Offline Inventory App | Mobile Scanning Without Internet',
-  description:
-    'Keep scanning and updating inventory even without internet. StockZip syncs changes automatically when you reconnect. Perfect for warehouses with dead zones.',
-  pathname: '/features/offline-mobile-scanning',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/features/offline-mobile-scanning',
+    title: 'Offline Inventory App | Mobile Scanning Without Internet',
+    description:
+      'Keep scanning and updating inventory even without internet. StockZip syncs changes automatically when you reconnect. Perfect for warehouses with dead zones.',
+  })
+}
 
 const faqs = [
   {

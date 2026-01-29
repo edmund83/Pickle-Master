@@ -1,15 +1,25 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import { breadcrumbJsonLd, softwareApplicationJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Migration',
-  description:
-    'Migration guides and checklists to help you move inventory data quickly and confidently.',
-  pathname: '/migration',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/migration',
+    title: 'Migration',
+    description:
+      'Migration guides and checklists to help you move inventory data quickly and confidently.',
+  })
+}
 
 export default function MigrationHubPage() {
   return (

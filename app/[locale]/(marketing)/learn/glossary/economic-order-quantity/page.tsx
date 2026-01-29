@@ -15,17 +15,27 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FaqBlock } from '@/components/marketing/FaqBlock'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd } from '@/lib/marketing/jsonld'
 import { EOQCalculator } from './EOQCalculator'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Economic Order Quantity (EOQ) | Formula, Calculator & Examples',
-  description:
-    'Learn the Economic Order Quantity (EOQ) formula, how to calculate optimal order quantities, and when to use EOQ for inventory management. Includes examples.',
-  pathname: '/glossary/economic-order-quantity',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/learn/glossary/economic-order-quantity',
+    title: 'Economic Order Quantity (EOQ) | Formula, Calculator & Examples',
+    description:
+      'Learn the Economic Order Quantity (EOQ) formula, how to calculate optimal order quantities, and when to use EOQ for inventory management. Includes examples.',
+  })
+}
 
 const EOQ_FAQS: FaqItem[] = [
   {

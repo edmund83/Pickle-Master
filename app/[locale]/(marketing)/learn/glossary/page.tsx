@@ -11,15 +11,25 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import { breadcrumbJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Inventory Management Glossary | Key Terms & Definitions',
-  description:
-    'Learn key inventory management terms and definitions. From inventory turnover to EOQ, understand the concepts that drive efficient stock management.',
-  pathname: '/glossary',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/learn/glossary',
+    title: 'Inventory Management Glossary | Key Terms & Definitions',
+    description:
+      'Learn key inventory management terms and definitions. From inventory turnover to EOQ, understand the concepts that drive efficient stock management.',
+  })
+}
 
 const GLOSSARY_TERMS = [
   // Tier 1 - High Volume Terms

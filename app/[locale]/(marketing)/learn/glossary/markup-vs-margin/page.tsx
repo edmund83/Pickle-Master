@@ -16,17 +16,27 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FaqBlock } from '@/components/marketing/FaqBlock'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd } from '@/lib/marketing/jsonld'
 import { MarkupMarginCalculator } from './MarkupMarginCalculator'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Markup vs Margin | Difference, Formulas & Calculator',
-  description:
-    'Learn the difference between markup and margin, how to calculate each, and when to use them. Includes formulas, conversion chart, and interactive calculator.',
-  pathname: '/learn/glossary/markup-vs-margin',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/learn/glossary/markup-vs-margin',
+    title: 'Markup vs Margin | Difference, Formulas & Calculator',
+    description:
+      'Learn the difference between markup and margin, how to calculate each, and when to use them. Includes formulas, conversion chart, and interactive calculator.',
+  })
+}
 
 const MARKUP_MARGIN_FAQS: FaqItem[] = [
   {

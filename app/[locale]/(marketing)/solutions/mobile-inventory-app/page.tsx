@@ -20,16 +20,26 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FaqBlock } from '@/components/marketing/FaqBlock'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Mobile Inventory App for Android and iOS | Offline Barcode Scanning',
-  description:
-    'Free mobile inventory app with offline barcode scanning for Android and iOS. Camera-based scanning, Bluetooth scanner support, and real-time sync for warehouse and field teams.',
-  pathname: '/solutions/mobile-inventory-app',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/solutions/mobile-inventory-app',
+    title: 'Mobile Inventory App for Android and iOS | Offline Barcode Scanning',
+    description:
+      'Free mobile inventory app with offline barcode scanning for Android and iOS. Camera-based scanning, Bluetooth scanner support, and real-time sync for warehouse and field teams.',
+  })
+}
 
 const MOBILE_APP_FAQS: FaqItem[] = [
   {

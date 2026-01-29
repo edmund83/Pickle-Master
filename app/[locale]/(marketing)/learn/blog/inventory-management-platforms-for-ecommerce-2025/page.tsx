@@ -14,16 +14,26 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FaqBlock } from '@/components/marketing/FaqBlock'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Best Inventory Management Platforms for Ecommerce in 2025 | Comparison Guide',
-  description:
-    'Compare the top inventory management platforms for ecommerce in 2025. Learn what features matter, how to choose, and which tools fit different business sizes.',
-  pathname: '/blog/inventory-management-platforms-for-ecommerce-2025',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/learn/blog/inventory-management-platforms-for-ecommerce-2025',
+    title: 'Best Inventory Management Platforms for Ecommerce in 2025 | Comparison Guide',
+    description:
+      'Compare the top inventory management platforms for ecommerce in 2025. Learn what features matter, how to choose, and which tools fit different business sizes.',
+  })
+}
 
 const ARTICLE_FAQS: FaqItem[] = [
   {

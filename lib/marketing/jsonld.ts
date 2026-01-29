@@ -10,6 +10,8 @@ export function organizationJsonLd() {
     '@type': 'Organization',
     name: 'StockZip',
     url: siteUrl,
+    logo: absoluteUrl('/icon.png'),
+    image: absoluteUrl('/og-image.png'),
   }
 }
 
@@ -62,6 +64,8 @@ export function softwareApplicationJsonLd({
     highPrice: '89',
     priceCurrency: 'USD',
     offerCount: 3,
+    url: absoluteUrl('/pricing'),
+    availability: 'https://schema.org/OnlineOnly',
   }
 
   // Build offers schema
@@ -72,6 +76,8 @@ export function softwareApplicationJsonLd({
         '@type': 'Offer',
         price: String(offer.price),
         priceCurrency: offer.priceCurrency ?? 'USD',
+        url: absoluteUrl('/pricing'),
+        availability: 'https://schema.org/OnlineOnly',
         ...(offer.priceValidUntil && { priceValidUntil: offer.priceValidUntil }),
       }))
     } else {
@@ -79,6 +85,8 @@ export function softwareApplicationJsonLd({
         '@type': 'Offer',
         price: String(offers.price),
         priceCurrency: offers.priceCurrency ?? 'USD',
+        url: absoluteUrl('/pricing'),
+        availability: 'https://schema.org/OnlineOnly',
         ...(offers.priceValidUntil && { priceValidUntil: offers.priceValidUntil }),
       }
     }
@@ -115,7 +123,10 @@ export function breadcrumbJsonLd(items: { name: string; pathname: string }[]) {
       '@type': 'ListItem',
       position: index + 1,
       name: item.name,
-      item: absoluteUrl(item.pathname),
+      item: {
+        '@type': 'WebPage',
+        '@id': absoluteUrl(item.pathname),
+      },
     })),
   }
 }
@@ -141,12 +152,14 @@ export function articleJsonLd({
   pathname,
   datePublished,
   dateModified,
+  image,
 }: {
   headline: string
   description: string
   pathname: string
   datePublished: string
   dateModified?: string
+  image?: string
 }) {
   const url = absoluteUrl(pathname)
 
@@ -157,9 +170,17 @@ export function articleJsonLd({
     description,
     url,
     mainEntityOfPage: url,
+    image: image ?? absoluteUrl('/og-image.png'),
     datePublished,
     dateModified: dateModified ?? datePublished,
     author: { '@type': 'Organization', name: 'StockZip' },
-    publisher: { '@type': 'Organization', name: 'StockZip' },
+    publisher: {
+      '@type': 'Organization',
+      name: 'StockZip',
+      logo: {
+        '@type': 'ImageObject',
+        url: absoluteUrl('/icon.png'),
+      },
+    },
   }
 }

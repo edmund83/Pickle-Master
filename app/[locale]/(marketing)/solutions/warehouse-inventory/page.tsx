@@ -20,15 +20,25 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import { breadcrumbJsonLd, softwareApplicationJsonLd, faqPageJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Warehouse Inventory Tracking | Barcode Scanning for Receiving & Cycle Counts',
-  description:
-    'Warehouse inventory tracking with barcode scanning, fast stock counts, and offline reliability for real-world conditions. Scan to receive, count, and pick.',
-  pathname: '/solutions/warehouse-inventory',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/solutions/warehouse-inventory',
+    title: 'Warehouse Inventory Tracking | Barcode Scanning for Receiving & Cycle Counts',
+    description:
+      'Warehouse inventory tracking with barcode scanning, fast stock counts, and offline reliability for real-world conditions. Scan to receive, count, and pick.',
+  })
+}
 
 const faqs = [
   {

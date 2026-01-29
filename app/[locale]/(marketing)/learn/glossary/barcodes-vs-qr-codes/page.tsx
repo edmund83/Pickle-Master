@@ -9,16 +9,26 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FaqBlock } from '@/components/marketing/FaqBlock'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Barcodes vs QR Codes | Which is Better for Inventory?',
-  description:
-    'Compare barcodes and QR codes for inventory management. Learn when to use each, their pros and cons, and which works best for your business.',
-  pathname: '/learn/glossary/barcodes-vs-qr-codes',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/learn/glossary/barcodes-vs-qr-codes',
+    title: 'Barcodes vs QR Codes | Which is Better for Inventory?',
+    description:
+      'Compare barcodes and QR codes for inventory management. Learn when to use each, their pros and cons, and which works best for your business.',
+  })
+}
 
 const FAQS: FaqItem[] = [
   {

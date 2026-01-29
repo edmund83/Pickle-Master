@@ -11,15 +11,25 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import { breadcrumbJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Free Cycle Count Sheet Template | Inventory Audit Template',
-  description:
-    'Download a free cycle count sheet template for physical inventory counts. Schedule counts, record results, and track variances. PDF and Excel formats.',
-  pathname: '/templates/cycle-count-sheet',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/learn/templates/cycle-count-sheet',
+    title: 'Free Cycle Count Sheet Template | Inventory Audit Template',
+    description:
+      'Download a free cycle count sheet template for physical inventory counts. Schedule counts, record results, and track variances. PDF and Excel formats.',
+  })
+}
 
 const COUNT_FIELDS = [
   { name: 'Location', description: 'Where the count is being performed', example: 'Aisle 3, Shelf B' },

@@ -14,16 +14,26 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FaqBlock } from '@/components/marketing/FaqBlock'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Security | Data Protection & Access Control for Inventory',
-  description:
-    'Inventory software security you can trust. Row-level tenant isolation, role-based access control, full audit trails, and data export — no IT team required.',
-  pathname: '/security',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/security',
+    title: 'Security | Data Protection & Access Control for Inventory',
+    description:
+      'Inventory software security you can trust. Row-level tenant isolation, role-based access control, full audit trails, and data export — no IT team required.',
+  })
+}
 
 const SECURITY_FAQS: FaqItem[] = [
   {

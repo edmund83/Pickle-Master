@@ -1,17 +1,27 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import { breadcrumbJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = {
-  ...marketingMetadata({
-    title: 'Privacy policy',
-    description:
-      'Privacy policy for StockZip Inventory. Learn what data we collect, how we use it, and your choices as a customer.',
-    pathname: '/privacy',
-  }),
-  robots: { index: false, follow: true },
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return {
+    ...buildInternationalMetadata({
+      locale: validLocale,
+      pathname: '/privacy',
+      title: 'Privacy policy',
+      description:
+        'Privacy policy for StockZip Inventory. Learn what data we collect, how we use it, and your choices as a customer.',
+    }),
+    robots: { index: false, follow: true },
+  }
 }
 
 export default function PrivacyPage() {

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/lib/marketing/jsonld'
 
@@ -17,12 +17,22 @@ import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/li
  * Secondary keywords: barcode inventory tracking software, offline inventory app
  */
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'BoxHero Alternative | StockZip Offline Barcode Inventory',
-  description:
-    'Exploring BoxHero alternatives? StockZip is built for offline-first barcode scanning, tool check-in/check-out, and clear pricing for small teams.',
-  pathname: '/compare/boxhero-alternative',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/compare/boxhero-alternative',
+    title: 'BoxHero Alternative | StockZip Offline Barcode Inventory',
+    description:
+      'Exploring BoxHero alternatives? StockZip is built for offline-first barcode scanning, tool check-in/check-out, and clear pricing for small teams.',
+  })
+}
 
 // FAQ items following FlyonUI faq-1 template structure
 const BOXHERO_FAQS: FaqItem[] = [

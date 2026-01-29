@@ -11,16 +11,26 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import { breadcrumbJsonLd } from '@/lib/marketing/jsonld'
 import { ReorderPointCalculator } from './ReorderPointCalculator'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Free Reorder Point Calculator | Calculate When to Reorder',
-  description:
-    'Calculate your reorder point based on lead time, daily demand, and safety stock. Know exactly when to place orders to avoid stockouts.',
-  pathname: '/tools/reorder-point-calculator',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/learn/tools/reorder-point-calculator',
+    title: 'Free Reorder Point Calculator | Calculate When to Reorder',
+    description:
+      'Calculate your reorder point based on lead time, daily demand, and safety stock. Know exactly when to place orders to avoid stockouts.',
+  })
+}
 
 export default function ReorderPointCalculatorPage() {
   return (

@@ -11,15 +11,25 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import { breadcrumbJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Inventory Management Blog | Tips, Guides & Industry Insights',
-  description:
-    'Practical inventory management tips, software comparisons, and industry insights. Learn how to improve accuracy, reduce costs, and scale your operations.',
-  pathname: '/blog',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/learn/blog',
+    title: 'Inventory Management Blog | Tips, Guides & Industry Insights',
+    description:
+      'Practical inventory management tips, software comparisons, and industry insights. Learn how to improve accuracy, reduce costs, and scale your operations.',
+  })
+}
 
 const BLOG_ARTICLES = [
   {

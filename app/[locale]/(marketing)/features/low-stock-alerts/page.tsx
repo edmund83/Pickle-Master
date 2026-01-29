@@ -13,15 +13,25 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import { breadcrumbJsonLd, softwareApplicationJsonLd, faqPageJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Low Stock Alerts Software | Reorder Point Notifications',
-  description:
-    'Set reorder points and get notified before you run out. Prevent stockouts, avoid emergency orders, and keep customers happy with automated alerts.',
-  pathname: '/features/low-stock-alerts',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/features/low-stock-alerts',
+    title: 'Low Stock Alerts Software | Reorder Point Notifications',
+    description:
+      'Set reorder points and get notified before you run out. Prevent stockouts, avoid emergency orders, and keep customers happy with automated alerts.',
+  })
+}
 
 const faqs = [
   {

@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/lib/marketing/jsonld'
 
@@ -17,12 +17,22 @@ import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/li
  * Secondary keywords: warehouse inventory management software with barcode scanner
  */
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Fishbowl Alternative | StockZip Warehouse Barcode Inventory',
-  description:
-    'Exploring Fishbowl alternatives? StockZip focuses on warehouse barcode scanning, offline-first mobile workflows, and scan-first verification for small teams.',
-  pathname: '/compare/fishbowl-alternative',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/compare/fishbowl-alternative',
+    title: 'Fishbowl Alternative | StockZip Warehouse Barcode Inventory',
+    description:
+      'Exploring Fishbowl alternatives? StockZip focuses on warehouse barcode scanning, offline-first mobile workflows, and scan-first verification for small teams.',
+  })
+}
 
 // FAQ items following FlyonUI faq-1 template structure
 const FISHBOWL_FAQS: FaqItem[] = [

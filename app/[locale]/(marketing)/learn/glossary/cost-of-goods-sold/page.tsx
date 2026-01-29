@@ -16,17 +16,27 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FaqBlock } from '@/components/marketing/FaqBlock'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd } from '@/lib/marketing/jsonld'
 import { COGSCalculator } from './COGSCalculator'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Cost of Goods Sold (COGS) | Formula, Calculator & Examples',
-  description:
-    'Learn what Cost of Goods Sold (COGS) is, how to calculate it with the COGS formula, and why it matters for your business. Includes calculator and examples.',
-  pathname: '/learn/glossary/cost-of-goods-sold',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/learn/glossary/cost-of-goods-sold',
+    title: 'Cost of Goods Sold (COGS) | Formula, Calculator & Examples',
+    description:
+      'Learn what Cost of Goods Sold (COGS) is, how to calculate it with the COGS formula, and why it matters for your business. Includes calculator and examples.',
+  })
+}
 
 const COGS_FAQS: FaqItem[] = [
   {

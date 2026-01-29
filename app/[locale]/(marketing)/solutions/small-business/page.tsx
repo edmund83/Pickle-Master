@@ -14,16 +14,26 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FaqBlock } from '@/components/marketing/FaqBlock'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Small Business Inventory Software | Simple, Affordable, No Training Required',
-  description:
-    'Small business inventory software that replaces spreadsheets without the complexity. Barcode scanning, offline mode, and predictable pricing that grows with you.',
-  pathname: '/solutions/small-business',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/solutions/small-business',
+    title: 'Small Business Inventory Software | Simple, Affordable, No Training Required',
+    description:
+      'Small business inventory software that replaces spreadsheets without the complexity. Barcode scanning, offline mode, and predictable pricing that grows with you.',
+  })
+}
 
 const SMALL_BUSINESS_FAQS: FaqItem[] = [
   {

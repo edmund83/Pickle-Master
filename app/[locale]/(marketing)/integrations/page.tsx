@@ -14,16 +14,26 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FaqBlock } from '@/components/marketing/FaqBlock'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Integrations | Connect StockZip with Shopify, QuickBooks, Zapier & More',
-  description:
-    'Inventory management integrations that actually work. Connect StockZip with Shopify, WooCommerce, QuickBooks, Xero, and Zapier. Keep stock accurate everywhere.',
-  pathname: '/integrations',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/integrations',
+    title: 'Integrations | Connect StockZip with Shopify, QuickBooks, Zapier & More',
+    description:
+      'Inventory management integrations that actually work. Connect StockZip with Shopify, WooCommerce, QuickBooks, Xero, and Zapier. Keep stock accurate everywhere.',
+  })
+}
 
 const INTEGRATIONS_FAQS: FaqItem[] = [
   {

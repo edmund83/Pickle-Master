@@ -11,15 +11,25 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import { breadcrumbJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Free Inventory Tools | Calculators & Resources',
-  description:
-    'Free inventory management tools and calculators. Calculate reorder points, EOQ, and more. Optimize your inventory without spreadsheets.',
-  pathname: '/tools',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/learn/tools',
+    title: 'Free Inventory Tools | Calculators & Resources',
+    description:
+      'Free inventory management tools and calculators. Calculate reorder points, EOQ, and more. Optimize your inventory without spreadsheets.',
+  })
+}
 
 const TOOLS = [
   {

@@ -14,17 +14,27 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FaqBlock } from '@/components/marketing/FaqBlock'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd } from '@/lib/marketing/jsonld'
 import { MarkupMarginCalculator } from '../../glossary/markup-vs-margin/MarkupMarginCalculator'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Markup & Margin Calculator | Free Pricing Calculator',
-  description:
-    'Free markup and margin calculator. Convert between markup and margin, calculate selling prices from cost, and find your profit percentages instantly.',
-  pathname: '/learn/tools/markup-margin-calculator',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/learn/tools/markup-margin-calculator',
+    title: 'Markup & Margin Calculator | Free Pricing Calculator',
+    description:
+      'Free markup and margin calculator. Convert between markup and margin, calculate selling prices from cost, and find your profit percentages instantly.',
+  })
+}
 
 const CALCULATOR_FAQS: FaqItem[] = [
   {

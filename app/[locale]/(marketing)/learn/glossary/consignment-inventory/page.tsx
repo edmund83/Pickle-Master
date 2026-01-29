@@ -9,16 +9,26 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FaqBlock } from '@/components/marketing/FaqBlock'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Consignment Inventory | Definition, Accounting & Pros/Cons',
-  description:
-    'Learn what consignment inventory is, how it works, and when to use it. Understand the difference between consignment and wholesale arrangements.',
-  pathname: '/learn/glossary/consignment-inventory',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/learn/glossary/consignment-inventory',
+    title: 'Consignment Inventory | Definition, Accounting & Pros/Cons',
+    description:
+      'Learn what consignment inventory is, how it works, and when to use it. Understand the difference between consignment and wholesale arrangements.',
+  })
+}
 
 const FAQS: FaqItem[] = [
   {

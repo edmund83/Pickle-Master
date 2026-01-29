@@ -16,17 +16,27 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FaqBlock } from '@/components/marketing/FaqBlock'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd } from '@/lib/marketing/jsonld'
 import { InventoryTurnoverCalculator } from './InventoryTurnoverCalculator'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Inventory Turnover | Definition, Formula & How to Improve',
-  description:
-    'Learn what inventory turnover is, how to calculate the inventory turnover ratio, and strategies to improve it. Includes formula, examples, and benchmarks.',
-  pathname: '/glossary/inventory-turnover',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/learn/glossary/inventory-turnover',
+    title: 'Inventory Turnover | Definition, Formula & How to Improve',
+    description:
+      'Learn what inventory turnover is, how to calculate the inventory turnover ratio, and strategies to improve it. Includes formula, examples, and benchmarks.',
+  })
+}
 
 const TURNOVER_FAQS: FaqItem[] = [
   {

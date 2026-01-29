@@ -1,15 +1,25 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import { breadcrumbJsonLd, softwareApplicationJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Compare',
-  description:
-    'Compare StockZip to other inventory tools. See how trust-first pricing, offline scanning, and check-in/check-out workflows stack up for small teams.',
-  pathname: '/compare',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/compare',
+    title: 'Compare',
+    description:
+      'Compare StockZip to other inventory tools. See how trust-first pricing, offline scanning, and check-in/check-out workflows stack up for small teams.',
+  })
+}
 
 export default function CompareHubPage() {
   return (

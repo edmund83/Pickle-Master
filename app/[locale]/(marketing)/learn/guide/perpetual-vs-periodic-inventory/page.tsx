@@ -2,17 +2,27 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { FaqBlock } from '@/components/marketing/FaqBlock'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
 import type { FaqItem } from '@/lib/marketing/jsonld'
 import { articleJsonLd, breadcrumbJsonLd, faqPageJsonLd } from '@/lib/marketing/jsonld'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Perpetual vs periodic inventory',
-  description:
-    'Perpetual inventory vs periodic inventory explained: definitions, pros/cons, and which system small teams can keep accurate with barcode scanning.',
-  pathname: '/learn/guide/perpetual-vs-periodic-inventory',
-  ogType: 'article',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/learn/guide/perpetual-vs-periodic-inventory',
+    title: 'Perpetual vs periodic inventory',
+    description:
+      'Perpetual inventory vs periodic inventory explained: definitions, pros/cons, and which system small teams can keep accurate with barcode scanning.',
+    ogType: 'article',
+  })
+}
 
 const FAQS: FaqItem[] = [
   {
