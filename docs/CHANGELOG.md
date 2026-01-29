@@ -9,6 +9,46 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Added
+
+#### International SEO for Marketing Pages
+Implemented comprehensive International SEO targeting US, UK, AU, and CA markets with locale-prefixed URLs.
+
+**Features**:
+- Locale subdirectories: `/en-us`, `/en-gb`, `/en-au`, `/en-ca`
+- Permanent redirect from `/` to `/en-us` (308)
+- Self-referencing canonical URLs on all pages
+- Full hreflang alternates including `x-default`
+- Region switcher for user-controlled locale selection (no IP-based redirects)
+- Locale-aware internal links via `LocaleLink` component
+- Updated sitemap with all 248 locale URLs (62 pages × 4 locales)
+- Playwright tests for SEO validation
+
+**SEO Benefits**:
+- Google can index and rank locale pages independently
+- No duplicate content issues with proper canonicals
+- Improved relevance for region-specific searches
+
+**Files Created**:
+- `lib/seo/locales.ts` - Locale configuration
+- `lib/seo/urls.ts` - URL building utilities
+- `lib/seo/hreflang.ts` - Hreflang tag generation
+- `lib/seo/metadata.ts` - International metadata builder
+- `lib/locale/cookie.ts` - Locale cookie utilities
+- `lib/currency/format.ts` - Locale currency formatting
+- `components/LocaleLink.tsx` - Locale-aware Link component
+- `components/RegionSwitcher.tsx` - Region selection dropdown
+- `app/[locale]/layout.tsx` - Locale segment layout
+- `app/[locale]/(marketing)/layout.tsx` - Marketing layout
+- `e2e/seo-international.spec.ts` - Playwright SEO tests
+
+**Files Modified**:
+- `next.config.ts` - Added root and legacy route redirects
+- `app/sitemap.ts` - Generate URLs for all 4 locales
+- `components/marketing/MarketingNavbar.tsx` - Use LocaleLink + RegionSwitcher
+- `components/marketing/MarketingFooter.tsx` - Use LocaleLink + RegionSwitcher
+- Marketing pages moved from `app/(marketing)/` to `app/[locale]/(marketing)/`
+
 ### Fixed
 
 #### Stripe Webhook 307 Redirect Issue

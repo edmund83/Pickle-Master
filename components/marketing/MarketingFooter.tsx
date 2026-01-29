@@ -1,4 +1,7 @@
-import Link from 'next/link'
+'use client'
+
+import { LocaleLink } from '@/components/LocaleLink'
+import { RegionSwitcher } from '@/components/RegionSwitcher'
 
 export function MarketingFooter() {
   return (
@@ -9,7 +12,7 @@ export function MarketingFooter() {
             {/* Newsletter section */}
             <div className="col-span-2 mb-8 flex flex-col justify-between gap-6 sm:mb-16 lg:mb-0 lg:gap-12">
               <div>
-                <Link title="StockZip" className="text-base-content flex items-center gap-2 text-xl font-bold" href="/">
+                <LocaleLink title="StockZip" className="text-base-content flex items-center gap-2 text-xl font-bold" href="/">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src="/images/logo.png"
@@ -19,7 +22,7 @@ export function MarketingFooter() {
                     className="h-8 w-8 shrink-0 object-contain p-0.5"
                   />
                   <span>StockZip<span className="text-[10px] font-light align-super opacity-70">™</span></span>
-                </Link>
+                </LocaleLink>
                 <p className="text-base-content/80 mt-4 text-balance lg:max-w-md">
                   Simple, mobile-first inventory management for small teams — barcode scanning, offline reliability, and
                   trust-first pricing that doesn&apos;t punish growth.
@@ -42,12 +45,12 @@ export function MarketingFooter() {
             <div className="space-y-5">
               <h4 className="text-base-content text-lg font-medium">Product</h4>
               <ul className="space-y-3">
-                <li><Link href="/features" className="link link-animated text-base-content/80">Features</Link></li>
-                <li><Link href="/solutions" className="link link-animated text-base-content/80">Solutions</Link></li>
-                <li><Link href="/pricing" className="link link-animated text-base-content/80">Pricing</Link></li>
-                <li><Link href="/pricing/free-inventory-software" className="link link-animated text-base-content/80">Free inventory software</Link></li>
-                <li><Link href="/demo" className="link link-animated text-base-content/80">Demo</Link></li>
-                <li><Link href="/migration" className="link link-animated text-base-content/80">Migration guide</Link></li>
+                <li><LocaleLink href="/features" className="link link-animated text-base-content/80">Features</LocaleLink></li>
+                <li><LocaleLink href="/solutions" className="link link-animated text-base-content/80">Solutions</LocaleLink></li>
+                <li><LocaleLink href="/pricing" className="link link-animated text-base-content/80">Pricing</LocaleLink></li>
+                <li><LocaleLink href="/pricing/free-inventory-software" className="link link-animated text-base-content/80">Free inventory software</LocaleLink></li>
+                <li><LocaleLink href="/demo" className="link link-animated text-base-content/80">Demo</LocaleLink></li>
+                <li><LocaleLink href="/migration" className="link link-animated text-base-content/80">Migration guide</LocaleLink></li>
               </ul>
             </div>
 
@@ -55,7 +58,7 @@ export function MarketingFooter() {
             <div className="space-y-5">
               <h4 className="text-base-content text-lg font-medium">Compare</h4>
               <ul className="space-y-3">
-                <li><Link href="/compare" className="link link-animated text-base-content/80">All comparisons</Link></li>
+                <li><LocaleLink href="/compare" className="link link-animated text-base-content/80">All comparisons</LocaleLink></li>
               </ul>
             </div>
 
@@ -63,9 +66,9 @@ export function MarketingFooter() {
             <div className="space-y-5">
               <h4 className="text-base-content text-lg font-medium">Resources</h4>
               <ul className="space-y-3">
-                <li><Link href="/learn" className="link link-animated text-base-content/80">Learning Center</Link></li>
-                <li><Link href="/integrations" className="link link-animated text-base-content/80">Integrations</Link></li>
-                <li><Link href="/security" className="link link-animated text-base-content/80">Security</Link></li>
+                <li><LocaleLink href="/learn" className="link link-animated text-base-content/80">Learning Center</LocaleLink></li>
+                <li><LocaleLink href="/integrations" className="link link-animated text-base-content/80">Integrations</LocaleLink></li>
+                <li><LocaleLink href="/security" className="link link-animated text-base-content/80">Security</LocaleLink></li>
               </ul>
             </div>
 
@@ -73,9 +76,14 @@ export function MarketingFooter() {
             <div className="space-y-5">
               <h4 className="text-base-content text-lg font-medium">Legal</h4>
               <ul className="space-y-3">
-                <li><Link href="/privacy" className="link link-animated text-base-content/80">Privacy</Link></li>
-                <li><Link href="/terms" className="link link-animated text-base-content/80">Terms</Link></li>
+                <li><LocaleLink href="/privacy" className="link link-animated text-base-content/80">Privacy</LocaleLink></li>
+                <li><LocaleLink href="/terms" className="link link-animated text-base-content/80">Terms</LocaleLink></li>
               </ul>
+              {/* Region Switcher */}
+              <div className="pt-4">
+                <h4 className="text-base-content text-sm font-medium mb-2">Region</h4>
+                <RegionSwitcher variant="inline" nameFormat="short" />
+              </div>
             </div>
           </div>
         </div>
@@ -108,7 +116,7 @@ export function MarketingFooter() {
         {/* Payment / Copyright section */}
         <div className="mx-auto flex max-w-7xl justify-between gap-3 px-4 py-6 max-lg:flex-col sm:px-6 lg:items-center lg:px-8">
           <div className="text-base-content text-base text-wrap">
-            &copy;{new Date().getFullYear()} <Link href="/" className="text-primary">StockZip</Link>. All rights reserved.
+            &copy;{new Date().getFullYear()} <LocaleLink href="/" className="text-primary">StockZip</LocaleLink>. All rights reserved.
           </div>
           <div className="flex flex-wrap items-center gap-4">
             <span className="badge badge-outline badge-secondary badge-lg rounded-full">

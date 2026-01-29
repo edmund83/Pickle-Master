@@ -9,19 +9,30 @@
  * Secondary keywords: founders pricing, small business inventory, barcode inventory pricing
  */
 import type { Metadata } from 'next'
-import Link from 'next/link'
+import { LocaleLink } from '@/components/LocaleLink'
 import { FaqBlock } from '@/components/marketing/FaqBlock'
 import { JsonLd } from '@/components/marketing/JsonLd'
-import { marketingMetadata } from '@/lib/marketing/metadata'
 import type { FaqItem } from '@/lib/marketing/jsonld'
 import { breadcrumbJsonLd, faqPageJsonLd, softwareApplicationJsonLd } from '@/lib/marketing/jsonld'
+import { buildInternationalMetadata, type Locale, isValidLocale } from '@/lib/seo'
+import { getTaxNote } from '@/lib/currency'
 
-export const metadata: Metadata = marketingMetadata({
-  title: 'Inventory Management Software Pricing | 3 Months Free Early Access',
-  description:
-    'Try StockZip free for 3 months. Limited early access spots available. No credit card required. Simple inventory software from $18/mo after trial.',
-  pathname: '/pricing',
-})
+interface PageProps {
+  params: Promise<{ locale: string }>
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
+  return buildInternationalMetadata({
+    locale: validLocale,
+    pathname: '/pricing',
+    title: 'Inventory Management Software Pricing | 3 Months Free Early Access',
+    description:
+      'Try StockZip free for 3 months. Limited early access spots available. No credit card required. Simple inventory software from $18/mo after trial.',
+  })
+}
 
 const PRICING_FAQS: FaqItem[] = [
   {
@@ -182,9 +193,9 @@ export default function PricingPage() {
                   </li>
                 </ul>
                 <div className="mt-auto flex flex-col items-center gap-2">
-                  <Link href="/signup?plan=early_access" className="btn btn-accent">
+                  <LocaleLink href="/signup?plan=early_access" className="btn btn-accent">
                     Join Early Access
-                  </Link>
+                  </LocaleLink>
                   <p className="text-base-content/60 text-center text-xs">Limited seats • No card required</p>
                 </div>
               </div>
@@ -239,9 +250,9 @@ export default function PricingPage() {
                   </li>
                 </ul>
                 <div className="mt-auto flex flex-col items-center gap-2">
-                  <Link href="/signup?plan=starter" className="btn btn-primary">
+                  <LocaleLink href="/signup?plan=starter" className="btn btn-primary">
                     Start 14-Day Free Trial
-                  </Link>
+                  </LocaleLink>
                   <p className="text-base-content/60 text-center text-xs">No credit card required</p>
                 </div>
               </div>
@@ -295,9 +306,9 @@ export default function PricingPage() {
                   </li>
                 </ul>
                 <div className="mt-auto flex flex-col items-center gap-2">
-                  <Link href="/signup?plan=growth" className="btn btn-primary">
+                  <LocaleLink href="/signup?plan=growth" className="btn btn-primary">
                     Start 14-Day Free Trial
-                  </Link>
+                  </LocaleLink>
                   <p className="text-base-content/60 text-center text-xs">No credit card required</p>
                 </div>
               </div>
@@ -354,9 +365,9 @@ export default function PricingPage() {
                   </li>
                 </ul>
                 <div className="mt-auto flex flex-col items-center gap-2">
-                  <Link href="/signup?plan=scale" className="btn btn-primary">
+                  <LocaleLink href="/signup?plan=scale" className="btn btn-primary">
                     Start 14-Day Free Trial
-                  </Link>
+                  </LocaleLink>
                   <p className="text-base-content/60 text-center text-xs">No credit card required</p>
                 </div>
               </div>
@@ -385,9 +396,9 @@ export default function PricingPage() {
           <div className="mt-6 text-center">
             <p className="text-base-content/70">
               Need higher limits or custom integrations?{' '}
-              <Link href="/demo" className="link link-primary link-animated font-medium">
+              <LocaleLink href="/demo" className="link link-primary link-animated font-medium">
                 Contact us for Enterprise pricing
-              </Link>
+              </LocaleLink>
             </p>
           </div>
         </div>
@@ -649,28 +660,28 @@ export default function PricingPage() {
                 <tr className="text-base-content">
                   <td></td>
                   <td className="bg-accent rounded-b-box">
-                    <Link href="/signup?plan=early_access" className="text-accent-content flex items-center justify-center gap-1 font-medium">
+                    <LocaleLink href="/signup?plan=early_access" className="text-accent-content flex items-center justify-center gap-1 font-medium">
                       Join Now
                       <span className="icon-[tabler--arrow-right] size-4 rtl:rotate-180"></span>
-                    </Link>
+                    </LocaleLink>
                   </td>
                   <td>
-                    <Link href="/signup?plan=starter" className="link link-primary flex items-center justify-center gap-1 font-medium">
+                    <LocaleLink href="/signup?plan=starter" className="link link-primary flex items-center justify-center gap-1 font-medium">
                       Get Started
                       <span className="icon-[tabler--arrow-right] size-4 rtl:rotate-180"></span>
-                    </Link>
+                    </LocaleLink>
                   </td>
                   <td>
-                    <Link href="/signup?plan=growth" className="link link-primary flex items-center justify-center gap-1 font-medium">
+                    <LocaleLink href="/signup?plan=growth" className="link link-primary flex items-center justify-center gap-1 font-medium">
                       Get Started
                       <span className="icon-[tabler--arrow-right] size-4 rtl:rotate-180"></span>
-                    </Link>
+                    </LocaleLink>
                   </td>
                   <td>
-                    <Link href="/signup?plan=scale" className="link link-primary flex items-center justify-center gap-1 font-medium">
+                    <LocaleLink href="/signup?plan=scale" className="link link-primary flex items-center justify-center gap-1 font-medium">
                       Get Started
                       <span className="icon-[tabler--arrow-right] size-4 rtl:rotate-180"></span>
-                    </Link>
+                    </LocaleLink>
                   </td>
                 </tr>
               </tbody>
@@ -759,13 +770,13 @@ export default function PricingPage() {
                 </ul>
               </div>
               <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-                <Link href="/migration" className="btn btn-primary btn-lg">
+                <LocaleLink href="/migration" className="btn btn-primary btn-lg">
                   View migration guide
                   <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
-                </Link>
-                <Link href="/demo" className="btn btn-outline btn-secondary btn-lg">
+                </LocaleLink>
+                <LocaleLink href="/demo" className="btn btn-outline btn-secondary btn-lg">
                   Watch Demo
-                </Link>
+                </LocaleLink>
               </div>
             </div>
           </div>
@@ -786,13 +797,13 @@ export default function PricingPage() {
               Start your 14-day free trial today. Lock in Founders Pricing before it&apos;s gone.
             </p>
             <div className="mt-6 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Link href="/signup?plan=growth" className="btn btn-primary btn-lg">
+              <LocaleLink href="/signup?plan=growth" className="btn btn-primary btn-lg">
                 Start Free Trial
                 <span className="icon-[tabler--arrow-right] size-5 rtl:rotate-180"></span>
-              </Link>
-              <Link href="/features" className="btn btn-outline btn-secondary btn-lg">
+              </LocaleLink>
+              <LocaleLink href="/features" className="btn btn-outline btn-secondary btn-lg">
                 See All Features
-              </Link>
+              </LocaleLink>
             </div>
           </div>
         </div>

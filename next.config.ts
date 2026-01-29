@@ -57,75 +57,161 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
+      // ===== INTERNATIONAL SEO: Root and legacy routes → /en-us =====
+
+      // Root to US locale (permanent redirect)
+      {
+        source: '/',
+        destination: '/en-us',
+        permanent: true,
+      },
+
+      // Legacy /marketing routes → /en-us
       {
         source: '/marketing',
-        destination: '/',
+        destination: '/en-us',
         permanent: true,
       },
       {
         source: '/marketing/:path*',
-        destination: '/:path*',
+        destination: '/en-us/:path*',
         permanent: true,
       },
-      // ===== CONTENT RESTRUCTURE: All content now under /learn/* =====
 
-      // Blog hub and pages → /learn/blog/*
+      // Legacy unprefixed marketing routes → /en-us/*
+      {
+        source: '/pricing',
+        destination: '/en-us/pricing',
+        permanent: true,
+      },
+      {
+        source: '/pricing/:path*',
+        destination: '/en-us/pricing/:path*',
+        permanent: true,
+      },
+      {
+        source: '/demo',
+        destination: '/en-us/demo',
+        permanent: true,
+      },
+      {
+        source: '/features',
+        destination: '/en-us/features',
+        permanent: true,
+      },
+      {
+        source: '/features/:path*',
+        destination: '/en-us/features/:path*',
+        permanent: true,
+      },
+      {
+        source: '/solutions',
+        destination: '/en-us/solutions',
+        permanent: true,
+      },
+      {
+        source: '/solutions/:path*',
+        destination: '/en-us/solutions/:path*',
+        permanent: true,
+      },
+      {
+        source: '/learn',
+        destination: '/en-us/learn',
+        permanent: true,
+      },
+      {
+        source: '/learn/:path*',
+        destination: '/en-us/learn/:path*',
+        permanent: true,
+      },
+      {
+        source: '/compare',
+        destination: '/en-us/compare',
+        permanent: true,
+      },
+      {
+        source: '/compare/:path*',
+        destination: '/en-us/compare/:path*',
+        permanent: true,
+      },
+      {
+        source: '/migration',
+        destination: '/en-us/migration',
+        permanent: true,
+      },
+      {
+        source: '/migration/:path*',
+        destination: '/en-us/migration/:path*',
+        permanent: true,
+      },
+      {
+        source: '/integrations',
+        destination: '/en-us/integrations',
+        permanent: true,
+      },
+      {
+        source: '/security',
+        destination: '/en-us/security',
+        permanent: true,
+      },
+      {
+        source: '/privacy',
+        destination: '/en-us/privacy',
+        permanent: true,
+      },
+      {
+        source: '/terms',
+        destination: '/en-us/terms',
+        permanent: true,
+      },
+
+      // ===== CONTENT RESTRUCTURE: Legacy content paths → /en-us/learn/* =====
+
+      // Blog hub and pages → /en-us/learn/blog/*
       {
         source: '/blog',
-        destination: '/learn/blog',
+        destination: '/en-us/learn/blog',
         permanent: true,
       },
       {
         source: '/blog/:slug*',
-        destination: '/learn/blog/:slug*',
+        destination: '/en-us/learn/blog/:slug*',
         permanent: true,
       },
 
-      // Glossary hub and pages → /learn/glossary/*
+      // Glossary hub and pages → /en-us/learn/glossary/*
       {
         source: '/glossary',
-        destination: '/learn/glossary',
+        destination: '/en-us/learn/glossary',
         permanent: true,
       },
       {
         source: '/glossary/:slug*',
-        destination: '/learn/glossary/:slug*',
+        destination: '/en-us/learn/glossary/:slug*',
         permanent: true,
       },
 
-      // Tools hub and pages → /learn/tools/*
+      // Tools hub and pages → /en-us/learn/tools/*
       {
         source: '/tools',
-        destination: '/learn/tools',
+        destination: '/en-us/learn/tools',
         permanent: true,
       },
       {
         source: '/tools/:slug*',
-        destination: '/learn/tools/:slug*',
+        destination: '/en-us/learn/tools/:slug*',
         permanent: true,
       },
 
-      // Templates hub and pages → /learn/templates/*
+      // Templates hub and pages → /en-us/learn/templates/*
       {
         source: '/templates',
-        destination: '/learn/templates',
+        destination: '/en-us/learn/templates',
         permanent: true,
       },
       {
         source: '/templates/:slug*',
-        destination: '/learn/templates/:slug*',
-        permanent: true,
-      },
-
-      // Flat /learn/* guide URLs → nested /learn/guide/* structure
-      {
-        source: '/learn/perpetual-vs-periodic-inventory',
-        destination: '/learn/guide/perpetual-vs-periodic-inventory',
-        permanent: true,
-      },
-      {
-        source: '/learn/how-to-set-reorder-points',
-        destination: '/learn/guide/how-to-set-reorder-points',
+        destination: '/en-us/learn/templates/:slug*',
         permanent: true,
       },
     ]

@@ -4,6 +4,7 @@ import Script from 'next/script'
 import { FlyonUIInit } from '@/components/marketing/FlyonUIInit'
 import { MarketingFooter } from '@/components/marketing/MarketingFooter'
 import { MarketingNavbar } from '@/components/marketing/MarketingNavbar'
+import { LocaleLink } from '@/components/LocaleLink'
 
 export const metadata: Metadata = {
   title: {
@@ -42,11 +43,17 @@ const flyonuiGlobalsScript = `
 })();
 `
 
-export default function MarketingLayout({
-  children,
-}: {
+interface MarketingLayoutProps {
   children: React.ReactNode
-}) {
+  params: Promise<{ locale: string }>
+}
+
+export default async function MarketingLayout({
+  children,
+  params,
+}: MarketingLayoutProps) {
+  const { locale } = await params
+
   return (
     <div className="min-h-screen">
       <Script id="flyonui-globals" strategy="beforeInteractive">
@@ -61,9 +68,12 @@ export default function MarketingLayout({
         {/* Announcement Banner */}
         <div className="bg-accent text-accent-content text-center py-2.5 px-4 text-sm font-medium">
           Early Access: Get 3 Months Free — Limited Spots
-          <Link href="/pricing" className="ml-4 btn btn-xs bg-white text-accent-content rounded-full border-0 hover:bg-white/90">
+          <LocaleLink
+            href="/pricing"
+            className="ml-4 btn btn-xs bg-white text-accent-content rounded-full border-0 hover:bg-white/90"
+          >
             Join now
-          </Link>
+          </LocaleLink>
         </div>
         {/* Navigation */}
         <header className="bg-primary w-full">
@@ -75,4 +85,3 @@ export default function MarketingLayout({
     </div>
   )
 }
-
