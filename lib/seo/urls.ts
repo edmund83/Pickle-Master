@@ -23,8 +23,6 @@ export function getSiteOrigin(): string {
   return 'http://localhost:3000'
 }
 
-export const SITE_ORIGIN = getSiteOrigin()
-
 /**
  * Normalize a pathname to ensure it starts with / and has no trailing slash
  */
@@ -49,7 +47,7 @@ export function buildUrl(locale: Locale, pathname: string): string {
   // Root path for locale should just be /{locale}
   const localePath =
     normalizedPath === '/' ? `/${locale}` : `/${locale}${normalizedPath}`
-  return `${SITE_ORIGIN}${localePath}`
+  return `${getSiteOrigin()}${localePath}`
 }
 
 /**
@@ -57,7 +55,7 @@ export function buildUrl(locale: Locale, pathname: string): string {
  */
 export function buildAbsoluteUrl(pathname: string): string {
   const normalizedPath = normalizePathname(pathname)
-  return `${SITE_ORIGIN}${normalizedPath}`
+  return `${getSiteOrigin()}${normalizedPath}`
 }
 
 /**

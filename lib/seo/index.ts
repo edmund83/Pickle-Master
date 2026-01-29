@@ -18,7 +18,6 @@ export {
 } from './locales'
 
 export {
-  SITE_ORIGIN,
   getSiteOrigin,
   buildUrl,
   buildAbsoluteUrl,
