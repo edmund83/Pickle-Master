@@ -29,15 +29,63 @@ export function websiteJsonLd() {
   }
 }
 
+export type SoftwareApplicationOffer = {
+  price: number | string
+  priceCurrency?: string
+  priceValidUntil?: string
+}
+
+export type AggregateRating = {
+  ratingValue: number
+  ratingCount: number
+  bestRating?: number
+  worstRating?: number
+}
+
 export function softwareApplicationJsonLd({
   name,
   description,
   pathname,
+  offers,
+  aggregateRating,
 }: {
   name: string
   description: string
   pathname: string
+  offers?: SoftwareApplicationOffer | SoftwareApplicationOffer[]
+  aggregateRating?: AggregateRating
 }) {
+  // Default offers: show price range from Starter ($18) to Scale ($89)
+  const defaultOffers = {
+    '@type': 'AggregateOffer',
+    lowPrice: '18',
+    highPrice: '89',
+    priceCurrency: 'USD',
+    offerCount: 3,
+  }
+
+  // Build offers schema
+  let offersSchema
+  if (offers) {
+    if (Array.isArray(offers)) {
+      offersSchema = offers.map((offer) => ({
+        '@type': 'Offer',
+        price: String(offer.price),
+        priceCurrency: offer.priceCurrency ?? 'USD',
+        ...(offer.priceValidUntil && { priceValidUntil: offer.priceValidUntil }),
+      }))
+    } else {
+      offersSchema = {
+        '@type': 'Offer',
+        price: String(offers.price),
+        priceCurrency: offers.priceCurrency ?? 'USD',
+        ...(offers.priceValidUntil && { priceValidUntil: offers.priceValidUntil }),
+      }
+    }
+  } else {
+    offersSchema = defaultOffers
+  }
+
   return {
     '@context': 'https://schema.org',
     '@type': 'SoftwareApplication',
@@ -46,6 +94,16 @@ export function softwareApplicationJsonLd({
     applicationCategory: 'BusinessApplication',
     operatingSystem: 'Web',
     url: absoluteUrl(pathname),
+    offers: offersSchema,
+    ...(aggregateRating && {
+      aggregateRating: {
+        '@type': 'AggregateRating',
+        ratingValue: aggregateRating.ratingValue,
+        ratingCount: aggregateRating.ratingCount,
+        bestRating: aggregateRating.bestRating ?? 5,
+        worstRating: aggregateRating.worstRating ?? 1,
+      },
+    }),
   }
 }
 
