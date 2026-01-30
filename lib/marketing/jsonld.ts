@@ -1,4 +1,6 @@
 import { absoluteUrl, getSiteUrl } from '@/lib/site-url'
+import { buildUrl } from '@/lib/seo/urls'
+import { type Locale, DEFAULT_LOCALE } from '@/lib/seo/locales'
 
 export type FaqItem = { question: string; answer: string }
 
@@ -48,15 +50,19 @@ export function softwareApplicationJsonLd({
   name,
   description,
   pathname,
+  locale = DEFAULT_LOCALE,
   offers,
   aggregateRating,
 }: {
   name: string
   description: string
   pathname: string
+  locale?: Locale
   offers?: SoftwareApplicationOffer | SoftwareApplicationOffer[]
   aggregateRating?: AggregateRating
 }) {
+  const pricingUrl = buildUrl(locale, '/pricing')
+
   // Default offers: show price range from Starter ($18) to Scale ($89)
   const defaultOffers = {
     '@type': 'AggregateOffer',
@@ -64,7 +70,7 @@ export function softwareApplicationJsonLd({
     highPrice: '89',
     priceCurrency: 'USD',
     offerCount: 3,
-    url: absoluteUrl('/pricing'),
+    url: pricingUrl,
     availability: 'https://schema.org/OnlineOnly',
   }
 
@@ -76,7 +82,7 @@ export function softwareApplicationJsonLd({
         '@type': 'Offer',
         price: String(offer.price),
         priceCurrency: offer.priceCurrency ?? 'USD',
-        url: absoluteUrl('/pricing'),
+        url: pricingUrl,
         availability: 'https://schema.org/OnlineOnly',
         ...(offer.priceValidUntil && { priceValidUntil: offer.priceValidUntil }),
       }))
@@ -85,7 +91,7 @@ export function softwareApplicationJsonLd({
         '@type': 'Offer',
         price: String(offers.price),
         priceCurrency: offers.priceCurrency ?? 'USD',
-        url: absoluteUrl('/pricing'),
+        url: pricingUrl,
         availability: 'https://schema.org/OnlineOnly',
         ...(offers.priceValidUntil && { priceValidUntil: offers.priceValidUntil }),
       }
@@ -101,7 +107,7 @@ export function softwareApplicationJsonLd({
     description,
     applicationCategory: 'BusinessApplication',
     operatingSystem: 'Web',
-    url: absoluteUrl(pathname),
+    url: buildUrl(locale, pathname),
     offers: offersSchema,
     ...(aggregateRating && {
       aggregateRating: {
@@ -115,7 +121,10 @@ export function softwareApplicationJsonLd({
   }
 }
 
-export function breadcrumbJsonLd(items: { name: string; pathname: string }[]) {
+export function breadcrumbJsonLd(
+  items: { name: string; pathname: string }[],
+  locale: Locale = DEFAULT_LOCALE
+) {
   return {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -125,7 +134,7 @@ export function breadcrumbJsonLd(items: { name: string; pathname: string }[]) {
       name: item.name,
       item: {
         '@type': 'WebPage',
-        '@id': absoluteUrl(item.pathname),
+        '@id': buildUrl(locale, item.pathname),
       },
     })),
   }
@@ -150,6 +159,7 @@ export function articleJsonLd({
   headline,
   description,
   pathname,
+  locale = DEFAULT_LOCALE,
   datePublished,
   dateModified,
   image,
@@ -157,11 +167,12 @@ export function articleJsonLd({
   headline: string
   description: string
   pathname: string
+  locale?: Locale
   datePublished: string
   dateModified?: string
   image?: string
 }) {
-  const url = absoluteUrl(pathname)
+  const url = buildUrl(locale, pathname)
 
   return {
     '@context': 'https://schema.org',

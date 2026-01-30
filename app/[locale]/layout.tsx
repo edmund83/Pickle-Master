@@ -1,4 +1,5 @@
 import { LOCALES, type Locale, isValidLocale } from '@/lib/seo/locales'
+import { getHreflangCode } from '@/lib/seo/hreflang'
 import { notFound } from 'next/navigation'
 
 interface LocaleLayoutProps {
@@ -19,6 +20,7 @@ export function generateStaticParams() {
 /**
  * Layout for localized marketing pages
  * Validates the locale parameter and renders children
+ * Sets the correct lang attribute for SEO
  */
 export default async function LocaleLayout({
   children,
@@ -31,5 +33,17 @@ export default async function LocaleLayout({
     notFound()
   }
 
-  return <>{children}</>
+  const hreflangCode = getHreflangCode(locale)
+
+  return (
+    <>
+      {/* Set correct lang attribute for SEO - runs before paint */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `document.documentElement.lang="${hreflangCode}";`,
+        }}
+      />
+      {children}
+    </>
+  )
 }

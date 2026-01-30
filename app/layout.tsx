@@ -7,6 +7,16 @@ export const metadata: Metadata = {
   description: 'A simple, mobile-first inventory management SaaS for small businesses',
   keywords: ['inventory', 'management', 'small business', 'stock tracking'],
   manifest: '/manifest.json',
+  icons: {
+    icon: [
+      { url: '/favicon-48.png', sizes: '48x48', type: 'image/png' },
+      { url: '/favicon-32.png', sizes: '32x32', type: 'image/png' },
+      { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+    ],
+    apple: [
+      { url: '/icons/icon-192x192.png', sizes: '192x192', type: 'image/png' },
+    ],
+  },
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',

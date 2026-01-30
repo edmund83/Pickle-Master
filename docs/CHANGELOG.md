@@ -9,6 +9,24 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Fixed
+
+#### SEO: Dynamic lang attribute and locale-aware JSON-LD
+Fixed two critical international SEO issues identified by site audit tools:
+
+1. **Dynamic `lang` attribute**: The HTML `lang` attribute now dynamically updates to match the page locale (`en-US`, `en-GB`, `en-AU`, `en-CA`) instead of being hardcoded to `en`.
+
+2. **Locale-aware JSON-LD URLs**: Breadcrumb, SoftwareApplication, and Article structured data now use locale-prefixed URLs (e.g., `https://www.stockzip.app/en-us/pricing`) instead of non-localized paths.
+
+**Files Modified**:
+- `app/[locale]/layout.tsx` - Added inline script to set correct `lang` attribute
+- `lib/marketing/jsonld.ts` - Updated `breadcrumbJsonLd`, `softwareApplicationJsonLd`, and `articleJsonLd` to accept locale parameter
+- `app/[locale]/(marketing)/page.tsx` - Pass locale to JSON-LD functions
+- `app/[locale]/(marketing)/pricing/page.tsx` - Pass locale to JSON-LD functions
+- `app/[locale]/(marketing)/features/page.tsx` - Pass locale to JSON-LD functions
+
+**Note**: Other marketing pages should be updated to pass locale to JSON-LD functions for full consistency.
+
 ### Added
 
 #### International SEO for Marketing Pages

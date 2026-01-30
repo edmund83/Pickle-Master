@@ -33,7 +33,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   })
 }
 
-export default function MarketingHomePage() {
+export default async function MarketingHomePage({ params }: PageProps) {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
   return (
     <>
       <JsonLd data={organizationJsonLd()} />
@@ -44,6 +47,7 @@ export default function MarketingHomePage() {
           description:
             'Inventory management software with barcode scanning, offline mode, check-in/check-out workflows, and trust-first pricing.',
           pathname: '/',
+          locale: validLocale,
         })}
       />
       <JsonLd data={faqPageJsonLd(DEFAULT_FAQS)} />

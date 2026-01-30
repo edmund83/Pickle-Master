@@ -82,17 +82,22 @@ const PRICING_FAQS: FaqItem[] = [
   },
 ]
 
-export default function PricingPage() {
+export default async function PricingPage({ params }: PageProps) {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
   const lastUpdated = '2026-01-19'
 
   return (
     <div className="bg-base-100 pt-28 md:pt-32">
       {/* JSON-LD Structured Data */}
       <JsonLd
-        data={breadcrumbJsonLd([
-          { name: 'Home', pathname: '/' },
-          { name: 'Pricing', pathname: '/pricing' },
-        ])}
+        data={breadcrumbJsonLd(
+          [
+            { name: 'Home', pathname: '/' },
+            { name: 'Pricing', pathname: '/pricing' },
+          ],
+          validLocale
+        )}
       />
       <JsonLd
         data={softwareApplicationJsonLd({
@@ -100,6 +105,7 @@ export default function PricingPage() {
           description:
             'Inventory management software with barcode scanning, offline mode, and Founders Pricing. Lock in your rate forever.',
           pathname: '/pricing',
+          locale: validLocale,
         })}
       />
       <JsonLd data={faqPageJsonLd(PRICING_FAQS)} />

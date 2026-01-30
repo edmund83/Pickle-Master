@@ -127,15 +127,21 @@ const ADDITIONAL_FEATURES = [
   { title: 'CSV import/export', description: 'Bulk import from spreadsheets. Export anytime.' },
 ]
 
-export default function FeaturesPage() {
+export default async function FeaturesPage({ params }: PageProps) {
+  const { locale } = await params
+  const validLocale: Locale = isValidLocale(locale) ? locale : 'en-us'
+
   return (
     <div className="bg-base-100 pt-28 md:pt-32">
       {/* JSON-LD Structured Data */}
       <JsonLd
-        data={breadcrumbJsonLd([
-          { name: 'Home', pathname: '/' },
-          { name: 'Features', pathname: '/features' },
-        ])}
+        data={breadcrumbJsonLd(
+          [
+            { name: 'Home', pathname: '/' },
+            { name: 'Features', pathname: '/features' },
+          ],
+          validLocale
+        )}
       />
       <JsonLd
         data={softwareApplicationJsonLd({
@@ -143,6 +149,7 @@ export default function FeaturesPage() {
           description:
             'Inventory management software with barcode scanning, offline mode, check-in/check-out, and low stock alerts.',
           pathname: '/features',
+          locale: validLocale,
         })}
       />
       <JsonLd data={faqPageJsonLd(FEATURES_FAQS)} />
