@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -112,6 +112,19 @@ export function TeamContent({ members, isOwner, currentUserId, initialInvitation
     }
   }
 
+  // Auto-refresh when tab becomes visible (e.g., after user accepts invitation in another tab)
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      if (document.visibilityState === 'visible') {
+        await refreshInvitations()
+        router.refresh()
+      }
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange)
+  }, [router])
+
   // Handle cancel invitation
   async function handleCancelInvitation(invitation: Invitation) {
     setConfirmDialog({
@@ -214,14 +227,28 @@ export function TeamContent({ members, isOwner, currentUserId, initialInvitation
         {isOwner && invitations.length > 0 && (
           <Card>
             <CardHeader className="pb-4">
-              <div className="flex items-center gap-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 text-amber-600">
-                  <Clock className="h-5 w-5" />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-amber-100 text-amber-600">
+                    <Clock className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <CardTitle className="text-lg">Pending Invitations</CardTitle>
+                    <CardDescription>Invitations waiting to be accepted</CardDescription>
+                  </div>
                 </div>
-                <div>
-                  <CardTitle className="text-lg">Pending Invitations</CardTitle>
-                  <CardDescription>Invitations waiting to be accepted</CardDescription>
-                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={async () => {
+                    await refreshInvitations()
+                    router.refresh()
+                  }}
+                  disabled={isLoading}
+                  title="Refresh invitations"
+                >
+                  <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+                </Button>
               </div>
             </CardHeader>
             <CardContent>

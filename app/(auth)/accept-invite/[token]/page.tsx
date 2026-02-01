@@ -5,6 +5,7 @@ import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
+import { acceptInvitation } from '@/app/actions/invitations'
 import { AlertCircle, CheckCircle, Users, Briefcase, Eye, Loader2, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -126,28 +127,16 @@ export default function AcceptInvitePage() {
     setSubmitting(true)
 
     try {
-      const supabase = createClient()
-
-      // Sign up with the invited email
-      // The auth trigger will check for pending invitations and join the existing tenant
-      const { error: authError } = await supabase.auth.signUp({
-        email: invitation.email,
+      // Use server action to create user with auto-confirmed email
+      // (No email confirmation needed since they clicked the invitation link)
+      const result = await acceptInvitation({
+        token,
+        fullName,
         password,
-        options: {
-          data: {
-            full_name: fullName,
-            // Note: company_name and plan are not needed since user will join existing tenant
-          },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
-        },
       })
 
-      if (authError) {
-        if (authError.message.includes('already registered')) {
-          setError('This email is already registered. Please log in instead.')
-        } else {
-          throw authError
-        }
+      if (!result.success) {
+        setError(result.error || 'Failed to create account')
         return
       }
 
@@ -205,15 +194,15 @@ export default function AcceptInvitePage() {
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
               <CheckCircle className="h-8 w-8 text-green-500" />
             </div>
-            <h1 className="mt-4 text-xl font-semibold text-neutral-900">Check Your Email</h1>
+            <h1 className="mt-4 text-xl font-semibold text-neutral-900">Welcome to {invitation?.tenant_name}!</h1>
             <p className="mt-2 text-neutral-600">
-              We sent a confirmation link to <span className="font-medium">{invitation?.email}</span>.
-              Click the link to verify your email and access {invitation?.tenant_name}.
+              Your account has been created successfully. You can now log in with your email{' '}
+              <span className="font-medium">{invitation?.email}</span> and the password you just created.
             </p>
             <div className="mt-6">
               <Link href="/login">
-                <Button variant="outline" className="w-full">
-                  Go to Login
+                <Button className="w-full">
+                  Log In Now
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </Link>

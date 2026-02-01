@@ -53,16 +53,24 @@ async function getTeamData() {
       .gt('expires_at', new Date().toISOString())
       .order('created_at', { ascending: false })
 
-    invitations = (invitationsData || []).map((inv: any) => ({
-      id: inv.id,
-      email: inv.email,
-      role: inv.role,
-      invited_by: inv.invited_by,
-      invited_by_name: inv.inviter?.full_name || null,
-      expires_at: inv.expires_at,
-      accepted_at: inv.accepted_at,
-      created_at: inv.created_at,
-    }))
+    // Filter out invitations where user already exists as team member
+    // (handles edge case where invitation wasn't marked as accepted)
+    const memberEmails = new Set(
+      (members || []).map((m: { email: string }) => m.email.toLowerCase())
+    )
+
+    invitations = (invitationsData || [])
+      .filter((inv: any) => !memberEmails.has(inv.email.toLowerCase()))
+      .map((inv: any) => ({
+        id: inv.id,
+        email: inv.email,
+        role: inv.role,
+        invited_by: inv.invited_by,
+        invited_by_name: inv.inviter?.full_name || null,
+        expires_at: inv.expires_at,
+        accepted_at: inv.accepted_at,
+        created_at: inv.created_at,
+      }))
   }
 
   return {

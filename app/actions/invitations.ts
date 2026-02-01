@@ -1,12 +1,13 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
+import { createClient, createAdminClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import {
   getAuthContext,
   requireOwnerPermission,
   validateInput,
 } from '@/lib/auth/server-auth'
+import { sendInvitationEmail } from '@/lib/email'
 import { z } from 'zod'
 import crypto from 'crypto'
 
@@ -19,6 +20,7 @@ export type InvitationResult = {
   error?: string
   invitation_id?: string
   invite_url?: string
+  email_sent?: boolean
 }
 
 export interface Invitation {
@@ -138,13 +140,45 @@ export async function createInvitation(
   // 6. Generate invite URL (relative - frontend will add base URL)
   const inviteUrl = `/accept-invite/${token}`
 
-  // 7. Revalidate team page
+  // 7. Get inviter's name and tenant name for the email
+  const { data: inviterProfile } = await supabase
+    .from('profiles')
+    .select('full_name')
+    .eq('id', userId)
+    .single<{ full_name: string | null }>()
+
+  const { data: tenant } = await supabase
+    .from('tenants')
+    .select('name')
+    .eq('id', tenantId)
+    .single<{ name: string | null }>()
+
+  // 8. Send invitation email
+  const inviterName = inviterProfile?.full_name || 'A team member'
+  const tenantNameValue = tenant?.name || 'your team'
+
+  const emailResult = await sendInvitationEmail({
+    to: email,
+    inviterName,
+    tenantName: tenantNameValue,
+    role,
+    inviteUrl,
+  })
+
+  if (!emailResult.success) {
+    console.error('Failed to send invitation email:', emailResult.error)
+    // Don't fail the invitation creation, just log the error
+    // The invitation is still valid and can be shared manually
+  }
+
+  // 9. Revalidate team page
   revalidatePath('/settings/team')
 
   return {
     success: true,
     invitation_id: invitation.id,
     invite_url: inviteUrl,
+    email_sent: emailResult.success,
   }
 }
 
@@ -195,17 +229,30 @@ export async function getInvitations(): Promise<{
     return { success: false, error: 'Failed to fetch invitations' }
   }
 
-  // Transform data
-  const transformedInvitations: Invitation[] = (invitations || []).map((inv: any) => ({
-    id: inv.id,
-    email: inv.email,
-    role: inv.role,
-    invited_by: inv.invited_by,
-    invited_by_name: inv.inviter?.full_name || null,
-    expires_at: inv.expires_at,
-    accepted_at: inv.accepted_at,
-    created_at: inv.created_at,
-  }))
+  // Fetch member emails to filter out orphaned invitations
+  // (handles edge case where invitation wasn't marked as accepted)
+  const { data: members } = await supabase
+    .from('profiles')
+    .select('email')
+    .eq('tenant_id', tenantId)
+
+  const memberEmails = new Set(
+    (members || []).map((m: { email: string }) => m.email.toLowerCase())
+  )
+
+  // Transform and filter data (exclude invitations where user already exists)
+  const transformedInvitations: Invitation[] = (invitations || [])
+    .filter((inv: any) => !memberEmails.has(inv.email.toLowerCase()))
+    .map((inv: any) => ({
+      id: inv.id,
+      email: inv.email,
+      role: inv.role,
+      invited_by: inv.invited_by,
+      invited_by_name: inv.inviter?.full_name || null,
+      expires_at: inv.expires_at,
+      accepted_at: inv.accepted_at,
+      created_at: inv.created_at,
+    }))
 
   return { success: true, invitations: transformedInvitations }
 }
@@ -279,7 +326,7 @@ export async function resendInvitation(invitationId: string): Promise<Invitation
     return { success: false, error: 'Invalid invitation ID' }
   }
 
-  const { tenantId } = authResult.context
+  const { tenantId, userId } = authResult.context
 
   // 3. Generate new token and update invitation
   const newToken = generateToken()
@@ -297,7 +344,7 @@ export async function resendInvitation(invitationId: string): Promise<Invitation
     .eq('id', invitationId)
     .eq('tenant_id', tenantId)
     .is('accepted_at', null)
-    .select('id')
+    .select('id, email, role')
     .single()
 
   if (error || !invitation) {
@@ -308,13 +355,43 @@ export async function resendInvitation(invitationId: string): Promise<Invitation
   // 4. Generate new invite URL
   const inviteUrl = `/accept-invite/${newToken}`
 
-  // 5. Revalidate team page
+  // 5. Get inviter's name and tenant name for the email
+  const { data: inviterProfile } = await supabase
+    .from('profiles')
+    .select('full_name')
+    .eq('id', userId)
+    .single<{ full_name: string | null }>()
+
+  const { data: tenant } = await supabase
+    .from('tenants')
+    .select('name')
+    .eq('id', tenantId)
+    .single<{ name: string | null }>()
+
+  // 6. Send invitation email
+  const inviterName = inviterProfile?.full_name || 'A team member'
+  const tenantNameValue = tenant?.name || 'your team'
+
+  const emailResult = await sendInvitationEmail({
+    to: invitation.email,
+    inviterName,
+    tenantName: tenantNameValue,
+    role: invitation.role,
+    inviteUrl,
+  })
+
+  if (!emailResult.success) {
+    console.error('Failed to send invitation email:', emailResult.error)
+  }
+
+  // 7. Revalidate team page
   revalidatePath('/settings/team')
 
   return {
     success: true,
     invitation_id: invitation.id,
     invite_url: inviteUrl,
+    email_sent: emailResult.success,
   }
 }
 
@@ -459,6 +536,103 @@ export async function removeMember(
   }
 
   // 6. Revalidate team page
+  revalidatePath('/settings/team')
+
+  return { success: true }
+}
+
+// =============================================================================
+// ACCEPT INVITATION (for new users signing up via invitation)
+// =============================================================================
+
+const acceptInvitationSchema = z.object({
+  token: z.string().min(1, 'Invalid invitation token'),
+  fullName: z.string().min(1, 'Name is required').max(255),
+  password: z.string().min(8, 'Password must be at least 8 characters'),
+})
+
+/**
+ * Accept an invitation and create a new user account.
+ * Uses admin client to auto-confirm email since user proved ownership
+ * by clicking the invitation link.
+ */
+export async function acceptInvitation(
+  input: z.infer<typeof acceptInvitationSchema>
+): Promise<{ success: boolean; error?: string }> {
+  // 1. Validate input
+  const validation = validateInput(acceptInvitationSchema, input)
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
+
+  const { token, fullName, password } = validation.data
+
+  // 2. Get invitation details using service client (no auth required)
+  const supabase = await createClient()
+  const { data: invitations, error: fetchError } = await (supabase as any).rpc(
+    'get_invitation_by_token',
+    { p_token: token }
+  )
+
+  if (fetchError || !invitations || invitations.length === 0) {
+    return { success: false, error: 'Invalid or expired invitation' }
+  }
+
+  const invitation = invitations[0]
+
+  if (!invitation.is_valid) {
+    return { success: false, error: 'This invitation has expired or already been used' }
+  }
+
+  // 3. Create user with admin client (auto-confirms email)
+  const adminClient = createAdminClient()
+
+  const { data: authData, error: createError } = await adminClient.auth.admin.createUser({
+    email: invitation.email,
+    password,
+    email_confirm: true, // Auto-confirm since they clicked the invitation link
+    user_metadata: {
+      full_name: fullName,
+    },
+  })
+
+  if (createError) {
+    console.error('Failed to create user:', createError)
+    if (createError.message.includes('already been registered')) {
+      return { success: false, error: 'This email is already registered. Please log in instead.' }
+    }
+    return { success: false, error: 'Failed to create account. Please try again.' }
+  }
+
+  if (!authData.user) {
+    return { success: false, error: 'Failed to create account' }
+  }
+
+  // 4. Create profile manually (auth trigger doesn't fire for admin API)
+  const { error: profileError } = await adminClient
+    .from('profiles')
+    .insert({
+      id: authData.user.id,
+      email: invitation.email,
+      full_name: fullName,
+      tenant_id: invitation.tenant_id,
+      role: invitation.role,
+    })
+
+  if (profileError) {
+    console.error('Failed to create profile:', profileError)
+    // User was created but profile failed - try to clean up
+    await adminClient.auth.admin.deleteUser(authData.user.id)
+    return { success: false, error: 'Failed to create account. Please try again.' }
+  }
+
+  // 5. Mark invitation as accepted
+  await adminClient
+    .from('team_invitations')
+    .update({ accepted_at: new Date().toISOString() })
+    .eq('id', invitation.id)
+
+  // 6. Revalidate team page for the inviter
   revalidatePath('/settings/team')
 
   return { success: true }

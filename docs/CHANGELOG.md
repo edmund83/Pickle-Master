@@ -11,6 +11,21 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Fixed
 
+#### Team: Orphaned pending invitations bug
+Fixed a bug where accepted team invitations continued to appear under "Pending Invitations" in the Team settings page. This occurred when the `accepted_at` field wasn't properly updated after a user joined.
+
+**Root Cause**: The pending invitations query only filtered by `accepted_at IS NULL` but didn't verify if the user already existed as a team member in the `profiles` table.
+
+**Fix (defense in depth)**:
+1. **UI layer**: Added filtering to exclude invitations where user already exists as team member
+2. **Data layer**: Migration cleans up existing orphaned invitations
+3. **Prevention layer**: Added database trigger to auto-mark invitations as accepted when a profile is created
+
+**Files Modified**:
+- `app/(dashboard)/settings/team/page.tsx` - Added defensive filtering
+- `app/actions/invitations.ts` - Added defensive filtering to `getInvitations()`
+- `supabase/migrations/00103_fix_orphaned_invitations.sql` - Cleanup migration with trigger
+
 #### SEO: Dynamic lang attribute and locale-aware JSON-LD
 Fixed two critical international SEO issues identified by site audit tools:
 
