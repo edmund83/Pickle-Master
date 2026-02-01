@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { LotsPanel } from './lots-panel'
-import { FEFOPanel } from './fefo-panel'
 import { CreateLotModal } from '@/components/lots/CreateLotModal'
 import { AdjustLotModal } from '@/components/lots/AdjustLotModal'
 
@@ -50,25 +49,15 @@ export function ItemAdvancedPanels({
 
   return (
     <>
-      <div className="space-y-4">
-        {/* Lots Panel - for lot-tracked items */}
-        <LotsPanel
-          key={`lots-${refreshKey}`}
-          itemId={itemId}
-          itemName={itemName}
-          trackingMode={trackingMode}
-          onCreateLot={handleCreateLot}
-          onAdjustLot={(lotId, lotNumber, quantity) => handleAdjustLot(lotId, lotNumber, quantity)}
-        />
-
-        {/* FEFO Panel - for lot-tracked items */}
-        <FEFOPanel
-          key={`fefo-${refreshKey}`}
-          itemId={itemId}
-          itemName={itemName}
-          trackingMode={trackingMode}
-        />
-      </div>
+      {/* Unified Lots Panel with integrated FEFO */}
+      <LotsPanel
+        key={`lots-${refreshKey}`}
+        itemId={itemId}
+        itemName={itemName}
+        trackingMode={trackingMode}
+        onCreateLot={handleCreateLot}
+        onAdjustLot={(lotId, lotNumber, quantity) => handleAdjustLot(lotId, lotNumber, quantity)}
+      />
 
       {/* Modals */}
       <CreateLotModal

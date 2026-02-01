@@ -7,10 +7,18 @@ import { cn } from '@/lib/utils'
 import type { InventoryItemWithTags, Folder, TagListItem } from '@/types/database.types'
 import { WarehouseSelector } from './warehouse-selector'
 
+interface ExpirySummary {
+  expired_count: number
+  expiring_7_days: number
+  expiring_30_days: number
+  total_value_at_risk: number
+}
+
 interface MobileInventoryViewProps {
   items: InventoryItemWithTags[]
   folders: Folder[]
   userRole: 'owner' | 'staff' | 'viewer'
+  expirySummary?: ExpirySummary | null
 }
 
 const statusConfig = {
@@ -34,7 +42,7 @@ const statusConfig = {
   },
 }
 
-export function MobileInventoryView({ items, folders, userRole }: MobileInventoryViewProps) {
+export function MobileInventoryView({ items, folders, userRole, expirySummary }: MobileInventoryViewProps) {
   // Viewers cannot add items
   const canAddItem = userRole !== 'viewer'
   const [searchQuery, setSearchQuery] = useState('')

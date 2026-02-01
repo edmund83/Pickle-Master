@@ -3,7 +3,6 @@
 import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import {
-  Sparkles,
   Package,
   Calendar,
   Hash,
@@ -11,6 +10,7 @@ import {
   Loader2,
   AlertTriangle,
   ChevronRight,
+  ArrowDownUp,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -100,14 +100,14 @@ export function FEFOPanel({
     <div className="rounded-xl border border-neutral-200 bg-white p-6">
       {/* Header */}
       <div className="flex items-center gap-2 mb-4">
-        <Sparkles className="h-5 w-5 text-amber-500" />
+        <ArrowDownUp className="h-5 w-5 text-amber-500" />
         <h2 className="text-sm font-medium uppercase tracking-wide text-neutral-500">
           FEFO Pick Suggestion
         </h2>
       </div>
 
       <p className="text-sm text-neutral-500 mb-4">
-        Enter the quantity needed and get AI-powered suggestions for which lots to pick first
+        Enter the quantity needed and get suggestions for which lots to pick first
         (First Expired, First Out).
       </p>
 
@@ -129,7 +129,7 @@ export function FEFOPanel({
             <Loader2 className="h-4 w-4 animate-spin" />
           ) : (
             <>
-              <Sparkles className="mr-2 h-4 w-4" />
+              <ArrowDownUp className="mr-2 h-4 w-4" />
               Suggest
             </>
           )}
@@ -247,7 +247,7 @@ export function FEFOPanel({
       {!hasSearched && (
         <div className="flex flex-col items-center justify-center py-6 text-center">
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
-            <Sparkles className="h-6 w-6 text-amber-600" />
+            <ArrowDownUp className="h-6 w-6 text-amber-600" />
           </div>
           <p className="mt-3 text-sm text-neutral-500">
             Enter a quantity above to get FEFO picking suggestions

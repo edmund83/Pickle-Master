@@ -479,14 +479,16 @@ export default async function ItemDetailPage({ params }: PageProps) {
               quantity={item.quantity || 0}
             />
 
-            {/* Tracking & Traceability Card */}
-            <TrackingCard
-              itemId={item.id}
-              trackingMode={item.tracking_mode as 'none' | 'serialized' | 'lot_expiry' | null}
-              serialNumber={item.serial_number}
-              serialStats={serialStats}
-              lotStats={lotStats}
-            />
+            {/* Tracking & Traceability Card - Hidden for lot-tracked items (shown in LotsPanel instead) */}
+            {item.tracking_mode !== 'lot_expiry' && (
+              <TrackingCard
+                itemId={item.id}
+                trackingMode={item.tracking_mode as 'none' | 'serialized' | 'lot_expiry' | null}
+                serialNumber={item.serial_number}
+                serialStats={serialStats}
+                lotStats={lotStats}
+              />
+            )}
           </div>
 
           {/* Row 2: Secondary Information */}

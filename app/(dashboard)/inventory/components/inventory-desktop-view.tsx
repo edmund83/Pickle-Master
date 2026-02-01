@@ -43,14 +43,22 @@ interface FilterState {
   hasImages: boolean | null
 }
 
+interface ExpirySummary {
+  expired_count: number
+  expiring_7_days: number
+  expiring_30_days: number
+  total_value_at_risk: number
+}
+
 interface InventoryDesktopViewProps {
   items: InventoryItemWithTags[]
   folders: Folder[]
   view: string
   userRole: 'owner' | 'staff' | 'viewer'
+  expirySummary?: ExpirySummary | null
 }
 
-export function InventoryDesktopView({ items, folders, view, userRole }: InventoryDesktopViewProps) {
+export function InventoryDesktopView({ items, folders, view, userRole, expirySummary }: InventoryDesktopViewProps) {
   // Viewers cannot add items
   const canAddItem = userRole !== 'viewer'
   const router = useRouter()
@@ -470,7 +478,16 @@ export function InventoryDesktopView({ items, folders, view, userRole }: Invento
                 <InventoryAlertIndicator
                   lowStockCount={summaryStats.lowStockCount}
                   outOfStockCount={summaryStats.outOfStockCount}
-                  onFilterAlerts={(filter) => setAlertFilter(filter)}
+                  expiringCount={(expirySummary?.expiring_7_days ?? 0) + (expirySummary?.expiring_30_days ?? 0)}
+                  expiredCount={expirySummary?.expired_count ?? 0}
+                  onFilterAlerts={(filter) => {
+                    // Redirect to expiring reports page for expiry-related filters
+                    if (filter === 'expiring' || filter === 'expired') {
+                      router.push('/reports/expiring')
+                    } else {
+                      setAlertFilter(filter)
+                    }
+                  }}
                 />
 
                 <Link href="/scan">

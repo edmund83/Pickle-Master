@@ -12,8 +12,12 @@ import {
   Hash,
   Clock,
   MapPin,
+  Sparkles,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { useFormatting } from '@/hooks/useFormatting'
 
@@ -32,12 +36,24 @@ interface Lot {
   expiry_status: 'no_expiry' | 'expired' | 'expiring_soon' | 'expiring_month' | 'ok'
 }
 
+interface FEFOSuggestion {
+  lot_id: string
+  lot_number: string | null
+  batch_code: string | null
+  expiry_date: string | null
+  available_quantity: number
+  location_id: string | null
+  location_name: string | null
+  pick_quantity: number
+}
+
 interface LotsPanelProps {
   itemId: string
   itemName: string
   trackingMode: 'none' | 'serialized' | 'lot_expiry'
   onCreateLot?: () => void
   onAdjustLot?: (lotId: string, lotNumber: string, quantity: number) => void
+  onPickLot?: (lotId: string, quantity: number) => void
 }
 
 const EXPIRY_STYLES: Record<string, { bg: string; text: string; label: string }> = {
@@ -61,12 +77,21 @@ export function LotsPanel({
   trackingMode,
   onCreateLot,
   onAdjustLot,
+  onPickLot,
 }: LotsPanelProps) {
   const [lots, setLots] = useState<Lot[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [showDepleted, setShowDepleted] = useState(false)
   const { formatShortDate } = useFormatting()
+
+  // FEFO state
+  const [showFEFO, setShowFEFO] = useState(false)
+  const [fefoQuantity, setFefoQuantity] = useState<string>('')
+  const [fefoSuggestions, setFefoSuggestions] = useState<FEFOSuggestion[]>([])
+  const [fefoLoading, setFefoLoading] = useState(false)
+  const [fefoError, setFefoError] = useState<string | null>(null)
+  const [hasSearchedFEFO, setHasSearchedFEFO] = useState(false)
 
   useEffect(() => {
     if (trackingMode === 'lot_expiry') {
@@ -100,6 +125,45 @@ export function LotsPanel({
     }
   }
 
+  // FEFO suggestion handler
+  async function handleGetFEFOSuggestions(e: React.FormEvent) {
+    e.preventDefault()
+
+    const qty = parseInt(fefoQuantity)
+    if (isNaN(qty) || qty <= 0) {
+      setFefoError('Please enter a valid quantity')
+      return
+    }
+
+    setFefoLoading(true)
+    setFefoError(null)
+    setHasSearchedFEFO(true)
+
+    const supabase = createClient()
+
+    try {
+      const { data, error: rpcError } = await (supabase as any)
+        .rpc('get_fefo_suggestion', {
+          p_item_id: itemId,
+          p_quantity_needed: qty,
+          p_location_id: null,
+        })
+
+      if (rpcError) {
+        console.error('Error getting FEFO suggestion:', rpcError)
+        setFefoError('Failed to get picking suggestions')
+        return
+      }
+
+      setFefoSuggestions((data || []) as FEFOSuggestion[])
+    } catch (err) {
+      console.error('Error:', err)
+      setFefoError('An unexpected error occurred')
+    } finally {
+      setFefoLoading(false)
+    }
+  }
+
   // Don't show if not lot-tracked
   if (trackingMode !== 'lot_expiry') {
     return null
@@ -108,6 +172,11 @@ export function LotsPanel({
   const totalQuantity = lots.filter(l => l.status === 'active').reduce((sum, lot) => sum + lot.quantity, 0)
   const expiringCount = lots.filter(l => l.expiry_status === 'expiring_soon' || l.expiry_status === 'expiring_month').length
   const expiredCount = lots.filter(l => l.expiry_status === 'expired' || l.status === 'expired').length
+
+  // FEFO computed values
+  const fefoTotalPick = fefoSuggestions.reduce((sum, s) => sum + s.pick_quantity, 0)
+  const fefoQuantityNeeded = parseInt(fefoQuantity) || 0
+  const fefoCanFulfill = fefoTotalPick >= fefoQuantityNeeded
 
   if (loading) {
     return (
@@ -151,11 +220,26 @@ export function LotsPanel({
           <h2 className="text-sm font-medium uppercase tracking-wide text-neutral-500">
             Lot Tracking
           </h2>
+          <span className="inline-flex items-center rounded-full bg-purple-100 px-2 py-0.5 text-xs font-medium text-purple-700">
+            Lot / Expiry
+          </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <span className="text-sm text-neutral-500">
             Total: <span className="font-semibold text-neutral-900">{totalQuantity}</span>
           </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setShowFEFO(!showFEFO)}
+            className={cn(
+              'text-amber-600 border-amber-200 hover:bg-amber-50',
+              showFEFO && 'bg-amber-50'
+            )}
+          >
+            <Package className="mr-1 h-4 w-4" />
+            Pick Helper
+          </Button>
           {onCreateLot && (
             <Button size="sm" onClick={onCreateLot}>
               <Plus className="mr-1 h-4 w-4" />
@@ -297,6 +381,135 @@ export function LotsPanel({
             />
             Show depleted lots
           </label>
+        </div>
+      )}
+
+      {/* FEFO Pick Section - Collapsible */}
+      {showFEFO && (
+        <div className="mt-4 pt-4 border-t border-amber-200 bg-amber-50/50 -mx-6 -mb-6 px-6 pb-6 rounded-b-xl">
+          <div className="flex items-center gap-2 mb-3">
+            <Sparkles className="h-4 w-4 text-amber-500" />
+            <span className="text-sm font-medium text-amber-700">FEFO Pick Suggestion</span>
+          </div>
+          <p className="text-xs text-amber-600 mb-3">
+            Enter quantity needed to get First Expired, First Out picking suggestions.
+          </p>
+
+          {/* FEFO Input */}
+          <form onSubmit={handleGetFEFOSuggestions} className="flex gap-2 mb-3">
+            <div className="relative flex-1">
+              <Package className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+              <Input
+                type="number"
+                min="1"
+                value={fefoQuantity}
+                onChange={(e) => setFefoQuantity(e.target.value)}
+                placeholder="Quantity needed"
+                className="pl-10 bg-white"
+              />
+            </div>
+            <Button
+              type="submit"
+              disabled={fefoLoading || !fefoQuantity}
+              className="bg-amber-500 hover:bg-amber-600"
+            >
+              {fefoLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <Sparkles className="mr-1 h-4 w-4" />
+                  Suggest
+                </>
+              )}
+            </Button>
+          </form>
+
+          {fefoError && (
+            <div className="flex items-center gap-2 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-700 mb-3">
+              <AlertTriangle className="h-3 w-3 flex-shrink-0" />
+              {fefoError}
+            </div>
+          )}
+
+          {/* FEFO Results */}
+          {hasSearchedFEFO && !fefoLoading && (
+            <>
+              {fefoSuggestions.length > 0 ? (
+                <div className="space-y-2">
+                  {/* Summary */}
+                  <div className={cn(
+                    'flex items-center justify-between rounded-lg px-3 py-2 text-sm',
+                    fefoCanFulfill ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'
+                  )}>
+                    <span className="font-medium">
+                      {fefoCanFulfill
+                        ? `Can fulfill from ${fefoSuggestions.length} lot${fefoSuggestions.length > 1 ? 's' : ''}`
+                        : `Only ${fefoTotalPick} available`
+                      }
+                    </span>
+                    <span className="font-bold">{fefoTotalPick} / {fefoQuantityNeeded}</span>
+                  </div>
+
+                  {/* Suggestion Cards */}
+                  {fefoSuggestions.map((suggestion, index) => (
+                    <div
+                      key={suggestion.lot_id}
+                      className="group flex items-center gap-3 rounded-lg border border-amber-200 bg-white p-2"
+                    >
+                      <div className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-100 text-amber-700 text-xs font-bold">
+                        {index + 1}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 text-sm">
+                          {suggestion.lot_number && (
+                            <span className="flex items-center gap-1 font-medium text-neutral-900">
+                              <Hash className="h-3 w-3" />
+                              {suggestion.lot_number}
+                            </span>
+                          )}
+                          {suggestion.expiry_date && (
+                            <span className="flex items-center gap-1 text-xs text-neutral-500">
+                              <Calendar className="h-3 w-3" />
+                              {formatShortDate(suggestion.expiry_date)}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <span className="text-sm font-bold text-amber-600">
+                          Pick {suggestion.pick_quantity}
+                        </span>
+                        <span className="text-xs text-neutral-400 ml-1">
+                          / {suggestion.available_quantity}
+                        </span>
+                      </div>
+                      {onPickLot && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-7 px-2 opacity-0 group-hover:opacity-100"
+                          onClick={() => onPickLot(suggestion.lot_id, suggestion.pick_quantity)}
+                        >
+                          <ChevronRight className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-4 text-center">
+                  <Package className="h-8 w-8 text-amber-300" />
+                  <p className="mt-2 text-sm text-amber-600">No available lots to pick from</p>
+                </div>
+              )}
+            </>
+          )}
+
+          {!hasSearchedFEFO && (
+            <div className="flex items-center justify-center py-3 text-xs text-amber-500">
+              Enter a quantity above to get picking suggestions
+            </div>
+          )}
         </div>
       )}
     </div>

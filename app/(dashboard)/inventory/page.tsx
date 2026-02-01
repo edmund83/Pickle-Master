@@ -15,10 +15,18 @@ function sanitizeSearchTerm(value?: string): string {
   return escapeSqlLike(sanitized)
 }
 
+interface ExpirySummary {
+  expired_count: number
+  expiring_7_days: number
+  expiring_30_days: number
+  total_value_at_risk: number
+}
+
 async function getInventoryData(query?: string): Promise<{
   items: InventoryItemWithTags[],
   folders: Folder[],
   userRole: 'owner' | 'staff' | 'viewer',
+  expirySummary: ExpirySummary | null,
 }> {
   const supabase = await createClient()
 
@@ -35,7 +43,7 @@ async function getInventoryData(query?: string): Promise<{
   const profile = profileData as { tenant_id: string | null; role: 'owner' | 'staff' | 'viewer' | null } | null
 
   if (!profile?.tenant_id) {
-    return { items: [], folders: [], userRole: 'viewer' }
+    return { items: [], folders: [], userRole: 'viewer', expirySummary: null }
   }
 
   // Use items_with_tags view to get tag details
@@ -63,10 +71,14 @@ async function getInventoryData(query?: string): Promise<{
     .eq('tenant_id', profile.tenant_id)
     .order('sort_order', { ascending: true })
 
+  // Fetch expiring lots summary for alerts
+  const { data: expirySummary } = await supabase.rpc('get_expiring_lots_summary')
+
   return {
     items: (items || []) as InventoryItemWithTags[],
     folders: (folders || []) as Folder[],
     userRole: profile.role || 'viewer',
+    expirySummary: expirySummary as ExpirySummary | null,
   }
 }
 
@@ -74,7 +86,7 @@ export default async function InventoryPage(props: { searchParams?: Promise<{ q?
   const searchParams = await props.searchParams
   const query = searchParams?.q
   const view = searchParams?.view || 'grid'
-  const { items, folders, userRole } = await getInventoryData(query)
+  const { items, folders, userRole, expirySummary } = await getInventoryData(query)
 
   return (
     <>
@@ -85,12 +97,13 @@ export default async function InventoryPage(props: { searchParams?: Promise<{ q?
           folders={folders}
           view={view}
           userRole={userRole}
+          expirySummary={expirySummary}
         />
       </div>
 
       {/* Mobile View */}
       <div className="lg:hidden flex flex-col flex-1 overflow-hidden">
-        <MobileInventoryView items={items} folders={folders} userRole={userRole} />
+        <MobileInventoryView items={items} folders={folders} userRole={userRole} expirySummary={expirySummary} />
       </div>
     </>
   )
