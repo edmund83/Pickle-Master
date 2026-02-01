@@ -164,7 +164,7 @@ export async function returnItem(
 export async function checkoutWithSerials(
     itemId: string,
     serialIds: string[],
-    assigneeType: 'person' | 'job' | 'location',
+    assigneeType: 'person' | 'job' | 'location' | 'contact',
     assigneeId?: string,
     assigneeName?: string,
     dueDate?: string,
