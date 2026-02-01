@@ -81,3 +81,5 @@ public/swe-worker-*.js
 # Remotion
 remotion-video/
 remotion-videos/
+# next-agents-md
+.next-docs/

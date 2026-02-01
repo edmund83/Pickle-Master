@@ -9,6 +9,35 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Changed
+
+#### Simplified Batch & Serial Tracking UI
+Redesigned the Lot Tracking and Serial Tracking UI for simplicity and consistency. The new design uses friendly language ("Batches" instead of "Lots") and consistent card patterns across both tracking modes.
+
+**Key Changes**:
+- **New `BatchTrackingCard`**: Clean, minimal card showing total quantity and expiry alerts
+- **New `SerialTrackingCard`**: Consistent card showing availability breakdown
+- **New `ManageTrackingModal`**: Unified modal for viewing and managing batches/serials with override capability
+- **Removed FEFO Pick Helper UI**: FIFO/FEFO picking is now automatic (backend handles it)
+- **Removed jargon**: No more "Tracking & Traceability", "FEFO", or technical badges
+
+**User Benefits**:
+- Simpler UI for mom-and-pop businesses
+- Consistent experience between batch and serial tracking
+- System auto-picks oldest items first (FIFO/FEFO)
+- Users can override and select specific batch/serial when needed
+
+**Files Added**:
+- `components/tracking/BatchTrackingCard.tsx`
+- `components/tracking/SerialTrackingCard.tsx`
+- `components/tracking/ManageTrackingModal.tsx`
+- `components/tracking/index.ts`
+
+**Files Modified**:
+- `app/(dashboard)/inventory/[itemId]/page.tsx` - Updated to use new tracking cards
+
+**Design Doc**: `docs/plans/2026-02-01-tracking-ui-redesign.md`
+
 ### Fixed
 
 #### Team: Orphaned pending invitations bug

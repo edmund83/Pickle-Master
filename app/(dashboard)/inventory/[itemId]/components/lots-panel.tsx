@@ -12,8 +12,6 @@ import {
   Hash,
   Clock,
   MapPin,
-  Sparkles,
-  ChevronDown,
   ChevronRight,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -384,15 +382,15 @@ export function LotsPanel({
         </div>
       )}
 
-      {/* FEFO Pick Section - Collapsible */}
+      {/* FEFO Pick Helper - Collapsible */}
       {showFEFO && (
         <div className="mt-4 pt-4 border-t border-amber-200 bg-amber-50/50 -mx-6 -mb-6 px-6 pb-6 rounded-b-xl">
           <div className="flex items-center gap-2 mb-3">
-            <Sparkles className="h-4 w-4 text-amber-500" />
-            <span className="text-sm font-medium text-amber-700">FEFO Pick Suggestion</span>
+            <Package className="h-4 w-4 text-amber-500" />
+            <span className="text-sm font-medium text-amber-700">FEFO Pick Helper</span>
           </div>
           <p className="text-xs text-amber-600 mb-3">
-            Enter quantity needed to get First Expired, First Out picking suggestions.
+            Enter quantity needed and we&apos;ll calculate which lots to pick first (earliest expiry first).
           </p>
 
           {/* FEFO Input */}
@@ -416,10 +414,7 @@ export function LotsPanel({
               {fefoLoading ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <>
-                  <Sparkles className="mr-1 h-4 w-4" />
-                  Suggest
-                </>
+                'Calculate'
               )}
             </Button>
           </form>
@@ -507,7 +502,7 @@ export function LotsPanel({
 
           {!hasSearchedFEFO && (
             <div className="flex items-center justify-center py-3 text-xs text-amber-500">
-              Enter a quantity above to get picking suggestions
+              Enter quantity to calculate which lots to pick
             </div>
           )}
         </div>
