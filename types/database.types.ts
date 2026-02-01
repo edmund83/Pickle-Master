@@ -848,6 +848,66 @@ export type Database = {
           },
         ]
       }
+      contacts: {
+        Row: {
+          id: string
+          tenant_id: string
+          name: string
+          email: string | null
+          phone: string | null
+          id_number: string | null
+          company: string | null
+          notes: string | null
+          is_active: boolean
+          created_by: string | null
+          created_at: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          id?: string
+          tenant_id: string
+          name: string
+          email?: string | null
+          phone?: string | null
+          id_number?: string | null
+          company?: string | null
+          notes?: string | null
+          is_active?: boolean
+          created_by?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          id?: string
+          tenant_id?: string
+          name?: string
+          email?: string | null
+          phone?: string | null
+          id_number?: string | null
+          company?: string | null
+          notes?: string | null
+          is_active?: boolean
+          created_by?: string | null
+          created_at?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contacts_tenant_id_fkey"
+            columns: ["tenant_id"]
+            isOneToOne: false
+            referencedRelation: "tenants"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "contacts_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       custom_field_definitions: {
         Row: {
           created_at: string | null
@@ -6011,7 +6071,7 @@ export type Database = {
         | "sales_order"
         | "delivery_order"
         | "invoice"
-      checkout_assignee_type: "person" | "job" | "location"
+      checkout_assignee_type: "person" | "job" | "location" | "contact"
       checkout_status: "checked_out" | "returned" | "overdue"
       comparison_operator_enum: "lte" | "lt" | "gt" | "gte" | "eq"
       delivery_order_status:
@@ -6284,7 +6344,7 @@ export const Constants = {
         "delivery_order",
         "invoice",
       ],
-      checkout_assignee_type: ["person", "job", "location"],
+      checkout_assignee_type: ["person", "job", "location", "contact"],
       checkout_status: ["checked_out", "returned", "overdue"],
       comparison_operator_enum: ["lte", "lt", "gt", "gte", "eq"],
       delivery_order_status: [

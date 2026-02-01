@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import {
@@ -16,13 +16,17 @@ import {
   Zap,
   User,
   Briefcase,
-  MapPin,
+  Search,
+  UserPlus,
+  Building2,
+  Phone,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { useFormatting } from '@/hooks/useFormatting'
 import { checkoutItem, checkoutWithSerials } from '@/app/actions/checkouts'
+import { createContact } from '@/app/actions/contacts'
 
 interface Batch {
   id: string
@@ -42,6 +46,9 @@ interface Serial {
 interface AssigneeOption {
   id: string
   name: string
+  type: 'person' | 'job' | 'contact'
+  company?: string
+  phone?: string
 }
 
 interface BorrowOutModalProps {
@@ -53,8 +60,6 @@ interface BorrowOutModalProps {
   trackingMode: 'none' | 'lot_expiry' | 'serialized'
   currentQuantity: number
 }
-
-type AssigneeType = 'person' | 'job' | 'location'
 
 export function BorrowOutModal({
   isOpen,
@@ -75,9 +80,7 @@ export function BorrowOutModal({
   // Data state
   const [batches, setBatches] = useState<Batch[]>([])
   const [serials, setSerials] = useState<Serial[]>([])
-  const [people, setPeople] = useState<AssigneeOption[]>([])
-  const [jobs, setJobs] = useState<AssigneeOption[]>([])
-  const [locations, setLocations] = useState<AssigneeOption[]>([])
+  const [assignees, setAssignees] = useState<AssigneeOption[]>([])
   const [loading, setLoading] = useState(true)
 
   // Form state
@@ -87,15 +90,25 @@ export function BorrowOutModal({
   const [selectedSerialIds, setSelectedSerialIds] = useState<Set<string>>(new Set())
 
   // Assignee state
-  const [assigneeType, setAssigneeType] = useState<AssigneeType>('person')
-  const [assigneeId, setAssigneeId] = useState('')
-  const [assigneeName, setAssigneeName] = useState('')
+  const [assigneeSearch, setAssigneeSearch] = useState('')
+  const [selectedAssignee, setSelectedAssignee] = useState<AssigneeOption | null>(null)
+  const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false)
   const [dueDate, setDueDate] = useState('')
   const [notes, setNotes] = useState('')
+
+  // New contact form state
+  const [showNewContactForm, setShowNewContactForm] = useState(false)
+  const [newContactName, setNewContactName] = useState('')
+  const [newContactPhone, setNewContactPhone] = useState('')
+  const [newContactCompany, setNewContactCompany] = useState('')
+  const [creatingContact, setCreatingContact] = useState(false)
 
   // Submit state
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Ref for click-outside detection
+  const assigneeDropdownRef = useRef<HTMLDivElement>(null)
 
   // Escape key handler
   useEffect(() => {
@@ -129,28 +142,49 @@ export function BorrowOutModal({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, itemId, trackingMode])
 
+  // Click outside to close assignee dropdown
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (assigneeDropdownRef.current && !assigneeDropdownRef.current.contains(e.target as Node)) {
+        setShowAssigneeDropdown(false)
+      }
+    }
+    if (showAssigneeDropdown) {
+      document.addEventListener('mousedown', handleClickOutside)
+      return () => document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [showAssigneeDropdown])
+
   async function loadData() {
     setLoading(true)
     setError(null)
     const supabase = createClient()
 
     try {
-      // Load assignee options
-      const [profilesRes, jobsRes, foldersRes] = await Promise.all([
+      // Load assignee options (people + contacts + jobs unified)
+      const [profilesRes, contactsRes, jobsRes] = await Promise.all([
         (supabase as any).from('profiles').select('id, full_name, email').order('full_name'),
+        (supabase as any).rpc('get_contacts', { p_search: null, p_include_inactive: false, p_limit: 100 }),
         (supabase as any).from('jobs').select('id, name').eq('status', 'active').order('name'),
-        (supabase as any).from('folders').select('id, name').order('name'),
       ])
 
+      const unified: AssigneeOption[] = []
       if (profilesRes.data) {
-        setPeople(profilesRes.data.map((p: any) => ({ id: p.id, name: p.full_name || p.email })))
+        profilesRes.data.forEach((p: any) => {
+          unified.push({ id: p.id, name: p.full_name || p.email, type: 'person' })
+        })
+      }
+      if (contactsRes.data) {
+        contactsRes.data.forEach((c: any) => {
+          unified.push({ id: c.id, name: c.name, type: 'contact', company: c.company, phone: c.phone })
+        })
       }
       if (jobsRes.data) {
-        setJobs(jobsRes.data.map((j: any) => ({ id: j.id, name: j.name })))
+        jobsRes.data.forEach((j: any) => {
+          unified.push({ id: j.id, name: j.name, type: 'job' })
+        })
       }
-      if (foldersRes.data) {
-        setLocations(foldersRes.data.map((f: any) => ({ id: f.id, name: f.name })))
-      }
+      setAssignees(unified)
 
       // Load tracking data
       if (isBatch) {
@@ -190,12 +224,17 @@ export function BorrowOutModal({
     setSelectedMode('auto')
     setSelectedBatchId(null)
     setSelectedSerialIds(new Set())
-    setAssigneeType('person')
-    setAssigneeId('')
-    setAssigneeName('')
+    setAssigneeSearch('')
+    setSelectedAssignee(null)
+    setShowAssigneeDropdown(false)
     setDueDate('')
     setNotes('')
     setError(null)
+    // Reset new contact form
+    setShowNewContactForm(false)
+    setNewContactName('')
+    setNewContactPhone('')
+    setNewContactCompany('')
   }
 
   function handleQuantityChange(delta: number) {
@@ -222,24 +261,74 @@ export function BorrowOutModal({
     setSelectedMode('manual')
   }
 
-  function getAssigneeOptions(): AssigneeOption[] {
-    switch (assigneeType) {
-      case 'person': return people
-      case 'job': return jobs
-      case 'location': return locations
-      default: return []
+  // Filter assignees based on search
+  const filteredAssignees = assignees.filter(a =>
+    a.name.toLowerCase().includes(assigneeSearch.toLowerCase())
+  )
+
+  function handleSelectAssignee(assignee: AssigneeOption) {
+    setSelectedAssignee(assignee)
+    setAssigneeSearch(assignee.name)
+    setShowAssigneeDropdown(false)
+    setShowNewContactForm(false)
+  }
+
+  function handleShowNewContactForm() {
+    setShowNewContactForm(true)
+    setShowAssigneeDropdown(false)
+    setNewContactName(assigneeSearch) // Pre-fill with search text
+  }
+
+  async function handleCreateContact() {
+    if (!newContactName.trim()) {
+      setError('Contact name is required')
+      return
+    }
+
+    setCreatingContact(true)
+    setError(null)
+
+    try {
+      const result = await createContact(
+        newContactName.trim(),
+        null, // email
+        newContactPhone.trim() || null,
+        null, // idNumber
+        newContactCompany.trim() || null,
+        null  // notes
+      )
+
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to create contact')
+      }
+
+      // Add the new contact to the assignees list and select it
+      const newContact: AssigneeOption = {
+        id: result.contact!.id,
+        name: result.contact!.name,
+        type: 'contact',
+        company: result.contact!.company,
+        phone: result.contact!.phone,
+      }
+
+      setAssignees(prev => [...prev, newContact])
+      handleSelectAssignee(newContact)
+
+      // Reset form
+      setShowNewContactForm(false)
+      setNewContactName('')
+      setNewContactPhone('')
+      setNewContactCompany('')
+    } catch (err: any) {
+      console.error('Create contact error:', err)
+      setError(err.message || 'Failed to create contact')
+    } finally {
+      setCreatingContact(false)
     }
   }
 
-  function handleAssigneeChange(id: string) {
-    setAssigneeId(id)
-    const options = getAssigneeOptions()
-    const selected = options.find(opt => opt.id === id)
-    setAssigneeName(selected?.name || '')
-  }
-
   async function handleSubmit() {
-    if (!assigneeName) {
+    if (!selectedAssignee) {
       setError('Please select an assignee')
       return
     }
@@ -257,9 +346,9 @@ export function BorrowOutModal({
         const result = await checkoutWithSerials(
           itemId,
           serialIdsToCheckout,
-          assigneeType,
-          assigneeId || undefined,
-          assigneeName,
+          selectedAssignee.type,
+          selectedAssignee.id,
+          selectedAssignee.name,
           dueDate || undefined,
           notes || undefined
         )
@@ -273,9 +362,11 @@ export function BorrowOutModal({
         const result = await checkoutItem(
           itemId,
           quantity,
-          assigneeName,
+          selectedAssignee.name,
           notes || undefined,
-          dueDate || undefined
+          dueDate || undefined,
+          selectedAssignee.type,
+          selectedAssignee.id
         )
 
         if (!result.success) {
@@ -286,9 +377,11 @@ export function BorrowOutModal({
         const result = await checkoutItem(
           itemId,
           quantity,
-          assigneeName,
+          selectedAssignee.name,
           notes || undefined,
-          dueDate || undefined
+          dueDate || undefined,
+          selectedAssignee.type,
+          selectedAssignee.id
         )
 
         if (!result.success) {
@@ -321,7 +414,7 @@ export function BorrowOutModal({
     ? selectedSerialIds.size
     : quantity
 
-  const canSubmit = assigneeName && effectiveQuantity > 0
+  const canSubmit = selectedAssignee && effectiveQuantity > 0
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center">
@@ -337,7 +430,7 @@ export function BorrowOutModal({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-neutral-200 px-6 py-4">
           <div>
-            <h2 id="borrow-out-title" className="text-lg font-semibold text-neutral-900">Borrow Out</h2>
+            <h2 id="borrow-out-title" className="text-lg font-semibold text-neutral-900">Lend Item</h2>
             <p id="borrow-out-description" className="text-sm text-neutral-500">{itemName}</p>
           </div>
           <button
@@ -523,51 +616,201 @@ export function BorrowOutModal({
                 </div>
               )}
 
-              {/* Assignee Type Tabs */}
+              {/* Unified Assignee Search */}
               <div>
                 <label htmlFor="borrow-out-assignee" className="block text-sm font-medium text-neutral-700 mb-2">
                   Assign To
                 </label>
-                <div className="flex gap-2 mb-3">
-                  {[
-                    { type: 'person' as const, icon: User, label: 'Person' },
-                    { type: 'job' as const, icon: Briefcase, label: 'Job' },
-                    { type: 'location' as const, icon: MapPin, label: 'Location' },
-                  ].map(({ type, icon: Icon, label }) => (
-                    <button
-                      key={type}
-                      type="button"
-                      onClick={() => {
-                        setAssigneeType(type)
-                        setAssigneeId('')
-                        setAssigneeName('')
+                <div className="relative" ref={assigneeDropdownRef}>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+                    <input
+                      id="borrow-out-assignee"
+                      type="text"
+                      value={assigneeSearch}
+                      onChange={(e) => {
+                        setAssigneeSearch(e.target.value)
+                        setShowAssigneeDropdown(true)
+                        if (selectedAssignee && e.target.value !== selectedAssignee.name) {
+                          setSelectedAssignee(null)
+                        }
                       }}
-                      className={cn(
-                        'flex flex-1 items-center justify-center gap-2 rounded-lg border px-3 py-2 text-sm font-medium transition-colors',
-                        assigneeType === type
-                          ? 'border-primary bg-primary/10 text-primary'
-                          : 'border-neutral-200 bg-white text-neutral-600 hover:bg-neutral-50'
+                      onFocus={() => setShowAssigneeDropdown(true)}
+                      placeholder="Search people or jobs..."
+                      className="w-full h-10 pl-9 pr-3 rounded-lg border border-neutral-300 bg-white text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                      autoComplete="off"
+                    />
+                  </div>
+
+                  {/* Dropdown */}
+                  {showAssigneeDropdown && (
+                    <div className="absolute z-10 mt-1 w-full max-h-60 overflow-y-auto rounded-lg border border-neutral-200 bg-white shadow-lg">
+                      {filteredAssignees.length === 0 ? (
+                        <div className="px-3 py-2 text-sm text-neutral-500">No results found</div>
+                      ) : (
+                        filteredAssignees.map((assignee) => (
+                          <button
+                            key={`${assignee.type}-${assignee.id}`}
+                            type="button"
+                            onClick={() => handleSelectAssignee(assignee)}
+                            className={cn(
+                              'w-full flex items-center gap-3 px-3 py-2 text-left text-sm hover:bg-neutral-50 transition-colors',
+                              selectedAssignee?.id === assignee.id && selectedAssignee?.type === assignee.type && 'bg-primary/5'
+                            )}
+                          >
+                            {assignee.type === 'person' ? (
+                              <User className="h-4 w-4 text-blue-500 flex-shrink-0" />
+                            ) : assignee.type === 'contact' ? (
+                              <User className="h-4 w-4 text-emerald-500 flex-shrink-0" />
+                            ) : (
+                              <Briefcase className="h-4 w-4 text-amber-500 flex-shrink-0" />
+                            )}
+                            <div className="flex-1 min-w-0">
+                              <span className="block truncate">{assignee.name}</span>
+                              {assignee.type === 'contact' && assignee.company && (
+                                <span className="block text-xs text-neutral-500 truncate">{assignee.company}</span>
+                              )}
+                            </div>
+                            <span className={cn(
+                              'text-xs px-1.5 py-0.5 rounded flex-shrink-0',
+                              assignee.type === 'person' ? 'bg-blue-100 text-blue-700' :
+                              assignee.type === 'contact' ? 'bg-emerald-100 text-emerald-700' :
+                              'bg-amber-100 text-amber-700'
+                            )}>
+                              {assignee.type === 'person' ? 'Team' : assignee.type === 'contact' ? 'Contact' : 'Job'}
+                            </span>
+                          </button>
+                        ))
                       )}
-                    >
-                      <Icon className="h-4 w-4" />
-                      {label}
-                    </button>
-                  ))}
+
+                      {/* Add new contact option */}
+                      {assigneeSearch.trim().length > 0 && (
+                        <button
+                          type="button"
+                          onClick={handleShowNewContactForm}
+                          className="w-full flex items-center gap-3 px-3 py-2.5 text-left text-sm hover:bg-neutral-50 transition-colors border-t border-neutral-100"
+                        >
+                          <UserPlus className="h-4 w-4 text-primary flex-shrink-0" />
+                          <span className="flex-1 text-primary font-medium">
+                            Add &quot;{assigneeSearch.trim()}&quot; as new contact
+                          </span>
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
 
-                <select
-                  id="borrow-out-assignee"
-                  value={assigneeId}
-                  onChange={(e) => handleAssigneeChange(e.target.value)}
-                  className="w-full h-10 px-3 rounded-lg border border-neutral-300 bg-white text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                >
-                  <option value="">Select {assigneeType}...</option>
-                  {getAssigneeOptions().map((option) => (
-                    <option key={option.id} value={option.id}>
-                      {option.name}
-                    </option>
-                  ))}
-                </select>
+                {/* New contact form */}
+                {showNewContactForm && (
+                  <div className="mt-3 rounded-lg border border-neutral-200 bg-neutral-50 p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="text-sm font-medium text-neutral-900">New Contact</h4>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setShowNewContactForm(false)
+                          setNewContactName('')
+                          setNewContactPhone('')
+                          setNewContactCompany('')
+                        }}
+                        className="text-neutral-400 hover:text-neutral-600"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    <div className="space-y-3">
+                      <div>
+                        <label htmlFor="new-contact-name" className="block text-xs font-medium text-neutral-600 mb-1">
+                          Name <span className="text-red-500">*</span>
+                        </label>
+                        <div className="relative">
+                          <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+                          <input
+                            id="new-contact-name"
+                            type="text"
+                            value={newContactName}
+                            onChange={(e) => setNewContactName(e.target.value)}
+                            placeholder="Contact name"
+                            className="w-full h-9 pl-9 pr-3 rounded-lg border border-neutral-300 bg-white text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                            autoFocus
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label htmlFor="new-contact-phone" className="block text-xs font-medium text-neutral-600 mb-1">
+                          Phone (optional)
+                        </label>
+                        <div className="relative">
+                          <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+                          <input
+                            id="new-contact-phone"
+                            type="tel"
+                            value={newContactPhone}
+                            onChange={(e) => setNewContactPhone(e.target.value)}
+                            placeholder="Phone number"
+                            className="w-full h-9 pl-9 pr-3 rounded-lg border border-neutral-300 bg-white text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label htmlFor="new-contact-company" className="block text-xs font-medium text-neutral-600 mb-1">
+                          Company (optional)
+                        </label>
+                        <div className="relative">
+                          <Building2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
+                          <input
+                            id="new-contact-company"
+                            type="text"
+                            value={newContactCompany}
+                            onChange={(e) => setNewContactCompany(e.target.value)}
+                            placeholder="Company or organization"
+                            className="w-full h-9 pl-9 pr-3 rounded-lg border border-neutral-300 bg-white text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                          />
+                        </div>
+                      </div>
+
+                      <Button
+                        type="button"
+                        onClick={handleCreateContact}
+                        disabled={creatingContact || !newContactName.trim()}
+                        className="w-full"
+                        size="sm"
+                      >
+                        {creatingContact ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Creating...
+                          </>
+                        ) : (
+                          <>
+                            <UserPlus className="mr-2 h-4 w-4" />
+                            Create Contact
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Selected indicator */}
+                {selectedAssignee && !showNewContactForm && (
+                  <div className="mt-2 flex items-center gap-2 text-sm text-neutral-600">
+                    {selectedAssignee.type === 'person' ? (
+                      <User className="h-4 w-4 text-blue-500" />
+                    ) : selectedAssignee.type === 'contact' ? (
+                      <User className="h-4 w-4 text-emerald-500" />
+                    ) : (
+                      <Briefcase className="h-4 w-4 text-amber-500" />
+                    )}
+                    <span>Lending to <strong>{selectedAssignee.name}</strong></span>
+                    {selectedAssignee.type === 'contact' && selectedAssignee.company && (
+                      <span className="text-neutral-400">({selectedAssignee.company})</span>
+                    )}
+                  </div>
+                )}
               </div>
 
               {/* Due Date */}
@@ -618,7 +861,7 @@ export function BorrowOutModal({
               </>
             ) : (
               <>
-                Borrow Out {effectiveQuantity}
+                Lend {effectiveQuantity}
               </>
             )}
           </Button>

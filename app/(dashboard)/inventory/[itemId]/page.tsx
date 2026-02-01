@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import type { InventoryItem, Folder, Tag as TagType } from '@/types/database.types'
 import { format } from 'date-fns'
-import { ItemCheckoutHistoryCard, ItemCheckoutStatusCard } from './item-checkout-section'
+import { ItemCheckoutHistoryCard } from './item-checkout-section'
 import { ItemQuickActions } from './components/item-quick-actions'
 import { TagsManager } from './components/tags-manager'
 import { BatchTrackingCard, SerialTrackingCard } from '@/components/tracking'
@@ -436,9 +436,8 @@ export default async function ItemDetailPage({ params }: PageProps) {
             </div>
           </div>
 
-          {/* Borrowing Section */}
-          <div className="mb-6 grid gap-4 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
-            <ItemCheckoutStatusCard item={item} />
+          {/* Borrowing History */}
+          <div className="mb-6">
             <ItemCheckoutHistoryCard itemId={item.id} limit={5} />
           </div>
 

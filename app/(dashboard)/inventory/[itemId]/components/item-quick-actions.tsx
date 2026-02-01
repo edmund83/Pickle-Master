@@ -130,19 +130,19 @@ export function ItemQuickActions({
         </Button>
       </div>
 
-      {/* Borrow Out button */}
+      {/* Lend button */}
       <Button
         variant="outline"
         className="h-11 w-full"
         onClick={() => setShowBorrowOut(true)}
       >
         <HandHelping className="mr-2 h-4 w-4" />
-        Borrow Out
+        Lend
       </Button>
     </div>
   )
 
-  // For non-tracked items: Keep existing +/- buttons + add Borrow Out
+  // For non-tracked items: Keep existing +/- buttons + add Lend
   const nonTrackedContent = (
     <div className="space-y-2">
       <div className="flex items-center justify-between gap-4">
@@ -197,14 +197,14 @@ export function ItemQuickActions({
         </p>
       ) : null}
 
-      {/* Borrow Out button for non-tracked items */}
+      {/* Lend button for non-tracked items */}
       <Button
         variant="outline"
         className="mt-3 h-11 w-full"
         onClick={() => setShowBorrowOut(true)}
       >
         <HandHelping className="mr-2 h-4 w-4" />
-        Borrow Out
+        Lend
       </Button>
     </div>
   )

@@ -23,6 +23,8 @@ export type CheckoutResult = {
 const checkoutItemSchema = z.object({
     itemId: z.string().uuid(),
     quantity: quantitySchema,
+    assigneeType: z.enum(['person', 'job', 'location', 'contact']).optional(),
+    assigneeId: z.string().uuid().optional(),
     assigneeName: z.string().min(1).max(255),
     notes: z.string().max(2000).optional(),
     dueDate: optionalDateStringSchema,
@@ -36,7 +38,7 @@ const returnItemSchema = z.object({
     condition: returnConditionSchema,
 })
 
-const assigneeTypeSchema = z.enum(['person', 'job', 'location'])
+const assigneeTypeSchema = z.enum(['person', 'job', 'location', 'contact'])
 
 const serialReturnSchema = z.object({
     serial_id: z.string().uuid(),
@@ -48,7 +50,9 @@ export async function checkoutItem(
     quantity: number,
     assigneeName: string,
     notes?: string,
-    dueDate?: string
+    dueDate?: string,
+    assigneeType?: 'person' | 'job' | 'location' | 'contact',
+    assigneeId?: string
 ): Promise<CheckoutResult> {
     // 1. Authenticate and get context
     const authResult = await getAuthContext()
@@ -60,7 +64,7 @@ export async function checkoutItem(
     if (!permResult.success) return { success: false, error: permResult.error }
 
     // 3. Validate input
-    const validation = validateInput(checkoutItemSchema, { itemId, quantity, assigneeName, notes, dueDate })
+    const validation = validateInput(checkoutItemSchema, { itemId, quantity, assigneeType, assigneeId, assigneeName, notes, dueDate })
     if (!validation.success) return { success: false, error: validation.error }
     const validatedInput = validation.data
 
@@ -76,11 +80,12 @@ export async function checkoutItem(
     const supabase = await createClient()
 
     // 5. Use atomic RPC function that handles checkout + inventory update in single transaction
-     
+
     const { data, error } = await (supabase as any).rpc('perform_checkout', {
         p_item_id: validatedInput.itemId,
         p_quantity: validatedInput.quantity,
-        p_assignee_type: 'person',
+        p_assignee_type: validatedInput.assigneeType || 'person',
+        p_assignee_id: validatedInput.assigneeId || null,
         p_assignee_name: validatedInput.assigneeName,
         p_due_date: validatedInput.dueDate || null,
         p_notes: validatedInput.notes || null

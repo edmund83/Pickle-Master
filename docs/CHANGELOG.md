@@ -73,6 +73,25 @@ Fixed two critical international SEO issues identified by site audit tools:
 
 ### Added
 
+#### External Contacts for Lending
+Added support for lending items to external contacts (non-team members). Users can now assign checkouts to contractors, visitors, or anyone outside the organization.
+
+**Features**:
+- New `contacts` table for storing external borrowers with name, phone, company, and ID number
+- Unified assignee search in Borrow Out modal shows Team members, Contacts, and Jobs
+- Inline "Add new contact" form when searching for someone not in the system
+- Contact borrowing history tracking (who borrowed what, when)
+- RLS policies ensure tenant isolation
+
+**Files Added**:
+- `supabase/migrations/00111_contacts_for_lending.sql` - Table, RLS policies, and RPC functions
+- `app/actions/contacts.ts` - Server actions for contact management
+
+**Files Modified**:
+- `components/stock/BorrowOutModal.tsx` - Added contact support and inline creation form
+- `app/actions/checkouts.ts` - Updated to support contact assignee type
+- `types/database.types.ts` - Added contacts table and updated enum types
+
 #### International SEO for Marketing Pages
 Implemented comprehensive International SEO targeting US, UK, AU, and CA markets with locale-prefixed URLs.
 
