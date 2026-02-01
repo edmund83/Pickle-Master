@@ -627,7 +627,7 @@ export async function acceptInvitation(
   }
 
   // 5. Mark invitation as accepted
-  await adminClient
+  await (adminClient as any)
     .from('team_invitations')
     .update({ accepted_at: new Date().toISOString() })
     .eq('id', invitation.id)

@@ -47,9 +47,12 @@ interface InventoryDesktopViewProps {
   items: InventoryItemWithTags[]
   folders: Folder[]
   view: string
+  userRole: 'owner' | 'staff' | 'viewer'
 }
 
-export function InventoryDesktopView({ items, folders, view }: InventoryDesktopViewProps) {
+export function InventoryDesktopView({ items, folders, view, userRole }: InventoryDesktopViewProps) {
+  // Viewers cannot add items
+  const canAddItem = userRole !== 'viewer'
   const router = useRouter()
   const searchParams = useSearchParams()
 
@@ -476,12 +479,14 @@ export function InventoryDesktopView({ items, folders, view }: InventoryDesktopV
                     Scan
                   </Button>
                 </Link>
-                <Link href="/inventory/new">
-                  <Button>
-                    <Plus className="mr-2 h-4 w-4" />
-                    Add Item
-                  </Button>
-                </Link>
+                {canAddItem && (
+                  <Link href="/inventory/new">
+                    <Button>
+                      <Plus className="mr-2 h-4 w-4" />
+                      Add Item
+                    </Button>
+                  </Link>
+                )}
               </div>
             </div>
 
@@ -611,7 +616,7 @@ export function InventoryDesktopView({ items, folders, view }: InventoryDesktopV
               </div>
             )
           ) : (
-            <EmptyState selectedFolderId={selectedFolderId} onClearFilter={() => navigateToFolder(null)} />
+            <EmptyState selectedFolderId={selectedFolderId} onClearFilter={() => navigateToFolder(null)} canAddItem={canAddItem} />
           )}
         </div>
       </div>
@@ -771,9 +776,10 @@ function ItemCard({ item, isSelectionMode, isSelected, onToggleSelect }: ItemCar
 interface EmptyStateProps {
   selectedFolderId: string | null
   onClearFilter: () => void
+  canAddItem: boolean
 }
 
-function EmptyState({ selectedFolderId, onClearFilter }: EmptyStateProps) {
+function EmptyState({ selectedFolderId, onClearFilter, canAddItem }: EmptyStateProps) {
   if (selectedFolderId) {
     return (
       <div className="flex flex-col items-center justify-center py-16">
@@ -795,13 +801,17 @@ function EmptyState({ selectedFolderId, onClearFilter }: EmptyStateProps) {
         <Package className="h-8 w-8 text-neutral-400" />
       </div>
       <h3 className="mt-4 text-lg font-medium text-neutral-900">No items yet</h3>
-      <p className="mt-1 text-neutral-500">Get started by adding your first inventory item.</p>
-      <Link href="/inventory/new" className="mt-4">
-        <Button>
-          <Plus className="mr-2 h-4 w-4" />
-          Add your first item
-        </Button>
-      </Link>
+      <p className="mt-1 text-neutral-500">
+        {canAddItem ? 'Get started by adding your first inventory item.' : 'No inventory items have been added yet.'}
+      </p>
+      {canAddItem && (
+        <Link href="/inventory/new" className="mt-4">
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Add your first item
+          </Button>
+        </Link>
+      )}
     </div>
   )
 }

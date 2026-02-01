@@ -18,23 +18,24 @@ function sanitizeSearchTerm(value?: string): string {
 async function getInventoryData(query?: string): Promise<{
   items: InventoryItemWithTags[],
   folders: Folder[],
+  userRole: 'owner' | 'staff' | 'viewer',
 }> {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-   
+
   const { data: profileData } = await (supabase as any)
     .from('profiles')
-    .select('tenant_id')
+    .select('tenant_id, role')
     .eq('id', user.id)
     .single()
 
-  const profile = profileData as { tenant_id: string | null } | null
+  const profile = profileData as { tenant_id: string | null; role: 'owner' | 'staff' | 'viewer' | null } | null
 
   if (!profile?.tenant_id) {
-    return { items: [], folders: [] }
+    return { items: [], folders: [], userRole: 'viewer' }
   }
 
   // Use items_with_tags view to get tag details
@@ -65,6 +66,7 @@ async function getInventoryData(query?: string): Promise<{
   return {
     items: (items || []) as InventoryItemWithTags[],
     folders: (folders || []) as Folder[],
+    userRole: profile.role || 'viewer',
   }
 }
 
@@ -72,7 +74,7 @@ export default async function InventoryPage(props: { searchParams?: Promise<{ q?
   const searchParams = await props.searchParams
   const query = searchParams?.q
   const view = searchParams?.view || 'grid'
-  const { items, folders } = await getInventoryData(query)
+  const { items, folders, userRole } = await getInventoryData(query)
 
   return (
     <>
@@ -82,12 +84,13 @@ export default async function InventoryPage(props: { searchParams?: Promise<{ q?
           items={items}
           folders={folders}
           view={view}
+          userRole={userRole}
         />
       </div>
 
       {/* Mobile View */}
       <div className="lg:hidden flex flex-col flex-1 overflow-hidden">
-        <MobileInventoryView items={items} folders={folders} />
+        <MobileInventoryView items={items} folders={folders} userRole={userRole} />
       </div>
     </>
   )

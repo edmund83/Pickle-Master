@@ -10,6 +10,7 @@ import { WarehouseSelector } from './warehouse-selector'
 interface MobileInventoryViewProps {
   items: InventoryItemWithTags[]
   folders: Folder[]
+  userRole: 'owner' | 'staff' | 'viewer'
 }
 
 const statusConfig = {
@@ -33,7 +34,9 @@ const statusConfig = {
   },
 }
 
-export function MobileInventoryView({ items, folders }: MobileInventoryViewProps) {
+export function MobileInventoryView({ items, folders, userRole }: MobileInventoryViewProps) {
+  // Viewers cannot add items
+  const canAddItem = userRole !== 'viewer'
   const [searchQuery, setSearchQuery] = useState('')
   const [activeFilter, setActiveFilter] = useState<'all' | 'low' | 'out'>('all')
   const [selectedWarehouseId, setSelectedWarehouseId] = useState<string | null>(null)
@@ -171,6 +174,7 @@ export function MobileInventoryView({ items, folders }: MobileInventoryViewProps
           <MobileEmptyState
             hasItems={items.length > 0}
             searchQuery={searchQuery}
+            canAddItem={canAddItem}
           />
         )}
       </div>
@@ -327,9 +331,10 @@ function MobileItemCard({ item }: MobileItemCardProps) {
 interface MobileEmptyStateProps {
   hasItems: boolean
   searchQuery: string
+  canAddItem: boolean
 }
 
-function MobileEmptyState({ hasItems, searchQuery }: MobileEmptyStateProps) {
+function MobileEmptyState({ hasItems, searchQuery, canAddItem }: MobileEmptyStateProps) {
   if (hasItems && searchQuery) {
     return (
       <div className="flex flex-col items-center justify-center py-16 px-4">
@@ -351,7 +356,7 @@ function MobileEmptyState({ hasItems, searchQuery }: MobileEmptyStateProps) {
       </div>
       <h3 className="mt-4 text-xl font-semibold text-neutral-900">No items yet</h3>
       <p className="mt-2 text-neutral-500 text-center">
-        Tap the + button to add your first item
+        {canAddItem ? 'Tap the + button to add your first item' : 'No inventory items have been added yet.'}
       </p>
     </div>
   )

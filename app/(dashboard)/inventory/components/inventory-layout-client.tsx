@@ -11,6 +11,7 @@ interface InventoryLayoutClientProps {
   folders: Folder[]
   folderStatsObj: Record<string, FolderStats>
   totalItemCount: number
+  userRole: 'owner' | 'staff' | 'viewer'
   children: React.ReactNode
 }
 
@@ -18,6 +19,7 @@ function InventoryLayoutContent({
   folders,
   folderStatsObj,
   totalItemCount,
+  userRole,
   children,
 }: InventoryLayoutClientProps) {
   const searchParams = useSearchParams()
@@ -39,6 +41,7 @@ function InventoryLayoutContent({
           totalItemCount={totalItemCount}
           selectedFolderId={selectedFolderId}
           highlightedFolderId={highlightedFolderId}
+          userRole={userRole}
         />
       </div>
       {/* Main content */}

@@ -17,6 +17,7 @@ interface InventorySidebarProps {
   totalItemCount: number
   selectedFolderId: string | null
   highlightedFolderId?: string | null
+  userRole: 'owner' | 'staff' | 'viewer'
 }
 
 export function InventorySidebar({
@@ -25,7 +26,10 @@ export function InventorySidebar({
   totalItemCount,
   selectedFolderId,
   highlightedFolderId,
+  userRole,
 }: InventorySidebarProps) {
+  // Viewers cannot create folders
+  const canCreateFolder = userRole !== 'viewer'
   const router = useRouter()
   const pathname = usePathname()
   const [isCreatingFolder, setIsCreatingFolder] = useState(false)
@@ -187,18 +191,20 @@ export function InventorySidebar({
             />
           )}
         </nav>
-        <div className="border-t border-neutral-200 p-2">
-          <Button
-            variant="ghost"
-            className="w-full justify-start"
-            size="sm"
-            onClick={() => handleStartCreateFolder(null)}
-            disabled={isCreatingFolder}
-          >
-            <Plus className="mr-2 h-4 w-4" />
-            New Folder
-          </Button>
-        </div>
+        {canCreateFolder && (
+          <div className="border-t border-neutral-200 p-2">
+            <Button
+              variant="ghost"
+              className="w-full justify-start"
+              size="sm"
+              onClick={() => handleStartCreateFolder(null)}
+              disabled={isCreatingFolder}
+            >
+              <Plus className="mr-2 h-4 w-4" />
+              New Folder
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Inline Folder Form (when creating subfolder - shown as modal overlay for subfolders) */}

@@ -17,23 +17,24 @@ async function getLayoutData(): Promise<{
   folders: Folder[]
   folderStatsObj: Record<string, FolderStats>
   totalItemCount: number
+  userRole: 'owner' | 'staff' | 'viewer'
 }> {
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-   
+
   const { data: profileData } = await (supabase as any)
     .from('profiles')
-    .select('tenant_id')
+    .select('tenant_id, role')
     .eq('id', user.id)
     .single()
 
-  const profile = profileData as { tenant_id: string | null } | null
+  const profile = profileData as { tenant_id: string | null; role: 'owner' | 'staff' | 'viewer' | null } | null
 
   if (!profile?.tenant_id) {
-    return { folders: [], folderStatsObj: {}, totalItemCount: 0 }
+    return { folders: [], folderStatsObj: {}, totalItemCount: 0, userRole: 'viewer' }
   }
 
   // Fetch folders
@@ -71,6 +72,7 @@ async function getLayoutData(): Promise<{
     folders: (folders || []) as Folder[],
     folderStatsObj,
     totalItemCount: count || 0,
+    userRole: profile.role || 'viewer',
   }
 }
 
@@ -79,13 +81,14 @@ export default async function InventoryLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { folders, folderStatsObj, totalItemCount } = await getLayoutData()
+  const { folders, folderStatsObj, totalItemCount, userRole } = await getLayoutData()
 
   return (
     <InventoryLayoutClient
       folders={folders}
       folderStatsObj={folderStatsObj}
       totalItemCount={totalItemCount}
+      userRole={userRole}
     >
       {children}
     </InventoryLayoutClient>
