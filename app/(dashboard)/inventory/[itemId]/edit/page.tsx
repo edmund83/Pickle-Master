@@ -101,8 +101,8 @@ export default function EditItemPage() {
           lot_tracking: hasFeature(subscriptionTier, 'lot_tracking'),
           serial_tracking: hasFeature(subscriptionTier, 'serial_tracking'),
           // These features can still come from settings if needed
-          multi_location: (tenant?.settings as Record<string, unknown>)?.features_enabled?.multi_location as boolean || false,
-          shipping_dimensions: (tenant?.settings as Record<string, unknown>)?.features_enabled?.shipping_dimensions as boolean || false,
+          multi_location: ((tenant?.settings as Record<string, unknown>)?.features_enabled as Record<string, unknown>)?.multi_location as boolean || false,
+          shipping_dimensions: ((tenant?.settings as Record<string, unknown>)?.features_enabled as Record<string, unknown>)?.shipping_dimensions as boolean || false,
         }
         setFeatures(planFeatures)
 

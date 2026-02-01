@@ -1046,7 +1046,7 @@ export async function updateReceive(
     return { success: true }
 }
 
-// Get locations for dropdown
+// Get folders for location dropdown (using existing folder hierarchy)
 export async function getLocations() {
     // 1. Authenticate and get context
     const authResult = await getAuthContext()
@@ -1055,16 +1055,20 @@ export async function getLocations() {
 
     const supabase = await createClient()
 
-    // Get locations with tenant filter
-     
+    // Get folders with tenant filter (using folders as storage locations)
     const { data } = await (supabase as any)
-        .from('locations')
-        .select('id, name, type')
+        .from('folders')
+        .select('id, name, path')
         .eq('tenant_id', context.tenantId)
-        .eq('is_active', true)
         .order('name')
 
-    return data || []
+    // Transform to expected format with type field
+    // Note: path contains parent folder UUIDs, not names - just show folder name for now
+    return (data || []).map((folder: { id: string; name: string; path: string[] | null }) => ({
+        id: folder.id,
+        name: folder.name,
+        type: 'folder'
+    }))
 }
 
 // Get pending POs for receiving (for receives list page)

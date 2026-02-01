@@ -3,10 +3,11 @@ import { redirect, notFound } from 'next/navigation'
 import { ReceiveDetailClient } from './ReceiveDetailClient'
 import { getReceive, getLocations } from '@/app/actions/receives'
 
+// Folders used for item organization (re-exported as Location for backwards compatibility)
 export interface Location {
   id: string
   name: string
-  type: string
+  type: string  // Always 'folder' - kept for backwards compatibility
 }
 
 export default async function ReceiveDetailPage({

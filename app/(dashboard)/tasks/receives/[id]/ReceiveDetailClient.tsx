@@ -1026,11 +1026,11 @@ export function ReceiveDetailClient({
                     </dd>
                   </div>
 
-                  {/* Default Location */}
+                  {/* Default Folder */}
                   <div className="flex justify-between">
                     <dt className="text-neutral-500 flex items-center gap-1">
                       <MapPin className="h-3 w-3" />
-                      Location
+                      Folder
                     </dt>
                     <dd className="font-medium text-neutral-900">
                       {isDraft ? (
@@ -1257,17 +1257,17 @@ export function ReceiveDetailClient({
                 />
               </div>
 
-              {/* Location */}
+              {/* Folder */}
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-1">
-                  Storage Location
+                  Folder
                 </label>
                 <select
                   value={editForm.location_id}
                   onChange={(e) => setEditForm({ ...editForm, location_id: e.target.value })}
                   className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500"
                 >
-                  <option value="">Use default location</option>
+                  <option value="">Use default folder</option>
                   {locations.map(loc => (
                     <option key={loc.id} value={loc.id}>{loc.name}</option>
                   ))}
@@ -1518,17 +1518,17 @@ export function ReceiveDetailClient({
               <div className="border-t border-neutral-200 pt-4 mt-4">
                 <p className="text-sm font-medium text-neutral-700 mb-3">Additional Options</p>
                 <div className="grid grid-cols-2 gap-3">
-                  {/* Location */}
+                  {/* Folder */}
                   <div>
                     <label className="block text-xs font-medium text-neutral-600 mb-1">
-                      Location
+                      Folder
                     </label>
                     <select
                       value={serialForm.location_id}
                       onChange={(e) => setSerialForm({ ...serialForm, location_id: e.target.value })}
                       className="w-full rounded-lg border border-neutral-300 px-2 py-1.5 text-sm focus:border-neutral-500 focus:outline-none"
                     >
-                      <option value="">Default location</option>
+                      <option value="">Default folder</option>
                       {locations.map(loc => (
                         <option key={loc.id} value={loc.id}>{loc.name}</option>
                       ))}
@@ -1734,17 +1734,17 @@ export function ReceiveDetailClient({
                     </div>
                   )}
 
-                  {/* Location */}
+                  {/* Folder */}
                   <div>
                     <label className="block text-sm font-medium text-neutral-700 mb-1">
-                      Storage Location
+                      Folder
                     </label>
                     <select
                       value={addItemForm.location_id}
                       onChange={(e) => setAddItemForm({ ...addItemForm, location_id: e.target.value })}
                       className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-neutral-500 focus:outline-none focus:ring-1 focus:ring-neutral-500"
                     >
-                      <option value="">Use default location</option>
+                      <option value="">Use default folder</option>
                       {locations.map(loc => (
                         <option key={loc.id} value={loc.id}>{loc.name}</option>
                       ))}
