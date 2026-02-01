@@ -32,10 +32,13 @@ import { TrackingCard } from './components/TrackingCard'
 import { FormattedDateTime, FormattedShortDate } from '@/components/formatting/FormattedDate'
 import { ItemMoreOptions } from './components/item-more-options'
 import { ChatterPanel } from '@/components/chatter'
+import { hasFeature } from '@/lib/features/gating'
+import type { PlanId } from '@/lib/plans/config'
 
 interface FeaturesEnabled {
   shipping_dimensions?: boolean
   lot_tracking?: boolean
+  serial_tracking?: boolean
 }
 
 interface PageProps {
@@ -146,15 +149,20 @@ async function getItemDetails(itemId: string): Promise<ItemWithRelations | null>
     })
 
   // Get tenant settings for feature flags and logo
-   
   const { data: tenant } = await (supabase as any)
     .from('tenants')
-    .select('settings, logo_url')
+    .select('subscription_tier, settings, logo_url')
     .eq('id', profile.tenant_id)
     .single()
 
+  // Use plan-based feature gating instead of settings flags
+  const subscriptionTier = (tenant?.subscription_tier as PlanId) || 'starter'
   const settings = tenant?.settings as Record<string, unknown> | null
-  const features = (settings?.features_enabled as FeaturesEnabled) || {}
+  const features: FeaturesEnabled = {
+    lot_tracking: hasFeature(subscriptionTier, 'lot_tracking'),
+    serial_tracking: hasFeature(subscriptionTier, 'serial_tracking'),
+    shipping_dimensions: (settings?.features_enabled as FeaturesEnabled)?.shipping_dimensions || false,
+  }
   const tenantLogo = (tenant?.logo_url as string) || null
 
   // Fetch tracking stats based on item's tracking mode

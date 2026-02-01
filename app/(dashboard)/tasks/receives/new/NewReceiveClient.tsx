@@ -24,10 +24,10 @@ import { ItemThumbnail } from '@/components/ui/item-thumbnail'
 import {
   createStandaloneReceive,
   addStandaloneReceiveItem,
+  searchInventoryItemsForReceive,
   type ReceiveSourceType,
   type ReturnReason
 } from '@/app/actions/receives'
-import { createClient } from '@/lib/supabase/client'
 
 interface Location {
   id: string
@@ -104,7 +104,7 @@ export function NewReceiveClient({ locations }: NewReceiveClientProps) {
   }>>([])
   const [searchLoading, setSearchLoading] = useState(false)
 
-  // Search for items
+  // Search for items using server action
   async function handleItemSearch(query: string) {
     setItemSearch(query)
     if (query.length < 2) {
@@ -114,16 +114,8 @@ export function NewReceiveClient({ locations }: NewReceiveClientProps) {
 
     setSearchLoading(true)
     try {
-      const supabase = createClient()
-      const { data, error } = await supabase
-        .from('inventory_items')
-        .select('id, name, sku, quantity, image_url, tracking_mode')
-        .or(`name.ilike.%${query}%,sku.ilike.%${query}%`)
-        .limit(10)
-
-      if (!error && data) {
-        setSearchResults(data)
-      }
+      const results = await searchInventoryItemsForReceive(query)
+      setSearchResults(results)
     } catch (err) {
       console.error('Search error:', err)
     } finally {

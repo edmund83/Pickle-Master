@@ -1569,3 +1569,41 @@ export async function getReceiveItemSerials(
 
     return data || []
 }
+
+// Search inventory items for standalone receives (returns/adjustments)
+export async function searchInventoryItemsForReceive(query: string) {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+
+    if (!user) return []
+
+    // Get user's tenant
+
+    const { data: profile } = await (supabase as any)
+        .from('profiles')
+        .select('tenant_id')
+        .eq('id', user.id)
+        .single()
+
+    if (!profile?.tenant_id) return []
+
+    if (!query || query.length < 2) return []
+
+    const escapedQuery = escapeSqlLike(query)
+
+    const { data, error } = await (supabase as any)
+        .from('inventory_items')
+        .select('id, name, sku, quantity, image_url, tracking_mode')
+        .eq('tenant_id', profile.tenant_id)
+        .is('deleted_at', null)
+        .or(`name.ilike.%${escapedQuery}%,sku.ilike.%${escapedQuery}%`)
+        .order('name')
+        .limit(10)
+
+    if (error) {
+        console.error('Search inventory items error:', error)
+        return []
+    }
+
+    return data || []
+}

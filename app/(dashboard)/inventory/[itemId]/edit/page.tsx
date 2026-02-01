@@ -15,11 +15,14 @@ import { createClient } from '@/lib/supabase/client'
 import { useOptionalInventoryContext } from '../../components/inventory-context'
 import type { InventoryItem, ItemTrackingMode } from '@/types/database.types'
 import { getCurrencySymbol, formatCurrency as formatCurrencyFn, formatNumber as formatNumberFn, DEFAULT_TENANT_SETTINGS } from '@/lib/formatting'
+import { hasFeature, type FeatureId } from '@/lib/features/gating'
+import type { PlanId } from '@/lib/plans/config'
 
 interface FeaturesEnabled {
   multi_location?: boolean
   shipping_dimensions?: boolean
   lot_tracking?: boolean
+  serial_tracking?: boolean
 }
 
 export default function EditItemPage() {
@@ -85,17 +88,23 @@ export default function EditItemPage() {
           throw new Error('No tenant found')
         }
 
-        // Load tenant features
-         
+        // Load tenant features based on subscription tier (plan-based gating)
         const { data: tenant } = await (supabase as any)
           .from('tenants')
-          .select('settings')
+          .select('subscription_tier, settings')
           .eq('id', profile.tenant_id)
           .single()
 
-        const settings = tenant?.settings as Record<string, unknown> | null
-        const enabledFeatures = settings?.features_enabled as FeaturesEnabled | undefined
-        setFeatures(enabledFeatures || {})
+        // Use plan-based feature gating instead of settings flags
+        const subscriptionTier = (tenant?.subscription_tier as PlanId) || 'starter'
+        const planFeatures: FeaturesEnabled = {
+          lot_tracking: hasFeature(subscriptionTier, 'lot_tracking'),
+          serial_tracking: hasFeature(subscriptionTier, 'serial_tracking'),
+          // These features can still come from settings if needed
+          multi_location: (tenant?.settings as Record<string, unknown>)?.features_enabled?.multi_location as boolean || false,
+          shipping_dimensions: (tenant?.settings as Record<string, unknown>)?.features_enabled?.shipping_dimensions as boolean || false,
+        }
+        setFeatures(planFeatures)
 
          
         const { data, error: fetchError } = await (supabase as any)
