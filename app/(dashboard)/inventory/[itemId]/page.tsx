@@ -20,15 +20,14 @@ import type { InventoryItem, Folder, Tag as TagType } from '@/types/database.typ
 import { format } from 'date-fns'
 import { ItemCheckoutHistoryCard, ItemCheckoutStatusCard } from './item-checkout-section'
 import { ItemQuickActions } from './components/item-quick-actions'
-import { ItemAdvancedPanels } from './components/item-advanced-panels'
 import { TagsManager } from './components/tags-manager'
+import { BatchTrackingCard, SerialTrackingCard } from '@/components/tracking'
 import PrintLabelButton from './components/print-label-button'
 import QRBarcodeSection from './components/qr-barcode-section'
 import { SetHighlightedFolder } from './components/set-highlighted-folder'
 import { ItemDetailCard } from './components/item-detail-card'
 import { InlineReminders } from './components/inline-reminders'
 import { FormattedPricingCard } from './components/FormattedPricingCard'
-import { TrackingCard } from './components/TrackingCard'
 import { FormattedDateTime, FormattedShortDate } from '@/components/formatting/FormattedDate'
 import { ItemMoreOptions } from './components/item-more-options'
 import { ChatterPanel } from '@/components/chatter'
@@ -404,9 +403,11 @@ export default async function ItemDetailPage({ params }: PageProps) {
               >
                 <ItemQuickActions
                   itemId={item.id}
+                  itemName={item.name}
                   currentQuantity={item.quantity}
                   unit={item.unit || 'units'}
                   variant="inline"
+                  trackingMode={(item.tracking_mode as 'none' | 'serialized' | 'lot_expiry') || 'none'}
                 />
 
                 <div className="grid grid-cols-2 gap-3">
@@ -441,17 +442,6 @@ export default async function ItemDetailPage({ params }: PageProps) {
             <ItemCheckoutHistoryCard itemId={item.id} limit={5} />
           </div>
 
-          {/* Advanced Panels - Lot Tracking */}
-          {features.lot_tracking && (
-            <div className="mb-6">
-              <ItemAdvancedPanels
-                itemId={item.id}
-                itemName={item.name}
-                trackingMode={(item.tracking_mode as 'none' | 'serialized' | 'lot_expiry') || 'none'}
-              />
-            </div>
-          )}
-
           {/* Info Cards Grid - Priority-based rows */}
           {/* Row 1: Key Information */}
           <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -479,14 +469,27 @@ export default async function ItemDetailPage({ params }: PageProps) {
               quantity={item.quantity || 0}
             />
 
-            {/* Tracking & Traceability Card - Hidden for lot-tracked items (shown in LotsPanel instead) */}
-            {item.tracking_mode !== 'lot_expiry' && (
-              <TrackingCard
+            {/* Batch Tracking Card */}
+            {item.tracking_mode === 'lot_expiry' && (
+              <BatchTrackingCard
                 itemId={item.id}
-                trackingMode={item.tracking_mode as 'none' | 'serialized' | 'lot_expiry' | null}
-                serialNumber={item.serial_number}
-                serialStats={serialStats}
-                lotStats={lotStats}
+                itemName={item.name}
+                stats={lotStats ? {
+                  totalQuantity: lotStats.totalQuantity,
+                  activeBatches: lotStats.activeLots,
+                  expiredCount: lotStats.expiredCount,
+                  expiringSoonCount: lotStats.expiringSoonCount,
+                  expiringMonthCount: lotStats.expiringCount,
+                } : null}
+              />
+            )}
+
+            {/* Serial Tracking Card */}
+            {item.tracking_mode === 'serialized' && (
+              <SerialTrackingCard
+                itemId={item.id}
+                itemName={item.name}
+                stats={serialStats}
               />
             )}
           </div>
