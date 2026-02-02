@@ -133,4 +133,58 @@ test.describe('Inventory Detail Page', () => {
       expect(modalVisible || page.url().includes('checkout')).toBeTruthy()
     })
   })
+
+  test.describe('Additional Sections', () => {
+    test.beforeEach(async ({ page }) => {
+      await page.goto(`/inventory/${TEST_ITEM_ID}`)
+      await page.waitForLoadState('networkidle')
+    })
+
+    test('displays activity history section', async ({ page }) => {
+      await expect(page.getByRole('heading', { name: 'Recent Activity' })).toBeVisible()
+
+      // View All link should be present
+      const viewAllLink = page.getByRole('link', { name: /view all/i })
+      await expect(viewAllLink).toBeVisible()
+      await expect(viewAllLink).toHaveAttribute('href', new RegExp(`/inventory/${TEST_ITEM_ID}/activity`))
+    })
+
+    test('displays tags section', async ({ page }) => {
+      await expect(page.getByRole('heading', { name: 'Tags' })).toBeVisible()
+    })
+
+    test('displays chatter panel', async ({ page }) => {
+      await expect(page.getByRole('heading', { name: 'Chatter' })).toBeVisible()
+
+      // Message input should be present
+      await expect(page.getByPlaceholder(/write a message/i)).toBeVisible()
+
+      // Follow button should be present
+      await expect(page.getByRole('button', { name: /follow/i })).toBeVisible()
+    })
+
+    test('displays QR & Barcode section', async ({ page }) => {
+      await expect(page.getByRole('heading', { name: 'QR & Barcode' })).toBeVisible()
+    })
+
+    test('displays description & notes section', async ({ page }) => {
+      await expect(page.getByRole('heading', { name: 'Description & Notes' })).toBeVisible()
+    })
+
+    test('displays metadata footer with dates and ID', async ({ page }) => {
+      // Created date
+      await expect(page.getByText(/created:/i)).toBeVisible()
+
+      // Updated date
+      await expect(page.getByText(/updated:/i)).toBeVisible()
+
+      // Item ID
+      await expect(page.getByText(/id:/i)).toBeVisible()
+      await expect(page.getByText(TEST_ITEM_ID)).toBeVisible()
+    })
+
+    test('print label button is visible', async ({ page }) => {
+      await expect(page.getByRole('button', { name: /print label/i })).toBeVisible()
+    })
+  })
 })
