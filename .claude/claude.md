@@ -71,6 +71,24 @@ Do not introduce other frameworks/platforms (e.g., Firebase, Prisma, tRPC, Chakr
 
 ## Supabase usage
 
+### ⚠️ CRITICAL: Correct Supabase Project Reference
+
+**ALWAYS use StockZip, NEVER use Pickle:**
+
+| Project | ID | Region | Status |
+|---------|-----|--------|--------|
+| ✅ **StockZip** | `qaqainslbhekbvgoyprs` | US-East-1 | **PRODUCTION** |
+| ❌ ~~Pickle~~ | `rarwjeeutwivntttmxpu` | Singapore | LEGACY - DO NOT USE |
+
+**Before running any migration or database operation:**
+1. Verify `.supabase/linked` contains `qaqainslbhekbvgoyprs`
+2. Check `NEXT_PUBLIC_SUPABASE_URL` in `.env.local` points to `qaqainslbhekbvgoyprs`
+3. When using Supabase MCP tools, always specify `project_id: "qaqainslbhekbvgoyprs"`
+
+**If you see `rarwjeeutwivntttmxpu` anywhere, STOP and fix it before proceeding.**
+
+### General Supabase rules
+
 - Use `@supabase/ssr` for server/route-handler auth flows where applicable.
 - Prefer DB constraints + RLS over client-side checks.
 - When you change schema, add a migration in `supabase/migrations/` and keep queries compatible with Postgres.

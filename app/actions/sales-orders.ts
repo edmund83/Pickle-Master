@@ -168,8 +168,11 @@ export async function createDraftSalesOrder(): Promise<SalesOrderResult> {
         return { success: false, error: error.message }
     }
 
-    revalidatePath('/tasks/sales-orders')
-    return { success: true, sales_order_id: data?.id, display_id: data?.display_id }
+    // Note: Don't revalidatePath here - we navigate to detail page immediately
+    // The list will be fresh when user navigates back
+    // RPC returns a table/array, so access the first row
+    const row = data?.[0]
+    return { success: true, sales_order_id: row?.id, display_id: row?.display_id }
 }
 
 // Create a new sales order with data

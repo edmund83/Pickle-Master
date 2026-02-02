@@ -237,7 +237,8 @@ export async function createDraftPickList(): Promise<PickListResult> {
         console.error('Activity log error:', logError)
     }
 
-    revalidatePath('/tasks/pick-lists')
+    // Note: Don't revalidatePath here - we navigate to detail page immediately
+    // The list will be fresh when user navigates back
     return { success: true, pick_list_id: data?.pick_list_id, display_id: data?.display_id }
 }
 

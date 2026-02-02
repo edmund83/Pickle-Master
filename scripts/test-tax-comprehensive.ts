@@ -37,7 +37,8 @@ function loadEnv() {
 
 loadEnv()
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://rarwjeeutwivntttmxpu.supabase.co'
+// IMPORTANT: Always use StockZip (qaqainslbhekbvgoyprs), NOT Pickle (rarwjeeutwivntttmxpu)
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://qaqainslbhekbvgoyprs.supabase.co'
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || ''
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ''
 
