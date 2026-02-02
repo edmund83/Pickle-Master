@@ -20,7 +20,8 @@ export function Breadcrumbs({ folders, currentFolderId, onNavigate }: Breadcrumb
     if (!current) return []
 
     // path array contains ancestor IDs in order (root first)
-    const ancestorIds = current.path || []
+    // Filter out current folder ID in case it's included in path (shouldn't be, but handle edge case)
+    const ancestorIds = (current.path || []).filter(id => id !== currentFolderId)
     const ancestors = ancestorIds
       .map(id => folders.find(f => f.id === id))
       .filter((f): f is Folder => f !== undefined)

@@ -4,25 +4,16 @@ import Link from 'next/link'
 import {
   ArrowLeft,
   Package,
-  MapPin,
-  Tag,
-  DollarSign,
-  Barcode,
-  FileText,
   Clock,
   Edit,
   History,
-  Ruler,
+  MapPin,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import type { InventoryItem, Folder, Tag as TagType } from '@/types/database.types'
-import { format } from 'date-fns'
 import { ItemCheckoutHistoryCard } from './item-checkout-section'
 import { ItemQuickActions } from './components/item-quick-actions'
-import { TagsManager } from './components/tags-manager'
-import { BatchTrackingCard, SerialTrackingCard } from '@/components/tracking'
-import PrintLabelButton from './components/print-label-button'
 import QRBarcodeSection from './components/qr-barcode-section'
 import { SetHighlightedFolder } from './components/set-highlighted-folder'
 import { ItemDetailCard } from './components/item-detail-card'
@@ -33,6 +24,9 @@ import { ItemMoreOptions } from './components/item-more-options'
 import { ChatterPanel } from '@/components/chatter'
 import { hasFeature } from '@/lib/features/gating'
 import type { PlanId } from '@/lib/plans/config'
+import { ItemInfoCard } from './components/item-info-card'
+import { ItemDetailsCard } from './components/item-details-card'
+import { ManageTrackingButton } from './components/manage-tracking-button'
 
 interface FeaturesEnabled {
   shipping_dimensions?: boolean
@@ -92,7 +86,6 @@ async function getItemDetails(itemId: string): Promise<ItemWithRelations | null>
   if (!user) redirect('/login')
 
   // Get profile for tenant_id
-   
   const { data: profileData } = await (supabase as any)
     .from('profiles')
     .select('tenant_id')
@@ -106,7 +99,6 @@ async function getItemDetails(itemId: string): Promise<ItemWithRelations | null>
   }
 
   // Get item details
-   
   const { data: item, error } = await (supabase as any)
     .from('inventory_items')
     .select('*')
@@ -124,7 +116,6 @@ async function getItemDetails(itemId: string): Promise<ItemWithRelations | null>
   // Get folder if item has one
   let folder: Folder | null = null
   if (typedItem.folder_id) {
-     
     const { data: folderData } = await (supabase as any)
       .from('folders')
       .select('*')
@@ -134,12 +125,10 @@ async function getItemDetails(itemId: string): Promise<ItemWithRelations | null>
   }
 
   // Get tags for the item using RPC
-   
   const { data: itemTags } = await (supabase as any)
     .rpc('get_item_tags', { p_item_id: itemId })
 
   // Get recent activity logs for this item
-   
   const { data: activityLogs } = await (supabase as any)
     .rpc('get_activity_logs', {
       p_entity_id: itemId,
@@ -170,7 +159,6 @@ async function getItemDetails(itemId: string): Promise<ItemWithRelations | null>
 
   if (typedItem.tracking_mode === 'serialized') {
     // Get serial number stats by status
-     
     const { data: serialData } = await (supabase as any)
       .from('serial_numbers')
       .select('status')
@@ -198,7 +186,6 @@ async function getItemDetails(itemId: string): Promise<ItemWithRelations | null>
 
   if (typedItem.tracking_mode === 'lot_expiry') {
     // Get lots for this item using RPC
-     
     const { data: lotsData } = await (supabase as any)
       .rpc('get_item_lots', { p_item_id: itemId, p_include_depleted: false })
 
@@ -318,25 +305,6 @@ export default async function ItemDetailPage({ params }: PageProps) {
               Edit
             </Button>
           </Link>
-          <PrintLabelButton
-            item={{
-              id: item.id,
-              name: item.name,
-              sku: item.sku,
-              barcode: item.barcode,
-              price: item.price,
-              cost_price: item.cost_price,
-              currency: item.currency,
-              quantity: item.quantity,
-              min_quantity: item.min_quantity,
-              notes: item.notes,
-              description: item.description,
-              image_urls: item.image_urls,
-              tags: itemTags.map((t) => ({ id: t.id, name: t.name, color: t.color || '#6b7280' })),
-            }}
-            tenantLogo={tenantLogo}
-            userEmail={userEmail}
-          />
           <ItemMoreOptions
             itemId={item.id}
             itemName={item.name}
@@ -410,6 +378,28 @@ export default async function ItemDetailPage({ params }: PageProps) {
                   trackingMode={(item.tracking_mode as 'none' | 'serialized' | 'lot_expiry') || 'none'}
                 />
 
+                {/* Folder - where this item belongs */}
+                <div className="flex items-center gap-2 rounded-lg bg-neutral-50 p-3">
+                  <MapPin className="h-4 w-4 text-neutral-400" />
+                  <div className="flex-1">
+                    <p className="text-xs text-neutral-500">Folder</p>
+                    {folder ? (
+                      <Link
+                        href={`/inventory?folder=${folder.id}`}
+                        className="flex items-center gap-2 hover:underline"
+                      >
+                        <span
+                          className="h-2.5 w-2.5 rounded-full"
+                          style={{ backgroundColor: folder.color || '#6b7280' }}
+                        />
+                        <span className="font-medium text-neutral-900">{folder.name}</span>
+                      </Link>
+                    ) : (
+                      <p className="text-neutral-400 italic">Not assigned</p>
+                    )}
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-2 gap-3">
                   <div className="rounded-lg bg-neutral-50 p-3">
                     <p className="text-xs text-neutral-500">Min quantity</p>
@@ -432,35 +422,22 @@ export default async function ItemDetailPage({ params }: PageProps) {
                     minQuantity={item.min_quantity}
                   />
                 </div>
+
+                {/* Manage Tracking (Serial/Batch) - integrated here */}
+                <ManageTrackingButton
+                  itemId={item.id}
+                  itemName={item.name}
+                  trackingMode={(item.tracking_mode as 'none' | 'serialized' | 'lot_expiry') || 'none'}
+                  serialStats={serialStats}
+                  lotStats={lotStats}
+                />
               </ItemDetailCard>
             </div>
           </div>
 
-          {/* Borrowing History */}
-          <div className="mb-6">
-            <ItemCheckoutHistoryCard itemId={item.id} limit={5} />
-          </div>
-
-          {/* Info Cards Grid - Priority-based rows */}
-          {/* Row 1: Key Information */}
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {/* Location Card */}
-            <ItemDetailCard title="Location" icon={<MapPin className="h-5 w-5" />}>
-              {folder ? (
-                <div className="flex items-center gap-2">
-                  <div
-                    className="h-3 w-3 rounded-full"
-                    style={{ backgroundColor: folder.color || '#6b7280' }}
-                  />
-                  <span className="font-medium text-neutral-900">{folder.name}</span>
-                </div>
-              ) : item.location ? (
-                <p className="font-medium text-neutral-900">{item.location}</p>
-              ) : (
-                <p className="text-neutral-400 italic">No location set</p>
-              )}
-            </ItemDetailCard>
-
+          {/* Info Cards Grid - Consolidated 4-card layout */}
+          {/* Row 1: Primary Information (Pricing + Details) */}
+          <div className="grid gap-4 md:grid-cols-2">
             {/* Pricing Card */}
             <FormattedPricingCard
               price={item.price || 0}
@@ -468,119 +445,29 @@ export default async function ItemDetailPage({ params }: PageProps) {
               quantity={item.quantity || 0}
             />
 
-            {/* Batch Tracking Card */}
-            {item.tracking_mode === 'lot_expiry' && (
-              <BatchTrackingCard
-                itemId={item.id}
-                itemName={item.name}
-                stats={lotStats ? {
-                  totalQuantity: lotStats.totalQuantity,
-                  activeBatches: lotStats.activeLots,
-                  expiredCount: lotStats.expiredCount,
-                  expiringSoonCount: lotStats.expiringSoonCount,
-                  expiringMonthCount: lotStats.expiringCount,
-                } : null}
-              />
-            )}
-
-            {/* Serial Tracking Card */}
-            {item.tracking_mode === 'serialized' && (
-              <SerialTrackingCard
-                itemId={item.id}
-                itemName={item.name}
-                stats={serialStats}
-              />
-            )}
+            {/* Details Card (Description + Notes + Tags) */}
+            <ItemDetailsCard
+              itemId={item.id}
+              description={item.description}
+              notes={item.notes}
+              tags={itemTags}
+            />
           </div>
 
-          {/* Row 2: Secondary Information */}
-          <div className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {/* Identifiers Card */}
-            <ItemDetailCard title="Identifiers" icon={<Barcode className="h-5 w-5" />}>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-neutral-500">SKU</span>
-                  <span className="font-mono text-neutral-900">{item.sku || '-'}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-neutral-500">Barcode</span>
-                  <span className="font-mono text-neutral-900">{item.barcode || '-'}</span>
-                </div>
-              </div>
-            </ItemDetailCard>
-
-            {/* Shipping & Dimensions Card */}
-            {features.shipping_dimensions ? (
-              <ItemDetailCard title="Shipping & Dimensions" icon={<Ruler className="h-5 w-5" />}>
-                <div className="space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-neutral-500">Weight</span>
-                    <span className="font-medium text-neutral-900">
-                      {item.weight ? `${item.weight} ${item.weight_unit || 'kg'}` : '-'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-neutral-500">Dimensions (L × W × H)</span>
-                    <span className="font-medium text-neutral-900">
-                      {item.length && item.width && item.height
-                        ? `${item.length} × ${item.width} × ${item.height} ${item.dimension_unit || 'cm'}`
-                        : '-'}
-                    </span>
-                  </div>
-                  {item.length && item.width && item.height && (
-                    <div className="flex justify-between border-t border-neutral-100 pt-2">
-                      <span className="text-neutral-500">Volume</span>
-                      <span className="font-medium text-neutral-900">
-                        {(item.length * item.width * item.height).toLocaleString()} {item.dimension_unit || 'cm'}³
-                      </span>
-                    </div>
-                  )}
-                  {item.weight && item.length && item.width && item.height && (
-                    <div className="flex justify-between">
-                      <span className="text-neutral-500">Volumetric Weight</span>
-                      <span className="font-medium text-neutral-900">
-                        {((item.length * item.width * item.height) / 5000).toFixed(2)} kg
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </ItemDetailCard>
-            ) : (
-              /* Tags Card - show here if no shipping dimensions */
-              <ItemDetailCard
-                title="Tags"
-                icon={<Tag className="h-5 w-5" />}
-                action={
-                  <TagsManager
-                    itemId={item.id}
-                    currentTagIds={itemTags.map(t => t.id)}
-                  />
-                }
-              >
-                {itemTags && itemTags.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {itemTags.map((tag) => (
-                      <span
-                        key={tag.id}
-                        className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium"
-                        style={{
-                          backgroundColor: `${tag.color}20`,
-                          color: tag.color || '#6b7280',
-                        }}
-                      >
-                        <span
-                          className="h-2 w-2 rounded-full"
-                          style={{ backgroundColor: tag.color || '#6b7280' }}
-                        />
-                        {tag.name}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-neutral-400 italic">No tags assigned</p>
-                )}
-              </ItemDetailCard>
-            )}
+          {/* Row 2: Secondary Information (Item Info + QR & Barcode) */}
+          <div className="mt-4 grid gap-4 md:grid-cols-2">
+            {/* Identifiers Card (SKU + Barcode + Dimensions) */}
+            <ItemInfoCard
+              sku={item.sku}
+              barcode={item.barcode}
+              showDimensions={features.shipping_dimensions}
+              weight={item.weight}
+              weightUnit={item.weight_unit}
+              length={item.length}
+              width={item.width}
+              height={item.height}
+              dimensionUnit={item.dimension_unit}
+            />
 
             {/* QR & Barcode Card */}
             <QRBarcodeSection
@@ -604,69 +491,9 @@ export default async function ItemDetailPage({ params }: PageProps) {
             />
           </div>
 
-          {/* Row 3: Supplementary Information */}
-          <div className="mt-4 grid gap-4 md:grid-cols-3">
-            {/* Tags Card - show here if shipping dimensions enabled */}
-            {features.shipping_dimensions && (
-              <ItemDetailCard
-                title="Tags"
-                icon={<Tag className="h-5 w-5" />}
-                action={
-                  <TagsManager
-                    itemId={item.id}
-                    currentTagIds={itemTags.map(t => t.id)}
-                  />
-                }
-              >
-                {itemTags && itemTags.length > 0 ? (
-                  <div className="flex flex-wrap gap-2">
-                    {itemTags.map((tag) => (
-                      <span
-                        key={tag.id}
-                        className="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-medium"
-                        style={{
-                          backgroundColor: `${tag.color}20`,
-                          color: tag.color || '#6b7280',
-                        }}
-                      >
-                        <span
-                          className="h-2 w-2 rounded-full"
-                          style={{ backgroundColor: tag.color || '#6b7280' }}
-                        />
-                        {tag.name}
-                      </span>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-neutral-400 italic">No tags assigned</p>
-                )}
-              </ItemDetailCard>
-            )}
-
-            {/* Notes Card */}
-            <ItemDetailCard
-              title="Description & Notes"
-              icon={<FileText className="h-5 w-5" />}
-              className={features.shipping_dimensions ? 'md:col-span-2' : 'md:col-span-2'}
-            >
-              <div className="space-y-4">
-                {item.description ? (
-                  <div>
-                    <p className="text-sm font-medium text-neutral-700 mb-1">Description</p>
-                    <p className="text-neutral-600">{item.description}</p>
-                  </div>
-                ) : null}
-                {item.notes ? (
-                  <div>
-                    <p className="text-sm font-medium text-neutral-700 mb-1">Notes</p>
-                    <p className="text-neutral-600 whitespace-pre-wrap">{item.notes}</p>
-                  </div>
-                ) : null}
-                {!item.description && !item.notes && (
-                  <p className="text-neutral-400 italic">No description or notes added</p>
-                )}
-              </div>
-            </ItemDetailCard>
+          {/* Borrowing History */}
+          <div className="mt-6">
+            <ItemCheckoutHistoryCard itemId={item.id} limit={5} />
           </div>
 
           {/* Activity History */}

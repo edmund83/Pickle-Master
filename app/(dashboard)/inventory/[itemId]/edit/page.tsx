@@ -385,29 +385,16 @@ export default function EditItemPage() {
                 </div>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-                    Serial Number
-                  </label>
-                  <Input
-                    name="serial_number"
-                    value={formData.serial_number}
-                    onChange={handleChange}
-                    placeholder="e.g., SN-12345"
-                  />
-                </div>
-                <div>
-                  <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-                    Location
-                  </label>
-                  <Input
-                    name="location"
-                    value={formData.location}
-                    onChange={handleChange}
-                    placeholder="e.g., Warehouse A, Shelf B3"
-                  />
-                </div>
+              <div>
+                <label className="mb-1.5 block text-sm font-medium text-neutral-700">
+                  Serial Number
+                </label>
+                <Input
+                  name="serial_number"
+                  value={formData.serial_number}
+                  onChange={handleChange}
+                  placeholder="e.g., SN-12345"
+                />
               </div>
 
               <div>

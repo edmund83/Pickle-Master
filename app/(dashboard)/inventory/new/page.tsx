@@ -233,18 +233,6 @@ export default function NewItemPage() {
 
               <div>
                 <label className="mb-1.5 block text-sm font-medium text-neutral-700">
-                  Location
-                </label>
-                <Input
-                  name="location"
-                  value={formData.location}
-                  onChange={handleChange}
-                  placeholder="e.g., Warehouse A, Shelf B3"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1.5 block text-sm font-medium text-neutral-700">
                   Description
                 </label>
                 <textarea

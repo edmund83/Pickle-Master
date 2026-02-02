@@ -214,8 +214,8 @@ export default function FoldersHelp() {
             create folders that match. This makes it easy to find things in real life.
           </HelpListItem>
           <HelpListItem>
-            <strong>Don&apos;t go too deep:</strong> 3-4 levels of nesting is usually enough.
-            Too many levels makes navigation confusing.
+            <strong>Nesting limit:</strong> Folders can be nested up to 4 levels deep.
+            This keeps navigation simple and manageable.
           </HelpListItem>
           <HelpListItem>
             <strong>Use colors wisely:</strong> Pick different colors for different types of

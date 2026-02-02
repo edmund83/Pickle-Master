@@ -347,7 +347,7 @@ Cloud-based system allowing multiple team members to access and update inventory
 Organize items into folders and categories with drag-and-drop management. Tree view navigation.
 
 **Requirements:**
-- Unlimited folder nesting depth
+- Folder nesting up to 4 levels deep
 - Drag-and-drop items between folders
 - Drag-and-drop folder reordering
 - Breadcrumb navigation

@@ -3,6 +3,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { FOLDER_COLORS } from '@/lib/constants/folder-colors'
+import { MAX_FOLDER_DEPTH } from '@/lib/constants/folders'
 import { getAuthContext, requireWritePermission } from '@/lib/auth/server-auth'
 
 export type ActionResult<T> = {
@@ -55,6 +56,14 @@ export async function createFolder(
     if (parent) {
       path = [...(parent.path || []), input.parentId]
       depth = (parent.depth || 0) + 1
+    }
+  }
+
+  // Check depth limit
+  if (depth > MAX_FOLDER_DEPTH) {
+    return {
+      success: false,
+      error: `Cannot create folder: maximum nesting depth is ${MAX_FOLDER_DEPTH + 1} levels`
     }
   }
 
@@ -167,6 +176,41 @@ export async function updateFolder(
 
   // Handle parent change (requires path recalculation)
   if (input.parentId !== undefined && input.parentId !== folder.parent_id) {
+    // Calculate new depth after move
+    let newDepth = 0
+    if (input.parentId) {
+      const { data: newParent } = await (supabase as any)
+        .from('folders')
+        .select('depth')
+        .eq('id', input.parentId)
+        .eq('tenant_id', context.tenantId)
+        .single()
+
+      if (newParent) {
+        newDepth = (newParent.depth || 0) + 1
+      }
+    }
+
+    // Get max depth of descendants relative to this folder
+    const { data: descendants } = await (supabase as any)
+      .from('folders')
+      .select('depth')
+      .eq('tenant_id', context.tenantId)
+      .contains('path', [folderId])
+      .order('depth', { ascending: false })
+      .limit(1)
+
+    const maxDescendantDepth = descendants?.[0]?.depth || folder.depth
+    const depthIncrease = maxDescendantDepth - folder.depth
+    const newMaxDepth = newDepth + depthIncrease
+
+    if (newMaxDepth > MAX_FOLDER_DEPTH) {
+      return {
+        success: false,
+        error: `Cannot move folder: would exceed maximum nesting depth of ${MAX_FOLDER_DEPTH + 1} levels`
+      }
+    }
+
     const { error: moveError } = await (supabase as any).rpc('move_folder_with_descendants', {
       p_folder_id: folderId,
       p_new_parent_id: input.parentId ?? null,
