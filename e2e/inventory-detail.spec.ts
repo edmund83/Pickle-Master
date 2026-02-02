@@ -187,4 +187,47 @@ test.describe('Inventory Detail Page', () => {
       await expect(page.getByRole('button', { name: /print label/i })).toBeVisible()
     })
   })
+
+  test.describe('Tracking Modes', () => {
+    test('standard item shows no tracking cards', async ({ page }) => {
+      // Test item has tracking_mode = 'none'
+      await page.goto(`/inventory/${TEST_ITEM_ID}`)
+      await page.waitForLoadState('networkidle')
+
+      // Should NOT show serial or batch tracking cards
+      const serialCard = page.getByRole('heading', { name: /serial tracking/i })
+      const batchCard = page.getByRole('heading', { name: /batch tracking/i })
+
+      await expect(serialCard).not.toBeVisible()
+      await expect(batchCard).not.toBeVisible()
+
+      // Should show standard inventory card
+      await expect(page.getByRole('heading', { name: /inventory/i })).toBeVisible()
+    })
+
+    // Note: These tests require items with specific tracking modes
+    // Uncomment and update TEST_ITEM_SERIALIZED_ID when available
+    /*
+    test('serialized item shows serial tracking card', async ({ page }) => {
+      const TEST_ITEM_SERIALIZED_ID = 'your-serialized-item-id'
+      await page.goto(`/inventory/${TEST_ITEM_SERIALIZED_ID}`)
+      await page.waitForLoadState('networkidle')
+
+      // Should show serial tracking section
+      await expect(page.getByText(/serial/i)).toBeVisible()
+      await expect(page.getByText(/available/i)).toBeVisible()
+      await expect(page.getByText(/checked out/i)).toBeVisible()
+    })
+
+    test('lot tracked item shows batch tracking card', async ({ page }) => {
+      const TEST_ITEM_LOT_ID = 'your-lot-item-id'
+      await page.goto(`/inventory/${TEST_ITEM_LOT_ID}`)
+      await page.waitForLoadState('networkidle')
+
+      // Should show batch/lot tracking section
+      await expect(page.getByText(/batch|lot/i)).toBeVisible()
+      await expect(page.getByText(/active/i)).toBeVisible()
+    })
+    */
+  })
 })
