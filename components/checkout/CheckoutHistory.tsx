@@ -162,7 +162,7 @@ export function CheckoutHistory({ itemId, limit = 10, refreshTrigger = 0 }: Chec
 
           {/* Timeline dot */}
           <div
-            className={`relative z-10 mt-1 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full ${item.status === 'returned'
+            className={`relative mt-1 flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full ${item.status === 'returned'
                 ? 'bg-green-100'
                 : item.status === 'overdue'
                   ? 'bg-red-100'

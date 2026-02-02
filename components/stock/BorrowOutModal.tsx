@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import {
@@ -400,7 +401,14 @@ export function BorrowOutModal({
     }
   }
 
+  // For portal - need to check if we're in browser
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+
   if (!isOpen) return null
+  if (!mounted) return null
 
   const maxQuantity = isBatch
     ? (selectedMode === 'manual' && selectedBatchId
@@ -416,8 +424,8 @@ export function BorrowOutModal({
 
   const canSubmit = selectedAssignee && effectiveQuantity > 0
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+  return createPortal(
+    <div className="fixed inset-0 z-[100] flex items-center justify-center">
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
       <div
@@ -867,6 +875,7 @@ export function BorrowOutModal({
           </Button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   )
 }
