@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { ColumnDef } from '@tanstack/react-table'
 import {
   X,
   Package,
@@ -11,12 +12,13 @@ import {
   Plus,
   Loader2,
   AlertTriangle,
-  AlertCircle,
   CheckCircle,
   ChevronRight,
+  Check,
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { DataTable } from '@/components/ui/data-table'
 import { cn } from '@/lib/utils'
 import { useFormatting } from '@/hooks/useFormatting'
 import { CreateLotModal } from '@/components/lots/CreateLotModal'
@@ -48,6 +50,103 @@ interface ManageTrackingModalProps {
   itemId: string
   itemName: string
   trackingType: 'batch' | 'serial'
+}
+
+// ============ EDITABLE SERIAL CELL ============
+
+function EditableSerialCell({
+  serial,
+  onUpdate,
+}: {
+  serial: Serial
+  onUpdate: (id: string, newValue: string) => Promise<void>
+}) {
+  const [isEditing, setIsEditing] = useState(false)
+  const [value, setValue] = useState(serial.serial_number)
+  const [loading, setLoading] = useState(false)
+
+  const handleSave = async () => {
+    if (value === serial.serial_number) {
+      setIsEditing(false)
+      return
+    }
+    setLoading(true)
+    try {
+      await onUpdate(serial.id, value)
+      setIsEditing(false)
+    } catch {
+      setValue(serial.serial_number)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSave()
+    }
+    if (e.key === 'Escape') {
+      setValue(serial.serial_number)
+      setIsEditing(false)
+    }
+  }
+
+  if (loading) {
+    return <Loader2 className="h-4 w-4 animate-spin text-neutral-400" />
+  }
+
+  if (isEditing) {
+    return (
+      <div className="flex items-center gap-1">
+        <Input
+          autoFocus
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          onBlur={handleSave}
+          onKeyDown={handleKeyDown}
+          className="h-7 px-2 py-1 text-sm font-mono"
+        />
+      </div>
+    )
+  }
+
+  return (
+    <div
+      onClick={() => setIsEditing(true)}
+      className="cursor-text font-mono rounded px-2 py-1 hover:bg-neutral-100 transition-colors"
+      title="Click to edit"
+    >
+      {serial.serial_number}
+    </div>
+  )
+}
+
+// ============ STATUS BADGE ============
+
+function StatusBadge({ status }: { status: Serial['status'] }) {
+  const statusColors: Record<string, { bg: string; text: string }> = {
+    available: { bg: 'bg-green-100', text: 'text-green-700' },
+    checked_out: { bg: 'bg-amber-100', text: 'text-amber-700' },
+    sold: { bg: 'bg-neutral-100', text: 'text-neutral-600' },
+    damaged: { bg: 'bg-red-100', text: 'text-red-700' },
+    returned: { bg: 'bg-blue-100', text: 'text-blue-700' },
+  }
+
+  const statusLabels: Record<string, string> = {
+    available: 'Available',
+    checked_out: 'Checked out',
+    sold: 'Sold',
+    damaged: 'Damaged',
+    returned: 'Returned',
+  }
+
+  const style = statusColors[status] || statusColors.available
+
+  return (
+    <span className={cn('rounded-full px-2.5 py-0.5 text-xs font-medium', style.bg, style.text)}>
+      {statusLabels[status]}
+    </span>
+  )
 }
 
 // ============ BATCH LIST ITEM ============
@@ -129,76 +228,6 @@ function BatchListItem({
   )
 }
 
-// ============ SERIAL LIST ITEM ============
-
-function SerialListItem({
-  serial,
-  isSelected,
-  onSelect,
-}: {
-  serial: Serial
-  isSelected: boolean
-  onSelect: () => void
-}) {
-  const statusColors: Record<string, { bg: string; text: string }> = {
-    available: { bg: 'bg-green-100', text: 'text-green-700' },
-    checked_out: { bg: 'bg-amber-100', text: 'text-amber-700' },
-    sold: { bg: 'bg-neutral-100', text: 'text-neutral-600' },
-    damaged: { bg: 'bg-red-100', text: 'text-red-700' },
-    returned: { bg: 'bg-blue-100', text: 'text-blue-700' },
-  }
-
-  const statusLabels: Record<string, string> = {
-    available: 'Available',
-    checked_out: 'Checked out',
-    sold: 'Sold',
-    damaged: 'Damaged',
-    returned: 'Returned',
-  }
-
-  const style = statusColors[serial.status] || statusColors.available
-  const isSelectable = serial.status === 'available'
-
-  return (
-    <button
-      type="button"
-      onClick={isSelectable ? onSelect : undefined}
-      disabled={!isSelectable}
-      className={cn(
-        'w-full flex items-center gap-3 rounded-xl border-2 p-4 text-left transition-all',
-        isSelected
-          ? 'border-primary bg-primary/5'
-          : isSelectable
-          ? 'border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50'
-          : 'border-neutral-100 bg-neutral-50 opacity-60 cursor-not-allowed'
-      )}
-    >
-      {/* Selection indicator */}
-      <div
-        className={cn(
-          'flex h-5 w-5 items-center justify-center rounded-full border-2 flex-shrink-0',
-          isSelected ? 'border-primary bg-primary' : 'border-neutral-300'
-        )}
-      >
-        {isSelected && <CheckCircle className="h-3 w-3 text-white" />}
-      </div>
-
-      {/* Serial info */}
-      <div className="flex-1 min-w-0">
-        <span className="font-mono font-medium text-neutral-900">{serial.serial_number}</span>
-        {serial.checked_out_to && (
-          <p className="text-sm text-neutral-500 mt-0.5">→ {serial.checked_out_to}</p>
-        )}
-      </div>
-
-      {/* Status badge */}
-      <span className={cn('rounded-full px-2.5 py-0.5 text-xs font-medium', style.bg, style.text)}>
-        {statusLabels[serial.status]}
-      </span>
-    </button>
-  )
-}
-
 // ============ MAIN MODAL ============
 
 export function ManageTrackingModal({
@@ -217,15 +246,12 @@ export function ManageTrackingModal({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Selection state (for override)
+  // Batch selection state (for override)
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [overrideQuantity, setOverrideQuantity] = useState<string>('')
 
   // Sub-modal state
   const [showCreateBatch, setShowCreateBatch] = useState(false)
-  const [showAddSerial, setShowAddSerial] = useState(false)
-  const [newSerialNumber, setNewSerialNumber] = useState('')
-  const [addingSerial, setAddingSerial] = useState(false)
 
   // Load data when modal opens
   useEffect(() => {
@@ -274,34 +300,24 @@ export function ManageTrackingModal({
     }
   }
 
-  async function handleAddSerial() {
-    if (!newSerialNumber.trim()) return
-
-    setAddingSerial(true)
+  async function handleUpdateSerial(serialId: string, newSerialNumber: string) {
     const supabase = createClient()
 
-    try {
-      const { data, error: rpcError } = await (supabase as any).rpc('upsert_item_serials', {
-        p_item_id: itemId,
-        p_serials: [newSerialNumber.trim()],
-      })
+    const { error: updateError } = await supabase
+      .from('serial_numbers')
+      .update({ serial_number: newSerialNumber.trim() })
+      .eq('id', serialId)
 
-      if (rpcError) throw rpcError
-
-      if (data?.success) {
-        setNewSerialNumber('')
-        setShowAddSerial(false)
-        await loadData()
-        router.refresh()
-      } else {
-        setError(data?.error || 'Failed to add serial')
-      }
-    } catch (err) {
-      console.error('Error adding serial:', err)
-      setError('Failed to add serial number')
-    } finally {
-      setAddingSerial(false)
+    if (updateError) {
+      setError('Failed to update serial number')
+      throw updateError
     }
+
+    // Update local state
+    setSerials((prev) =>
+      prev.map((s) => (s.id === serialId ? { ...s, serial_number: newSerialNumber.trim() } : s))
+    )
+    router.refresh()
   }
 
   function handleBatchCreated() {
@@ -321,6 +337,22 @@ export function ManageTrackingModal({
 
   // Get selected batch for quantity input
   const selectedBatch = batches.find((b) => b.id === selectedId)
+
+  // Serial table columns
+  const serialColumns: ColumnDef<Serial>[] = [
+    {
+      accessorKey: 'serial_number',
+      header: 'Serial Number',
+      cell: ({ row }) => (
+        <EditableSerialCell serial={row.original} onUpdate={handleUpdateSerial} />
+      ),
+    },
+    {
+      accessorKey: 'status',
+      header: 'Status',
+      cell: ({ row }) => <StatusBadge status={row.original.status} />,
+    },
+  ]
 
   if (!isOpen) return null
 
@@ -355,14 +387,14 @@ export function ManageTrackingModal({
             </button>
           </div>
 
-          {/* Helper text */}
-          <div className="px-6 py-3 bg-neutral-50 border-b border-neutral-100">
-            <p className="text-sm text-neutral-600">
-              {trackingType === 'batch'
-                ? 'System auto-picks oldest first. Tap a batch to use it instead.'
-                : 'System auto-picks oldest first. Tap a serial to use it instead.'}
-            </p>
-          </div>
+          {/* Helper text - only for batch */}
+          {trackingType === 'batch' && (
+            <div className="px-6 py-3 bg-neutral-50 border-b border-neutral-100">
+              <p className="text-sm text-neutral-600">
+                System auto-picks oldest first. Tap a batch to use it instead.
+              </p>
+            </div>
+          )}
 
           {/* Body */}
           <div className="flex-1 overflow-y-auto p-6">
@@ -388,30 +420,29 @@ export function ManageTrackingModal({
                 <p className="text-sm text-neutral-400">
                   {trackingType === 'batch'
                     ? 'Add batches to track expiry dates'
-                    : 'Add serial numbers to track individual units'}
+                    : 'Serial numbers are added via Stock In'}
                 </p>
               </div>
-            ) : (
+            ) : trackingType === 'batch' ? (
               <div className="space-y-3">
-                {trackingType === 'batch'
-                  ? batches.map((batch) => (
-                      <BatchListItem
-                        key={batch.id}
-                        batch={batch}
-                        isSelected={selectedId === batch.id}
-                        onSelect={() => handleSelect(batch.id)}
-                        formatDate={formatShortDate}
-                      />
-                    ))
-                  : serials.map((serial) => (
-                      <SerialListItem
-                        key={serial.id}
-                        serial={serial}
-                        isSelected={selectedId === serial.id}
-                        onSelect={() => handleSelect(serial.id)}
-                      />
-                    ))}
+                {batches.map((batch) => (
+                  <BatchListItem
+                    key={batch.id}
+                    batch={batch}
+                    isSelected={selectedId === batch.id}
+                    onSelect={() => handleSelect(batch.id)}
+                    formatDate={formatShortDate}
+                  />
+                ))}
               </div>
+            ) : (
+              <DataTable
+                columns={serialColumns}
+                data={serials}
+                searchKey="serial_number"
+                searchPlaceholder="Search serials..."
+                pageSize={5}
+              />
             )}
 
             {/* Override quantity input for batches */}
@@ -443,43 +474,17 @@ export function ManageTrackingModal({
                 </div>
               </div>
             )}
-
-            {/* Add serial input */}
-            {showAddSerial && trackingType === 'serial' && (
-              <div className="mt-4 p-4 rounded-xl bg-neutral-50 border border-neutral-200">
-                <p className="text-sm font-medium text-neutral-700 mb-2">Add Serial Number</p>
-                <div className="flex items-center gap-3">
-                  <div className="flex-1">
-                    <Input
-                      type="text"
-                      value={newSerialNumber}
-                      onChange={(e) => setNewSerialNumber(e.target.value)}
-                      placeholder="Enter serial number"
-                      className="font-mono"
-                    />
-                  </div>
-                  <Button onClick={handleAddSerial} disabled={!newSerialNumber.trim() || addingSerial}>
-                    {addingSerial ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Add'}
-                  </Button>
-                </div>
-              </div>
-            )}
           </div>
 
           {/* Footer */}
-          <div className="flex justify-between gap-3 border-t border-neutral-200 px-6 py-4 bg-neutral-50">
+          <div className="flex justify-end gap-3 border-t border-neutral-200 px-6 py-4 bg-neutral-50">
             <Button variant="outline" onClick={onClose}>
               Close
             </Button>
-            {trackingType === 'batch' ? (
+            {trackingType === 'batch' && (
               <Button onClick={() => setShowCreateBatch(true)}>
                 <Plus className="mr-2 h-4 w-4" />
                 Add Batch
-              </Button>
-            ) : (
-              <Button onClick={() => setShowAddSerial(!showAddSerial)}>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Serial
               </Button>
             )}
           </div>
