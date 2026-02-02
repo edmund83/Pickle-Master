@@ -230,4 +230,32 @@ test.describe('Inventory Detail Page', () => {
     })
     */
   })
+
+  test.describe('Navigation', () => {
+    test.beforeEach(async ({ page }) => {
+      await page.goto(`/inventory/${TEST_ITEM_ID}`)
+      await page.waitForLoadState('networkidle')
+    })
+
+    test('back button navigates to inventory list', async ({ page }) => {
+      await page.getByRole('link', { name: /back/i }).click()
+      await page.waitForLoadState('networkidle')
+
+      expect(page.url()).toMatch(/\/inventory$/)
+    })
+
+    test('edit button navigates to edit page', async ({ page }) => {
+      await page.getByRole('link', { name: /edit/i }).click()
+      await page.waitForLoadState('networkidle')
+
+      expect(page.url()).toMatch(new RegExp(`/inventory/${TEST_ITEM_ID}/edit`))
+    })
+
+    test('view all activity link navigates to activity page', async ({ page }) => {
+      await page.getByRole('link', { name: /view all/i }).click()
+      await page.waitForLoadState('networkidle')
+
+      expect(page.url()).toMatch(new RegExp(`/inventory/${TEST_ITEM_ID}/activity`))
+    })
+  })
 })
