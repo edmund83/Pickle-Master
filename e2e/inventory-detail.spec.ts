@@ -86,4 +86,51 @@ test.describe('Inventory Detail Page', () => {
       await expect(page.getByRole('heading', { name: /location/i })).toBeVisible()
     })
   })
+
+  test.describe('Quick Actions', () => {
+    test.beforeEach(async ({ page }) => {
+      await page.goto(`/inventory/${TEST_ITEM_ID}`)
+      await page.waitForLoadState('networkidle')
+    })
+
+    test('increase quantity button is clickable', async ({ page }) => {
+      const increaseBtn = page.getByRole('button', { name: /increase quantity/i })
+      await expect(increaseBtn).toBeVisible()
+      await expect(increaseBtn).toBeEnabled()
+
+      // Click and verify no error
+      await increaseBtn.click()
+      await page.waitForLoadState('networkidle')
+
+      // Page should still be functional
+      await expect(page.getByRole('heading', { name: /inventory/i })).toBeVisible()
+    })
+
+    test('decrease quantity button is clickable', async ({ page }) => {
+      const decreaseBtn = page.getByRole('button', { name: /decrease quantity/i })
+      await expect(decreaseBtn).toBeVisible()
+      await expect(decreaseBtn).toBeEnabled()
+
+      // Click and verify no error
+      await decreaseBtn.click()
+      await page.waitForLoadState('networkidle')
+
+      // Page should still be functional
+      await expect(page.getByRole('heading', { name: /inventory/i })).toBeVisible()
+    })
+
+    test('lend button opens modal', async ({ page }) => {
+      const lendBtn = page.getByRole('button', { name: /lend/i })
+      await expect(lendBtn).toBeVisible()
+
+      await lendBtn.click()
+
+      // Modal or dialog should appear
+      const modal = page.getByRole('dialog')
+      const modalVisible = await modal.isVisible().catch(() => false)
+
+      // Either modal appears or navigation happens
+      expect(modalVisible || page.url().includes('checkout')).toBeTruthy()
+    })
+  })
 })
