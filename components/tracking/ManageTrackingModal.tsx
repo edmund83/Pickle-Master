@@ -303,7 +303,7 @@ export function ManageTrackingModal({
   async function handleUpdateSerial(serialId: string, newSerialNumber: string) {
     const supabase = createClient()
 
-    const { error: updateError } = await supabase
+    const { error: updateError } = await (supabase as any)
       .from('serial_numbers')
       .update({ serial_number: newSerialNumber.trim() })
       .eq('id', serialId)
