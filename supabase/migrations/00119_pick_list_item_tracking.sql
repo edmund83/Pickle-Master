@@ -16,6 +16,7 @@ CREATE TABLE IF NOT EXISTS pick_list_item_lots (
     quantity INTEGER NOT NULL CHECK (quantity > 0),
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
     created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
 
     -- Ensure unique lot per pick list item
@@ -23,12 +24,18 @@ CREATE TABLE IF NOT EXISTS pick_list_item_lots (
 );
 
 -- Indexes for performance
-CREATE INDEX IF NOT EXISTS idx_pick_list_item_lots_pick_list_item
-    ON pick_list_item_lots(pick_list_item_id);
+-- Note: idx on pick_list_item_id is not needed - unique constraint already provides it
 CREATE INDEX IF NOT EXISTS idx_pick_list_item_lots_lot
     ON pick_list_item_lots(lot_id);
 CREATE INDEX IF NOT EXISTS idx_pick_list_item_lots_tenant
     ON pick_list_item_lots(tenant_id);
+
+-- Trigger for updated_at
+DROP TRIGGER IF EXISTS trigger_pick_list_item_lots_updated_at ON pick_list_item_lots;
+CREATE TRIGGER trigger_pick_list_item_lots_updated_at
+    BEFORE UPDATE ON pick_list_item_lots
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at();
 
 -- ============================================================================
 -- PICK_LIST_ITEM_SERIALS TABLE
@@ -41,6 +48,7 @@ CREATE TABLE IF NOT EXISTS pick_list_item_serials (
     serial_id UUID NOT NULL REFERENCES serial_numbers(id) ON DELETE RESTRICT,
     tenant_id UUID NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
     created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW(),
     created_by UUID REFERENCES auth.users(id) ON DELETE SET NULL,
 
     -- Ensure unique serial per pick list item
@@ -48,12 +56,18 @@ CREATE TABLE IF NOT EXISTS pick_list_item_serials (
 );
 
 -- Indexes for performance
-CREATE INDEX IF NOT EXISTS idx_pick_list_item_serials_pick_list_item
-    ON pick_list_item_serials(pick_list_item_id);
+-- Note: idx on pick_list_item_id is not needed - unique constraint already provides it
 CREATE INDEX IF NOT EXISTS idx_pick_list_item_serials_serial
     ON pick_list_item_serials(serial_id);
 CREATE INDEX IF NOT EXISTS idx_pick_list_item_serials_tenant
     ON pick_list_item_serials(tenant_id);
+
+-- Trigger for updated_at
+DROP TRIGGER IF EXISTS trigger_pick_list_item_serials_updated_at ON pick_list_item_serials;
+CREATE TRIGGER trigger_pick_list_item_serials_updated_at
+    BEFORE UPDATE ON pick_list_item_serials
+    FOR EACH ROW
+    EXECUTE FUNCTION update_updated_at();
 
 -- ============================================================================
 -- RLS POLICIES FOR PICK_LIST_ITEM_LOTS
@@ -61,49 +75,15 @@ CREATE INDEX IF NOT EXISTS idx_pick_list_item_serials_tenant
 
 ALTER TABLE pick_list_item_lots ENABLE ROW LEVEL SECURITY;
 
--- SELECT: Users can view lot allocations in their tenant
+-- Editors can manage lot allocations in their tenant
 DROP POLICY IF EXISTS "Users can view tenant pick_list_item_lots" ON pick_list_item_lots;
-CREATE POLICY "Users can view tenant pick_list_item_lots" ON pick_list_item_lots
-    FOR SELECT
-    USING (tenant_id = (SELECT get_user_tenant_id()));
-
--- INSERT: Editors can allocate lots to pick list items
 DROP POLICY IF EXISTS "Editors can insert pick_list_item_lots" ON pick_list_item_lots;
-CREATE POLICY "Editors can insert pick_list_item_lots" ON pick_list_item_lots
-    FOR INSERT
-    WITH CHECK (
-        tenant_id = (SELECT get_user_tenant_id())
-        AND EXISTS (
-            SELECT 1 FROM profiles
-            WHERE id = auth.uid()
-            AND role IN ('owner', 'admin', 'editor')
-        )
-    );
-
--- UPDATE: Editors can update lot allocations
 DROP POLICY IF EXISTS "Editors can update pick_list_item_lots" ON pick_list_item_lots;
-CREATE POLICY "Editors can update pick_list_item_lots" ON pick_list_item_lots
-    FOR UPDATE
-    USING (
-        tenant_id = (SELECT get_user_tenant_id())
-        AND EXISTS (
-            SELECT 1 FROM profiles
-            WHERE id = auth.uid()
-            AND role IN ('owner', 'admin', 'editor')
-        )
-    );
-
--- DELETE: Editors can remove lot allocations
 DROP POLICY IF EXISTS "Editors can delete pick_list_item_lots" ON pick_list_item_lots;
-CREATE POLICY "Editors can delete pick_list_item_lots" ON pick_list_item_lots
-    FOR DELETE
-    USING (
-        tenant_id = (SELECT get_user_tenant_id())
-        AND EXISTS (
-            SELECT 1 FROM profiles
-            WHERE id = auth.uid()
-            AND role IN ('owner', 'admin', 'editor')
-        )
+DROP POLICY IF EXISTS "Editors can manage pick_list_item_lots" ON pick_list_item_lots;
+CREATE POLICY "Editors can manage pick_list_item_lots" ON pick_list_item_lots
+    FOR ALL USING (
+        tenant_id = get_user_tenant_id() AND can_edit()
     );
 
 -- ============================================================================
@@ -112,49 +92,15 @@ CREATE POLICY "Editors can delete pick_list_item_lots" ON pick_list_item_lots
 
 ALTER TABLE pick_list_item_serials ENABLE ROW LEVEL SECURITY;
 
--- SELECT: Users can view serial allocations in their tenant
+-- Editors can manage serial allocations in their tenant
 DROP POLICY IF EXISTS "Users can view tenant pick_list_item_serials" ON pick_list_item_serials;
-CREATE POLICY "Users can view tenant pick_list_item_serials" ON pick_list_item_serials
-    FOR SELECT
-    USING (tenant_id = (SELECT get_user_tenant_id()));
-
--- INSERT: Editors can allocate serials to pick list items
 DROP POLICY IF EXISTS "Editors can insert pick_list_item_serials" ON pick_list_item_serials;
-CREATE POLICY "Editors can insert pick_list_item_serials" ON pick_list_item_serials
-    FOR INSERT
-    WITH CHECK (
-        tenant_id = (SELECT get_user_tenant_id())
-        AND EXISTS (
-            SELECT 1 FROM profiles
-            WHERE id = auth.uid()
-            AND role IN ('owner', 'admin', 'editor')
-        )
-    );
-
--- UPDATE: Editors can update serial allocations
 DROP POLICY IF EXISTS "Editors can update pick_list_item_serials" ON pick_list_item_serials;
-CREATE POLICY "Editors can update pick_list_item_serials" ON pick_list_item_serials
-    FOR UPDATE
-    USING (
-        tenant_id = (SELECT get_user_tenant_id())
-        AND EXISTS (
-            SELECT 1 FROM profiles
-            WHERE id = auth.uid()
-            AND role IN ('owner', 'admin', 'editor')
-        )
-    );
-
--- DELETE: Editors can remove serial allocations
 DROP POLICY IF EXISTS "Editors can delete pick_list_item_serials" ON pick_list_item_serials;
-CREATE POLICY "Editors can delete pick_list_item_serials" ON pick_list_item_serials
-    FOR DELETE
-    USING (
-        tenant_id = (SELECT get_user_tenant_id())
-        AND EXISTS (
-            SELECT 1 FROM profiles
-            WHERE id = auth.uid()
-            AND role IN ('owner', 'admin', 'editor')
-        )
+DROP POLICY IF EXISTS "Editors can manage pick_list_item_serials" ON pick_list_item_serials;
+CREATE POLICY "Editors can manage pick_list_item_serials" ON pick_list_item_serials
+    FOR ALL USING (
+        tenant_id = get_user_tenant_id() AND can_edit()
     );
 
 -- ============================================================================
@@ -163,7 +109,7 @@ CREATE POLICY "Editors can delete pick_list_item_serials" ON pick_list_item_seri
 -- ============================================================================
 
 ALTER TABLE delivery_order_item_serials
-    ADD COLUMN IF NOT EXISTS quantity INTEGER DEFAULT 1;
+    ADD COLUMN IF NOT EXISTS quantity INTEGER NOT NULL DEFAULT 1;
 
 -- ============================================================================
 -- GRANT PERMISSIONS
