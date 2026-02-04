@@ -181,9 +181,7 @@ export function PickListItemTracking({
   isEditable = true,
   onAllocationChange,
 }: PickListItemTrackingProps) {
-  // Don't render for non-tracked items
-  if (trackingType === 'none') return null
-
+  // ALL HOOKS MUST BE CALLED BEFORE ANY CONDITIONAL RETURNS (Rules of Hooks)
   const [isExpanded, setIsExpanded] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
@@ -202,20 +200,18 @@ export function PickListItemTracking({
   const [selectedSerialIds, setSelectedSerialIds] = useState<Set<string>>(new Set())
   const [serialSearch, setSerialSearch] = useState('')
 
-  // Calculate totals
+  // Calculate totals (safe for 'none' type - will just be 0)
   const totalAllocated = trackingType === 'lot'
     ? Object.values(lotQuantities).reduce((sum, qty) => sum + (qty || 0), 0)
     : selectedSerialIds.size
 
   const isComplete = totalAllocated >= requestedQuantity
 
-  // Notify parent of allocation status changes
-  useEffect(() => {
-    onAllocationChange?.(isComplete)
-  }, [isComplete, onAllocationChange])
-
   // Load data when expanded
   const loadData = useCallback(async () => {
+    // Guard against 'none' type inside callback
+    if (trackingType === 'none') return
+
     setIsLoading(true)
     setError(null)
 
@@ -303,11 +299,21 @@ export function PickListItemTracking({
     }
   }, [pickListItemId, itemId, trackingType])
 
+  // Notify parent of allocation status changes
   useEffect(() => {
-    if (isExpanded) {
+    // Guard against 'none' type - don't notify for non-tracked items
+    if (trackingType === 'none') return
+    onAllocationChange?.(isComplete)
+  }, [isComplete, onAllocationChange, trackingType])
+
+  useEffect(() => {
+    if (isExpanded && trackingType !== 'none') {
       loadData()
     }
-  }, [isExpanded, loadData])
+  }, [isExpanded, loadData, trackingType])
+
+  // Don't render for non-tracked items (AFTER all hooks have been called)
+  if (trackingType === 'none') return null
 
   // Auto-assign handler
   const handleAutoAssign = async () => {
