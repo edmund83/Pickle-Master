@@ -385,10 +385,19 @@ async function copyPickListTrackingToDeliveryOrder(
         return
     }
 
-    // Process each delivery order item
+    // Collect all inserts to batch at the end (reduces N*M database calls to 1)
+    const allInserts: Array<{
+        delivery_order_item_id: string
+        serial_number: string
+        lot_id?: string
+        quantity: number
+    }> = []
+
+    // Process each delivery order item to collect tracking data
     for (const doItem of doItems as { id: string; pick_list_item_id: string }[]) {
         try {
             // Get tracking from pick list item using the RPC function
+            // Note: RPC calls still need to be per-item (can't easily batch these)
             const { data: tracking, error: trackingError } = await (supabase as any)
                 .rpc('get_pick_list_item_tracking', {
                     p_pick_list_item_id: doItem.pick_list_item_id,
@@ -403,58 +412,49 @@ async function copyPickListTrackingToDeliveryOrder(
                 continue
             }
 
-            // Copy lot tracking
+            // Collect lot tracking records
             if (tracking.lots && Array.isArray(tracking.lots) && tracking.lots.length > 0) {
                 for (const lot of tracking.lots as {
                     lot_id: string
                     lot_number: string
                     quantity: number
                 }[]) {
-                    const { error: lotInsertError } = await (supabase as any)
-                        .from('delivery_order_item_serials')
-                        .insert({
-                            delivery_order_item_id: doItem.id,
-                            lot_id: lot.lot_id,
-                            quantity: lot.quantity,
-                            serial_number: lot.lot_number, // Store lot number for display
-                        })
-
-                    if (lotInsertError) {
-                        console.error(
-                            'Error copying lot tracking to DO item:',
-                            doItem.id,
-                            lotInsertError
-                        )
-                    }
+                    allInserts.push({
+                        delivery_order_item_id: doItem.id,
+                        lot_id: lot.lot_id,
+                        quantity: lot.quantity,
+                        serial_number: lot.lot_number, // Store lot number for display
+                    })
                 }
             }
 
-            // Copy serial tracking
+            // Collect serial tracking records
             if (tracking.serials && Array.isArray(tracking.serials) && tracking.serials.length > 0) {
                 for (const serial of tracking.serials as {
                     serial_id: string
                     serial_number: string
                 }[]) {
-                    const { error: serialInsertError } = await (supabase as any)
-                        .from('delivery_order_item_serials')
-                        .insert({
-                            delivery_order_item_id: doItem.id,
-                            serial_number: serial.serial_number,
-                            quantity: 1, // Serials are always quantity 1
-                        })
-
-                    if (serialInsertError) {
-                        console.error(
-                            'Error copying serial tracking to DO item:',
-                            doItem.id,
-                            serialInsertError
-                        )
-                    }
+                    allInserts.push({
+                        delivery_order_item_id: doItem.id,
+                        serial_number: serial.serial_number,
+                        quantity: 1, // Serials are always quantity 1
+                    })
                 }
             }
         } catch (err) {
             // Log but don't fail - the DO is already created
             console.error('Error processing tracking for DO item:', doItem.id, err)
+        }
+    }
+
+    // Single batch insert at the end (reduces N*M inserts to 1 insert)
+    if (allInserts.length > 0) {
+        const { error: insertError } = await (supabase as any)
+            .from('delivery_order_item_serials')
+            .insert(allInserts)
+
+        if (insertError) {
+            console.error('Error batch inserting tracking records:', insertError)
         }
     }
 }
