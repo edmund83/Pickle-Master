@@ -11,6 +11,22 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Added
 
+#### Display Serial/Lot Tracking on Delivery Order Detail
+Added tracking display to the Delivery Order detail page, showing the serial numbers or lots that were allocated when the DO was created from a pick list.
+
+**Key Features**:
+- **New `DeliveryOrderItemTracking` component**: Displays tracking records from `delivery_order_item_serials` table
+- **Lot Display**: Shows lot numbers with quantities in purple badges
+- **Serial Display**: Shows serial numbers in blue badges with a "+N more" indicator for long lists
+- **Inline Version**: Also provides a compact `DeliveryOrderItemTrackingInline` component for space-constrained layouts
+- **Loading State**: Shows skeleton loader while fetching tracking data
+
+**Files Added**:
+- `components/delivery-orders/DeliveryOrderItemTracking.tsx` - New tracking display component
+
+**Files Modified**:
+- `app/(dashboard)/tasks/delivery-orders/[id]/DeliveryOrderDetailClient.tsx` - Added tracking column to items table
+
 #### Copy Serial/Lot Tracking from Pick List to Delivery Order
 When a delivery order is created from a pick list, the serial and lot tracking allocations are now automatically copied to the delivery order items.
 

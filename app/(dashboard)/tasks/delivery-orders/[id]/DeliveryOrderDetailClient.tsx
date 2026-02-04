@@ -43,6 +43,7 @@ import type { DeliveryOrderWithDetails } from './page'
 import type { Customer } from '@/app/actions/customers'
 import { ChatterPanel } from '@/components/chatter'
 import { ItemThumbnail } from '@/components/ui/item-thumbnail'
+import { DeliveryOrderItemTracking } from '@/components/delivery-orders/DeliveryOrderItemTracking'
 import { useFeedback } from '@/components/feedback/FeedbackProvider'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { Input } from '@/components/ui/input'
@@ -558,6 +559,7 @@ export function DeliveryOrderDetailClient({
                       <thead className="bg-neutral-50 border-b border-neutral-200">
                         <tr>
                           <th className="px-4 py-3 text-left font-medium text-neutral-600">Item</th>
+                          <th className="px-4 py-3 text-left font-medium text-neutral-600">Tracking</th>
                           <th className="px-4 py-3 text-center font-medium text-neutral-600 w-24">Shipped</th>
                           <th className="px-4 py-3 text-center font-medium text-neutral-600 w-24">Delivered</th>
                           <th className="px-4 py-3 text-left font-medium text-neutral-600 w-24">Condition</th>
@@ -580,6 +582,13 @@ export function DeliveryOrderDetailClient({
                                   )}
                                 </div>
                               </div>
+                            </td>
+                            <td className="px-4 py-3">
+                              <DeliveryOrderItemTracking
+                                deliveryOrderItemId={item.id}
+                                itemName={item.item_name}
+                                sourcePickListId={deliveryOrder.pick_list_id || undefined}
+                              />
                             </td>
                             <td className="px-4 py-3 text-center font-medium">
                               {item.quantity_shipped}
