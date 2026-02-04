@@ -312,6 +312,16 @@ export function PickListItemTracking({
     onAllocationChangeRef.current?.(isComplete)
   }, [isComplete, trackingType])
 
+  // Load allocation data on mount to show correct count in collapsed header
+  useEffect(() => {
+    if (trackingType !== 'none') {
+      loadData()
+    }
+    // Only run on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Also reload when expanded (in case data changed elsewhere)
   useEffect(() => {
     if (isExpanded && trackingType !== 'none') {
       loadData()
