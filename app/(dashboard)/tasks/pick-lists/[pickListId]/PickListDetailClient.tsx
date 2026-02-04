@@ -48,6 +48,7 @@ import { createDeliveryOrderFromSO } from '@/app/actions/delivery-orders'
 import { BarcodeScanner } from '@/components/scanner/BarcodeScanner'
 import type { ScanResult } from '@/lib/scanner/useBarcodeScanner'
 import { ChatterPanel } from '@/components/chatter'
+import { PickListItemTracking } from '@/components/pick-lists/PickListItemTracking'
 import { useFeedback } from '@/components/feedback/FeedbackProvider'
 import { useFormatting } from '@/hooks/useFormatting'
 import { useTenantCompanyDetails, useTenantName, useTenantLogoUrl } from '@/contexts/TenantSettingsContext'
@@ -95,6 +96,7 @@ interface PickListWithItems {
     picked_quantity: number
     picked_at: string | null
     notes: string | null
+    tracking_mode: 'none' | 'serialized' | 'lot_expiry'
     locations: Array<{
       location_id: string
       location_name: string
@@ -187,8 +189,28 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
   // Delivery order creation state
   const [isCreatingDO, setIsCreatingDO] = useState(false)
 
+  // Track serial/lot allocation completion status for each tracked item
+  const [trackingComplete, setTrackingComplete] = useState<Record<string, boolean>>({})
+
+  // Handler for when tracking allocation changes
+  const handleTrackingChange = (itemId: string, isComplete: boolean) => {
+    setTrackingComplete(prev => ({ ...prev, [itemId]: isComplete }))
+  }
+
+  // Helper to convert tracking_mode to tracking type for the component
+  const getTrackingType = (mode: 'none' | 'serialized' | 'lot_expiry'): 'none' | 'serial' | 'lot' => {
+    if (mode === 'serialized') return 'serial'
+    if (mode === 'lot_expiry') return 'lot'
+    return 'none'
+  }
+
   const pickList = data.pick_list
   const items = data.items
+
+  // Check if all tracked items have complete allocations
+  const trackedItems = items.filter(i => i.tracking_mode !== 'none')
+  const allTrackingComplete = trackedItems.length === 0 ||
+    trackedItems.every(i => trackingComplete[i.id] === true)
   const isDraft = pickList.status === 'draft'
   const isEditable = isDraft || pickList.status === 'in_progress'
 
@@ -1020,7 +1042,8 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
               </Button>
               <Button
                 onClick={handleComplete}
-                disabled={actionLoading !== null || totalPicked === 0}
+                disabled={actionLoading !== null || totalPicked === 0 || !allTrackingComplete}
+                title={!allTrackingComplete ? 'Please assign serial/lot numbers for all tracked items' : undefined}
               >
                 {actionLoading === 'complete' ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -1127,6 +1150,8 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
                     {items.map((item) => {
                       const isPicked = item.picked_quantity >= item.requested_quantity
                       const isPartial = item.picked_quantity > 0 && item.picked_quantity < item.requested_quantity
+                      const trackingType = getTrackingType(item.tracking_mode)
+                      const hasTracking = trackingType !== 'none'
 
                       return (
                         <tr key={item.id} className={isPicked ? 'bg-green-50' : ''}>
@@ -1264,6 +1289,33 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
             ) : (
               <div className="py-8 text-center text-neutral-500">
                 No items in this pick list
+              </div>
+            )}
+
+            {/* Serial/Lot Tracking Section for tracked items */}
+            {items.filter(item => item.tracking_mode !== 'none').length > 0 && (
+              <div className="mt-6 space-y-3">
+                <h4 className="text-sm font-medium text-neutral-700">Serial/Lot Allocation</h4>
+                <div className="space-y-2">
+                  {items.filter(item => item.tracking_mode !== 'none').map((item) => (
+                    <PickListItemTracking
+                      key={item.id}
+                      pickListItemId={item.id}
+                      itemId={item.item_id}
+                      itemName={item.item_name}
+                      itemSku={item.item_sku || undefined}
+                      requestedQuantity={item.requested_quantity}
+                      trackingType={getTrackingType(item.tracking_mode)}
+                      isEditable={isEditable}
+                      onAllocationChange={(complete) => handleTrackingChange(item.id, complete)}
+                    />
+                  ))}
+                </div>
+                {!allTrackingComplete && isEditable && (
+                  <p className="text-xs text-amber-600 mt-2">
+                    Please assign serial/lot numbers for all tracked items before completing the pick list.
+                  </p>
+                )}
               </div>
             )}
           </CardContent>

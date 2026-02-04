@@ -9,6 +9,25 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ## [Unreleased]
 
+### Added
+
+#### Pick List Serial/Lot Tracking Integration
+Integrated the `PickListItemTracking` component into the Pick List detail page, allowing users to allocate specific serial numbers or lot/batch numbers to items in a pick list.
+
+**Key Features**:
+- **Tracking Mode Display**: Pick list items now show their tracking type (Serial or Lot/Batch)
+- **Allocation UI**: Expandable section below the items table for tracked items showing available serials/lots
+- **Auto-assign**: FIFO for serials, FEFO for lots (earliest expiry first)
+- **Manual Selection**: Users can manually select specific serials or lots as needed
+- **Completion Validation**: Complete button is disabled until all tracked items have full allocations
+
+**Database Changes**:
+- Migration `00121_pick_list_items_tracking_mode.sql`: Updated `get_pick_list_with_items` RPC to include `tracking_mode` from inventory_items
+
+**Files Modified**:
+- `app/(dashboard)/tasks/pick-lists/[pickListId]/page.tsx` - Added tracking_mode to interface
+- `app/(dashboard)/tasks/pick-lists/[pickListId]/PickListDetailClient.tsx` - Integrated tracking component and validation
+
 ### Changed
 
 #### Simplified Batch & Serial Tracking UI

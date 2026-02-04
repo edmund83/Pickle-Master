@@ -44,6 +44,7 @@ interface PickListWithItems {
     picked_quantity: number
     picked_at: string | null
     notes: string | null
+    tracking_mode: 'none' | 'serialized' | 'lot_expiry'
     locations: Array<{
       location_id: string
       location_name: string
