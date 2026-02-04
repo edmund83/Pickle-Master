@@ -24,13 +24,23 @@ export type DeliveryOrderResult = {
     display_id?: string
 }
 
+// Result type for inventory update operations
+interface InventoryUpdateResult {
+    success: boolean
+    errors: string[]
+    itemsUpdated: number
+}
+
 // Helper function to update inventory when a delivery order is dispatched
 // This handles serials, lots, and non-tracked items
 async function updateInventoryOnDispatch(
     supabase: Awaited<ReturnType<typeof createClient>>,
     deliveryOrderId: string,
     tenantId: string
-): Promise<void> {
+): Promise<InventoryUpdateResult> {
+    const errors: string[] = []
+    let itemsUpdated = 0
+
     // Get all DO items with their tracking records
     const { data: items, error: itemsError } = await (supabase as any)
         .from('delivery_order_items')
@@ -48,8 +58,9 @@ async function updateInventoryOnDispatch(
         .eq('delivery_order_id', deliveryOrderId)
 
     if (itemsError || !items) {
-        console.error('Error fetching DO items for inventory update:', itemsError)
-        return
+        const errorMsg = `Error fetching DO items for inventory update: ${itemsError?.message || 'No items found'}`
+        console.error(errorMsg)
+        return { success: false, errors: [errorMsg], itemsUpdated: 0 }
     }
 
     for (const item of items as {
@@ -85,7 +96,9 @@ async function updateInventoryOnDispatch(
                 .eq('status', 'available')
 
             if (serialsError) {
-                console.error('Error fetching serial IDs:', serialsError)
+                const errorMsg = `Error fetching serial IDs: ${serialsError.message}`
+                console.error(errorMsg)
+                errors.push(errorMsg)
             } else if (serials && serials.length > 0) {
                 const serialIds = serials.map((s: { id: string }) => s.id)
 
@@ -99,30 +112,45 @@ async function updateInventoryOnDispatch(
                     })
 
                 if (stockOutError) {
-                    console.error('Error stocking out serials:', stockOutError)
+                    const errorMsg = `Error stocking out serials: ${stockOutError.message}`
+                    console.error(errorMsg)
+                    errors.push(errorMsg)
                 } else if (result?.success === false) {
-                    console.error('Stock out serials failed:', result.error)
+                    const errorMsg = `Stock out serials failed: ${result.error}`
+                    console.error(errorMsg)
+                    errors.push(errorMsg)
+                } else {
+                    itemsUpdated++
                 }
             }
         }
 
-        // 2. Decrease lot quantities
-        for (const lotRecord of lotRecords) {
-            if (!lotRecord.lot_id) continue
+        // 2. Decrease lot quantities using Promise.all for parallel execution
+        if (lotRecords.length > 0) {
+            const lotPromises = lotRecords
+                .filter(r => r.lot_id)
+                .map(lotRecord =>
+                    (supabase as any).rpc('adjust_lot_quantity', {
+                        p_lot_id: lotRecord.lot_id,
+                        p_quantity_delta: -lotRecord.quantity,
+                        p_reason: 'Dispatched on delivery order'
+                    })
+                )
 
-            // Use adjust_lot_quantity with negative delta to decrease
-            const { data: result, error: lotError } = await (supabase as any)
-                .rpc('adjust_lot_quantity', {
-                    p_lot_id: lotRecord.lot_id,
-                    p_quantity_delta: -lotRecord.quantity,
-                    p_reason: `Dispatched on delivery order`
-                })
-
-            if (lotError) {
-                console.error('Error adjusting lot quantity:', lotError)
-            } else if (result?.success === false) {
-                console.error('Lot quantity adjustment failed:', result.error)
-            }
+            const lotResults = await Promise.all(lotPromises)
+            lotResults.forEach((result: { data: { success?: boolean; error?: string } | null; error: { message: string } | null }, index: number) => {
+                if (result.error) {
+                    const errorMsg = `Lot adjustment failed: ${result.error.message}`
+                    console.error(errorMsg)
+                    errors.push(errorMsg)
+                } else if (result.data?.success === false) {
+                    const errorMsg = `Lot quantity adjustment failed: ${result.data.error}`
+                    console.error(errorMsg)
+                    errors.push(errorMsg)
+                } else {
+                    itemsUpdated++
+                }
+            })
         }
 
         // 3. For non-tracked items (no tracking records), decrease inventory quantity directly
@@ -150,10 +178,20 @@ async function updateInventoryOnDispatch(
                     .eq('tenant_id', tenantId)
 
                 if (updateError) {
-                    console.error('Error updating non-tracked item quantity:', updateError)
+                    const errorMsg = `Error updating non-tracked item quantity: ${updateError.message}`
+                    console.error(errorMsg)
+                    errors.push(errorMsg)
+                } else {
+                    itemsUpdated++
                 }
             }
         }
+    }
+
+    return {
+        success: errors.length === 0,
+        errors,
+        itemsUpdated
     }
 }
 
@@ -752,7 +790,11 @@ export async function updateDeliveryOrderStatus(
 
     // If dispatched, update inventory (serials, lots, and non-tracked items)
     if (newStatus === 'dispatched') {
-        await updateInventoryOnDispatch(supabase, deliveryOrderId, context.tenantId)
+        const inventoryResult = await updateInventoryOnDispatch(supabase, deliveryOrderId, context.tenantId)
+        if (!inventoryResult.success) {
+            console.warn('Inventory update completed with errors:', inventoryResult.errors)
+            // Log but don't fail the status update - inventory errors are non-fatal for DO dispatch
+        }
     }
 
     // If delivered and linked to SO, update SO item shipped quantities
