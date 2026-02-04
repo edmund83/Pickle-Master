@@ -793,7 +793,24 @@ export async function updateDeliveryOrderStatus(
         const inventoryResult = await updateInventoryOnDispatch(supabase, deliveryOrderId, context.tenantId)
         if (!inventoryResult.success) {
             console.warn('Inventory update completed with errors:', inventoryResult.errors)
-            // Log but don't fail the status update - inventory errors are non-fatal for DO dispatch
+            // Log activity for inventory update failures (for operations team visibility)
+            try {
+                await (supabase as any).from('activity_logs').insert({
+                    tenant_id: context.tenantId,
+                    user_id: context.userId,
+                    entity_type: 'delivery_order',
+                    entity_id: deliveryOrderId,
+                    action_type: 'inventory_update_partial_failure',
+                    changes: {
+                        status: 'dispatched',
+                        inventory_errors: inventoryResult.errors,
+                        items_updated: inventoryResult.itemsUpdated,
+                        message: 'Delivery order dispatched but some inventory updates failed. Manual review may be required.'
+                    }
+                })
+            } catch (logError) {
+                console.error('Failed to log inventory update failure:', logError)
+            }
         }
     }
 
