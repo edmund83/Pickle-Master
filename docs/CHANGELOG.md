@@ -11,6 +11,18 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Added
 
+#### Automatic Inventory Update on Delivery Order Dispatch
+When a delivery order is dispatched, the system now automatically updates inventory based on the tracking allocations.
+
+**Key Features**:
+- **Serial Tracking**: Serials allocated to the DO are marked as 'sold' using the `stock_out_serials` RPC function
+- **Lot Tracking**: Lot quantities are decreased using the `adjust_lot_quantity` RPC function
+- **Non-tracked Items**: Inventory quantities are decreased directly for items without tracking
+- **Graceful Error Handling**: Errors are logged but don't fail the dispatch operation
+
+**Files Modified**:
+- `app/actions/delivery-orders.ts` - Added `updateInventoryOnDispatch` helper function and integrated it into `updateDeliveryOrderStatus`
+
 #### Display Serial/Lot Tracking on Delivery Order Detail
 Added tracking display to the Delivery Order detail page, showing the serial numbers or lots that were allocated when the DO was created from a pick list.
 

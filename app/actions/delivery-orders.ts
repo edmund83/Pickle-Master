@@ -24,6 +24,139 @@ export type DeliveryOrderResult = {
     display_id?: string
 }
 
+// Helper function to update inventory when a delivery order is dispatched
+// This handles serials, lots, and non-tracked items
+async function updateInventoryOnDispatch(
+    supabase: Awaited<ReturnType<typeof createClient>>,
+    deliveryOrderId: string,
+    tenantId: string
+): Promise<void> {
+    // Get all DO items with their tracking records
+    const { data: items, error: itemsError } = await (supabase as any)
+        .from('delivery_order_items')
+        .select(`
+            id,
+            item_id,
+            quantity_shipped,
+            delivery_order_item_serials (
+                id,
+                serial_number,
+                lot_id,
+                quantity
+            )
+        `)
+        .eq('delivery_order_id', deliveryOrderId)
+
+    if (itemsError || !items) {
+        console.error('Error fetching DO items for inventory update:', itemsError)
+        return
+    }
+
+    for (const item of items as {
+        id: string
+        item_id: string | null
+        quantity_shipped: number
+        delivery_order_item_serials: Array<{
+            id: string
+            serial_number: string
+            lot_id: string | null
+            quantity: number
+        }> | null
+    }[]) {
+        // Skip items without inventory reference
+        if (!item.item_id) continue
+
+        const tracking = item.delivery_order_item_serials || []
+
+        // Separate lots and serials based on whether lot_id is present
+        const lotRecords = tracking.filter(t => t.lot_id)
+        const serialRecords = tracking.filter(t => !t.lot_id)
+
+        // 1. Update serials to 'sold' status
+        if (serialRecords.length > 0) {
+            const serialNumbers = serialRecords.map(s => s.serial_number)
+
+            // Look up serial IDs from serial_numbers table
+            const { data: serials, error: serialsError } = await (supabase as any)
+                .from('serial_numbers')
+                .select('id')
+                .eq('item_id', item.item_id)
+                .in('serial_number', serialNumbers)
+                .eq('status', 'available')
+
+            if (serialsError) {
+                console.error('Error fetching serial IDs:', serialsError)
+            } else if (serials && serials.length > 0) {
+                const serialIds = serials.map((s: { id: string }) => s.id)
+
+                // Use the stock_out_serials RPC function
+                const { data: result, error: stockOutError } = await (supabase as any)
+                    .rpc('stock_out_serials', {
+                        p_item_id: item.item_id,
+                        p_serial_ids: serialIds,
+                        p_reason: `Dispatched on delivery order`,
+                        p_new_status: 'sold'
+                    })
+
+                if (stockOutError) {
+                    console.error('Error stocking out serials:', stockOutError)
+                } else if (result?.success === false) {
+                    console.error('Stock out serials failed:', result.error)
+                }
+            }
+        }
+
+        // 2. Decrease lot quantities
+        for (const lotRecord of lotRecords) {
+            if (!lotRecord.lot_id) continue
+
+            // Use adjust_lot_quantity with negative delta to decrease
+            const { data: result, error: lotError } = await (supabase as any)
+                .rpc('adjust_lot_quantity', {
+                    p_lot_id: lotRecord.lot_id,
+                    p_quantity_delta: -lotRecord.quantity,
+                    p_reason: `Dispatched on delivery order`
+                })
+
+            if (lotError) {
+                console.error('Error adjusting lot quantity:', lotError)
+            } else if (result?.success === false) {
+                console.error('Lot quantity adjustment failed:', result.error)
+            }
+        }
+
+        // 3. For non-tracked items (no tracking records), decrease inventory quantity directly
+        if (tracking.length === 0 && item.quantity_shipped > 0) {
+            // Check if item has tracking mode
+            const { data: itemData } = await (supabase as any)
+                .from('inventory_items')
+                .select('tracking_mode, quantity')
+                .eq('id', item.item_id)
+                .eq('tenant_id', tenantId)
+                .single()
+
+            // Only decrease quantity for non-tracked items
+            if (itemData && itemData.tracking_mode === 'none') {
+                const newQuantity = Math.max(0, (itemData.quantity || 0) - item.quantity_shipped)
+
+                const { error: updateError } = await (supabase as any)
+                    .from('inventory_items')
+                    .update({
+                        quantity: newQuantity,
+                        status: newQuantity <= 0 ? 'out_of_stock' : 'in_stock',
+                        updated_at: new Date().toISOString()
+                    })
+                    .eq('id', item.item_id)
+                    .eq('tenant_id', tenantId)
+
+                if (updateError) {
+                    console.error('Error updating non-tracked item quantity:', updateError)
+                }
+            }
+        }
+    }
+}
+
 // Status state machine
 const DO_STATUS_TRANSITIONS: Record<string, string[]> = {
     draft: ['ready', 'cancelled'],
@@ -615,6 +748,11 @@ export async function updateDeliveryOrderStatus(
     if (updateError) {
         console.error('Update DO status error:', updateError)
         return { success: false, error: updateError.message }
+    }
+
+    // If dispatched, update inventory (serials, lots, and non-tracked items)
+    if (newStatus === 'dispatched') {
+        await updateInventoryOnDispatch(supabase, deliveryOrderId, context.tenantId)
     }
 
     // If delivered and linked to SO, update SO item shipped quantities
