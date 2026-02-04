@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -299,12 +299,18 @@ export function PickListItemTracking({
     }
   }, [pickListItemId, itemId, trackingType])
 
-  // Notify parent of allocation status changes
+  // Use ref to store callback to avoid render loops when callback reference changes
+  const onAllocationChangeRef = useRef(onAllocationChange)
+  useEffect(() => {
+    onAllocationChangeRef.current = onAllocationChange
+  })
+
+  // Notify parent of allocation status changes (only when isComplete changes)
   useEffect(() => {
     // Guard against 'none' type - don't notify for non-tracked items
     if (trackingType === 'none') return
-    onAllocationChange?.(isComplete)
-  }, [isComplete, onAllocationChange, trackingType])
+    onAllocationChangeRef.current?.(isComplete)
+  }, [isComplete, trackingType])
 
   useEffect(() => {
     if (isExpanded && trackingType !== 'none') {

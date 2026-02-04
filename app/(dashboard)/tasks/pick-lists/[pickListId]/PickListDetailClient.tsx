@@ -192,10 +192,10 @@ export function PickListDetailClient({ data, teamMembers, currentUserId }: PickL
   // Track serial/lot allocation completion status for each tracked item
   const [trackingComplete, setTrackingComplete] = useState<Record<string, boolean>>({})
 
-  // Handler for when tracking allocation changes
-  const handleTrackingChange = (itemId: string, isComplete: boolean) => {
+  // Handler for when tracking allocation changes - memoized to prevent render loops
+  const handleTrackingChange = useCallback((itemId: string, isComplete: boolean) => {
     setTrackingComplete(prev => ({ ...prev, [itemId]: isComplete }))
-  }
+  }, [])
 
   // Helper to convert tracking_mode to tracking type for the component
   const getTrackingType = (mode: 'none' | 'serialized' | 'lot_expiry'): 'none' | 'serial' | 'lot' => {
