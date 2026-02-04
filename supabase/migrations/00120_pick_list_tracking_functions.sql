@@ -15,6 +15,7 @@ CREATE OR REPLACE FUNCTION allocate_pick_list_item_lots(
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
     v_tenant_id UUID;
@@ -110,6 +111,7 @@ CREATE OR REPLACE FUNCTION allocate_pick_list_item_serials(
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
     v_tenant_id UUID;
@@ -197,6 +199,7 @@ RETURNS JSONB
 LANGUAGE plpgsql
 STABLE
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
     v_tenant_id UUID;
@@ -275,6 +278,7 @@ CREATE OR REPLACE FUNCTION auto_allocate_lots_fefo(
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
     v_tenant_id UUID;
@@ -354,6 +358,7 @@ CREATE OR REPLACE FUNCTION auto_allocate_serials_fifo(
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
+SET search_path = public
 AS $$
 DECLARE
     v_tenant_id UUID;
