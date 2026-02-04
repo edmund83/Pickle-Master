@@ -4,18 +4,7 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { ColumnDef } from '@tanstack/react-table'
-import {
-  X,
-  Package,
-  Hash,
-  Calendar,
-  Plus,
-  Loader2,
-  AlertTriangle,
-  CheckCircle,
-  ChevronRight,
-  Check,
-} from 'lucide-react'
+import { X, Package, Hash, Plus, Loader2, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { DataTable } from '@/components/ui/data-table'
@@ -52,30 +41,34 @@ interface ManageTrackingModalProps {
   trackingType: 'batch' | 'serial'
 }
 
-// ============ EDITABLE SERIAL CELL ============
+// ============ EDITABLE CELL (shared for serial & batch) ============
 
-function EditableSerialCell({
-  serial,
+function EditableCell({
+  id,
+  value: initialValue,
   onUpdate,
+  placeholder = 'Click to edit',
 }: {
-  serial: Serial
+  id: string
+  value: string
   onUpdate: (id: string, newValue: string) => Promise<void>
+  placeholder?: string
 }) {
   const [isEditing, setIsEditing] = useState(false)
-  const [value, setValue] = useState(serial.serial_number)
+  const [value, setValue] = useState(initialValue)
   const [loading, setLoading] = useState(false)
 
   const handleSave = async () => {
-    if (value === serial.serial_number) {
+    if (value === initialValue) {
       setIsEditing(false)
       return
     }
     setLoading(true)
     try {
-      await onUpdate(serial.id, value)
+      await onUpdate(id, value)
       setIsEditing(false)
     } catch {
-      setValue(serial.serial_number)
+      setValue(initialValue)
     } finally {
       setLoading(false)
     }
@@ -86,7 +79,7 @@ function EditableSerialCell({
       handleSave()
     }
     if (e.key === 'Escape') {
-      setValue(serial.serial_number)
+      setValue(initialValue)
       setIsEditing(false)
     }
   }
@@ -116,14 +109,14 @@ function EditableSerialCell({
       className="cursor-text font-mono rounded px-2 py-1 hover:bg-neutral-100 transition-colors"
       title="Click to edit"
     >
-      {serial.serial_number}
+      {initialValue || <span className="text-neutral-400">{placeholder}</span>}
     </div>
   )
 }
 
-// ============ STATUS BADGE ============
+// ============ STATUS BADGES ============
 
-function StatusBadge({ status }: { status: Serial['status'] }) {
+function SerialStatusBadge({ status }: { status: Serial['status'] }) {
   const statusColors: Record<string, { bg: string; text: string }> = {
     available: { bg: 'bg-green-100', text: 'text-green-700' },
     checked_out: { bg: 'bg-amber-100', text: 'text-amber-700' },
@@ -149,82 +142,29 @@ function StatusBadge({ status }: { status: Serial['status'] }) {
   )
 }
 
-// ============ BATCH LIST ITEM ============
-
-function BatchListItem({
-  batch,
-  isSelected,
-  onSelect,
-  formatDate,
-}: {
-  batch: Batch
-  isSelected: boolean
-  onSelect: () => void
-  formatDate: (date: string) => string
-}) {
-  const expiryColors: Record<string, string> = {
-    expired: 'text-red-600',
-    expiring_soon: 'text-amber-600',
-    expiring_month: 'text-yellow-600',
-    ok: 'text-green-600',
-    no_expiry: 'text-neutral-500',
+function BatchExpiryBadge({ expiryStatus }: { expiryStatus: Batch['expiry_status'] }) {
+  const statusColors: Record<string, { bg: string; text: string }> = {
+    expired: { bg: 'bg-red-100', text: 'text-red-700' },
+    expiring_soon: { bg: 'bg-amber-100', text: 'text-amber-700' },
+    expiring_month: { bg: 'bg-yellow-100', text: 'text-yellow-700' },
+    ok: { bg: 'bg-green-100', text: 'text-green-700' },
+    no_expiry: { bg: 'bg-neutral-100', text: 'text-neutral-500' },
   }
 
-  const expiryLabels: Record<string, string> = {
+  const statusLabels: Record<string, string> = {
     expired: 'Expired',
     expiring_soon: 'Expiring soon',
-    expiring_month: 'Expiring this month',
-    ok: '',
-    no_expiry: '',
+    expiring_month: 'This month',
+    ok: 'OK',
+    no_expiry: 'No expiry',
   }
 
+  const style = statusColors[expiryStatus] || statusColors.ok
+
   return (
-    <button
-      type="button"
-      onClick={onSelect}
-      className={cn(
-        'w-full flex items-center gap-3 rounded-xl border-2 p-4 text-left transition-all',
-        isSelected
-          ? 'border-primary bg-primary/5'
-          : 'border-neutral-200 hover:border-neutral-300 hover:bg-neutral-50'
-      )}
-    >
-      {/* Selection indicator */}
-      <div
-        className={cn(
-          'flex h-5 w-5 items-center justify-center rounded-full border-2 flex-shrink-0',
-          isSelected ? 'border-primary bg-primary' : 'border-neutral-300'
-        )}
-      >
-        {isSelected && <CheckCircle className="h-3 w-3 text-white" />}
-      </div>
-
-      {/* Batch info */}
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <span className="font-medium text-neutral-900">
-            {batch.lot_number || batch.batch_code || 'Unnamed batch'}
-          </span>
-          {expiryLabels[batch.expiry_status] && (
-            <span className={cn('text-xs font-medium', expiryColors[batch.expiry_status])}>
-              {expiryLabels[batch.expiry_status]}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-3 mt-1 text-sm text-neutral-500">
-          {batch.expiry_date && (
-            <span className="flex items-center gap-1">
-              <Calendar className="h-3 w-3" />
-              Exp: {formatDate(batch.expiry_date)}
-            </span>
-          )}
-          <span>Qty: {batch.quantity}</span>
-        </div>
-      </div>
-
-      {/* Arrow for selected */}
-      {isSelected && <ChevronRight className="h-5 w-5 text-primary" />}
-    </button>
+    <span className={cn('rounded-full px-2.5 py-0.5 text-xs font-medium', style.bg, style.text)}>
+      {statusLabels[expiryStatus]}
+    </span>
   )
 }
 
@@ -246,10 +186,6 @@ export function ManageTrackingModal({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Batch selection state (for override)
-  const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [overrideQuantity, setOverrideQuantity] = useState<string>('')
-
   // Sub-modal state
   const [showCreateBatch, setShowCreateBatch] = useState(false)
 
@@ -259,14 +195,6 @@ export function ManageTrackingModal({
       loadData()
     }
   }, [isOpen, itemId, trackingType])
-
-  // Reset selection when modal closes
-  useEffect(() => {
-    if (!isOpen) {
-      setSelectedId(null)
-      setOverrideQuantity('')
-    }
-  }, [isOpen])
 
   async function loadData() {
     setLoading(true)
@@ -325,18 +253,25 @@ export function ManageTrackingModal({
     router.refresh()
   }
 
-  function handleSelect(id: string) {
-    if (selectedId === id) {
-      setSelectedId(null)
-      setOverrideQuantity('')
-    } else {
-      setSelectedId(id)
-      setOverrideQuantity('')
-    }
-  }
+  async function handleUpdateBatch(batchId: string, newLotNumber: string) {
+    const supabase = createClient()
 
-  // Get selected batch for quantity input
-  const selectedBatch = batches.find((b) => b.id === selectedId)
+    const { error: updateError } = await (supabase as any)
+      .from('lots')
+      .update({ lot_number: newLotNumber.trim() })
+      .eq('id', batchId)
+
+    if (updateError) {
+      setError('Failed to update lot number')
+      throw updateError
+    }
+
+    // Update local state
+    setBatches((prev) =>
+      prev.map((b) => (b.id === batchId ? { ...b, lot_number: newLotNumber.trim() } : b))
+    )
+    router.refresh()
+  }
 
   // Serial table columns
   const serialColumns: ColumnDef<Serial>[] = [
@@ -344,13 +279,55 @@ export function ManageTrackingModal({
       accessorKey: 'serial_number',
       header: 'Serial Number',
       cell: ({ row }) => (
-        <EditableSerialCell serial={row.original} onUpdate={handleUpdateSerial} />
+        <EditableCell
+          id={row.original.id}
+          value={row.original.serial_number}
+          onUpdate={handleUpdateSerial}
+          placeholder="Enter serial"
+        />
       ),
     },
     {
       accessorKey: 'status',
       header: 'Status',
-      cell: ({ row }) => <StatusBadge status={row.original.status} />,
+      cell: ({ row }) => <SerialStatusBadge status={row.original.status} />,
+    },
+  ]
+
+  // Batch table columns
+  const batchColumns: ColumnDef<Batch>[] = [
+    {
+      accessorKey: 'lot_number',
+      header: 'Lot #',
+      cell: ({ row }) => (
+        <EditableCell
+          id={row.original.id}
+          value={row.original.lot_number || row.original.batch_code || ''}
+          onUpdate={handleUpdateBatch}
+          placeholder="Enter lot #"
+        />
+      ),
+    },
+    {
+      accessorKey: 'expiry_date',
+      header: 'Expiry',
+      cell: ({ row }) => (
+        <span className="text-sm text-neutral-600">
+          {row.original.expiry_date ? formatShortDate(row.original.expiry_date) : '—'}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'quantity',
+      header: 'Qty',
+      cell: ({ row }) => (
+        <span className="font-medium text-neutral-900">{row.original.quantity}</span>
+      ),
+    },
+    {
+      accessorKey: 'expiry_status',
+      header: 'Status',
+      cell: ({ row }) => <BatchExpiryBadge expiryStatus={row.original.expiry_status} />,
     },
   ]
 
@@ -387,15 +364,6 @@ export function ManageTrackingModal({
             </button>
           </div>
 
-          {/* Helper text - only for batch */}
-          {trackingType === 'batch' && (
-            <div className="px-6 py-3 bg-neutral-50 border-b border-neutral-100">
-              <p className="text-sm text-neutral-600">
-                System auto-picks oldest first. Tap a batch to use it instead.
-              </p>
-            </div>
-          )}
-
           {/* Body */}
           <div className="flex-1 overflow-y-auto p-6">
             {error && (
@@ -424,17 +392,13 @@ export function ManageTrackingModal({
                 </p>
               </div>
             ) : trackingType === 'batch' ? (
-              <div className="space-y-3">
-                {batches.map((batch) => (
-                  <BatchListItem
-                    key={batch.id}
-                    batch={batch}
-                    isSelected={selectedId === batch.id}
-                    onSelect={() => handleSelect(batch.id)}
-                    formatDate={formatShortDate}
-                  />
-                ))}
-              </div>
+              <DataTable
+                columns={batchColumns}
+                data={batches}
+                searchKey="lot_number"
+                searchPlaceholder="Search batches..."
+                pageSize={5}
+              />
             ) : (
               <DataTable
                 columns={serialColumns}
@@ -443,36 +407,6 @@ export function ManageTrackingModal({
                 searchPlaceholder="Search serials..."
                 pageSize={5}
               />
-            )}
-
-            {/* Override quantity input for batches */}
-            {selectedBatch && (
-              <div className="mt-4 p-4 rounded-xl bg-primary/5 border-2 border-primary">
-                <p className="text-sm font-medium text-neutral-700 mb-2">
-                  Override: Use this batch instead of auto-pick
-                </p>
-                <div className="flex items-center gap-3">
-                  <div className="flex-1">
-                    <Input
-                      type="number"
-                      min="1"
-                      max={selectedBatch.quantity}
-                      value={overrideQuantity}
-                      onChange={(e) => setOverrideQuantity(e.target.value)}
-                      placeholder={`Qty (max ${selectedBatch.quantity})`}
-                    />
-                  </div>
-                  <Button
-                    disabled={!overrideQuantity || parseInt(overrideQuantity) <= 0}
-                    onClick={() => {
-                      // TODO: Implement override action
-                      console.log('Override batch', selectedBatch.id, 'qty', overrideQuantity)
-                    }}
-                  >
-                    Use This Batch
-                  </Button>
-                </div>
-              </div>
             )}
           </div>
 

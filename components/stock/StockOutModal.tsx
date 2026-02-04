@@ -3,20 +3,11 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import {
-  X,
-  Minus,
-  Plus,
-  Loader2,
-  AlertTriangle,
-  Package,
-  Hash,
-  Calendar,
-  CheckCircle,
-  Zap,
-} from 'lucide-react'
+import { ColumnDef } from '@tanstack/react-table'
+import { X, Minus, Plus, Loader2, AlertTriangle, Zap, CheckCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { DataTable } from '@/components/ui/data-table'
 import { cn } from '@/lib/utils'
 import { useFormatting } from '@/hooks/useFormatting'
 
@@ -54,6 +45,60 @@ const STOCK_OUT_REASONS = [
   { value: 'sold', label: 'Sold' },
   { value: 'other', label: 'Other' },
 ]
+
+// Status badge component for serial status
+function SerialStatusBadge({ status }: { status: string }) {
+  const statusColors: Record<string, { bg: string; text: string }> = {
+    available: { bg: 'bg-green-100', text: 'text-green-700' },
+    checked_out: { bg: 'bg-amber-100', text: 'text-amber-700' },
+    sold: { bg: 'bg-neutral-100', text: 'text-neutral-600' },
+    damaged: { bg: 'bg-red-100', text: 'text-red-700' },
+    returned: { bg: 'bg-blue-100', text: 'text-blue-700' },
+  }
+
+  const statusLabels: Record<string, string> = {
+    available: 'Available',
+    checked_out: 'Checked out',
+    sold: 'Sold',
+    damaged: 'Damaged',
+    returned: 'Returned',
+  }
+
+  const style = statusColors[status] || statusColors.available
+
+  return (
+    <span className={cn('rounded-full px-2.5 py-0.5 text-xs font-medium', style.bg, style.text)}>
+      {statusLabels[status] || status}
+    </span>
+  )
+}
+
+// Expiry badge component for batch status
+function BatchExpiryBadge({ expiryStatus }: { expiryStatus: string }) {
+  const statusColors: Record<string, { bg: string; text: string }> = {
+    expired: { bg: 'bg-red-100', text: 'text-red-700' },
+    expiring_soon: { bg: 'bg-amber-100', text: 'text-amber-700' },
+    expiring_month: { bg: 'bg-yellow-100', text: 'text-yellow-700' },
+    ok: { bg: 'bg-green-100', text: 'text-green-700' },
+    no_expiry: { bg: 'bg-neutral-100', text: 'text-neutral-500' },
+  }
+
+  const statusLabels: Record<string, string> = {
+    expired: 'Expired',
+    expiring_soon: 'Expiring soon',
+    expiring_month: 'This month',
+    ok: 'OK',
+    no_expiry: 'No expiry',
+  }
+
+  const style = statusColors[expiryStatus] || statusColors.ok
+
+  return (
+    <span className={cn('rounded-full px-2.5 py-0.5 text-xs font-medium', style.bg, style.text)}>
+      {statusLabels[expiryStatus] || expiryStatus}
+    </span>
+  )
+}
 
 export function StockOutModal({
   isOpen,
@@ -245,6 +290,97 @@ export function StockOutModal({
     }
   }
 
+  // Serial table columns with selection checkbox
+  const serialColumns: ColumnDef<Serial>[] = [
+    {
+      id: 'select',
+      header: ({ table }) => (
+        <input
+          type="checkbox"
+          checked={table.getIsAllPageRowsSelected()}
+          onChange={(e) => table.toggleAllPageRowsSelected(e.target.checked)}
+          className="h-4 w-4 rounded border-neutral-300 text-primary focus:ring-primary"
+          aria-label="Select all"
+        />
+      ),
+      cell: ({ row }) => (
+        <input
+          type="checkbox"
+          checked={row.getIsSelected()}
+          onChange={(e) => row.toggleSelected(e.target.checked)}
+          className="h-4 w-4 rounded border-neutral-300 text-primary focus:ring-primary"
+          aria-label="Select row"
+        />
+      ),
+      size: 40,
+    },
+    {
+      accessorKey: 'serial_number',
+      header: 'Serial Number',
+      cell: ({ row }) => (
+        <span className="font-mono">{row.original.serial_number}</span>
+      ),
+    },
+    {
+      accessorKey: 'status',
+      header: 'Status',
+      cell: ({ row }) => <SerialStatusBadge status={row.original.status} />,
+    },
+  ]
+
+  // Batch table columns with radio selection
+  const batchColumns: ColumnDef<Batch>[] = [
+    {
+      id: 'select',
+      header: '',
+      cell: ({ row }) => (
+        <input
+          type="radio"
+          name="batch-select"
+          checked={selectedBatchId === row.original.id}
+          onChange={() => {
+            setSelectedMode('manual')
+            setSelectedBatchId(row.original.id)
+            setQuantity(Math.min(quantity, row.original.quantity))
+          }}
+          className="h-4 w-4 border-neutral-300 text-primary focus:ring-primary"
+          aria-label="Select batch"
+        />
+      ),
+      size: 40,
+    },
+    {
+      accessorKey: 'lot_number',
+      header: 'Lot #',
+      cell: ({ row }) => (
+        <span className="font-mono">
+          {row.original.lot_number || row.original.batch_code || '—'}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'expiry_date',
+      header: 'Expiry',
+      cell: ({ row }) => (
+        <span className="text-sm text-neutral-600">
+          {row.original.expiry_date ? formatShortDate(row.original.expiry_date) : '—'}
+        </span>
+      ),
+    },
+    {
+      accessorKey: 'quantity',
+      header: 'Qty',
+      cell: ({ row }) => (
+        <span className="font-medium text-neutral-900">{row.original.quantity}</span>
+      ),
+    },
+    {
+      accessorKey: 'expiry_status',
+      header: 'Status',
+      cell: ({ row }) => <BatchExpiryBadge expiryStatus={row.original.expiry_status} />,
+    },
+  ]
+
   if (!isOpen) return null
 
   const isBatch = trackingMode === 'lot_expiry'
@@ -377,80 +513,37 @@ export function StockOutModal({
                     </div>
                   </button>
 
-                  {/* Manual options */}
+                  {/* Manual options - DataTable for both batch and serial */}
                   {isBatch ? (
-                    batches.map((batch) => (
-                      <button
-                        key={batch.id}
-                        type="button"
-                        onClick={() => {
-                          setSelectedMode('manual')
-                          setSelectedBatchId(batch.id)
-                          setQuantity(Math.min(quantity, batch.quantity))
-                        }}
-                        className={cn(
-                          'w-full flex items-center gap-3 rounded-xl border-2 p-4 text-left transition-all',
-                          selectedMode === 'manual' && selectedBatchId === batch.id
-                            ? 'border-primary bg-primary/5'
-                            : 'border-neutral-200 hover:border-neutral-300'
-                        )}
-                      >
-                        <div className={cn(
-                          'flex h-5 w-5 items-center justify-center rounded-full border-2',
-                          selectedMode === 'manual' && selectedBatchId === batch.id
-                            ? 'border-primary bg-primary'
-                            : 'border-neutral-300'
-                        )}>
-                          {selectedMode === 'manual' && selectedBatchId === batch.id && (
-                            <CheckCircle className="h-3 w-3 text-white" />
-                          )}
-                        </div>
-                        <Package className="h-5 w-5 text-neutral-400" />
-                        <div className="flex-1">
-                          <span className="font-medium">
-                            {batch.lot_number || batch.batch_code || 'Unnamed batch'}
-                          </span>
-                          <div className="flex items-center gap-3 text-sm text-neutral-500">
-                            {batch.expiry_date && (
-                              <span className="flex items-center gap-1">
-                                <Calendar className="h-3 w-3" />
-                                Exp: {formatShortDate(batch.expiry_date)}
-                              </span>
-                            )}
-                            <span>Qty: {batch.quantity}</span>
-                          </div>
-                        </div>
-                      </button>
-                    ))
+                    <DataTable
+                      columns={batchColumns}
+                      data={batches}
+                      searchKey="lot_number"
+                      searchPlaceholder="Search batches..."
+                      pageSize={5}
+                    />
                   ) : (
-                    <div className="max-h-48 overflow-y-auto space-y-1 rounded-lg border border-neutral-200 p-2">
-                      {serials.map((serial) => (
-                        <button
-                          key={serial.id}
-                          type="button"
-                          onClick={() => toggleSerial(serial.id)}
-                          className={cn(
-                            'w-full flex items-center gap-3 rounded-lg p-3 text-left transition-all',
-                            selectedSerialIds.has(serial.id)
-                              ? 'bg-primary/10'
-                              : 'hover:bg-neutral-50'
-                          )}
-                        >
-                          <div className={cn(
-                            'flex h-5 w-5 items-center justify-center rounded border',
-                            selectedSerialIds.has(serial.id)
-                              ? 'border-primary bg-primary'
-                              : 'border-neutral-300 bg-white'
-                          )}>
-                            {selectedSerialIds.has(serial.id) && (
-                              <CheckCircle className="h-3 w-3 text-white" />
-                            )}
-                          </div>
-                          <Hash className="h-4 w-4 text-neutral-400" />
-                          <span className="font-mono">{serial.serial_number}</span>
-                        </button>
-                      ))}
-                    </div>
+                    <DataTable
+                      columns={serialColumns}
+                      data={serials}
+                      searchKey="serial_number"
+                      searchPlaceholder="Search serials..."
+                      pageSize={5}
+                      enableRowSelection
+                      onRowSelectionChange={(selectedRows) => {
+                        const newIds = selectedRows.map(s => s.id)
+                        // Only update if selection actually changed
+                        const currentIds = Array.from(selectedSerialIds)
+                        const hasChanged = newIds.length !== currentIds.length ||
+                          newIds.some(id => !selectedSerialIds.has(id))
+                        if (hasChanged) {
+                          setSelectedSerialIds(new Set(newIds))
+                          if (newIds.length > 0) {
+                            setSelectedMode('manual')
+                          }
+                        }
+                      }}
+                    />
                   )}
                 </div>
               </div>

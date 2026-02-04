@@ -196,9 +196,10 @@ export function StockInModal({
           throw new Error('Please enter at least one serial number')
         }
 
-        const { data, error: rpcError } = await (supabase as any).rpc('upsert_item_serials', {
+        const { data, error: rpcError } = await (supabase as any).rpc('stock_in_serials', {
           p_item_id: itemId,
           p_serials: parsedSerials,
+          p_notes: notes || null,
         })
         if (rpcError) throw rpcError
         if (!data?.success) throw new Error(data?.error || 'Failed to add serials')

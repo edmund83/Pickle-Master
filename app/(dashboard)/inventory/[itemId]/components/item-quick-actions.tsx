@@ -98,13 +98,13 @@ export function ItemQuickActions({
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 rounded-xl border border-purple-200 bg-purple-50 px-4 py-2">
-            <Package className="h-5 w-5 text-purple-500" />
+          <div className="flex items-center gap-2 rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-2">
+            <Package className="h-5 w-5 text-neutral-400" />
             <div className="text-center">
               <div className="text-2xl font-bold tabular-nums text-neutral-900">
                 {quantity}
               </div>
-              <div className="text-xs text-purple-600">{unit || 'units'}</div>
+              <div className="text-xs text-neutral-500">{unit || 'units'}</div>
             </div>
           </div>
         </div>
@@ -114,7 +114,7 @@ export function ItemQuickActions({
       <div className="grid grid-cols-2 gap-3">
         <Button
           variant="outline"
-          className="h-11 border-red-200 bg-red-50 text-red-700 hover:bg-red-100 hover:text-red-800"
+          className="h-11"
           onClick={() => setShowStockOut(true)}
         >
           <ArrowDownCircle className="mr-2 h-4 w-4" />
@@ -122,7 +122,7 @@ export function ItemQuickActions({
         </Button>
         <Button
           variant="outline"
-          className="h-11 border-green-200 bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800"
+          className="h-11"
           onClick={() => setShowStockIn(true)}
         >
           <ArrowUpCircle className="mr-2 h-4 w-4" />
@@ -219,6 +219,7 @@ export function ItemQuickActions({
         itemId={itemId}
         itemName={itemName}
         trackingMode={trackingMode || 'none'}
+        currentQuantity={quantity}
         isOpen={showStockOut}
         onClose={() => setShowStockOut(false)}
         onSuccess={handleModalSuccess}

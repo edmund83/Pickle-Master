@@ -87,29 +87,29 @@ export function ManageTrackingButton({
                 <span className="ml-2 text-neutral-900">{totalCount}</span>
               </p>
               {statusText && (
-                <p className="text-sm text-neutral-600 mt-0.5">
+                <p className="text-sm text-neutral-500 mt-0.5">
                   {isSerial && serialStats ? (
                     <>
                       {serialStats.available > 0 && (
-                        <span className="text-green-600">{serialStats.available} available</span>
+                        <span>{serialStats.available} available</span>
                       )}
                       {serialStats.available > 0 && serialStats.checked_out > 0 && (
                         <span className="mx-1.5 text-neutral-300">·</span>
                       )}
                       {serialStats.checked_out > 0 && (
-                        <span className="text-amber-600">{serialStats.checked_out} checked out</span>
+                        <span>{serialStats.checked_out} checked out</span>
                       )}
                     </>
                   ) : !isSerial && lotStats ? (
                     <>
                       {lotStats.activeLots > 0 && (
-                        <span className="text-green-600">{lotStats.activeLots} active</span>
+                        <span>{lotStats.activeLots} active</span>
                       )}
                       {lotStats.activeLots > 0 && lotStats.expiringSoonCount > 0 && (
                         <span className="mx-1.5 text-neutral-300">·</span>
                       )}
                       {lotStats.expiringSoonCount > 0 && (
-                        <span className="text-amber-600">{lotStats.expiringSoonCount} expiring soon</span>
+                        <span>{lotStats.expiringSoonCount} expiring soon</span>
                       )}
                     </>
                   ) : null}

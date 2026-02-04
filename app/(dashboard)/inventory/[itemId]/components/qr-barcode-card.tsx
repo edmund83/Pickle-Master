@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { QrCode, Barcode, Loader2, Printer, RefreshCw, Sparkles } from 'lucide-react'
+import { QrCode, Barcode, Loader2, Printer } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { generateQRCode, formatLabelId } from '@/lib/labels/barcode'
 import { generateScannableBarcode, generateItemBarcode } from '@/lib/labels/barcode-generator'
@@ -13,8 +13,6 @@ interface QRBarcodeCardProps {
   itemName: string
   existingBarcode?: string | null
   onPrintLabel?: () => void
-  onGenerateBarcode?: () => void
-  isGenerating?: boolean
 }
 
 type CodeType = 'qr' | 'barcode'
@@ -24,8 +22,6 @@ export default function QRBarcodeCard({
   itemName,
   existingBarcode,
   onPrintLabel,
-  onGenerateBarcode,
-  isGenerating = false,
 }: QRBarcodeCardProps) {
   const [codeType, setCodeType] = useState<CodeType>('qr')
   const [qrCodeUrl, setQrCodeUrl] = useState<string | null>(null)
@@ -33,7 +29,6 @@ export default function QRBarcodeCard({
   const [loading, setLoading] = useState(true)
 
   const labelId = formatLabelId(itemId)
-  const hasExistingBarcode = !!existingBarcode
   const barcodeData = existingBarcode || generateItemBarcode(itemId)
 
   useEffect(() => {
@@ -152,44 +147,12 @@ export default function QRBarcodeCard({
             </p>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-2 pt-2">
-            <Button variant="outline" size="sm" className="flex-1" onClick={onPrintLabel}>
+          {/* Action Button */}
+          <div className="pt-2">
+            <Button variant="outline" size="sm" className="w-full" onClick={onPrintLabel}>
               <Printer className="mr-2 h-4 w-4" />
               Print Label
             </Button>
-            {!hasExistingBarcode && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1"
-                onClick={onGenerateBarcode}
-                disabled={isGenerating}
-              >
-                {isGenerating ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <Sparkles className="mr-2 h-4 w-4" />
-                )}
-                {isGenerating ? 'Generating...' : 'Generate Barcode'}
-              </Button>
-            )}
-            {hasExistingBarcode && (
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1"
-                onClick={onGenerateBarcode}
-                disabled={isGenerating}
-              >
-                {isGenerating ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <RefreshCw className="mr-2 h-4 w-4" />
-                )}
-                {isGenerating ? 'Regenerating...' : 'Regenerate'}
-              </Button>
-            )}
           </div>
         </div>
       )}

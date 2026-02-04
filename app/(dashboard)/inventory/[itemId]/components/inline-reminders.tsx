@@ -291,7 +291,7 @@ export function InlineReminders({
             className={cn(
               'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all',
               lowStockActive
-                ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                ? 'bg-neutral-900 text-white hover:bg-neutral-800'
                 : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200',
               isUpdating === 'low_stock' && 'opacity-50 cursor-wait',
               hasFolderLowStock && 'opacity-50 cursor-not-allowed hover:bg-neutral-100'
@@ -479,7 +479,7 @@ export function InlineReminders({
             className={cn(
               'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium transition-all',
               expiryActive
-                ? 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+                ? 'bg-neutral-900 text-white hover:bg-neutral-800'
                 : 'bg-neutral-100 text-neutral-500 hover:bg-neutral-200',
               isUpdating === 'expiry' && 'opacity-50 cursor-wait',
               hasFolderExpiry && 'opacity-50 cursor-not-allowed hover:bg-neutral-100'
@@ -653,14 +653,7 @@ export function InlineReminders({
             {folderReminders.map((reminder) => (
               <div
                 key={reminder.id}
-                className={cn(
-                  'inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium',
-                  reminder.reminder_type === 'low_stock'
-                    ? 'bg-yellow-50 text-yellow-700 border border-yellow-200'
-                    : reminder.reminder_type === 'expiry'
-                      ? 'bg-orange-50 text-orange-700 border border-orange-200'
-                      : 'bg-blue-50 text-blue-700 border border-blue-200'
-                )}
+                className="inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium bg-neutral-100 text-neutral-600 border border-neutral-200"
                 title={`Folder reminder from "${reminder.folder_name}"`}
               >
                 <FolderOpen className="h-3 w-3 opacity-70" />

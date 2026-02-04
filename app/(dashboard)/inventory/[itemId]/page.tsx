@@ -250,9 +250,9 @@ export default async function ItemDetailPage({ params }: PageProps) {
   const { item, folder, itemTags, activityLogs, features, tenantLogo, userEmail, userId, serialStats, lotStats } = data
 
   const statusColors: Record<string, string> = {
-    in_stock: 'bg-green-100 text-green-700 border-green-200',
-    low_stock: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-    out_of_stock: 'bg-red-100 text-red-700 border-red-200',
+    in_stock: 'bg-neutral-100 text-neutral-600 border-neutral-200',
+    low_stock: 'bg-neutral-900 text-white border-neutral-900',
+    out_of_stock: 'bg-neutral-100 text-neutral-600 border-neutral-200',
   }
 
   const statusLabels: Record<string, string> = {
