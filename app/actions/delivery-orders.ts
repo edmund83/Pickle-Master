@@ -291,6 +291,174 @@ export async function createDeliveryOrderFromSO(salesOrderId: string): Promise<D
     return { success: true, delivery_order_id: result.delivery_order_id, display_id: result.display_id }
 }
 
+// Input for creating DO from pick list
+export interface CreateDeliveryOrderFromPickListInput {
+    pick_list_id: string
+    carrier?: string | null
+    tracking_number?: string | null
+    scheduled_date?: string | null
+}
+
+// Create delivery order from a completed pick list
+export async function createDeliveryOrderFromPickList(
+    input: CreateDeliveryOrderFromPickListInput
+): Promise<DeliveryOrderResult> {
+    // Feature gate: Delivery orders require Growth+ plan
+    const featureCheck = await requireFeatureSafe('delivery_orders')
+    if (featureCheck.error) return { success: false, error: featureCheck.error }
+
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
+
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    // Verify pick list belongs to tenant
+    const pickListCheck = await verifyRelatedTenantOwnership(
+        'pick_lists',
+        input.pick_list_id,
+        context.tenantId,
+        'Pick List'
+    )
+    if (!pickListCheck.success) return { success: false, error: pickListCheck.error }
+
+    const supabase = await createClient()
+
+    // Create delivery order from pick list using RPC
+    const { data: doId, error: createError } = await (supabase as any).rpc(
+        'create_delivery_order_from_pick_list',
+        {
+            p_pick_list_id: input.pick_list_id,
+            p_carrier: input.carrier || null,
+            p_tracking_number: input.tracking_number || null,
+            p_scheduled_date: input.scheduled_date || null,
+        }
+    )
+
+    if (createError) {
+        console.error('Create DO from pick list error:', createError)
+        return { success: false, error: createError.message }
+    }
+
+    if (!doId) {
+        return { success: false, error: 'Failed to create delivery order' }
+    }
+
+    // Get delivery order display_id for response
+    const { data: doData } = await (supabase as any)
+        .from('delivery_orders')
+        .select('display_id')
+        .eq('id', doId)
+        .single()
+
+    // Copy tracking from pick list items to delivery order items
+    await copyPickListTrackingToDeliveryOrder(supabase, doId, context.tenantId)
+
+    revalidatePath('/tasks/delivery-orders')
+    revalidatePath(`/tasks/pick-lists/${input.pick_list_id}`)
+    return {
+        success: true,
+        delivery_order_id: doId,
+        display_id: doData?.display_id || null,
+    }
+}
+
+// Helper function to copy serial/lot tracking from pick list items to delivery order items
+async function copyPickListTrackingToDeliveryOrder(
+    supabase: Awaited<ReturnType<typeof createClient>>,
+    deliveryOrderId: string,
+    tenantId: string
+): Promise<void> {
+    // Get delivery order items with their pick_list_item_ids
+    const { data: doItems, error: doItemsError } = await (supabase as any)
+        .from('delivery_order_items')
+        .select('id, pick_list_item_id')
+        .eq('delivery_order_id', deliveryOrderId)
+        .not('pick_list_item_id', 'is', null)
+
+    if (doItemsError || !doItems || doItems.length === 0) {
+        // No items to process or error - not fatal, DO is already created
+        if (doItemsError) {
+            console.error('Error fetching DO items for tracking copy:', doItemsError)
+        }
+        return
+    }
+
+    // Process each delivery order item
+    for (const doItem of doItems as { id: string; pick_list_item_id: string }[]) {
+        try {
+            // Get tracking from pick list item using the RPC function
+            const { data: tracking, error: trackingError } = await (supabase as any)
+                .rpc('get_pick_list_item_tracking', {
+                    p_pick_list_item_id: doItem.pick_list_item_id,
+                })
+
+            if (trackingError || !tracking?.success) {
+                console.error(
+                    'Error getting tracking for pick list item:',
+                    doItem.pick_list_item_id,
+                    trackingError || tracking?.error
+                )
+                continue
+            }
+
+            // Copy lot tracking
+            if (tracking.lots && Array.isArray(tracking.lots) && tracking.lots.length > 0) {
+                for (const lot of tracking.lots as {
+                    lot_id: string
+                    lot_number: string
+                    quantity: number
+                }[]) {
+                    const { error: lotInsertError } = await (supabase as any)
+                        .from('delivery_order_item_serials')
+                        .insert({
+                            delivery_order_item_id: doItem.id,
+                            lot_id: lot.lot_id,
+                            quantity: lot.quantity,
+                            serial_number: lot.lot_number, // Store lot number for display
+                        })
+
+                    if (lotInsertError) {
+                        console.error(
+                            'Error copying lot tracking to DO item:',
+                            doItem.id,
+                            lotInsertError
+                        )
+                    }
+                }
+            }
+
+            // Copy serial tracking
+            if (tracking.serials && Array.isArray(tracking.serials) && tracking.serials.length > 0) {
+                for (const serial of tracking.serials as {
+                    serial_id: string
+                    serial_number: string
+                }[]) {
+                    const { error: serialInsertError } = await (supabase as any)
+                        .from('delivery_order_item_serials')
+                        .insert({
+                            delivery_order_item_id: doItem.id,
+                            serial_number: serial.serial_number,
+                            quantity: 1, // Serials are always quantity 1
+                        })
+
+                    if (serialInsertError) {
+                        console.error(
+                            'Error copying serial tracking to DO item:',
+                            doItem.id,
+                            serialInsertError
+                        )
+                    }
+                }
+            }
+        } catch (err) {
+            // Log but don't fail - the DO is already created
+            console.error('Error processing tracking for DO item:', doItem.id, err)
+        }
+    }
+}
+
 // Get delivery order with details
 export async function getDeliveryOrder(deliveryOrderId: string) {
     const authResult = await getAuthContext()

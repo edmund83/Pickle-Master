@@ -11,6 +11,18 @@ Versioning: [Semantic Versioning](https://semver.org/spec/v2.0.0.html)
 
 ### Added
 
+#### Copy Serial/Lot Tracking from Pick List to Delivery Order
+When a delivery order is created from a pick list, the serial and lot tracking allocations are now automatically copied to the delivery order items.
+
+**Key Features**:
+- **Automatic Copy**: Tracking allocations (lots and serials) are copied when creating a DO from a pick list
+- **Lot Tracking**: Copies lot_id, lot_number, and quantity to `delivery_order_item_serials`
+- **Serial Tracking**: Copies serial_number with quantity=1 to `delivery_order_item_serials`
+- **Error Handling**: Tracking copy failures are logged but don't block DO creation
+
+**Files Modified**:
+- `app/actions/delivery-orders.ts` - Added `createDeliveryOrderFromPickList` function and `copyPickListTrackingToDeliveryOrder` helper
+
 #### Pick List Serial/Lot Tracking Integration
 Integrated the `PickListItemTracking` component into the Pick List detail page, allowing users to allocate specific serial numbers or lot/batch numbers to items in a pick list.
 
