@@ -10,7 +10,7 @@ export interface VendorFormData {
   address_line1: string
   city: string
   country: string
-  payment_term_id: string
+  payment_terms: string
   notes: string
   tax_id: string
   tax_id_label: string
@@ -24,7 +24,7 @@ export const emptyVendorFormData: VendorFormData = {
   address_line1: '',
   city: '',
   country: '',
-  payment_term_id: '',
+  payment_terms: '',
   notes: '',
   tax_id: '',
   tax_id_label: '',
@@ -150,8 +150,8 @@ export function VendorForm({
           Payment Terms
         </label>
         <select
-          value={formData.payment_term_id}
-          onChange={(e) => setFormData(prev => ({ ...prev, payment_term_id: e.target.value }))}
+          value={formData.payment_terms}
+          onChange={(e) => setFormData(prev => ({ ...prev, payment_terms: e.target.value }))}
           className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary bg-white"
         >
           <option value="">Select payment terms...</option>

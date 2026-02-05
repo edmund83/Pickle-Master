@@ -36,8 +36,8 @@ const REMINDER_COLORS = {
 const STATUS_BADGES = {
   active: 'bg-green-100 text-green-700',
   paused: 'bg-neutral-100 text-neutral-600',
-  triggered: 'bg-purple-100 text-purple-700',
-  expired: 'bg-red-100 text-red-700',
+  completed: 'bg-purple-100 text-purple-700',
+  deleted: 'bg-red-100 text-red-700',
 }
 
 export function ReminderListItem({

@@ -45,7 +45,7 @@ export function VendorFormDialog({
           address_line1: vendor.address_line1 || '',
           city: vendor.city || '',
           country: vendor.country || '',
-          payment_term_id: vendor.payment_term_id || '',
+          payment_terms: vendor.payment_terms || '',
           notes: vendor.notes || '',
           tax_id: vendor.tax_id || '',
           tax_id_label: vendor.tax_id_label || '',

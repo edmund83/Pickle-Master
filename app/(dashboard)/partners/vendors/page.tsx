@@ -137,7 +137,7 @@ export default function PartnersVendorsPage() {
             address_line1: formData.address_line1 || null,
             city: formData.city || null,
             country: formData.country || null,
-            payment_term_id: formData.payment_term_id || null,
+            payment_terms: formData.payment_terms || null,
             notes: formData.notes || null,
             updated_at: new Date().toISOString(),
           })
@@ -160,7 +160,7 @@ export default function PartnersVendorsPage() {
             address_line1: formData.address_line1 || null,
             city: formData.city || null,
             country: formData.country || null,
-            payment_term_id: formData.payment_term_id || null,
+            payment_terms: formData.payment_terms || null,
             notes: formData.notes || null,
           })
 

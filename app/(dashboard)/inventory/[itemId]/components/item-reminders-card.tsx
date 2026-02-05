@@ -63,7 +63,7 @@ export function ItemRemindersCard({
     (r) => r.status === 'active' || r.status === 'paused'
   )
   const inactiveReminders = reminders.filter(
-    (r) => r.status === 'triggered' || r.status === 'expired'
+    (r) => r.status === 'completed' || r.status === 'deleted'
   )
 
   return (

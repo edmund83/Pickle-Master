@@ -93,7 +93,7 @@ export default function NewVendorPage() {
           address_line1: formData.address_line1 || null,
           city: formData.city || null,
           country: formData.country || null,
-          payment_term_id: formData.payment_term_id || null,
+          payment_terms: formData.payment_terms || null,
           notes: formData.notes || null,
           tax_id: formData.tax_id || null,
           tax_id_label: formData.tax_id_label || null,
