@@ -26,3 +26,15 @@ export function escapeHtml(unsafe: string): string {
 export function escapeSqlLike(unsafe: string): string {
   return unsafe.replace(/[%_]/g, '\\$&')
 }
+
+/**
+ * Returns a URL safe for use in <img src>. Allows https:, http:, and relative URLs.
+ * Returns null for javascript:, data:, or other protocols to prevent XSS.
+ */
+export function safeImageUrl(url: string | null | undefined): string | null {
+  if (url == null || url === '') return null
+  const trimmed = url.trim().toLowerCase()
+  if (trimmed.startsWith('https:') || trimmed.startsWith('http:')) return url
+  if (trimmed.startsWith('/') || trimmed.startsWith('./') || trimmed.startsWith('../')) return url
+  return null
+}

@@ -12,6 +12,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import type { InventoryItem, Folder, Tag as TagType } from '@/types/database.types'
+import { safeImageUrl } from '@/lib/utils'
 import { ItemCheckoutHistoryCard } from './item-checkout-section'
 import { ItemQuickActions } from './components/item-quick-actions'
 import QRBarcodeSection from './components/qr-barcode-section'
@@ -79,7 +80,14 @@ interface ItemWithRelations {
   lotStats: LotStats | null
 }
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+function isValidUUID(value: string): boolean {
+  return UUID_REGEX.test(value)
+}
+
 async function getItemDetails(itemId: string): Promise<ItemWithRelations | null> {
+  if (!isValidUUID(itemId)) return null
+
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
@@ -113,35 +121,32 @@ async function getItemDetails(itemId: string): Promise<ItemWithRelations | null>
 
   const typedItem = item as InventoryItem
 
-  // Get folder if item has one
-  let folder: Folder | null = null
-  if (typedItem.folder_id) {
-    const { data: folderData } = await (supabase as any)
-      .from('folders')
-      .select('*')
-      .eq('id', typedItem.folder_id)
-      .single()
-    folder = folderData as Folder | null
-  }
-
-  // Get tags for the item using RPC
-  const { data: itemTags } = await (supabase as any)
-    .rpc('get_item_tags', { p_item_id: itemId })
-
-  // Get recent activity logs for this item
-  const { data: activityLogs } = await (supabase as any)
-    .rpc('get_activity_logs', {
+  // Parallel fetch: folder, tags, activity logs, tenant (all independent after we have item)
+  const [folderResult, itemTagsResult, activityLogsResult, tenantResult] = await Promise.all([
+    typedItem.folder_id
+      ? (supabase as any)
+          .from('folders')
+          .select('*')
+          .eq('id', typedItem.folder_id)
+          .single()
+      : Promise.resolve({ data: null }),
+    (supabase as any).rpc('get_item_tags', { p_item_id: itemId }),
+    (supabase as any).rpc('get_activity_logs', {
       p_entity_id: itemId,
       p_entity_type: 'item',
       p_limit: 10
-    })
+    }),
+    (supabase as any)
+      .from('tenants')
+      .select('subscription_tier, settings, logo_url')
+      .eq('id', profile.tenant_id)
+      .single()
+  ])
 
-  // Get tenant settings for feature flags and logo
-  const { data: tenant } = await (supabase as any)
-    .from('tenants')
-    .select('subscription_tier, settings, logo_url')
-    .eq('id', profile.tenant_id)
-    .single()
+  const folder = (folderResult?.data ?? null) as Folder | null
+  const itemTags = (itemTagsResult?.data ?? []) as TagType[]
+  const activityLogs = (activityLogsResult?.data ?? []) as ActivityLogItem[]
+  const tenant = tenantResult?.data
 
   // Use plan-based feature gating instead of settings flags
   const subscriptionTier = (tenant?.subscription_tier as PlanId) || 'starter'
@@ -153,7 +158,7 @@ async function getItemDetails(itemId: string): Promise<ItemWithRelations | null>
   }
   const tenantLogo = (tenant?.logo_url as string) || null
 
-  // Fetch tracking stats based on item's tracking mode
+  // Fetch tracking stats based on item's tracking mode (depends on item)
   let serialStats: SerialStats | null = null
   let lotStats: LotStats | null = null
 
@@ -323,9 +328,9 @@ export default async function ItemDetailPage({ params }: PageProps) {
             <Card className="rounded-xl shadow-none">
               <div className="p-4">
                 <div className="flex aspect-square items-center justify-center rounded-lg bg-neutral-100">
-                  {item.image_urls && item.image_urls.length > 0 ? (
+                  {item.image_urls && item.image_urls.length > 0 && safeImageUrl(item.image_urls[0]) ? (
                     <img
-                      src={item.image_urls[0]}
+                      src={safeImageUrl(item.image_urls[0])!}
                       alt={item.name}
                       className="h-full w-full rounded-lg object-cover"
                     />
@@ -335,20 +340,23 @@ export default async function ItemDetailPage({ params }: PageProps) {
                 </div>
                 {item.image_urls && item.image_urls.length > 1 && (
                   <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
-                    {item.image_urls.map((url, index) => (
-                      <button
-                        key={index}
-                        className={`h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all ${index === 0 ? 'border-primary ring-2 ring-primary/30' : 'border-neutral-200 hover:border-neutral-300'
-                          }`}
-                        type="button"
-                      >
-                        <img
-                          src={url}
-                          alt={`${item.name} ${index + 1}`}
-                          className="h-full w-full object-cover"
-                        />
-                      </button>
-                    ))}
+                    {item.image_urls
+                      .map((url) => safeImageUrl(url))
+                      .filter((url): url is string => url != null)
+                      .map((url, index) => (
+                        <button
+                          key={index}
+                          className={`h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-all ${index === 0 ? 'border-primary ring-2 ring-primary/30' : 'border-neutral-200 hover:border-neutral-300'
+                            }`}
+                          type="button"
+                        >
+                          <img
+                            src={url}
+                            alt={`${item.name} ${index + 1}`}
+                            className="h-full w-full object-cover"
+                          />
+                        </button>
+                      ))}
                   </div>
                 )}
               </div>

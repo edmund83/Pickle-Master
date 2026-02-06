@@ -374,7 +374,7 @@ export async function createInvoiceFromSO(salesOrderId: string): Promise<Invoice
         .from('sales_orders')
         .select(`
             *,
-            customers(name, billing_address1, billing_address2, billing_city, billing_state, billing_postal_code, billing_country),
+            customers(name, billing_address_line1, billing_address_line2, billing_city, billing_state, billing_postal_code, billing_country),
             sales_order_items(
                 id, item_id, item_name, sku,
                 quantity_ordered, unit_price
@@ -427,8 +427,8 @@ export async function createInvoiceFromSO(salesOrderId: string): Promise<Invoice
             sales_order_id: salesOrderId,
             invoice_date: new Date().toISOString().split('T')[0],
             bill_to_name: so.bill_to_name || so.customers?.name || null,
-            bill_to_address1: so.bill_to_address1 || so.customers?.billing_address1 || null,
-            bill_to_address2: so.bill_to_address2 || so.customers?.billing_address2 || null,
+            bill_to_address1: so.bill_to_address1 || so.customers?.billing_address_line1 || null,
+            bill_to_address2: so.bill_to_address2 || so.customers?.billing_address_line2 || null,
             bill_to_city: so.bill_to_city || so.customers?.billing_city || null,
             bill_to_state: so.bill_to_state || so.customers?.billing_state || null,
             bill_to_postal_code: so.bill_to_postal_code || so.customers?.billing_postal_code || null,

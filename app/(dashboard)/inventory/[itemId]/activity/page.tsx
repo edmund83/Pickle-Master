@@ -46,26 +46,42 @@ const actionLabels: Record<string, string> = {
   restore: 'Restored',
 }
 
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i
+
+function isValidUUID(value: string): boolean {
+  return UUID_REGEX.test(value)
+}
+
 async function getActivityData(itemId: string) {
+  if (!isValidUUID(itemId)) return null
+
   const supabase = await createClient()
 
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  // Get item details
-   
+  // Get profile for tenant_id (explicit tenant check for defense in depth)
+  const { data: profileData } = await (supabase as any)
+    .from('profiles')
+    .select('tenant_id')
+    .eq('id', user.id)
+    .single()
+
+  const profile = profileData as { tenant_id: string | null } | null
+  if (!profile?.tenant_id) return null
+
+  // Get item scoped to current tenant and not deleted
   const { data: item, error: itemError } = await (supabase as any)
     .from('inventory_items')
     .select('id, name, tenant_id')
     .eq('id', itemId)
+    .eq('tenant_id', profile.tenant_id)
+    .is('deleted_at', null)
     .single()
 
-  if (itemError || !item) {
-    return null
-  }
+  if (itemError || !item) return null
 
   // Get all activity logs for this item (no limit)
-   
   const { data: activityLogs } = await (supabase as any)
     .rpc('get_activity_logs', {
       p_entity_id: itemId,

@@ -268,15 +268,15 @@ export async function createReceive(input: CreateReceiveInput): Promise<ReceiveR
     )
     if (!poCheck.success) return { success: false, error: poCheck.error }
 
-    // 5. If location_id is provided, verify it belongs to the tenant
+    // 5. If default_location_id (folder) is provided, verify it belongs to the tenant
     if (validatedInput.default_location_id) {
-        const locationCheck = await verifyRelatedTenantOwnership(
-            'locations',
+        const folderCheck = await verifyRelatedTenantOwnership(
+            'folders',
             validatedInput.default_location_id,
             context.tenantId,
-            'Location'
+            'Folder'
         )
-        if (!locationCheck.success) return { success: false, error: locationCheck.error }
+        if (!folderCheck.success) return { success: false, error: folderCheck.error }
     }
 
     const supabase = await createClient()
@@ -348,15 +348,15 @@ export async function createStandaloneReceive(input: CreateStandaloneReceiveInpu
     if (!validation.success) return { success: false, error: validation.error }
     const validatedInput = validation.data
 
-    // 4. If location_id is provided, verify it belongs to the tenant
+    // 4. If default_location_id (folder) is provided, verify it belongs to the tenant
     if (validatedInput.default_location_id) {
-        const locationCheck = await verifyRelatedTenantOwnership(
-            'locations',
+        const folderCheck = await verifyRelatedTenantOwnership(
+            'folders',
             validatedInput.default_location_id,
             context.tenantId,
-            'Location'
+            'Folder'
         )
-        if (!locationCheck.success) return { success: false, error: locationCheck.error }
+        if (!folderCheck.success) return { success: false, error: folderCheck.error }
     }
 
     const supabase = await createClient()
@@ -426,15 +426,15 @@ export async function addStandaloneReceiveItem(
     )
     if (!itemCheck.success) return { success: false, error: itemCheck.error }
 
-    // 7. If location_id is provided, verify it belongs to the tenant
+    // 7. If location_id (folder) is provided, verify it belongs to the tenant
     if (validatedInput.location_id) {
-        const locationCheck = await verifyRelatedTenantOwnership(
-            'locations',
+        const folderCheck = await verifyRelatedTenantOwnership(
+            'folders',
             validatedInput.location_id,
             context.tenantId,
-            'Location'
+            'Folder'
         )
-        if (!locationCheck.success) return { success: false, error: locationCheck.error }
+        if (!folderCheck.success) return { success: false, error: folderCheck.error }
     }
 
     const supabase = await createClient()
@@ -1010,15 +1010,15 @@ export async function updateReceive(
         return { success: false, error: 'Can only update draft receives' }
     }
 
-    // 6. If location_id is provided, verify it belongs to the tenant
+    // 6. If default_location_id (folder) is provided, verify it belongs to the tenant
     if (validatedUpdates.default_location_id) {
-        const locationCheck = await verifyRelatedTenantOwnership(
-            'locations',
+        const folderCheck = await verifyRelatedTenantOwnership(
+            'folders',
             validatedUpdates.default_location_id,
             context.tenantId,
-            'Location'
+            'Folder'
         )
-        if (!locationCheck.success) return { success: false, error: locationCheck.error }
+        if (!folderCheck.success) return { success: false, error: folderCheck.error }
     }
 
     // Update the receive
