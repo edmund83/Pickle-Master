@@ -247,16 +247,22 @@ export interface ReceiveSummary {
 export async function createReceive(input: CreateReceiveInput): Promise<ReceiveResult> {
     // 1. Authenticate and get context
     const authResult = await getAuthContext()
-    if (!authResult.success) return { success: false, error: authResult.error }
+  if (!authResult.success) {
+    return { success: false, error: authResult.error }
+  }
     const { context } = authResult
 
     // 2. Check write permission
     const permResult = requireWritePermission(context)
-    if (!permResult.success) return { success: false, error: permResult.error }
+  if (!permResult.success) {
+    return { success: false, error: permResult.error }
+  }
 
     // 3. Validate input
     const validation = validateInput(createReceiveSchema, input)
-    if (!validation.success) return { success: false, error: validation.error }
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
     const validatedInput = validation.data
 
     // 4. Verify PO belongs to user's tenant
@@ -282,7 +288,6 @@ export async function createReceive(input: CreateReceiveInput): Promise<ReceiveR
     const supabase = await createClient()
 
     // Use the RPC function that pre-populates items from PO
-     
     const { data, error } = await (supabase as any).rpc('create_receive_with_items', {
         p_purchase_order_id: validatedInput.purchase_order_id,
         p_delivery_note_number: validatedInput.delivery_note_number || null,
@@ -336,16 +341,22 @@ export async function createReceive(input: CreateReceiveInput): Promise<ReceiveR
 export async function createStandaloneReceive(input: CreateStandaloneReceiveInput): Promise<ReceiveResult> {
     // 1. Authenticate and get context
     const authResult = await getAuthContext()
-    if (!authResult.success) return { success: false, error: authResult.error }
+  if (!authResult.success) {
+    return { success: false, error: authResult.error }
+  }
     const { context } = authResult
 
     // 2. Check write permission
     const permResult = requireWritePermission(context)
-    if (!permResult.success) return { success: false, error: permResult.error }
+  if (!permResult.success) {
+    return { success: false, error: permResult.error }
+  }
 
     // 3. Validate input
     const validation = validateInput(createStandaloneReceiveSchema, input)
-    if (!validation.success) return { success: false, error: validation.error }
+  if (!validation.success) {
+    return { success: false, error: validation.error }
+  }
     const validatedInput = validation.data
 
     // 4. If default_location_id (folder) is provided, verify it belongs to the tenant
@@ -362,7 +373,6 @@ export async function createStandaloneReceive(input: CreateStandaloneReceiveInpu
     const supabase = await createClient()
 
     // Use the RPC function for standalone receives
-
     const { data, error } = await (supabase as any).rpc('create_standalone_receive', {
         p_source_type: validatedInput.source_type,
         p_notes: validatedInput.notes || null,
@@ -1401,7 +1411,7 @@ export async function getPaginatedReceives(
     // Validate and sanitize parameters
     const sanitizedPage = Math.max(1, page)
     const sanitizedPageSize = Math.min(100, Math.max(1, pageSize))
-    const offset = (sanitizedPage - 1) * sanitizedPageSize
+    const offset = Math.min((sanitizedPage - 1) * sanitizedPageSize, 10_000)
 
     // Map sort columns to database columns
     const columnMap: Record<string, string> = {
@@ -1595,19 +1605,33 @@ export async function searchInventoryItemsForReceive(query: string) {
 
     const escapedQuery = escapeSqlLike(query)
 
-    const { data, error } = await (supabase as any)
+  const { data, error } = await (supabase as any)
         .from('inventory_items')
-        .select('id, name, sku, quantity, image_url, tracking_mode')
+    .select('id, name, sku, quantity, image_urls, tracking_mode')
         .eq('tenant_id', profile.tenant_id)
         .is('deleted_at', null)
         .or(`name.ilike.%${escapedQuery}%,sku.ilike.%${escapedQuery}%`)
         .order('name')
         .limit(10)
 
-    if (error) {
+  if (error) {
         console.error('Search inventory items error:', error)
         return []
     }
 
-    return data || []
+  return (data || []).map((item: {
+    id: string
+    name: string
+    sku: string | null
+    quantity: number
+    image_urls?: string[] | null
+    tracking_mode: string | null
+  }) => ({
+    id: item.id,
+    name: item.name,
+    sku: item.sku,
+    quantity: item.quantity,
+    image_url: item.image_urls?.[0] || null,
+    tracking_mode: item.tracking_mode,
+  }))
 }

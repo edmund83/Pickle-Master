@@ -545,6 +545,43 @@ export async function removeMember(
 // ACCEPT INVITATION (for new users signing up via invitation)
 // =============================================================================
 
+/** Result of server-side invitation lookup by token (token never sent from client for lookup). */
+export type InvitationByTokenResult = {
+  id: string
+  tenant_id: string
+  tenant_name: string
+  email: string
+  role: string
+  invited_by_name: string | null
+  expires_at: string
+  is_valid: boolean
+} | null
+
+/**
+ * Look up invitation by token on the server only. Used by accept-invite page
+ * so the token is not sent from client for lookup (hardening).
+ */
+export async function getInvitationByToken(token: string): Promise<InvitationByTokenResult> {
+  if (!token?.trim()) return null
+  const supabase = await createClient()
+  const { data, error } = await (supabase as any).rpc('get_invitation_by_token', {
+    p_token: token.trim(),
+  })
+  if (error || !data || data.length === 0) return null
+  const inv = data[0]
+  if (!inv.is_valid) return null
+  return {
+    id: inv.id,
+    tenant_id: inv.tenant_id,
+    tenant_name: inv.tenant_name,
+    email: inv.email,
+    role: inv.role,
+    invited_by_name: inv.invited_by_name ?? null,
+    expires_at: inv.expires_at,
+    is_valid: inv.is_valid,
+  }
+}
+
 const acceptInvitationSchema = z.object({
   token: z.string().min(1, 'Invalid invitation token'),
   fullName: z.string().min(1, 'Name is required').max(255),

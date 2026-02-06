@@ -75,11 +75,12 @@ export async function getEntityMessages(
     const supabase = await createClient()
 
      
+    const cappedOffset = Math.min(Math.max(0, offset), 10_000)
     const { data, error } = await (supabase as any).rpc('get_entity_messages', {
         p_entity_type: entityType,
         p_entity_id: entityId,
-        p_limit: limit,
-        p_offset: offset
+        p_limit: Math.min(100, Math.max(1, limit)),
+        p_offset: cappedOffset
     })
 
     if (error) {

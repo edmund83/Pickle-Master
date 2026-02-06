@@ -245,37 +245,33 @@ export function StockOutModal({
     try {
       if (trackingMode === 'lot_expiry') {
         if (selectedMode === 'auto') {
-          // Auto FEFO: use RPC that handles multi-batch deduction
           const { data, error: rpcError } = await (supabase as any).rpc('stock_out_fifo', {
             p_item_id: itemId,
             p_quantity: quantity,
             p_reason: reasonText,
           })
-          if (rpcError) throw rpcError
+          if (rpcError) throw new Error(rpcError.message || 'Stock out failed')
           if (!data?.success) throw new Error(data?.error || 'Stock out failed')
         } else {
-          // Manual: deduct from specific batch
           const { data, error: rpcError } = await (supabase as any).rpc('adjust_lot_quantity', {
             p_lot_id: selectedBatchId,
             p_quantity_delta: -quantity,
             p_reason: reasonText,
           })
-          if (rpcError) throw rpcError
+          if (rpcError) throw new Error(rpcError.message || 'Stock out failed')
           if (!data?.success) throw new Error(data?.error || 'Stock out failed')
         }
       } else {
-        // Serialized: update serial status
         const serialIdsToUpdate = selectedMode === 'auto'
           ? serials.slice(0, quantity).map(s => s.id)
           : Array.from(selectedSerialIds)
-
         const { data, error: rpcError } = await (supabase as any).rpc('stock_out_serials', {
           p_item_id: itemId,
           p_serial_ids: serialIdsToUpdate,
           p_reason: reasonText,
-          p_new_status: reason === 'sold' ? 'sold' : reason === 'damaged' ? 'damaged' : 'sold',
+          p_new_status: reasonText?.toLowerCase().includes('damaged') ? 'damaged' : 'sold',
         })
-        if (rpcError) throw rpcError
+        if (rpcError) throw new Error(rpcError.message || 'Stock out failed')
         if (!data?.success) throw new Error(data?.error || 'Stock out failed')
       }
 

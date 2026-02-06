@@ -192,6 +192,12 @@ export function NewReceiveClient({ locations }: NewReceiveClientProps) {
         return
       }
     }
+    // Validation for stock adjustments
+    if (sourceType === 'stock_adjustment' && pendingItems.length === 0) {
+      setError('Add at least one item to this adjustment')
+      setIsSubmitting(false)
+      return
+    }
 
     try {
       // 1. Create the receive

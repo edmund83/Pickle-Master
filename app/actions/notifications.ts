@@ -96,9 +96,10 @@ export async function getNotifications(
     const supabase = await createClient()
 
      
+    const cappedOffset = Math.min(Math.max(0, offset), 10_000)
     const { data, error } = await (supabase as any).rpc('get_user_notifications', {
-        p_limit: limit,
-        p_offset: offset,
+        p_limit: Math.min(100, Math.max(1, limit)),
+        p_offset: cappedOffset,
         p_unread_only: unreadOnly
     })
 

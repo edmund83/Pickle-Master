@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useTransition } from 'react'
+import { useState, useCallback, useTransition, useEffect, useRef } from 'react'
 import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import Link from 'next/link'
 import { ArrowLeft, Plus, ChevronUp, ChevronDown, ChevronLeft, ChevronRight, Loader2, Search, Filter, X } from 'lucide-react'
@@ -104,6 +104,28 @@ export function SalesOrdersListClient({
 
   // Local state for inputs
   const [searchInput, setSearchInput] = useState(initialFilters.search)
+  const isFirstRender = useRef(true)
+
+  // Debounced search: auto-filter as user types
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+    const timer = setTimeout(() => {
+      startTransition(() => {
+        const params = new URLSearchParams(searchParams.toString())
+        if (searchInput) {
+          params.set('search', searchInput)
+        } else {
+          params.delete('search')
+        }
+        params.delete('page')
+        router.push(`${pathname}?${params.toString()}`)
+      })
+    }, 400)
+    return () => clearTimeout(timer)
+  }, [searchInput]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Create URL with updated params
   const createUrl = useCallback((updates: Record<string, string | undefined>) => {
@@ -135,16 +157,6 @@ export function SalesOrdersListClient({
   const handleSort = (column: SortColumn) => {
     const newDirection = initialFilters.sortColumn === column && initialFilters.sortDirection === 'desc' ? 'asc' : 'desc'
     updateFilters({ sort: column, order: newDirection })
-  }
-
-  const handleSearch = useCallback(() => {
-    updateFilters({ search: searchInput || undefined })
-  }, [searchInput, updateFilters])
-
-  const handleSearchKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSearch()
-    }
   }
 
   const handleStatusFilter = (status: string | undefined) => {
@@ -219,8 +231,6 @@ export function SalesOrdersListClient({
               placeholder="Search SO #, display ID..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              onKeyDown={handleSearchKeyDown}
-              onBlur={handleSearch}
               className="pl-9"
             />
           </div>

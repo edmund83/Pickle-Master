@@ -66,6 +66,9 @@ export interface GetAllRemindersResult {
 /**
  * Get all reminders (both item and folder) for the tenant
  */
+const MAX_REMINDERS_LIMIT = 100
+const MAX_REMINDERS_OFFSET = 10_000
+
 export async function getAllReminders(
   type?: string,
   status?: string,
@@ -78,12 +81,14 @@ export async function getAllReminders(
     return { reminders: [], total: 0 }
   }
 
-  
+  const cappedLimit = Math.min(MAX_REMINDERS_LIMIT, Math.max(1, limit))
+  const cappedOffset = Math.min(MAX_REMINDERS_OFFSET, Math.max(0, offset))
+
   const { data, error } = await (supabase as any).rpc('get_all_reminders', {
     p_type: type || null,
     p_status: status || null,
-    p_limit: limit,
-    p_offset: offset,
+    p_limit: cappedLimit,
+    p_offset: cappedOffset,
   })
 
   if (error) {
@@ -390,7 +395,7 @@ export async function getItemsForSelection(): Promise<
     .eq('tenant_id', context.tenantId)
     .is('deleted_at', null)
     .order('name', { ascending: true })
-    .limit(500)
+    .limit(300)
 
   if (error) {
     console.error('Error fetching items for selection:', error)

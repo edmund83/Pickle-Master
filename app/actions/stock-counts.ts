@@ -139,7 +139,9 @@ export async function createStockCount(input: {
 }): Promise<{ success: boolean; id?: string; display_id?: string; error?: string }> {
   // Feature gate: Stock counts require Growth+ plan
   const featureCheck = await requireFeatureSafe('stock_counts')
-  if (featureCheck.error) return { success: false, error: featureCheck.error }
+  if (featureCheck.error) {
+    return { success: false, error: featureCheck.error }
+  }
 
   // Auth check with write permission
   const authResult = await getAuthContext()
@@ -155,7 +157,6 @@ export async function createStockCount(input: {
 
   const supabase = await createClient()
 
-   
   const { data, error } = await (supabase as any).rpc('create_stock_count', {
     p_name: input.name || null,
     p_description: input.description || null,
@@ -664,7 +665,7 @@ export async function getPaginatedStockCounts(
     // Validate and sanitize parameters
     const sanitizedPage = Math.max(1, page)
     const sanitizedPageSize = Math.min(100, Math.max(1, pageSize))
-    const offset = (sanitizedPage - 1) * sanitizedPageSize
+    const offset = Math.min((sanitizedPage - 1) * sanitizedPageSize, 10_000)
 
     // Map sort columns to database columns
     const columnMap: Record<string, string> = {

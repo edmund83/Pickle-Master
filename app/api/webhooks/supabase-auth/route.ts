@@ -47,16 +47,18 @@ export async function POST(req: Request) {
   // If no webhook secret configured, log and accept (for testing)
   if (!webhookSecret) {
     console.warn('⚠️ SUPABASE_AUTH_WEBHOOK_SECRET not configured - skipping signature verification')
+    return NextResponse.json({ error: 'Webhook secret not configured' }, { status: 500 })
   }
 
   const body = await req.text()
   const headersList = await headers()
+  const signatureHeader = headersList.get('x-supabase-signature') ||
+    headersList.get('x-webhook-signature') ||
+    headersList.get('authorization')?.replace('Bearer ', '')
 
   // Verify signature if secret is configured
   if (webhookSecret) {
-    const signature = headersList.get('x-supabase-signature') ||
-      headersList.get('x-webhook-signature') ||
-      headersList.get('authorization')?.replace('Bearer ', '')
+    const signature = signatureHeader
 
     if (!signature) {
       console.error('Missing webhook signature')

@@ -851,7 +851,7 @@ export async function getPaginatedPickLists(
     // Validate and sanitize parameters
     const sanitizedPage = Math.max(1, page)
     const sanitizedPageSize = Math.min(100, Math.max(1, pageSize))
-    const offset = (sanitizedPage - 1) * sanitizedPageSize
+    const offset = Math.min((sanitizedPage - 1) * sanitizedPageSize, 10_000)
 
     // Map sort columns to database columns
     const columnMap: Record<string, string> = {

@@ -96,8 +96,7 @@ export function LotTrackingSection({ itemId, onTotalChange }: LotTrackingSection
     }
   }
 
-  async function handleAddLot(e: React.FormEvent) {
-    e.preventDefault()
+  async function handleAddLot() {
 
     const qty = parseInt(newLot.quantity)
     if (isNaN(qty) || qty <= 0) {
@@ -268,7 +267,7 @@ export function LotTrackingSection({ itemId, onTotalChange }: LotTrackingSection
             Add New Lot
           </button>
         ) : (
-          <form onSubmit={handleAddLot} className="p-4 bg-white space-y-3">
+          <div className="p-4 bg-white space-y-3">
             <div className="grid grid-cols-2 gap-3">
               {/* Quantity */}
               <div>
@@ -347,7 +346,7 @@ export function LotTrackingSection({ itemId, onTotalChange }: LotTrackingSection
               >
                 Cancel
               </Button>
-              <Button type="submit" size="sm" disabled={submitting || !newLot.quantity}>
+              <Button type="button" size="sm" disabled={submitting || !newLot.quantity} onClick={handleAddLot}>
                 {submitting ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
@@ -358,7 +357,7 @@ export function LotTrackingSection({ itemId, onTotalChange }: LotTrackingSection
                 )}
               </Button>
             </div>
-          </form>
+          </div>
         )}
       </div>
     </div>

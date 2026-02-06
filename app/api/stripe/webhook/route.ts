@@ -57,6 +57,17 @@ export async function POST(req: Request) {
 
   const supabaseAdmin = getSupabaseAdmin()
 
+  // Idempotency: skip if we already processed this event (Stripe retries)
+  const { data: existing } = await supabaseAdmin
+    .from('stripe_webhook_events')
+    .select('id')
+    .eq('id', event.id)
+    .maybeSingle()
+
+  if (existing) {
+    return NextResponse.json({ received: true, duplicate: true })
+  }
+
   try {
     switch (event.type) {
       case 'checkout.session.completed': {
@@ -92,6 +103,9 @@ export async function POST(req: Request) {
       default:
         console.log(`Unhandled event type: ${event.type}`)
     }
+
+    // Record processed event for idempotency
+    await supabaseAdmin.from('stripe_webhook_events').insert({ id: event.id })
 
     return NextResponse.json({ received: true })
   } catch (err) {

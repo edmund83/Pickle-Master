@@ -825,7 +825,7 @@ export async function getPaginatedSalesOrders(
 
     const sanitizedPage = Math.max(1, page)
     const sanitizedPageSize = Math.min(100, Math.max(1, pageSize))
-    const offset = (sanitizedPage - 1) * sanitizedPageSize
+    const offset = Math.min((sanitizedPage - 1) * sanitizedPageSize, 10_000)
 
     const columnMap: Record<string, string> = {
         order_number: 'order_number',

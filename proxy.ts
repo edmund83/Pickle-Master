@@ -1,5 +1,6 @@
 import { createServerClient, type CookieOptions } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import { checkAuthRateLimit, getClientIp } from '@/lib/auth-rate-limit'
 
 interface CookieToSet {
   name: string
@@ -7,8 +8,25 @@ interface CookieToSet {
   options: CookieOptions
 }
 
+const AUTH_RATE_LIMIT_ROUTES = ['/login', '/signup', '/forgot-password']
+
 export async function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname
+
+  // Rate limit auth pages by IP (no token/session yet)
+  const pathWithoutLocale = pathname.replace(/^\/[a-z]{2}-[a-z]{2}/, '') || pathname
+  if (AUTH_RATE_LIMIT_ROUTES.some((r) => pathWithoutLocale === r || pathWithoutLocale.startsWith(r + '/'))) {
+    const ip = getClientIp(request)
+    if (ip !== 'unknown') {
+      const { allowed, retryAfter } = checkAuthRateLimit(ip)
+      if (!allowed) {
+        return new NextResponse('Too Many Requests', {
+          status: 429,
+          headers: retryAfter ? { 'Retry-After': String(retryAfter) } : undefined,
+        })
+      }
+    }
+  }
 
   // Skip auth check for API routes (webhooks, etc.)
   if (pathname.startsWith('/api/')) {
