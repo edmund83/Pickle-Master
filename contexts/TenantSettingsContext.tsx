@@ -252,13 +252,28 @@ export function TenantSettingsProvider({ children }: TenantSettingsProviderProps
 }
 
 /**
+ * Default context value used when provider is not available
+ * (e.g. during SSR prerendering or HMR transitions in Next.js 16)
+ */
+const DEFAULT_CONTEXT_VALUE: TenantSettingsContextType = {
+  settings: DEFAULT_TENANT_SETTINGS,
+  tenantName: null,
+  tenantLogoUrl: null,
+  companyDetails: EMPTY_COMPANY_DETAILS,
+  loading: true,
+  error: null,
+  refetch: async () => {},
+}
+
+/**
  * Hook to access tenant settings context
- * Must be used within a TenantSettingsProvider
+ * Returns defaults when used outside a TenantSettingsProvider
+ * (handles SSR prerendering and HMR edge cases in Next.js 16)
  */
 export function useTenantSettingsContext(): TenantSettingsContextType {
   const context = useContext(TenantSettingsContext)
   if (context === undefined) {
-    throw new Error('useTenantSettingsContext must be used within a TenantSettingsProvider')
+    return DEFAULT_CONTEXT_VALUE
   }
   return context
 }

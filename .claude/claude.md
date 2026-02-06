@@ -47,10 +47,15 @@ When implementing features, think like a Sortly power user and prioritize simpli
 ## Tech stack constraints
 
 Use only:
-- Next.js (App Router)
+- Next.js 16 (App Router, Turbopack)
 - TypeScript
 - Tailwind CSS (v4 target) for styling
 - Supabase (Auth, Postgres, Storage, RLS)
+
+### Next.js 16 specifics
+- **Proxy replaces Middleware**: Next.js 16 renamed `middleware.ts` to `proxy.ts`. Do NOT create a `middleware.ts` file — use `proxy.ts` only. Having both files causes a build error.
+- The proxy function must be a named export (`export function proxy`) or `export default`. The `config` export with `matcher` stays the same.
+- Proxy runs on the Node.js runtime (not Edge).
 
 Do not introduce other frameworks/platforms (e.g., Firebase, Prisma, tRPC, Chakra/MUI, styled-components). If a new dependency is truly necessary, ask first.
 

@@ -411,7 +411,7 @@ export function NewReceiveClient({ locations }: NewReceiveClientProps) {
                           <th className="px-4 py-3 text-left font-medium text-neutral-600">Item</th>
                           <th className="px-4 py-3 text-center font-medium text-neutral-600 w-32">Qty</th>
                           {sourceType === 'customer_return' && (
-                            <th className="px-4 py-3 text-left font-medium text-neutral-600 w-40">Reason</th>
+                            <th className="px-4 py-3 text-left font-medium text-neutral-600 w-40">Reason <span className="text-red-500">*</span></th>
                           )}
                           <th className="px-4 py-3 text-left font-medium text-neutral-600 w-32">Condition</th>
                           <th className="px-4 py-3 w-12"></th>
@@ -562,9 +562,9 @@ export function NewReceiveClient({ locations }: NewReceiveClientProps) {
               </CardHeader>
               <CardContent>
                 <dl className="space-y-3 text-sm">
-                  {/* Received Date */}
+                  {/* Received Date (optional, default today) */}
                   <div className="flex justify-between">
-                    <dt className="text-neutral-500">Received Date</dt>
+                    <dt className="text-neutral-500">Received Date <span className="text-neutral-400 font-normal">(optional)</span></dt>
                     <dd className="font-medium text-neutral-900">
                       <input
                         type="date"
@@ -620,13 +620,16 @@ export function NewReceiveClient({ locations }: NewReceiveClientProps) {
                     </dd>
                   </div>
 
-                  {/* Default Location */}
-                  <div className="flex justify-between">
-                    <dt className="text-neutral-500 flex items-center gap-1">
-                      <MapPin className="h-3 w-3" />
-                      Location
+                  {/* Default Location (optional) */}
+                  <div className="flex justify-between items-start gap-2">
+                    <dt className="text-neutral-500 flex flex-col gap-0.5">
+                      <span className="flex items-center gap-1">
+                        <MapPin className="h-3 w-3" />
+                        Location <span className="text-neutral-400 font-normal">(optional)</span>
+                      </span>
+                      <span className="text-xs text-neutral-400">Can set per item after creating</span>
                     </dt>
-                    <dd className="font-medium text-neutral-900">
+                    <dd className="font-medium text-neutral-900 shrink-0">
                       <select
                         value={defaultLocationId}
                         onChange={(e) => setDefaultLocationId(e.target.value)}

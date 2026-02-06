@@ -624,7 +624,7 @@ export function NewInvoiceClient({ customers, paymentTerms }: NewInvoiceClientPr
                   <Input
                     value={invoiceNumber}
                     onChange={(e) => setInvoiceNumber(e.target.value)}
-                    placeholder="Custom reference"
+                    placeholder="Leave blank to auto-generate"
                     className="h-9"
                   />
                 </div>
@@ -668,7 +668,7 @@ export function NewInvoiceClient({ customers, paymentTerms }: NewInvoiceClientPr
 
             {/* Billing Address - Collapsible */}
             <CollapsibleSection
-              title="Billing Address"
+              title="Billing Address (optional)"
               icon={MapPin}
               defaultExpanded={hasAddress}
               hasContent={hasAddress}

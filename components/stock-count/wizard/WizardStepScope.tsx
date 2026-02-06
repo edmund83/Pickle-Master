@@ -173,8 +173,11 @@ export function WizardStepScope({
       {showFolderPicker && (
         <div className="space-y-3 animate-in fade-in slide-in-from-top-2 duration-200">
           <label className="text-sm font-medium text-neutral-700">
-            Select a folder
+            Select a folder <span className="text-red-500">*</span>
           </label>
+          {!data.scopeFolderId && (
+            <p className="text-xs text-amber-600">Required: choose a folder to continue.</p>
+          )}
 
           {rootFolders.length > 0 ? (
             <div className="border border-neutral-200 rounded-xl overflow-hidden divide-y divide-neutral-100">

@@ -591,7 +591,7 @@ export function NewDeliveryOrderClient({ customers }: NewDeliveryOrderClientProp
               </CardHeader>
               <CardContent className="space-y-3">
                 <div>
-                  <label className="block text-xs font-medium text-neutral-500 mb-1">Total Packages</label>
+                  <label className="block text-xs font-medium text-neutral-500 mb-1">Total Packages <span className="text-neutral-400 font-normal">(default 1)</span></label>
                   <Input
                     type="number"
                     min={1}
@@ -632,7 +632,7 @@ export function NewDeliveryOrderClient({ customers }: NewDeliveryOrderClientProp
 
             {/* Ship To Section - Collapsible */}
             <CollapsibleSection
-              title="Delivery Address"
+              title="Delivery Address (optional)"
               icon={MapPin}
               defaultExpanded={hasAddress}
               hasContent={hasAddress}
