@@ -60,12 +60,20 @@ supabase/.temp
 .playwright-mcp/
 test-results/
 playwright-report/
+playwright-report-visual/
 
-# Screenshots
+# Screenshots & debug images
 docs/screenshot/
+*.png
+!app/apple-icon.png
+!app/icon.png
+!public/**/*.png
 
 # Audit docs
 docs/audit/
+
+# Cursor
+.cursor/debug.log
 
 # PWA build outputs
 public/sw.js
