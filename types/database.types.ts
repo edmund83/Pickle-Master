@@ -6900,7 +6900,7 @@ export type Database = {
       receive_item_condition: "good" | "damaged" | "rejected"
       receive_status: "draft" | "in_progress" | "completed" | "cancelled"
       reminder_recurrence_enum: "once" | "daily" | "weekly" | "monthly"
-      reminder_status_enum: "active" | "paused" | "completed" | "deleted"
+      reminder_status_enum: "active" | "paused" | "triggered" | "expired"
       reminder_type_enum: "low_stock" | "expiry" | "restock"
       sales_order_status:
         | "draft"
@@ -7179,7 +7179,7 @@ export const Constants = {
       receive_item_condition: ["good", "damaged", "rejected"],
       receive_status: ["draft", "in_progress", "completed", "cancelled"],
       reminder_recurrence_enum: ["once", "daily", "weekly", "monthly"],
-      reminder_status_enum: ["active", "paused", "completed", "deleted"],
+      reminder_status_enum: ["active", "paused", "triggered", "expired"],
       reminder_type_enum: ["low_stock", "expiry", "restock"],
       sales_order_status: [
         "draft",

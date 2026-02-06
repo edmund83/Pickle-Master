@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { ArrowRight, FolderOpen, Package, Loader2, Filter, Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useFormatting } from '@/hooks/useFormatting'
+import { toCsvValue } from '@/lib/utils'
 import type { ActivityLog } from '@/types/database.types'
 
 export default function StockMovementPage() {
@@ -65,13 +66,16 @@ export default function StockMovementPage() {
       m.quantity_delta ? `${m.quantity_delta > 0 ? '+' : ''}${m.quantity_delta}` : '-',
     ])
 
-    const csv = [headers, ...rows].map(row => row.join(',')).join('\n')
+    const csv = [headers, ...rows]
+      .map(row => row.map(toCsvValue).join(','))
+      .join('\n')
     const blob = new Blob([csv], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
     a.download = `stock-movement-${new Date().toISOString().split('T')[0]}.csv`
     a.click()
+    URL.revokeObjectURL(url)
   }
 
   // Calculate summary stats

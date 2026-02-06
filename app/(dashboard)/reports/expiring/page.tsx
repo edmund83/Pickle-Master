@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation'
 import { AlertTriangle, Calendar, Package, Clock, DollarSign } from 'lucide-react'
 import Link from 'next/link'
 import { formatCurrency as formatCurrencyFn, formatDate as formatDateFn, TenantSettings, DEFAULT_TENANT_SETTINGS } from '@/lib/formatting'
+import { safeImageUrl } from '@/lib/utils'
 
 interface ExpiringLot {
   lot_id: string
@@ -239,8 +240,8 @@ function LotRow({ lot, tenantSettings }: { lot: ExpiringLot; tenantSettings: Ten
         <div className={`flex h-10 w-10 items-center justify-center rounded-lg ${
           lot.urgency === 'expired' ? 'bg-red-100 text-red-600' : 'bg-yellow-100 text-yellow-600'
         }`}>
-          {lot.item_image ? (
-            <img src={lot.item_image} alt={lot.item_name} className="h-10 w-10 rounded-lg object-cover" />
+          {safeImageUrl(lot.item_image) ? (
+            <img src={safeImageUrl(lot.item_image)!} alt={lot.item_name} className="h-10 w-10 rounded-lg object-cover" />
           ) : (
             <Package className="h-5 w-5" />
           )}

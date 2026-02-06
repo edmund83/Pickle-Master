@@ -33,12 +33,13 @@ const REMINDER_COLORS = {
   restock: 'bg-blue-100 text-blue-600',
 }
 
-const STATUS_BADGES = {
+const STATUS_BADGES: Record<string, string> = {
   active: 'bg-green-100 text-green-700',
   paused: 'bg-neutral-100 text-neutral-600',
-  completed: 'bg-purple-100 text-purple-700',
-  deleted: 'bg-red-100 text-red-700',
+  triggered: 'bg-purple-100 text-purple-700',
+  expired: 'bg-amber-100 text-amber-700',
 }
+const DEFAULT_STATUS_CLASS = 'bg-neutral-100 text-neutral-600'
 
 export function ReminderListItem({
   reminder,
@@ -51,7 +52,8 @@ export function ReminderListItem({
 
   const Icon = REMINDER_ICONS[reminder.reminder_type]
   const colorClass = REMINDER_COLORS[reminder.reminder_type]
-  const statusClass = STATUS_BADGES[reminder.status || 'active']
+  const statusClass =
+  STATUS_BADGES[reminder.status ?? ''] ?? DEFAULT_STATUS_CLASS
 
   const handleToggle = async () => {
     setIsLoading(true)

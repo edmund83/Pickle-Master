@@ -5,6 +5,7 @@ import { ArrowLeft, AlertTriangle, Package } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { InventoryItem } from '@/types/database.types'
+import { safeImageUrl } from '@/lib/utils'
 
 async function getLowStockItems(): Promise<InventoryItem[]> {
   const supabase = await createClient()
@@ -97,9 +98,9 @@ export default async function LowStockReportPage() {
                   >
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-neutral-100">
-                        {item.image_urls?.[0] ? (
+                        {safeImageUrl(item.image_urls?.[0]) ? (
                           <img
-                            src={item.image_urls[0]}
+                            src={safeImageUrl(item.image_urls?.[0])!}
                             alt={item.name}
                             className="h-full w-full rounded-lg object-cover"
                           />

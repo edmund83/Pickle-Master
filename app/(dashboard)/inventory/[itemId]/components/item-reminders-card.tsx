@@ -58,12 +58,12 @@ export function ItemRemindersCard({
     loadReminders()
   }
 
-  // Separate active and inactive reminders
+  // Separate active and inactive reminders (DB enum: active | paused | triggered | expired)
   const activeReminders = reminders.filter(
     (r) => r.status === 'active' || r.status === 'paused'
   )
   const inactiveReminders = reminders.filter(
-    (r) => r.status === 'completed' || r.status === 'deleted'
+    (r) => r.status === 'triggered' || r.status === 'expired'
   )
 
   return (

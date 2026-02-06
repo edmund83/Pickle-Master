@@ -5,6 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Activity, Filter, Download, Loader2, User, Package, FolderOpen, Settings } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { useFormatting } from '@/hooks/useFormatting'
+import { toCsvValue } from '@/lib/utils'
 import type { ActivityLog } from '@/types/database.types'
 
 const ACTION_ICONS: Record<string, React.ElementType> = {
@@ -98,13 +99,16 @@ export default function ActivityReportPage() {
       a.quantity_delta ? `Qty: ${a.quantity_delta > 0 ? '+' : ''}${a.quantity_delta}` : '',
     ])
 
-    const csv = [headers, ...rows].map(row => row.join(',')).join('\n')
+    const csv = [headers, ...rows]
+      .map(row => row.map(toCsvValue).join(','))
+      .join('\n')
     const blob = new Blob([csv], { type: 'text/csv' })
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
     a.download = `activity-report-${new Date().toISOString().split('T')[0]}.csv`
     a.click()
+    URL.revokeObjectURL(url)
   }
 
   return (

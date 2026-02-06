@@ -38,3 +38,16 @@ export function safeImageUrl(url: string | null | undefined): string | null {
   if (trimmed.startsWith('/') || trimmed.startsWith('./') || trimmed.startsWith('../')) return url
   return null
 }
+
+/**
+ * Formats a value for safe CSV output:
+ * - Prevents formula injection by prefixing leading = + - @ with a single quote
+ * - Escapes double quotes
+ * - Wraps in double quotes to preserve commas/newlines
+ */
+export function toCsvValue(value: unknown): string {
+  const raw = value == null ? '' : String(value)
+  const guarded = /^[=+\-@]/.test(raw) ? `'${raw}` : raw
+  const escaped = guarded.replace(/"/g, '""')
+  return `"${escaped}"`
+}
