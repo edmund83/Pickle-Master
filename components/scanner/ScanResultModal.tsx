@@ -63,29 +63,25 @@ export function ScanResultModal({
     )
   }
 
-  // Validation warning banner component
-  const ValidationBanner = () => {
-    if (!validationWarning?.isInvalid) return null
-
-    return (
-      <div className="mx-4 mt-4 mb-0 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3">
-        <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
-        <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-amber-800">
-            Check digit validation failed
+  // Validation warning banner
+  const validationBanner = validationWarning?.isInvalid ? (
+    <div className="mx-4 mt-4 mb-0 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-3">
+      <AlertTriangle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-medium text-amber-800">
+          Check digit validation failed
+        </p>
+        <p className="text-xs text-amber-700 mt-0.5">
+          {validationWarning.message || 'The barcode may be damaged or misread. Consider rescanning.'}
+        </p>
+        {validationWarning.format && (
+          <p className="text-xs text-amber-600 mt-1">
+            Format: {validationWarning.format}
           </p>
-          <p className="text-xs text-amber-700 mt-0.5">
-            {validationWarning.message || 'The barcode may be damaged or misread. Consider rescanning.'}
-          </p>
-          {validationWarning.format && (
-            <p className="text-xs text-amber-600 mt-1">
-              Format: {validationWarning.format}
-            </p>
-          )}
-        </div>
+        )}
       </div>
-    )
-  }
+    </div>
+  ) : null
 
   // Item found
   if (item) {
@@ -99,7 +95,7 @@ export function ScanResultModal({
 
     return (
       <div className={cn('pb-4', className)}>
-        <ValidationBanner />
+        {validationBanner}
         <div className="p-4 pt-4">
         <Card className="overflow-hidden">
           <CardContent className="p-0">
@@ -200,7 +196,7 @@ export function ScanResultModal({
   // Item not found
   return (
     <div className={cn('pb-4', className)}>
-      <ValidationBanner />
+      {validationBanner}
       <div className="p-4 pt-4">
       <Card>
         <CardContent className="p-6 text-center">

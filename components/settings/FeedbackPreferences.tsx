@@ -86,7 +86,7 @@ export function FeedbackPreferences() {
           <div className="flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-3 text-sm">
             <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-500" />
             <p className="text-blue-700">
-              iOS doesn't support vibration. Sound effects are your primary feedback on this device.
+              iOS doesn&apos;t support vibration. Sound effects are your primary feedback on this device.
             </p>
           </div>
         )}

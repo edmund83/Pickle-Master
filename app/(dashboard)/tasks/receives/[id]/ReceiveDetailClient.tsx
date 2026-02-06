@@ -1663,7 +1663,7 @@ export function ReceiveDetailClient({
 
                   {!searchLoading && itemSearch.length >= 2 && searchResults.length === 0 && (
                     <p className="text-sm text-neutral-500 mt-2 text-center py-4">
-                      No items found matching "{itemSearch}"
+                      No items found matching &ldquo;{itemSearch}&rdquo;
                     </p>
                   )}
                 </div>
