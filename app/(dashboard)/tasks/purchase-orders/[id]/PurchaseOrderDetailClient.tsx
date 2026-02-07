@@ -1,5 +1,11 @@
 'use client'
 
+/**
+ * Layout tested at tablet benchmark:
+ * - Portrait: 820×1180 (iPad) — below lg, uses bottom nav + FAB; pb-16 / pb-28 so FAB does not overlap.
+ * - Landscape: 1180×820 — at/above lg uses desktop sidebar (no bottom nav); 820px height needs scroll.
+ */
+
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -628,36 +634,38 @@ export function PurchaseOrderDetailClient({
   // Draft Mode UI - Two Column Layout (matching Pick List)
   if (isDraft) {
     return (
-      <div className="flex-1 overflow-y-auto bg-neutral-50">
+      <div className="flex-1 overflow-y-auto bg-neutral-50 pb-16 lg:pb-0">
         {/* Header - Streamlined */}
-        <div className="border-b border-neutral-200 bg-white px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link href="/tasks/purchase-orders" className="text-neutral-500 hover:text-neutral-700">
+        <div className="border-b border-neutral-200 bg-white px-4 py-4 sm:px-6">
+          <div className="flex items-center justify-between gap-2 min-w-0">
+            <div className="flex items-center gap-2 sm:gap-4 min-w-0 flex-1">
+              <Link href="/tasks/purchase-orders" className="text-neutral-500 hover:text-neutral-700 flex-shrink-0">
                 <ArrowLeft className="h-5 w-5" />
               </Link>
-              <div>
-                <div className="flex items-center gap-3">
-                  <h1 className="text-xl font-semibold text-neutral-900">
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                  <h1 className="text-base sm:text-xl font-semibold text-neutral-900 min-w-0 max-w-[200px] truncate sm:max-w-none sm:overflow-visible sm:whitespace-normal">
                     {purchaseOrder.display_id || orderNumber || 'New Purchase Order'}
                   </h1>
-                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusConfig[status]?.bgColor} ${statusConfig[status]?.color}`}>
+                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium flex-shrink-0 ${statusConfig[status]?.bgColor} ${statusConfig[status]?.color}`}>
                     {statusConfig[status]?.label || status}
                   </span>
                 </div>
-                <p className="text-sm text-neutral-500 mt-0.5">
+                <p className="text-sm text-neutral-500 mt-0.5 truncate">
                   {purchaseOrder.items.length} item{purchaseOrder.items.length !== 1 ? 's' : ''} · {formatCurrency(subtotal)}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
               <Button
                 variant="outline"
+                size="sm"
                 onClick={handleDownloadPDF}
                 disabled={!canDownloadPdf || actionLoading !== null}
+                className="px-2 sm:px-3"
               >
-                <Download className="mr-2 h-4 w-4" />
-                Download PDF
+                <Download className="h-4 w-4 sm:mr-2" />
+                <span className="hidden min-[400px]:inline">Download PDF</span>
               </Button>
               {/* More menu with Delete option */}
               <div className="relative">
@@ -710,8 +718,8 @@ export function PurchaseOrderDetailClient({
           </div>
         )}
 
-        {/* Single column layout - same UX as SO/DO/Invoice */}
-        <div className="p-6">
+        {/* Single column layout - same UX as SO/DO/Invoice. Extra bottom padding on mobile/tablet so FAB does not overlap form fields. */}
+        <div className="p-4 sm:p-6 pb-28 lg:pb-6">
           <div className="mx-auto max-w-2xl space-y-6">
             {/* Validation */}
             {!isValid && missingFields.length > 0 && (
@@ -1260,8 +1268,8 @@ export function PurchaseOrderDetailClient({
           </div>
         </div>
 
-        {/* Footer Actions */}
-        <div className="sticky bottom-0 border-t border-neutral-200 bg-white px-6 py-4">
+        {/* Footer Actions - pb-16 on scroll container above keeps this above bottom nav when scrolled to end on mobile/tablet */}
+        <div className="sticky bottom-0 border-t border-neutral-200 bg-white px-4 py-4 sm:px-6 safe-area-inset-bottom">
           <div className="flex items-center justify-between gap-4">
             {/* Left side - validation status */}
             <div className="flex items-center gap-3">
@@ -1325,9 +1333,9 @@ export function PurchaseOrderDetailClient({
   const StatusIcon = statusConfig[status]?.icon || Clock
 
   return (
-    <div className="flex-1 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto pb-16 lg:pb-0">
       {/* Header */}
-      <div className="border-b border-neutral-200 bg-white px-6 py-4">
+      <div className="border-b border-neutral-200 bg-white px-4 py-4 sm:px-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <Link href="/tasks/purchase-orders">
