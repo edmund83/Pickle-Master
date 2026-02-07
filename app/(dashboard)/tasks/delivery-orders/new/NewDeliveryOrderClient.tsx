@@ -2,9 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import {
-  ArrowLeft,
   Loader2,
   Truck,
   Building2,
@@ -19,8 +17,7 @@ import {
   Camera,
   Zap,
   FileText,
-  CheckCircle,
-  Scale
+  CheckCircle
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -28,10 +25,12 @@ import { createDeliveryOrder, addDeliveryOrderItem, searchInventoryItemsForDO } 
 import type { Customer } from '@/app/actions/customers'
 import { useFeedback } from '@/components/feedback/FeedbackProvider'
 import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
 import { ItemThumbnail } from '@/components/ui/item-thumbnail'
 import { BarcodeScanner } from '@/components/scanner/BarcodeScanner'
 import type { ScanResult } from '@/lib/scanner/useBarcodeScanner'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
+import { TaskFormShell } from '@/components/task-form/TaskFormShell'
 
 interface NewDeliveryOrderClientProps {
   customers: Customer[]
@@ -45,6 +44,9 @@ interface DeliveryItem {
   quantity_shipped: number
   image_urls: string[] | null
   available_quantity: number
+  /** Item weight per unit (from inventory) for total weight calculation */
+  item_weight: number | null
+  item_weight_unit: string | null
 }
 
 interface SearchResultItem {
@@ -55,6 +57,8 @@ interface SearchResultItem {
   image_urls: string[] | null
   unit: string | null
   price: number | null
+  weight?: number | null
+  weight_unit?: string | null
 }
 
 export function NewDeliveryOrderClient({ customers }: NewDeliveryOrderClientProps) {
@@ -73,8 +77,8 @@ export function NewDeliveryOrderClient({ customers }: NewDeliveryOrderClientProp
   // New shipping fields
   const [shippingMethod, setShippingMethod] = useState('')
   const [totalPackages, setTotalPackages] = useState(1)
-  const [totalWeight, setTotalWeight] = useState<string>('')
-  const [weightUnit, setWeightUnit] = useState<'kg' | 'lb' | 'oz' | 'g'>('kg')
+  const [totalWeightManual, setTotalWeightManual] = useState('')
+  const [weightUnitManual, setWeightUnitManual] = useState<'kg' | 'lb' | 'oz' | 'g'>('kg')
 
   // Shipping address
   const [shipToName, setShipToName] = useState('')
@@ -85,6 +89,8 @@ export function NewDeliveryOrderClient({ customers }: NewDeliveryOrderClientProp
   const [shipToPostalCode, setShipToPostalCode] = useState('')
   const [shipToCountry, setShipToCountry] = useState('')
   const [shipToPhone, setShipToPhone] = useState('')
+  /** When false, we use customer address by default; full form only after "Use a different delivery address" */
+  const [useDifferentDeliveryAddress, setUseDifferentDeliveryAddress] = useState(false)
 
   // Customer search
   const [customerSearch, setCustomerSearch] = useState('')
@@ -134,6 +140,46 @@ export function NewDeliveryOrderClient({ customers }: NewDeliveryOrderClientProp
     return () => clearTimeout(timer)
   }, [searchQuery, handleSearch])
 
+  // Auto-fill delivery address when customer is selected; default to "use customer address" when they have one
+  useEffect(() => {
+    if (!customerId) {
+      setShipToName('')
+      setShipToAddress1('')
+      setShipToAddress2('')
+      setShipToCity('')
+      setShipToState('')
+      setShipToPostalCode('')
+      setShipToCountry('')
+      setShipToPhone('')
+      setUseDifferentDeliveryAddress(false)
+      return
+    }
+    const customer = customers.find(c => c.id === customerId)
+    if (!customer) return
+    const hasShipping = customer.shipping_address1 || customer.shipping_city || customer.shipping_country
+    if (!hasShipping) {
+      setShipToName('')
+      setShipToAddress1('')
+      setShipToAddress2('')
+      setShipToCity('')
+      setShipToState('')
+      setShipToPostalCode('')
+      setShipToCountry('')
+      setShipToPhone('')
+      setUseDifferentDeliveryAddress(true)
+      return
+    }
+    setShipToName(customer.name || '')
+    setShipToAddress1(customer.shipping_address1 || '')
+    setShipToAddress2(customer.shipping_address2 || '')
+    setShipToCity(customer.shipping_city || '')
+    setShipToState(customer.shipping_state || '')
+    setShipToPostalCode(customer.shipping_postal_code || '')
+    setShipToCountry(customer.shipping_country || '')
+    setShipToPhone(customer.phone || '')
+    setUseDifferentDeliveryAddress(false)
+  }, [customerId, customers])
+
   function handleAddItem(item: SearchResultItem) {
     const tempId = `temp-${Date.now()}`
     setItems(prev => [...prev, {
@@ -143,7 +189,9 @@ export function NewDeliveryOrderClient({ customers }: NewDeliveryOrderClientProp
       sku: item.sku,
       quantity_shipped: 1,
       image_urls: item.image_urls,
-      available_quantity: item.quantity
+      available_quantity: item.quantity,
+      item_weight: item.weight ?? null,
+      item_weight_unit: item.weight_unit ?? null,
     }])
     setSearchQuery('')
     setSearchResults([])
@@ -185,7 +233,6 @@ export function NewDeliveryOrderClient({ customers }: NewDeliveryOrderClientProp
 
   function useCustomerAddress() {
     if (!selectedCustomer) return
-
     setShipToName(selectedCustomer.name || '')
     setShipToAddress1(selectedCustomer.shipping_address1 || '')
     setShipToAddress2(selectedCustomer.shipping_address2 || '')
@@ -194,6 +241,7 @@ export function NewDeliveryOrderClient({ customers }: NewDeliveryOrderClientProp
     setShipToPostalCode(selectedCustomer.shipping_postal_code || '')
     setShipToCountry(selectedCustomer.shipping_country || '')
     setShipToPhone(selectedCustomer.phone || '')
+    setUseDifferentDeliveryAddress(false)
   }
 
   async function handleSubmit() {
@@ -209,6 +257,30 @@ export function NewDeliveryOrderClient({ customers }: NewDeliveryOrderClientProp
     setIsSubmitting(true)
     setError(null)
 
+    const customerHasAddress = selectedCustomer && (selectedCustomer.shipping_address1 || selectedCustomer.shipping_city || selectedCustomer.shipping_country)
+    const useCustomerShipTo = !useDifferentDeliveryAddress && customerHasAddress
+    const shipTo = useCustomerShipTo && selectedCustomer
+      ? {
+          ship_to_name: selectedCustomer.name || null,
+          ship_to_address1: selectedCustomer.shipping_address1 || null,
+          ship_to_address2: selectedCustomer.shipping_address2 || null,
+          ship_to_city: selectedCustomer.shipping_city || null,
+          ship_to_state: selectedCustomer.shipping_state || null,
+          ship_to_postal_code: selectedCustomer.shipping_postal_code || null,
+          ship_to_country: selectedCustomer.shipping_country || null,
+          ship_to_phone: selectedCustomer.phone || null,
+        }
+      : {
+          ship_to_name: shipToName || null,
+          ship_to_address1: shipToAddress1 || null,
+          ship_to_address2: shipToAddress2 || null,
+          ship_to_city: shipToCity || null,
+          ship_to_state: shipToState || null,
+          ship_to_postal_code: shipToPostalCode || null,
+          ship_to_country: shipToCountry || null,
+          ship_to_phone: shipToPhone || null,
+        }
+
     // Create delivery order
     const result = await createDeliveryOrder({
       customer_id: customerId,
@@ -216,17 +288,9 @@ export function NewDeliveryOrderClient({ customers }: NewDeliveryOrderClientProp
       tracking_number: trackingNumber || null,
       shipping_method: shippingMethod || null,
       scheduled_date: scheduledDate || null,
-      ship_to_name: shipToName || null,
-      ship_to_address1: shipToAddress1 || null,
-      ship_to_address2: shipToAddress2 || null,
-      ship_to_city: shipToCity || null,
-      ship_to_state: shipToState || null,
-      ship_to_postal_code: shipToPostalCode || null,
-      ship_to_country: shipToCountry || null,
-      ship_to_phone: shipToPhone || null,
+      ...shipTo,
       total_packages: totalPackages,
-      total_weight: totalWeight ? parseFloat(totalWeight) : undefined,
-      weight_unit: weightUnit,
+      ...(finalTotalWeightKg != null && finalTotalWeightKg > 0 && { total_weight: finalTotalWeightKg, weight_unit: 'kg' as const }),
       notes: notes || null,
     })
 
@@ -253,55 +317,144 @@ export function NewDeliveryOrderClient({ customers }: NewDeliveryOrderClientProp
 
   const totalItemsCount = items.reduce((sum, item) => sum + item.quantity_shipped, 0)
   const isFormValid = customerId && items.length > 0
-  const hasAddress = Boolean(shipToName || shipToAddress1)
+  const customerHasAddress = selectedCustomer && Boolean(selectedCustomer.shipping_address1 || selectedCustomer.shipping_city || selectedCustomer.shipping_country)
+  const showDeliverySummaryOnly = customerHasAddress && !useDifferentDeliveryAddress
+
+  // Total weight from items' dimensions (items have weight per unit in inventory)
+  const totalWeightFromItemsKg = (() => {
+    let totalKg = 0
+    for (const item of items) {
+      const w = item.item_weight
+      if (w == null || w <= 0) continue
+      const qty = item.quantity_shipped
+      const unit = (item.item_weight_unit || 'kg').toLowerCase()
+      let kg = w * qty
+      if (unit === 'lb') kg *= 0.453592
+      else if (unit === 'oz') kg *= 0.0283495
+      else if (unit === 'g') kg *= 0.001
+      totalKg += kg
+    }
+    return totalKg
+  })()
+
+  const shippingMethodOptions = [
+    { value: 'standard', label: 'Standard' },
+    { value: 'express', label: 'Express' },
+    { value: 'overnight', label: 'Overnight' },
+    { value: 'same_day', label: 'Same Day' },
+    { value: 'pickup', label: 'Customer Pickup' },
+  ]
+  const weightUnitOptions = [
+    { value: 'kg', label: 'kg' },
+    { value: 'lb', label: 'lb' },
+    { value: 'oz', label: 'oz' },
+    { value: 'g', label: 'g' },
+  ]
+
+  // Use manual weight if entered, otherwise use calculated from items (convert manual to kg for API)
+  const manualWeightKg = (() => {
+    const v = parseFloat(totalWeightManual)
+    if (!totalWeightManual.trim() || Number.isNaN(v) || v <= 0) return null
+    const u = weightUnitManual.toLowerCase()
+    if (u === 'lb') return v * 0.453592
+    if (u === 'oz') return v * 0.0283495
+    if (u === 'g') return v * 0.001
+    return v
+  })()
+  const finalTotalWeightKg = manualWeightKg ?? (totalWeightFromItemsKg > 0 ? totalWeightFromItemsKg : null)
+
+  const countryOptions = [
+    { value: 'Malaysia', label: 'Malaysia' },
+    { value: 'Singapore', label: 'Singapore' },
+    { value: 'Indonesia', label: 'Indonesia' },
+    { value: 'Thailand', label: 'Thailand' },
+    { value: 'Vietnam', label: 'Vietnam' },
+    { value: 'Philippines', label: 'Philippines' },
+    { value: 'United States', label: 'United States' },
+    { value: 'United Kingdom', label: 'United Kingdom' },
+    { value: 'Australia', label: 'Australia' },
+  ]
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-neutral-50">
-      {/* Header */}
-      <div className="border-b border-neutral-200 bg-white px-6 py-4 shrink-0">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/tasks/delivery-orders" className="text-neutral-500 hover:text-neutral-700">
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-            <div>
-              <h1 className="text-xl font-semibold text-neutral-900">New Delivery Order</h1>
-              <p className="text-sm text-neutral-500 mt-0.5">
-                {items.length > 0 ? `${items.length} item${items.length !== 1 ? 's' : ''} (${totalItemsCount} units)` : 'Create a delivery for a customer'}
-              </p>
-            </div>
+    <>
+    <TaskFormShell
+      backHref="/tasks/delivery-orders"
+      title="New Delivery Order"
+      subtitle={items.length > 0 ? `${items.length} item${items.length !== 1 ? 's' : ''} (${totalItemsCount} units)` : 'Create a delivery for a customer'}
+      headerAction={
+        <Button
+          onClick={handleSubmit}
+          disabled={isSubmitting || !isFormValid}
+        >
+          {isSubmitting ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Check className="mr-2 h-4 w-4" />
+          )}
+          Create Delivery Order
+        </Button>
+      }
+      errorBanner={
+        error ? (
+          <div className="flex items-center gap-2 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+            <AlertTriangle className="h-4 w-4 shrink-0" />
+            <span className="min-w-0 flex-1">{error}</span>
+            <button onClick={() => setError(null)} className="shrink-0 text-red-500 hover:text-red-700" aria-label="Dismiss error">
+              <XCircle className="h-4 w-4" />
+            </button>
           </div>
-          <Button
-            onClick={handleSubmit}
-            disabled={isSubmitting || !isFormValid}
-          >
-            {isSubmitting ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        ) : null
+      }
+      footer={
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+          <div className="flex items-center gap-3">
+            {isFormValid ? (
+              <div className="flex items-center gap-1.5 text-green-600">
+                <CheckCircle className="h-4 w-4" />
+                <span className="text-sm font-medium">Ready to create</span>
+              </div>
             ) : (
-              <Check className="mr-2 h-4 w-4" />
+              <div className="flex items-center gap-1.5 text-amber-600">
+                <AlertTriangle className="h-4 w-4" />
+                <span className="text-sm">Complete required fields</span>
+              </div>
             )}
-            Create Delivery Order
-          </Button>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-neutral-500">
+              {items.length} item{items.length !== 1 ? 's' : ''} · {totalItemsCount} unit{totalItemsCount !== 1 ? 's' : ''}
+            </span>
+            <Button
+              onClick={handleSubmit}
+              disabled={isSubmitting || !isFormValid}
+            >
+              {isSubmitting ? (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              ) : (
+                <Check className="mr-2 h-4 w-4" />
+              )}
+              Create Delivery Order
+            </Button>
+          </div>
         </div>
-      </div>
+      }
+    >
+      <div className="mx-auto max-w-2xl space-y-6">
+        {/* 1. Status */}
+        {!isFormValid && (
+          <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
+            <AlertTriangle className="h-4 w-4 shrink-0" />
+            <span>{!customerId ? 'Select a customer' : 'Add at least one item'}</span>
+          </div>
+        )}
+        {isFormValid && (
+          <div className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 p-3 text-sm text-green-700">
+            <CheckCircle className="h-4 w-4 shrink-0" />
+            <span>Ready to create delivery order</span>
+          </div>
+        )}
 
-      {/* Error Alert */}
-      {error && (
-        <div className="mx-6 mt-4 flex items-center gap-2 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 shrink-0">
-          <AlertTriangle className="h-4 w-4" />
-          {error}
-          <button onClick={() => setError(null)} className="ml-auto text-red-500 hover:text-red-700">
-            <XCircle className="h-4 w-4" />
-          </button>
-        </div>
-      )}
-
-      {/* Main Content - Two Column Layout */}
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          {/* Left Column - Customer + Items (2/3 width on desktop) */}
-          <div className="lg:col-span-2 space-y-4">
-            {/* Customer Selection Card */}
+        {/* 2. Customer */}
             <Card className={`border-2 shadow-md ${!customerId ? 'border-amber-200 bg-gradient-to-br from-white to-amber-50/30' : 'border-primary/10 bg-gradient-to-br from-white to-primary/5'}`}>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
@@ -312,6 +465,7 @@ export function NewDeliveryOrderClient({ customers }: NewDeliveryOrderClientProp
               <CardContent>
                 <div className="relative">
                   <Input
+                    id="delivery-order-customer-search"
                     value={selectedCustomer ? selectedCustomer.name : customerSearch}
                     onChange={(e) => {
                       setCustomerSearch(e.target.value)
@@ -381,7 +535,7 @@ export function NewDeliveryOrderClient({ customers }: NewDeliveryOrderClientProp
               </CardContent>
             </Card>
 
-            {/* Items Card */}
+        {/* 3. Delivery items */}
             <Card className={`border-2 shadow-md ${items.length === 0 ? 'border-amber-200 bg-gradient-to-br from-white to-amber-50/30' : 'border-primary/10'}`}>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
@@ -470,26 +624,32 @@ export function NewDeliveryOrderClient({ customers }: NewDeliveryOrderClientProp
                         </p>
                       </div>
                       {/* Quantity controls */}
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1" role="group" aria-label={`Quantity for ${item.item_name}`}>
                         <button
+                          type="button"
                           onClick={() => handleUpdateQuantity(item.id, item.quantity_shipped - 1)}
                           disabled={item.quantity_shipped <= 1}
                           className="h-8 w-8 rounded-lg border border-neutral-200 flex items-center justify-center hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                          aria-label="Decrease quantity"
                         >
                           <Minus className="h-4 w-4" />
                         </button>
-                        <span className="w-12 text-center font-medium tabular-nums">{item.quantity_shipped}</span>
+                        <span className="w-12 text-center font-medium tabular-nums" aria-live="polite">{item.quantity_shipped}</span>
                         <button
+                          type="button"
                           onClick={() => handleUpdateQuantity(item.id, item.quantity_shipped + 1)}
                           disabled={item.quantity_shipped >= item.available_quantity}
                           className="h-8 w-8 rounded-lg border border-neutral-200 flex items-center justify-center hover:bg-neutral-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                          aria-label="Increase quantity"
                         >
                           <Plus className="h-4 w-4" />
                         </button>
                       </div>
                       <button
+                        type="button"
                         onClick={() => handleRemoveItem(item.id)}
                         className="p-1.5 text-neutral-400 hover:text-red-500 transition-colors"
+                        aria-label={`Remove ${item.item_name}`}
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -505,291 +665,266 @@ export function NewDeliveryOrderClient({ customers }: NewDeliveryOrderClientProp
                 </div>
               </CardContent>
             </Card>
+
+        {/* 4. Delivery address — default is customer address; show form only when "Use a different delivery address" */}
+        <section className="space-y-3">
+          <div className="flex items-center gap-2">
+            <MapPin className="h-4 w-4 shrink-0 text-neutral-500" aria-hidden />
+            <h3 className="text-sm font-medium text-neutral-900">Delivery address</h3>
           </div>
-
-          {/* Right Column - Shipping Details, Package Info, Address, Notes (1/3 width) */}
-          <div className="space-y-4">
-            {/* Validation Status */}
-            {!isFormValid && (
-              <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-50 border border-amber-200 text-sm text-amber-700">
-                <AlertTriangle className="h-4 w-4 shrink-0" />
-                <span>
-                  {!customerId ? 'Select a customer' : 'Add at least one item'}
-                </span>
-              </div>
-            )}
-            {isFormValid && (
-              <div className="flex items-center gap-2 p-3 rounded-xl bg-green-50 border border-green-200 text-sm text-green-700">
-                <CheckCircle className="h-4 w-4 shrink-0" />
-                <span>Ready to create delivery order</span>
-              </div>
-            )}
-
-            {/* Shipping Details Card */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Truck className="h-4 w-4" />
-                  Shipping Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-neutral-500 mb-1">Carrier</label>
-                    <Input
-                      value={carrier}
-                      onChange={(e) => setCarrier(e.target.value)}
-                      placeholder="DHL, FedEx..."
-                      className="h-9"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-neutral-500 mb-1">Tracking #</label>
-                    <Input
-                      value={trackingNumber}
-                      onChange={(e) => setTrackingNumber(e.target.value)}
-                      placeholder="Optional"
-                      className="h-9"
-                    />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-neutral-500 mb-1">Shipping Method</label>
-                  <select
-                    value={shippingMethod}
-                    onChange={(e) => setShippingMethod(e.target.value)}
-                    className="w-full h-9 rounded-lg border border-neutral-200 px-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
-                  >
-                    <option value="">Select method</option>
-                    <option value="standard">Standard</option>
-                    <option value="express">Express</option>
-                    <option value="overnight">Overnight</option>
-                    <option value="same_day">Same Day</option>
-                    <option value="pickup">Customer Pickup</option>
-                  </select>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-neutral-500 mb-1">Scheduled Date</label>
-                  <Input
-                    type="date"
-                    value={scheduledDate}
-                    onChange={(e) => setScheduledDate(e.target.value)}
-                    className="h-9"
-                  />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Package Info Card */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <Scale className="h-4 w-4" />
-                  Package Info
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <label className="block text-xs font-medium text-neutral-500 mb-1">Total Packages <span className="text-neutral-400 font-normal">(default 1)</span></label>
-                  <Input
-                    type="number"
-                    min={1}
-                    value={totalPackages}
-                    onChange={(e) => setTotalPackages(parseInt(e.target.value) || 1)}
-                    className="h-9"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-neutral-500 mb-1">Total Weight</label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={totalWeight}
-                      onChange={(e) => setTotalWeight(e.target.value)}
-                      placeholder="0.00"
-                      className="h-9"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-neutral-500 mb-1">Unit</label>
-                    <select
-                      value={weightUnit}
-                      onChange={(e) => setWeightUnit(e.target.value as 'kg' | 'lb' | 'oz' | 'g')}
-                      className="w-full h-9 rounded-lg border border-neutral-200 px-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
-                    >
-                      <option value="kg">kg</option>
-                      <option value="lb">lb</option>
-                      <option value="oz">oz</option>
-                      <option value="g">g</option>
-                    </select>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Ship To Section - Collapsible */}
-            <CollapsibleSection
-              title="Delivery Address (optional)"
-              icon={MapPin}
-              defaultExpanded={hasAddress}
-              hasContent={hasAddress}
-            >
-              <div className="space-y-3">
-                {selectedCustomer && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={useCustomerAddress}
-                    className="w-full"
-                  >
-                    Use customer address
-                  </Button>
+          {showDeliverySummaryOnly ? (
+            <>
+              <div className="rounded-lg border border-neutral-200 bg-neutral-50/80 px-4 py-3 text-sm text-neutral-700">
+                <p className="font-medium text-neutral-900">{selectedCustomer?.name}</p>
+                <p className="mt-0.5">
+                  {[selectedCustomer?.shipping_address1, selectedCustomer?.shipping_address2].filter(Boolean).join(', ')}
+                </p>
+                <p className="mt-0.5">
+                  {[selectedCustomer?.shipping_city, selectedCustomer?.shipping_state, selectedCustomer?.shipping_postal_code].filter(Boolean).join(', ')}
+                  {selectedCustomer?.shipping_country ? ` ${selectedCustomer.shipping_country}` : ''}
+                </p>
+                {selectedCustomer?.phone && (
+                  <p className="mt-1 text-neutral-600">Phone: {selectedCustomer.phone}</p>
                 )}
-                <div>
-                  <label className="block text-xs font-medium text-neutral-500 mb-1">Recipient Name</label>
-                  <Input
-                    value={shipToName}
-                    onChange={(e) => setShipToName(e.target.value)}
-                    placeholder="Name of person receiving"
-                    className="h-9"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-neutral-500 mb-1">Address Line 1</label>
-                  <Input
-                    value={shipToAddress1}
-                    onChange={(e) => setShipToAddress1(e.target.value)}
-                    placeholder="Street address"
-                    className="h-9"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-neutral-500 mb-1">Address Line 2</label>
-                  <Input
-                    value={shipToAddress2}
-                    onChange={(e) => setShipToAddress2(e.target.value)}
-                    placeholder="Apt, suite, etc. (optional)"
-                    className="h-9"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-neutral-500 mb-1">City</label>
-                    <Input
-                      value={shipToCity}
-                      onChange={(e) => setShipToCity(e.target.value)}
-                      placeholder="City"
-                      className="h-9"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-neutral-500 mb-1">State</label>
-                    <Input
-                      value={shipToState}
-                      onChange={(e) => setShipToState(e.target.value)}
-                      placeholder="State"
-                      className="h-9"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-neutral-500 mb-1">Postal Code</label>
-                    <Input
-                      value={shipToPostalCode}
-                      onChange={(e) => setShipToPostalCode(e.target.value)}
-                      placeholder="Postal code"
-                      className="h-9"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-neutral-500 mb-1">Country</label>
-                    <select
-                      value={shipToCountry}
-                      onChange={(e) => setShipToCountry(e.target.value)}
-                      className="w-full h-9 rounded-lg border border-neutral-200 px-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
-                    >
-                      <option value="">Select country</option>
-                      <option value="Malaysia">Malaysia</option>
-                      <option value="Singapore">Singapore</option>
-                      <option value="Indonesia">Indonesia</option>
-                      <option value="Thailand">Thailand</option>
-                      <option value="Vietnam">Vietnam</option>
-                      <option value="Philippines">Philippines</option>
-                      <option value="United States">United States</option>
-                      <option value="United Kingdom">United Kingdom</option>
-                      <option value="Australia">Australia</option>
-                    </select>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-neutral-500 mb-1">Phone</label>
-                  <Input
-                    value={shipToPhone}
-                    onChange={(e) => setShipToPhone(e.target.value)}
-                    placeholder="Contact phone"
-                    className="h-9"
-                  />
-                </div>
               </div>
-            </CollapsibleSection>
-
-            {/* Notes Section - Collapsible */}
-            <CollapsibleSection
-              title="Notes"
-              icon={FileText}
-              defaultExpanded={Boolean(notes)}
-              hasContent={Boolean(notes)}
-            >
-              <textarea
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                placeholder="Delivery instructions, special handling..."
-                rows={3}
-                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm resize-none focus:border-primary focus:ring-1 focus:ring-primary"
-              />
-            </CollapsibleSection>
-          </div>
-        </div>
-      </div>
-
-      {/* Footer Actions */}
-      <div className="border-t border-neutral-200 bg-white px-6 py-4 shrink-0">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            {isFormValid ? (
-              <div className="flex items-center gap-1.5 text-green-600">
-                <CheckCircle className="h-4 w-4" />
-                <span className="text-sm font-medium">Ready to create</span>
-              </div>
-            ) : (
-              <div className="flex items-center gap-1.5 text-amber-600">
-                <AlertTriangle className="h-4 w-4" />
-                <span className="text-sm">Complete required fields</span>
-              </div>
-            )}
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-sm text-neutral-500">
-              {items.length} item{items.length !== 1 ? 's' : ''} · {totalItemsCount} unit{totalItemsCount !== 1 ? 's' : ''}
-            </span>
-            <Button
-              onClick={handleSubmit}
-              disabled={isSubmitting || !isFormValid}
-            >
-              {isSubmitting ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <Check className="mr-2 h-4 w-4" />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => setUseDifferentDeliveryAddress(true)}
+              >
+                Use a different delivery address
+              </Button>
+            </>
+          ) : (
+            <div className="space-y-3">
+              {customerHasAddress && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={useCustomerAddress}
+                  className="w-full"
+                >
+                  Use customer delivery address
+                </Button>
               )}
-              Create Delivery Order
-            </Button>
+              <div>
+                <label className="block text-xs font-medium text-neutral-500 mb-1">Recipient Name</label>
+                <Input
+                  id="delivery-order-ship-name"
+                  value={shipToName}
+                  onChange={(e) => setShipToName(e.target.value)}
+                  placeholder="Name of person receiving"
+                  className="h-9"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-neutral-500 mb-1">Address Line 1</label>
+                <Input
+                  id="delivery-order-ship-address1"
+                  value={shipToAddress1}
+                  onChange={(e) => setShipToAddress1(e.target.value)}
+                  placeholder="Street address"
+                  className="h-9"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-neutral-500 mb-1">Address Line 2</label>
+                <Input
+                  id="delivery-order-ship-address2"
+                  value={shipToAddress2}
+                  onChange={(e) => setShipToAddress2(e.target.value)}
+                  placeholder="Apt, suite, etc. (optional)"
+                  className="h-9"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-neutral-500 mb-1">City</label>
+                  <Input
+                    id="delivery-order-ship-city"
+                    value={shipToCity}
+                    onChange={(e) => setShipToCity(e.target.value)}
+                    placeholder="City"
+                    className="h-9"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-neutral-500 mb-1">State</label>
+                  <Input
+                    id="delivery-order-ship-state"
+                    value={shipToState}
+                    onChange={(e) => setShipToState(e.target.value)}
+                    placeholder="State"
+                    className="h-9"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-neutral-500 mb-1">Postal Code</label>
+                  <Input
+                    id="delivery-order-ship-postal-code"
+                    value={shipToPostalCode}
+                    onChange={(e) => setShipToPostalCode(e.target.value)}
+                    placeholder="Postal code"
+                    className="h-9"
+                  />
+                </div>
+                <Select
+                  id="delivery-order-ship-country"
+                  label="Country"
+                  placeholder="Select country"
+                  options={countryOptions}
+                  value={shipToCountry}
+                  onChange={(e) => setShipToCountry(e.target.value)}
+                  className="h-9"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-neutral-500 mb-1">Phone</label>
+                <Input
+                  id="delivery-order-ship-phone"
+                  value={shipToPhone}
+                  onChange={(e) => setShipToPhone(e.target.value)}
+                  placeholder="Contact phone"
+                  className="h-9"
+                />
+              </div>
+            </div>
+          )}
+        </section>
+
+        {/* 5. When to send & courier (optional) — collapsed by default to keep form simple */}
+        <CollapsibleSection
+          title="When to send & courier (optional)"
+          icon={Truck}
+          defaultExpanded={Boolean(scheduledDate || shippingMethod || carrier || trackingNumber || totalPackages > 1 || totalWeightFromItemsKg > 0 || totalWeightManual.trim())}
+          hasContent={Boolean(scheduledDate || shippingMethod || carrier || trackingNumber || totalPackages > 1 || totalWeightFromItemsKg > 0 || totalWeightManual.trim())}
+        >
+          <p className="mb-4 text-xs text-neutral-500">Add when you know the date and how you&apos;re sending.</p>
+
+          {/* Block A: When & how */}
+          <div className="mb-4">
+            <p className="mb-2 text-sm font-medium text-neutral-700">When & how</p>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              <div>
+                <label className="mb-1 block text-xs font-medium text-neutral-500">Delivery date</label>
+                <Input
+                  id="delivery-order-scheduled-date"
+                  type="date"
+                  value={scheduledDate}
+                  onChange={(e) => setScheduledDate(e.target.value)}
+                  className="h-9"
+                />
+              </div>
+              <Select
+                id="delivery-order-shipping-method"
+                label="How you're sending"
+                placeholder="e.g. Standard, Express"
+                options={shippingMethodOptions}
+                value={shippingMethod}
+                onChange={(e) => setShippingMethod(e.target.value)}
+                className="h-9"
+              />
+            </div>
           </div>
-        </div>
+
+          {/* Block B: Courier details — only when not customer pickup */}
+          {shippingMethod !== 'pickup' && (
+            <div className="space-y-3 border-t border-neutral-100 pt-4">
+              <p className="text-xs text-neutral-500">If you&apos;re using a courier, add their name and tracking when you have it.</p>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-neutral-500">Courier name</label>
+                  <Input
+                    id="delivery-order-carrier"
+                    value={carrier}
+                    onChange={(e) => setCarrier(e.target.value)}
+                    placeholder="e.g. DHL, FedEx"
+                    className="h-9"
+                  />
+                </div>
+                <div>
+                  <label className="mb-1 block text-xs font-medium text-neutral-500">Tracking number</label>
+                  <Input
+                    id="delivery-order-tracking-number"
+                    value={trackingNumber}
+                    onChange={(e) => setTrackingNumber(e.target.value)}
+                    placeholder="Optional"
+                    className="h-9"
+                  />
+                </div>
+              </div>
+              <div>
+                <p className="mb-2 text-xs font-medium text-neutral-500">Parcel info <span className="font-normal text-neutral-400">(for labels)</span></p>
+                <div className="space-y-3">
+                  <div>
+                    <label className="mb-1 block text-xs font-medium text-neutral-500">Number of parcels</label>
+                    <Input
+                      id="delivery-order-total-packages"
+                      type="number"
+                      min={1}
+                      value={totalPackages}
+                      onChange={(e) => setTotalPackages(parseInt(e.target.value) || 1)}
+                      className="h-9"
+                    />
+                  </div>
+                  {totalWeightFromItemsKg > 0 && !totalWeightManual.trim() && (
+                    <p className="text-xs text-neutral-500">
+                      Total weight <span className="font-medium text-neutral-700">{(totalWeightFromItemsKg).toFixed(2)} kg</span>
+                      <span className="ml-1 text-neutral-400">(from items)</span>
+                    </p>
+                  )}
+                  <div className="flex flex-wrap items-end gap-2">
+                    <div className="min-w-0 max-w-32 flex-1">
+                      <label className="mb-1 block text-xs font-medium text-neutral-500">Or enter weight manually</label>
+                      <Input
+                        id="delivery-order-total-weight"
+                        type="number"
+                        step="0.01"
+                        min="0"
+                        value={totalWeightManual}
+                        onChange={(e) => setTotalWeightManual(e.target.value)}
+                        placeholder="Optional"
+                        className="h-9"
+                      />
+                    </div>
+                    <div className="w-24 shrink-0">
+                      <Select
+                        id="delivery-order-weight-unit"
+                        label="Unit"
+                        options={weightUnitOptions}
+                        value={weightUnitManual}
+                        onChange={(e) => setWeightUnitManual(e.target.value as 'kg' | 'lb' | 'oz' | 'g')}
+                        className="h-9"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </CollapsibleSection>
+
+        {/* 6. Notes (last) */}
+        <CollapsibleSection
+          title="Notes"
+          icon={FileText}
+          defaultExpanded={Boolean(notes)}
+          hasContent={Boolean(notes)}
+        >
+          <textarea
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            placeholder="Delivery instructions, special handling..."
+            rows={3}
+            className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm resize-none focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+          />
+        </CollapsibleSection>
       </div>
+    </TaskFormShell>
 
       {/* Barcode Scanner Modal */}
       {isScannerOpen && (
@@ -801,6 +936,6 @@ export function NewDeliveryOrderClient({ customers }: NewDeliveryOrderClientProp
           />
         </div>
       )}
-    </div>
+    </>
   )
 }

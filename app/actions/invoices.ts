@@ -167,7 +167,7 @@ export async function createInvoice(input: CreateInvoiceInput): Promise<InvoiceR
      
     const { data: customer } = await (supabase as any)
         .from('customers')
-        .select('name, billing_address1, billing_address2, billing_city, billing_state, billing_postal_code, billing_country')
+        .select('name, billing_address_line1, billing_address_line2, billing_city, billing_state, billing_postal_code, billing_country')
         .eq('id', validatedInput.customer_id)
         .eq('tenant_id', context.tenantId)
         .single()
@@ -193,8 +193,8 @@ export async function createInvoice(input: CreateInvoiceInput): Promise<InvoiceR
             invoice_date: validatedInput.invoice_date || new Date().toISOString().split('T')[0],
             due_date: validatedInput.due_date || null,
             bill_to_name: validatedInput.bill_to_name || customer?.name || null,
-            bill_to_address1: validatedInput.bill_to_address1 || customer?.billing_address1 || null,
-            bill_to_address2: validatedInput.bill_to_address2 || customer?.billing_address2 || null,
+            bill_to_address1: validatedInput.bill_to_address1 || customer?.billing_address_line1 || null,
+            bill_to_address2: validatedInput.bill_to_address2 || customer?.billing_address_line2 || null,
             bill_to_city: validatedInput.bill_to_city || customer?.billing_city || null,
             bill_to_state: validatedInput.bill_to_state || customer?.billing_state || null,
             bill_to_postal_code: validatedInput.bill_to_postal_code || customer?.billing_postal_code || null,
@@ -434,6 +434,7 @@ export async function createInvoiceFromSO(salesOrderId: string): Promise<Invoice
             bill_to_postal_code: so.bill_to_postal_code || so.customers?.billing_postal_code || null,
             bill_to_country: so.bill_to_country || so.customers?.billing_country || null,
             internal_notes: so.internal_notes || null,
+            customer_notes: so.customer_notes || null,
             created_by: context.userId,
             status: 'draft',
         })
@@ -486,6 +487,40 @@ export async function createInvoiceFromSO(salesOrderId: string): Promise<Invoice
     revalidatePath('/tasks/invoices')
     revalidatePath(`/tasks/sales-orders/${salesOrderId}`)
     return { success: true, invoice_id: invoiceData.id, display_id: invoiceData.display_id }
+}
+
+// Create invoice from a delivered Delivery Order via the database RPC
+export async function createInvoiceFromDO(deliveryOrderId: string): Promise<InvoiceResult> {
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
+
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    const supabase = await createClient()
+
+    // RPC handles: status validation, duplicate check, invoice + items creation, totals
+    const { data: invoiceId, error: rpcError } = await (supabase as any).rpc(
+        'create_invoice_from_delivery',
+        { p_delivery_order_id: deliveryOrderId }
+    )
+
+    if (rpcError || !invoiceId) {
+        const msg = rpcError?.message || 'Failed to create invoice from delivery order'
+        return { success: false, error: msg }
+    }
+
+    // Fetch display_id for the redirect
+    const { data: invoice } = await (supabase as any)
+        .from('invoices')
+        .select('display_id')
+        .eq('id', invoiceId)
+        .single()
+
+    revalidatePath('/tasks/invoices')
+    revalidatePath(`/tasks/delivery-orders/${deliveryOrderId}`)
+    return { success: true, invoice_id: invoiceId, display_id: invoice?.display_id || null }
 }
 
 // Get invoice with details

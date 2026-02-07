@@ -15,6 +15,8 @@ StockZip is a modern, mobile-first inventory management SaaS built with a server
 | **React** | 19.2.3 | UI library with Server Components support |
 | **TypeScript** | 5.9.3 | Type-safe JavaScript |
 
+**Rendering & hydration:** See [docs/HYDRATION.md](./HYDRATION.md) for how we avoid server/client hydration mismatches (useId, dates, forms).
+
 ### Styling
 | Technology | Version | Purpose |
 |------------|---------|---------|

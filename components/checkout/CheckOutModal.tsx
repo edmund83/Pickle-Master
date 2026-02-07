@@ -51,6 +51,8 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
   const [assigneeName, setAssigneeName] = useState<string>('')
   const [dueDate, setDueDate] = useState<string>('')
   const [notes, setNotes] = useState<string>('')
+  const [minDate, setMinDate] = useState<string | undefined>(undefined)
+  useEffect(() => setMinDate(new Date().toISOString().split('T')[0]), [])
   const [quantity, setQuantity] = useState<number>(1)
 
   // Serial selection state (for serialized items)
@@ -585,7 +587,7 @@ export function CheckOutModal({ item, isOpen, onClose, onSuccess }: CheckOutModa
             type="date"
             value={dueDate}
             onChange={(e) => setDueDate(e.target.value)}
-            min={new Date().toISOString().split('T')[0]}
+            min={minDate}
           />
         </div>
 

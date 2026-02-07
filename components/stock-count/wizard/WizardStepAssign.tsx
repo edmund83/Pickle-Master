@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { User, Calendar, ChevronDown, Check, X } from 'lucide-react'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
@@ -25,6 +25,10 @@ export function WizardStepAssign({
   teamMembers,
 }: WizardStepAssignProps) {
   const [showTeamDropdown, setShowTeamDropdown] = useState(false)
+  const [minDate, setMinDate] = useState<string | undefined>(undefined)
+  useEffect(() => {
+    setMinDate(new Date().toISOString().split('T')[0])
+  }, [])
   const { formatDate } = useFormatting()
 
   function handleTeamMemberSelect(member: TeamMember | null) {
@@ -59,8 +63,6 @@ export function WizardStepAssign({
     return email[0].toUpperCase()
   }
 
-  // Get minimum date (today)
-  const today = new Date().toISOString().split('T')[0]
 
   return (
     <div className="p-6 space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
@@ -191,7 +193,7 @@ export function WizardStepAssign({
             type="date"
             value={data.dueDate || ''}
             onChange={handleDateChange}
-            min={today}
+            min={minDate}
             className="h-12 pl-12"
           />
         </div>

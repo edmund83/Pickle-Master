@@ -201,6 +201,12 @@ export interface ReceiveWithDetails {
         order_number: string | null
         status: string
         vendor_name: string | null
+        expected_date: string | null
+        notes: string | null
+        ship_to_name: string | null
+        ship_to_address1: string | null
+        ship_to_city: string | null
+        ship_to_country: string | null
     } | null
     items: ReceiveItemWithDetails[]
 }

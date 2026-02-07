@@ -39,6 +39,7 @@ import {
   updateDeliveryOrderStatus,
   deleteDeliveryOrder,
 } from '@/app/actions/delivery-orders'
+import { createInvoiceFromDO } from '@/app/actions/invoices'
 import type { DeliveryOrderWithDetails } from './page'
 import type { Customer } from '@/app/actions/customers'
 import { ChatterPanel } from '@/components/chatter'
@@ -113,6 +114,7 @@ export function DeliveryOrderDetailClient({
   const status = deliveryOrder.status || 'draft'
   const isDraft = status === 'draft'
   const isReady = status === 'ready'
+  const isDelivered = status === 'delivered'
   const canEdit = ['draft', 'ready'].includes(status)
 
   // Standalone DO = no sales_order_id (customer can be edited)
@@ -289,6 +291,21 @@ export function DeliveryOrderDetailClient({
     setActionLoading(null)
   }
 
+  async function handleCreateInvoice() {
+    setActionLoading('create-invoice')
+    setError(null)
+    const result = await createInvoiceFromDO(deliveryOrder.id)
+    if (result.success && result.invoice_id) {
+      feedback.success(`Invoice ${result.display_id || ''} created`)
+      router.push(`/tasks/invoices/${result.invoice_id}`)
+      return
+    }
+    const errorMsg = result.error || 'Failed to create invoice'
+    setError(errorMsg)
+    feedback.error(errorMsg)
+    setActionLoading(null)
+  }
+
   return (
     <div className="flex-1 overflow-y-auto">
       {/* Header */}
@@ -408,6 +425,20 @@ export function DeliveryOrderDetailClient({
                   <CheckCircle className="mr-2 h-4 w-4" />
                 )}
                 Confirm Delivery
+              </Button>
+            )}
+
+            {isDelivered && (
+              <Button
+                onClick={handleCreateInvoice}
+                disabled={actionLoading !== null}
+              >
+                {actionLoading === 'create-invoice' ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <FileText className="mr-2 h-4 w-4" />
+                )}
+                Create Invoice
               </Button>
             )}
 

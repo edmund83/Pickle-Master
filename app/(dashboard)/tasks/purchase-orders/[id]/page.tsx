@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect, notFound } from 'next/navigation'
 import { PurchaseOrderDetailClient } from './PurchaseOrderDetailClient'
+import { getLocations } from '@/app/actions/receives'
 
 export interface TeamMember {
   id: string
@@ -193,10 +194,11 @@ export default async function PurchaseOrderDetailPage({
   params: Promise<{ id: string }>
 }) {
   const { id } = await params
-  const [purchaseOrder, teamMembers, vendors, userId] = await Promise.all([
+  const [purchaseOrder, teamMembers, vendors, locations, userId] = await Promise.all([
     getPurchaseOrderWithDetails(id),
     getTeamMembers(),
     getVendorsList(),
+    getLocations(),
     getCurrentUserId()
   ])
 
@@ -210,6 +212,7 @@ export default async function PurchaseOrderDetailPage({
       purchaseOrder={purchaseOrder}
       teamMembers={teamMembers}
       vendors={vendors}
+      locations={locations as { id: string; name: string; type: string }[]}
       createdByName={purchaseOrder.created_by_name}
       currentUserId={userId}
     />

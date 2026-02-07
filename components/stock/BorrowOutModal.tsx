@@ -96,6 +96,8 @@ export function BorrowOutModal({
   const [showAssigneeDropdown, setShowAssigneeDropdown] = useState(false)
   const [dueDate, setDueDate] = useState('')
   const [notes, setNotes] = useState('')
+  const [minDate, setMinDate] = useState<string | undefined>(undefined)
+  useEffect(() => setMinDate(new Date().toISOString().split('T')[0]), [])
 
   // New contact form state
   const [showNewContactForm, setShowNewContactForm] = useState(false)
@@ -831,7 +833,7 @@ export function BorrowOutModal({
                   type="date"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
+                  min={minDate}
                 />
               </div>
 

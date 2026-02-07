@@ -363,7 +363,7 @@ export async function createDeliveryOrder(input: CreateDeliveryOrderInput): Prom
 
         const { data: customer } = await (supabase as any)
             .from('customers')
-            .select('name, shipping_address1, shipping_address2, shipping_city, shipping_state, shipping_postal_code, shipping_country, phone')
+            .select('name, shipping_address_line1, shipping_address_line2, shipping_city, shipping_state, shipping_postal_code, shipping_country, phone')
             .eq('id', validatedInput.customer_id)
             .eq('tenant_id', context.tenantId)
             .single()
@@ -371,8 +371,8 @@ export async function createDeliveryOrder(input: CreateDeliveryOrderInput): Prom
         if (customer) {
             shippingDefaults = {
                 ship_to_name: customer.name || null,
-                ship_to_address1: customer.shipping_address1 || null,
-                ship_to_address2: customer.shipping_address2 || null,
+                ship_to_address1: customer.shipping_address_line1 || null,
+                ship_to_address2: customer.shipping_address_line2 || null,
                 ship_to_city: customer.shipping_city || null,
                 ship_to_state: customer.shipping_state || null,
                 ship_to_postal_code: customer.shipping_postal_code || null,
@@ -1020,10 +1020,10 @@ export async function searchInventoryItemsForDO(query: string) {
 
     if (!profile?.tenant_id) return []
 
-    // Search items with available stock for delivery
+    // Search items with available stock for delivery (include weight for total weight calculation)
     let queryBuilder = (supabase as any)
         .from('inventory_items')
-        .select('id, name, sku, quantity, image_urls, unit, price')
+        .select('id, name, sku, quantity, image_urls, unit, price, weight, weight_unit')
         .eq('tenant_id', profile.tenant_id)
         .is('deleted_at', null)
         .gt('quantity', 0) // Only items with stock available

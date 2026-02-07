@@ -91,7 +91,7 @@ export function ReceiveDetailClient({
   const [carrier, setCarrier] = useState(receive.carrier || '')
   const [trackingNumber, setTrackingNumber] = useState(receive.tracking_number || '')
   const [defaultLocationId, setDefaultLocationId] = useState(receive.default_location_id || '')
-  const [receivedDate, setReceivedDate] = useState(receive.received_date || new Date().toISOString().split('T')[0])
+  const [receivedDate, setReceivedDate] = useState(receive.received_date || '')
   const [notes, setNotes] = useState(receive.notes || '')
 
   // Items state
@@ -247,6 +247,11 @@ export function ReceiveDetailClient({
       })
     }
   }
+
+  // Set default received date after mount when empty to avoid hydration mismatch
+  useEffect(() => {
+    setReceivedDate((prev) => (prev === '' ? new Date().toISOString().split('T')[0] : prev))
+  }, [])
 
   // Focus serial input when modal opens
   useEffect(() => {
@@ -714,10 +719,9 @@ export function ReceiveDetailClient({
       )}
 
       <div className="p-6">
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Main Content - Items Table */}
-          <div className="lg:col-span-2 space-y-6">
-            <Card>
+        <div className="mx-auto max-w-2xl space-y-6">
+          {/* Items Table */}
+          <Card>
               <CardHeader className="flex flex-row items-center justify-between space-y-0">
                 <CardTitle>Items to Receive ({items.length})</CardTitle>
                 {isDraft && isStandalone && (
@@ -912,41 +916,38 @@ export function ReceiveDetailClient({
               </CardContent>
             </Card>
 
-            {/* Notes Card (if notes exist or in draft mode) */}
-            {(notes || isDraft) && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Notes</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {isDraft ? (
-                    <textarea
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      onBlur={saveField}
-                      placeholder="Add receiving notes..."
-                      rows={3}
-                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm resize-none focus:border-neutral-400 focus:outline-none"
-                    />
-                  ) : (
-                    <p className="text-neutral-700 whitespace-pre-wrap">{notes || 'No notes'}</p>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Receive Details */}
+          {/* Notes Card (if notes exist or in draft mode) */}
+          {(notes || isDraft) && (
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  Receive Details
-                </CardTitle>
+                <CardTitle>Notes</CardTitle>
               </CardHeader>
               <CardContent>
+                {isDraft ? (
+                  <textarea
+                    value={notes}
+                    onChange={(e) => setNotes(e.target.value)}
+                    onBlur={saveField}
+                    placeholder="Add receiving notes..."
+                    rows={3}
+                    className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm resize-none focus:border-neutral-400 focus:outline-none"
+                  />
+                ) : (
+                  <p className="text-neutral-700 whitespace-pre-wrap">{notes || 'No notes'}</p>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Receive Details */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                Receive Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
                 <dl className="space-y-3 text-sm">
                   {/* Received Date */}
                   <div className="flex justify-between">
@@ -1071,19 +1072,19 @@ export function ReceiveDetailClient({
                     </div>
                   )}
                 </dl>
-              </CardContent>
-            </Card>
+            </CardContent>
+          </Card>
 
-            {/* Source PO (only for PO-linked receives) */}
-            {receive.purchase_order && (
-              <Card>
+          {/* Source PO (only for PO-linked receives) */}
+          {receive.purchase_order && (
+            <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <FileText className="h-4 w-4" />
                     Source PO
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="space-y-3">
                   <Link
                     href={`/tasks/purchase-orders/${receive.purchase_order.id}`}
                     className="text-blue-600 hover:text-blue-800 hover:underline font-medium"
@@ -1091,50 +1092,66 @@ export function ReceiveDetailClient({
                     {receive.purchase_order.display_id || receive.purchase_order.order_number}
                   </Link>
                   {receive.purchase_order.vendor_name && (
-                    <p className="text-sm text-neutral-500 mt-2">
+                    <p className="text-sm text-neutral-500">
                       Vendor: {receive.purchase_order.vendor_name}
                     </p>
                   )}
                   <p className="text-sm text-neutral-500">
                     Status: <span className="capitalize">{receive.purchase_order.status}</span>
                   </p>
+                  {receive.purchase_order.expected_date && (
+                    <p className="text-sm text-neutral-600">
+                      Expected (from PO): <FormattedShortDate date={receive.purchase_order.expected_date} />
+                    </p>
+                  )}
+                  {(receive.purchase_order.ship_to_name || receive.purchase_order.ship_to_address1 || receive.purchase_order.ship_to_city || receive.purchase_order.ship_to_country) && (
+                    <div className="text-sm text-neutral-600 pt-1 border-t border-neutral-100">
+                      <p className="font-medium text-neutral-700 mb-0.5">Deliver to (from PO)</p>
+                      <p>{[receive.purchase_order.ship_to_name, receive.purchase_order.ship_to_address1, [receive.purchase_order.ship_to_city, receive.purchase_order.ship_to_country].filter(Boolean).join(', ')].filter(Boolean).join(' · ')}</p>
+                    </div>
+                  )}
+                  {receive.purchase_order.notes && (
+                    <div className="text-sm text-neutral-600 pt-1 border-t border-neutral-100">
+                      <p className="font-medium text-neutral-700 mb-0.5">PO notes</p>
+                      <p className="whitespace-pre-wrap">{receive.purchase_order.notes}</p>
+                    </div>
+                  )}
                 </CardContent>
-              </Card>
-            )}
+            </Card>
+          )}
 
-            {/* Source Type Info (for standalone receives) */}
-            {isStandalone && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <SourceIcon className="h-4 w-4" />
-                    Receive Type
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center gap-3">
-                    <div className={`rounded-lg p-2 ${
-                      receive.source_type === 'customer_return'
-                        ? 'bg-purple-100 text-purple-600'
-                        : 'bg-blue-100 text-blue-600'
-                    }`}>
-                      <SourceIcon className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-neutral-900">
-                        {sourceTypeConfig[receive.source_type]?.label}
-                      </p>
-                      <p className="text-sm text-neutral-500">
-                        {receive.source_type === 'customer_return'
-                          ? 'Items returned by customers'
-                          : 'Manual stock corrections'}
-                      </p>
-                    </div>
+          {/* Source Type Info (for standalone receives) */}
+          {isStandalone && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <SourceIcon className="h-4 w-4" />
+                  Receive Type
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-3">
+                  <div className={`rounded-lg p-2 ${
+                    receive.source_type === 'customer_return'
+                      ? 'bg-purple-100 text-purple-600'
+                      : 'bg-blue-100 text-blue-600'
+                  }`}>
+                    <SourceIcon className="h-5 w-5" />
                   </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+                  <div>
+                    <p className="font-medium text-neutral-900">
+                      {sourceTypeConfig[receive.source_type]?.label}
+                    </p>
+                    <p className="text-sm text-neutral-500">
+                      {receive.source_type === 'customer_return'
+                        ? 'Items returned by customers'
+                        : 'Manual stock corrections'}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Chatter Panel - only show for non-draft (completed) receives */}

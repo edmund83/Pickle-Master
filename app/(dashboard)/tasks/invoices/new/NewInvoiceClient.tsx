@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import {
   ArrowLeft,
   Loader2,
@@ -29,7 +28,9 @@ import { createInvoiceWithItems, searchInventoryItemsForInvoice } from '@/app/ac
 import type { Customer } from '@/app/actions/customers'
 import { useFeedback } from '@/components/feedback/FeedbackProvider'
 import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
 import { ItemThumbnail } from '@/components/ui/item-thumbnail'
+import { TaskFormShell } from '@/components/task-form/TaskFormShell'
 import { BarcodeScanner } from '@/components/scanner/BarcodeScanner'
 import type { ScanResult } from '@/lib/scanner/useBarcodeScanner'
 import { CollapsibleSection } from '@/components/ui/collapsible-section'
@@ -76,7 +77,7 @@ export function NewInvoiceClient({ customers, paymentTerms }: NewInvoiceClientPr
 
   // Invoice details
   const [invoiceNumber, setInvoiceNumber] = useState('')
-  const [invoiceDate, setInvoiceDate] = useState(new Date().toISOString().split('T')[0])
+  const [invoiceDate, setInvoiceDate] = useState('')
   const [dueDate, setDueDate] = useState('')
   const [paymentTermId, setPaymentTermId] = useState('')
 
@@ -88,6 +89,7 @@ export function NewInvoiceClient({ customers, paymentTerms }: NewInvoiceClientPr
   const [billToState, setBillToState] = useState('')
   const [billToPostalCode, setBillToPostalCode] = useState('')
   const [billToCountry, setBillToCountry] = useState('')
+  const [useDifferentBillingAddress, setUseDifferentBillingAddress] = useState(false)
 
   // Line items
   const [items, setItems] = useState<InvoiceLineItem[]>([])
@@ -106,6 +108,11 @@ export function NewInvoiceClient({ customers, paymentTerms }: NewInvoiceClientPr
     c.name.toLowerCase().includes(customerSearch.toLowerCase()) ||
     c.email?.toLowerCase().includes(customerSearch.toLowerCase())
   ).slice(0, 10)
+
+  // Set default invoice date after mount to avoid hydration mismatch
+  useEffect(() => {
+    setInvoiceDate((prev) => (prev === '' ? new Date().toISOString().split('T')[0] : prev))
+  }, [])
 
   // Calculate due date when payment term changes
   useEffect(() => {
@@ -149,6 +156,43 @@ export function NewInvoiceClient({ customers, paymentTerms }: NewInvoiceClientPr
     }, 300)
     return () => clearTimeout(timer)
   }, [searchQuery, handleSearch])
+
+  // Auto-fill billing address when customer is selected; default to "use customer billing address"
+  useEffect(() => {
+    if (!customerId) {
+      setBillToName('')
+      setBillToAddress1('')
+      setBillToAddress2('')
+      setBillToCity('')
+      setBillToState('')
+      setBillToPostalCode('')
+      setBillToCountry('')
+      setUseDifferentBillingAddress(false)
+      return
+    }
+    const customer = customers.find(c => c.id === customerId)
+    if (!customer) return
+    const hasBilling = customer.billing_address1 || customer.billing_city || customer.billing_country
+    if (!hasBilling) {
+      setBillToName('')
+      setBillToAddress1('')
+      setBillToAddress2('')
+      setBillToCity('')
+      setBillToState('')
+      setBillToPostalCode('')
+      setBillToCountry('')
+      setUseDifferentBillingAddress(true)
+      return
+    }
+    setBillToName(customer.name || '')
+    setBillToAddress1(customer.billing_address1 || '')
+    setBillToAddress2(customer.billing_address2 || '')
+    setBillToCity(customer.billing_city || '')
+    setBillToState(customer.billing_state || '')
+    setBillToPostalCode(customer.billing_postal_code || '')
+    setBillToCountry(customer.billing_country || '')
+    setUseDifferentBillingAddress(false)
+  }, [customerId, customers])
 
   function handleAddItem(item: SearchResultItem) {
     const tempId = `temp-${Date.now()}`
@@ -208,7 +252,6 @@ export function NewInvoiceClient({ customers, paymentTerms }: NewInvoiceClientPr
 
   function useCustomerBillingAddress() {
     if (!selectedCustomer) return
-
     setBillToName(selectedCustomer.name || '')
     setBillToAddress1(selectedCustomer.billing_address1 || '')
     setBillToAddress2(selectedCustomer.billing_address2 || '')
@@ -216,6 +259,7 @@ export function NewInvoiceClient({ customers, paymentTerms }: NewInvoiceClientPr
     setBillToState(selectedCustomer.billing_state || '')
     setBillToPostalCode(selectedCustomer.billing_postal_code || '')
     setBillToCountry(selectedCustomer.billing_country || '')
+    setUseDifferentBillingAddress(false)
   }
 
   // Calculate totals
@@ -245,19 +289,35 @@ export function NewInvoiceClient({ customers, paymentTerms }: NewInvoiceClientPr
     setIsSubmitting(true)
     setError(null)
 
+    const customerHasBilling = selectedCustomer && (selectedCustomer.billing_address1 || selectedCustomer.billing_city || selectedCustomer.billing_country)
+    const useCustomerBillTo = !useDifferentBillingAddress && customerHasBilling
+    const billTo = useCustomerBillTo && selectedCustomer
+      ? {
+          bill_to_name: selectedCustomer.name || null,
+          bill_to_address1: selectedCustomer.billing_address1 || null,
+          bill_to_address2: selectedCustomer.billing_address2 || null,
+          bill_to_city: selectedCustomer.billing_city || null,
+          bill_to_state: selectedCustomer.billing_state || null,
+          bill_to_postal_code: selectedCustomer.billing_postal_code || null,
+          bill_to_country: selectedCustomer.billing_country || null,
+        }
+      : {
+          bill_to_name: billToName || null,
+          bill_to_address1: billToAddress1 || null,
+          bill_to_address2: billToAddress2 || null,
+          bill_to_city: billToCity || null,
+          bill_to_state: billToState || null,
+          bill_to_postal_code: billToPostalCode || null,
+          bill_to_country: billToCountry || null,
+        }
+
     const result = await createInvoiceWithItems({
       customer_id: customerId,
       invoice_number: invoiceNumber || null,
       invoice_date: invoiceDate || null,
       due_date: dueDate || null,
       payment_term_id: paymentTermId || null,
-      bill_to_name: billToName || null,
-      bill_to_address1: billToAddress1 || null,
-      bill_to_address2: billToAddress2 || null,
-      bill_to_city: billToCity || null,
-      bill_to_state: billToState || null,
-      bill_to_postal_code: billToPostalCode || null,
-      bill_to_country: billToCountry || null,
+      ...billTo,
       internal_notes: internalNotes || null,
       customer_notes: customerNotes || null,
       terms_and_conditions: termsAndConditions || null,
@@ -286,56 +346,91 @@ export function NewInvoiceClient({ customers, paymentTerms }: NewInvoiceClientPr
 
   const totalItemsCount = items.reduce((sum, item) => sum + item.quantity, 0)
   const isFormValid = customerId && items.length > 0
-  const hasAddress = Boolean(billToName || billToAddress1)
-  const hasNotes = Boolean(internalNotes || customerNotes || termsAndConditions)
+  const customerHasBillingAddress = selectedCustomer && Boolean(selectedCustomer.billing_address1 || selectedCustomer.billing_city || selectedCustomer.billing_country)
+  const showBillingSummaryOnly = customerHasBillingAddress && !useDifferentBillingAddress
+
+  const countryOptions = [
+    { value: 'Malaysia', label: 'Malaysia' },
+    { value: 'Singapore', label: 'Singapore' },
+    { value: 'Indonesia', label: 'Indonesia' },
+    { value: 'Thailand', label: 'Thailand' },
+    { value: 'Vietnam', label: 'Vietnam' },
+    { value: 'Philippines', label: 'Philippines' },
+    { value: 'United States', label: 'United States' },
+    { value: 'United Kingdom', label: 'United Kingdom' },
+    { value: 'Australia', label: 'Australia' },
+  ]
+  const paymentTermSelectOptions = [
+    { value: '', label: 'Select terms' },
+    ...paymentTerms.map(t => ({ value: t.id, label: t.days != null ? `${t.name} (${t.days} days)` : t.name })),
+  ]
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden bg-neutral-50">
-      {/* Header */}
-      <div className="border-b border-neutral-200 bg-white px-6 py-4 shrink-0">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/tasks/invoices" className="text-neutral-500 hover:text-neutral-700">
-              <ArrowLeft className="h-5 w-5" />
-            </Link>
-            <div>
-              <h1 className="text-xl font-semibold text-neutral-900">New Invoice</h1>
-              <p className="text-sm text-neutral-500 mt-0.5">
-                {items.length > 0 ? `${items.length} item${items.length !== 1 ? 's' : ''} (${totalItemsCount} units) · $${total.toFixed(2)}` : 'Create a new invoice for a customer'}
-              </p>
-            </div>
+    <>
+    <TaskFormShell
+      backHref="/tasks/invoices"
+      title="New Invoice"
+      subtitle={items.length > 0 ? `${items.length} item${items.length !== 1 ? 's' : ''} (${totalItemsCount} units) · $${total.toFixed(2)}` : 'Create a new invoice for a customer'}
+      headerAction={
+        <Button onClick={handleSubmit} disabled={isSubmitting || !isFormValid}>
+          {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}
+          Create Invoice
+        </Button>
+      }
+      errorBanner={
+        error ? (
+          <div className="flex items-center gap-2 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+            <AlertTriangle className="h-4 w-4 shrink-0" />
+            <span className="min-w-0 flex-1">{error}</span>
+            <button onClick={() => setError(null)} className="shrink-0 text-red-500 hover:text-red-700" aria-label="Dismiss error">
+              <XCircle className="h-4 w-4" />
+            </button>
           </div>
-          <Button
-            onClick={handleSubmit}
-            disabled={isSubmitting || !isFormValid}
-          >
-            {isSubmitting ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        ) : null
+      }
+      footer={
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+          <div className="flex items-center gap-3">
+            {isFormValid ? (
+              <div className="flex items-center gap-1.5 text-green-600">
+                <CheckCircle className="h-4 w-4" />
+                <span className="text-sm font-medium">Ready to create</span>
+              </div>
             ) : (
-              <Check className="mr-2 h-4 w-4" />
+              <div className="flex items-center gap-1.5 text-amber-600">
+                <AlertTriangle className="h-4 w-4" />
+                <span className="text-sm">Complete required fields</span>
+              </div>
             )}
-            Create Invoice
-          </Button>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-neutral-500">
+              {items.length} item{items.length !== 1 ? 's' : ''} · ${total.toFixed(2)}
+            </span>
+            <Button onClick={handleSubmit} disabled={isSubmitting || !isFormValid}>
+              {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Check className="mr-2 h-4 w-4" />}
+              Create Invoice
+            </Button>
+          </div>
         </div>
-      </div>
+      }
+    >
+      <div className="mx-auto max-w-2xl space-y-6">
+        {/* 1. Status */}
+        {!isFormValid && (
+          <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
+            <AlertTriangle className="h-4 w-4 shrink-0" />
+            <span>{!customerId ? 'Select a customer' : 'Add at least one item'}</span>
+          </div>
+        )}
+        {isFormValid && (
+          <div className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 p-3 text-sm text-green-700">
+            <CheckCircle className="h-4 w-4 shrink-0" />
+            <span>Ready to create invoice</span>
+          </div>
+        )}
 
-      {/* Error Alert */}
-      {error && (
-        <div className="mx-6 mt-4 flex items-center gap-2 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 shrink-0">
-          <AlertTriangle className="h-4 w-4" />
-          {error}
-          <button onClick={() => setError(null)} className="ml-auto text-red-500 hover:text-red-700">
-            <XCircle className="h-4 w-4" />
-          </button>
-        </div>
-      )}
-
-      {/* Main Content - Two Column Layout */}
-      <div className="flex-1 overflow-y-auto p-6">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-          {/* Left Column - Customer + Items (2/3 width on desktop) */}
-          <div className="lg:col-span-2 space-y-4">
-            {/* Customer Selection Card */}
+        {/* 2. Customer */}
             <Card className={`border-2 shadow-md ${!customerId ? 'border-amber-200 bg-gradient-to-br from-white to-amber-50/30' : 'border-primary/10 bg-gradient-to-br from-white to-primary/5'}`}>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base flex items-center gap-2">
@@ -375,6 +470,20 @@ export function NewInvoiceClient({ customers, paymentTerms }: NewInvoiceClientPr
                                 setCustomerId(customer.id)
                                 setCustomerSearch('')
                                 setShowCustomerDropdown(false)
+                                // Populate billing from customer immediately (in addition to useEffect)
+                                const hasBilling = customer.billing_address1 || customer.billing_city || customer.billing_country
+                                if (hasBilling) {
+                                  setBillToName(customer.name || '')
+                                  setBillToAddress1(customer.billing_address1 || '')
+                                  setBillToAddress2(customer.billing_address2 || '')
+                                  setBillToCity(customer.billing_city || '')
+                                  setBillToState(customer.billing_state || '')
+                                  setBillToPostalCode(customer.billing_postal_code || '')
+                                  setBillToCountry(customer.billing_country || '')
+                                  setUseDifferentBillingAddress(false)
+                                } else {
+                                  setUseDifferentBillingAddress(true)
+                                }
                               }}
                               className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-neutral-50 border-b border-neutral-100 last:border-0"
                             >
@@ -572,236 +681,121 @@ export function NewInvoiceClient({ customers, paymentTerms }: NewInvoiceClientPr
               </CardContent>
             </Card>
 
-            {/* Internal Notes - Collapsible */}
-            <CollapsibleSection
-              title="Internal Notes"
-              icon={StickyNote}
-              defaultExpanded={Boolean(internalNotes)}
-              hasContent={Boolean(internalNotes)}
-            >
-              <div className="space-y-2">
-                <p className="text-xs text-neutral-500">Team-only notes (not visible on invoice)</p>
-                <textarea
-                  value={internalNotes}
-                  onChange={(e) => setInternalNotes(e.target.value)}
-                  placeholder="Notes for your team..."
-                  rows={3}
-                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm resize-none focus:border-primary focus:ring-1 focus:ring-primary"
-                />
-              </div>
-            </CollapsibleSection>
+        {/* 3. Billing address — default is customer billing; show form only when "Use a different billing address" */}
+        <section className="space-y-3">
+          <div className="flex items-center gap-2">
+            <MapPin className="h-4 w-4 shrink-0 text-neutral-500" aria-hidden />
+            <h3 className="text-sm font-medium text-neutral-900">Billing address</h3>
           </div>
-
-          {/* Right Column - Invoice Details, Address, Notes (1/3 width) */}
-          <div className="space-y-4">
-            {/* Validation Status */}
-            {!isFormValid && (
-              <div className="flex items-center gap-2 p-3 rounded-xl bg-amber-50 border border-amber-200 text-sm text-amber-700">
-                <AlertTriangle className="h-4 w-4 shrink-0" />
-                <span>
-                  {!customerId ? 'Select a customer' : 'Add at least one item'}
-                </span>
+          <p className="text-xs text-neutral-500">Defaults to customer&apos;s billing address. Use a different address if the invoice should be sent elsewhere.</p>
+          {showBillingSummaryOnly ? (
+            <>
+              <div className="rounded-lg border border-neutral-200 bg-neutral-50/80 px-4 py-3 text-sm text-neutral-700">
+                <p className="font-medium text-neutral-900">{selectedCustomer?.name}</p>
+                <p className="mt-0.5">
+                  {[selectedCustomer?.billing_address1, selectedCustomer?.billing_address2].filter(Boolean).join(', ')}
+                </p>
+                <p className="mt-0.5">
+                  {[selectedCustomer?.billing_city, selectedCustomer?.billing_state, selectedCustomer?.billing_postal_code].filter(Boolean).join(', ')}
+                  {selectedCustomer?.billing_country ? ` ${selectedCustomer.billing_country}` : ''}
+                </p>
               </div>
-            )}
-            {isFormValid && (
-              <div className="flex items-center gap-2 p-3 rounded-xl bg-green-50 border border-green-200 text-sm text-green-700">
-                <CheckCircle className="h-4 w-4 shrink-0" />
-                <span>Ready to create invoice</span>
+              <Button type="button" variant="outline" size="sm" onClick={() => setUseDifferentBillingAddress(true)}>
+                Use a different billing address
+              </Button>
+            </>
+          ) : (
+            <div className="space-y-3">
+              {customerHasBillingAddress && (
+                <Button type="button" variant="outline" size="sm" onClick={useCustomerBillingAddress} className="w-full">
+                  Use customer billing address
+                </Button>
+              )}
+              <div>
+                <label className="block text-xs font-medium text-neutral-500 mb-1">Name</label>
+                <Input value={billToName} onChange={(e) => setBillToName(e.target.value)} placeholder="Billing name" className="h-9" />
               </div>
-            )}
-
-            {/* Invoice Details Card */}
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base flex items-center gap-2">
-                  <FileText className="h-4 w-4" />
-                  Invoice Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
+              <div>
+                <label className="block text-xs font-medium text-neutral-500 mb-1">Address Line 1</label>
+                <Input value={billToAddress1} onChange={(e) => setBillToAddress1(e.target.value)} placeholder="Street address" className="h-9" />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-neutral-500 mb-1">Address Line 2</label>
+                <Input value={billToAddress2} onChange={(e) => setBillToAddress2(e.target.value)} placeholder="Apt, suite, etc." className="h-9" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-neutral-500 mb-1">Invoice Number (optional)</label>
-                  <Input
-                    value={invoiceNumber}
-                    onChange={(e) => setInvoiceNumber(e.target.value)}
-                    placeholder="Leave blank to auto-generate"
-                    className="h-9"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-neutral-500 mb-1">Invoice Date</label>
-                    <Input
-                      type="date"
-                      value={invoiceDate}
-                      onChange={(e) => setInvoiceDate(e.target.value)}
-                      className="h-9"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-neutral-500 mb-1">Due Date</label>
-                    <Input
-                      type="date"
-                      value={dueDate}
-                      onChange={(e) => setDueDate(e.target.value)}
-                      className="h-9"
-                    />
-                  </div>
+                  <label className="block text-xs font-medium text-neutral-500 mb-1">City</label>
+                  <Input value={billToCity} onChange={(e) => setBillToCity(e.target.value)} placeholder="City" className="h-9" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-neutral-500 mb-1">Payment Terms</label>
-                  <select
-                    value={paymentTermId}
-                    onChange={(e) => setPaymentTermId(e.target.value)}
-                    className="w-full h-9 rounded-lg border border-neutral-200 px-3 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
-                  >
-                    <option value="">Select terms</option>
-                    {paymentTerms.map(term => (
-                      <option key={term.id} value={term.id}>
-                        {term.name} {term.days !== null && `(${term.days} days)`}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Billing Address - Collapsible */}
-            <CollapsibleSection
-              title="Billing Address (optional)"
-              icon={MapPin}
-              defaultExpanded={hasAddress}
-              hasContent={hasAddress}
-            >
-              <div className="space-y-3">
-                {selectedCustomer && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={useCustomerBillingAddress}
-                    className="w-full"
-                  >
-                    Use customer billing address
-                  </Button>
-                )}
-                <div>
-                  <label className="block text-xs font-medium text-neutral-500 mb-1">Name</label>
-                  <Input
-                    value={billToName}
-                    onChange={(e) => setBillToName(e.target.value)}
-                    placeholder="Billing name"
-                    className="h-9"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-neutral-500 mb-1">Address Line 1</label>
-                  <Input
-                    value={billToAddress1}
-                    onChange={(e) => setBillToAddress1(e.target.value)}
-                    placeholder="Street address"
-                    className="h-9"
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-medium text-neutral-500 mb-1">Address Line 2</label>
-                  <Input
-                    value={billToAddress2}
-                    onChange={(e) => setBillToAddress2(e.target.value)}
-                    placeholder="Apt, suite, etc."
-                    className="h-9"
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-neutral-500 mb-1">City</label>
-                    <Input
-                      value={billToCity}
-                      onChange={(e) => setBillToCity(e.target.value)}
-                      placeholder="City"
-                      className="h-9"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-neutral-500 mb-1">State</label>
-                    <Input
-                      value={billToState}
-                      onChange={(e) => setBillToState(e.target.value)}
-                      placeholder="State"
-                      className="h-9"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-neutral-500 mb-1">Postal Code</label>
-                    <Input
-                      value={billToPostalCode}
-                      onChange={(e) => setBillToPostalCode(e.target.value)}
-                      placeholder="Postal code"
-                      className="h-9"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-neutral-500 mb-1">Country</label>
-                    <Input
-                      value={billToCountry}
-                      onChange={(e) => setBillToCountry(e.target.value)}
-                      placeholder="Country"
-                      className="h-9"
-                    />
-                  </div>
+                  <label className="block text-xs font-medium text-neutral-500 mb-1">State</label>
+                  <Input value={billToState} onChange={(e) => setBillToState(e.target.value)} placeholder="State" className="h-9" />
                 </div>
               </div>
-            </CollapsibleSection>
-
-            {/* Customer Notes - Collapsible */}
-            <CollapsibleSection
-              title="Customer Notes"
-              icon={CreditCard}
-              defaultExpanded={Boolean(customerNotes)}
-              hasContent={Boolean(customerNotes)}
-            >
-              <div className="space-y-2">
-                <p className="text-xs text-neutral-500">Notes that appear on the invoice</p>
-                <textarea
-                  value={customerNotes}
-                  onChange={(e) => setCustomerNotes(e.target.value)}
-                  placeholder="Notes for customer..."
-                  rows={3}
-                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm resize-none focus:border-primary focus:ring-1 focus:ring-primary"
-                />
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-medium text-neutral-500 mb-1">Postal Code</label>
+                  <Input value={billToPostalCode} onChange={(e) => setBillToPostalCode(e.target.value)} placeholder="Postal code" className="h-9" />
+                </div>
+                <Select id="invoice-bill-country" label="Country" placeholder="Select country" options={countryOptions} value={billToCountry} onChange={(e) => setBillToCountry(e.target.value)} className="h-9" />
               </div>
-            </CollapsibleSection>
+            </div>
+          )}
+        </section>
 
-            {/* Terms & Conditions - Collapsible */}
-            <CollapsibleSection
-              title="Terms & Conditions"
-              icon={DollarSign}
-              defaultExpanded={Boolean(termsAndConditions)}
-              hasContent={Boolean(termsAndConditions)}
-            >
-              <div className="space-y-2">
-                <p className="text-xs text-neutral-500">Payment terms shown on invoice</p>
-                <textarea
-                  value={termsAndConditions}
-                  onChange={(e) => setTermsAndConditions(e.target.value)}
-                  placeholder="Payment terms and conditions..."
-                  rows={3}
-                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm resize-none focus:border-primary focus:ring-1 focus:ring-primary"
-                />
+        {/* 4. Invoice details */}
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Invoice Details
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div>
+              <label className="block text-xs font-medium text-neutral-500 mb-1">Invoice Number (optional)</label>
+              <Input value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} placeholder="Leave blank to auto-generate" className="h-9" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-medium text-neutral-500 mb-1">Invoice Date</label>
+                <Input type="date" value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)} className="h-9" />
               </div>
-            </CollapsibleSection>
+              <div>
+                <label className="block text-xs font-medium text-neutral-500 mb-1">Due Date</label>
+                <Input type="date" value={dueDate} onChange={(e) => setDueDate(e.target.value)} className="h-9" />
+              </div>
+            </div>
+            <Select id="invoice-payment-term" label="Payment Terms" placeholder="Select terms" options={paymentTermSelectOptions} value={paymentTermId} onChange={(e) => setPaymentTermId(e.target.value)} className="h-9" />
+          </CardContent>
+        </Card>
+
+        {/* 5. Notes (last) */}
+        <CollapsibleSection title="Internal Notes" icon={StickyNote} defaultExpanded={Boolean(internalNotes)} hasContent={Boolean(internalNotes)}>
+          <div className="space-y-2">
+            <p className="text-xs text-neutral-500">Team-only notes (not visible on invoice)</p>
+            <textarea value={internalNotes} onChange={(e) => setInternalNotes(e.target.value)} placeholder="Notes for your team..." rows={3} className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm resize-none focus:border-primary focus:ring-1 focus:ring-primary" />
           </div>
-        </div>
+        </CollapsibleSection>
+        <CollapsibleSection title="Customer Notes" icon={CreditCard} defaultExpanded={Boolean(customerNotes)} hasContent={Boolean(customerNotes)}>
+          <div className="space-y-2">
+            <p className="text-xs text-neutral-500">Notes that appear on the invoice</p>
+            <textarea value={customerNotes} onChange={(e) => setCustomerNotes(e.target.value)} placeholder="Notes for customer..." rows={3} className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm resize-none focus:border-primary focus:ring-1 focus:ring-primary" />
+          </div>
+        </CollapsibleSection>
+        <CollapsibleSection title="Terms & Conditions" icon={DollarSign} defaultExpanded={Boolean(termsAndConditions)} hasContent={Boolean(termsAndConditions)}>
+          <div className="space-y-2">
+            <p className="text-xs text-neutral-500">Payment terms shown on invoice</p>
+            <textarea value={termsAndConditions} onChange={(e) => setTermsAndConditions(e.target.value)} placeholder="Payment terms and conditions..." rows={3} className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm resize-none focus:border-primary focus:ring-1 focus:ring-primary" />
+          </div>
+        </CollapsibleSection>
       </div>
+    </TaskFormShell>
 
-      {/* Barcode Scanner Modal */}
       {isScannerOpen && (
-        <BarcodeScanner
-          onScan={handleBarcodeScan}
-          onClose={() => setIsScannerOpen(false)}
-        />
+        <BarcodeScanner onScan={handleBarcodeScan} onClose={() => setIsScannerOpen(false)} />
       )}
-    </div>
+    </>
   )
 }

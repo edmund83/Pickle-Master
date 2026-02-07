@@ -26,8 +26,11 @@ export function BarcodeScanner({
   continuous = false,
   headerActions,
 }: BarcodeScannerProps) {
-  const scannerId = useId().replace(/:/g, '')
-  const scannerElementId = `scanner-${scannerId}`
+  const rawId = useId()
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
+  const scannerId = mounted ? rawId.replace(/:/g, '') : ''
+  const scannerElementId = mounted ? `scanner-${scannerId}` : undefined
   const containerRef = useRef<HTMLDivElement>(null)
   const hasStartedRef = useRef(false)
 
@@ -95,6 +98,7 @@ export function BarcodeScanner({
     hasStartedRef.current = true
 
     const timer = setTimeout(async () => {
+      if (!scannerElementId) return
       scanningStartedRef.current = true
       await startScanningRef.current(scannerElementId)
     }, 100)
@@ -121,6 +125,7 @@ export function BarcodeScanner({
   }, [continuous, lastScan, clearLastScan])
 
   const handleRetry = useCallback(async () => {
+    if (!scannerElementId) return
     clearError()
     hasStartedRef.current = false // Allow restart
     await startScanningRef.current(scannerElementId)

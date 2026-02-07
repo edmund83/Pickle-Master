@@ -106,7 +106,7 @@ export function InvoiceDetailClient({
   // Payment form state
   const [showPaymentForm, setShowPaymentForm] = useState(false)
   const [paymentAmount, setPaymentAmount] = useState('')
-  const [paymentDate, setPaymentDate] = useState(new Date().toISOString().split('T')[0])
+  const [paymentDate, setPaymentDate] = useState('')
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'bank_transfer' | 'card' | 'check' | 'other'>('bank_transfer')
   const [paymentReference, setPaymentReference] = useState('')
 
@@ -175,6 +175,11 @@ export function InvoiceDetailClient({
       setIsSearching(false)
     }
   }, [invoice.items])
+
+  // Set default payment date after mount to avoid hydration mismatch
+  useEffect(() => {
+    setPaymentDate((prev) => (prev === '' ? new Date().toISOString().split('T')[0] : prev))
+  }, [])
 
   // Debounced search
   useEffect(() => {

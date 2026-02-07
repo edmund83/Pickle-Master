@@ -1,10 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
 import {
-  ArrowLeft,
   Package,
   Loader2,
   RotateCcw,
@@ -15,12 +13,17 @@ import {
   Search,
   Plus,
   Minus,
-  Trash2
+  Trash2,
+  AlertTriangle,
+  CheckCircle,
+  FileText
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
+import { Select } from '@/components/ui/select'
 import { ItemThumbnail } from '@/components/ui/item-thumbnail'
+import { TaskFormShell } from '@/components/task-form/TaskFormShell'
 import {
   createStandaloneReceive,
   addStandaloneReceiveItem,
@@ -83,7 +86,10 @@ export function NewReceiveClient({ locations }: NewReceiveClientProps) {
   // Form state - matching detail page fields
   const [sourceType, setSourceType] = useState<ReceiveSourceType>('customer_return')
   const [notes, setNotes] = useState('')
-  const [receivedDate, setReceivedDate] = useState(new Date().toISOString().split('T')[0])
+  const [receivedDate, setReceivedDate] = useState('')
+  useEffect(() => {
+    setReceivedDate((prev) => (prev === '' ? new Date().toISOString().split('T')[0] : prev))
+  }, [])
   const [deliveryNoteNumber, setDeliveryNoteNumber] = useState('')
   const [carrier, setCarrier] = useState('')
   const [trackingNumber, setTrackingNumber] = useState('')
@@ -243,51 +249,77 @@ export function NewReceiveClient({ locations }: NewReceiveClientProps) {
 
   const SourceIcon = sourceType === 'customer_return' ? RotateCcw : Settings2
   const totalQuantity = pendingItems.reduce((sum, item) => sum + item.quantity_received, 0)
+  const isFormValid =
+    (sourceType === 'customer_return' && pendingItems.length > 0 && !pendingItems.some(i => !i.return_reason)) ||
+    (sourceType === 'stock_adjustment' && pendingItems.length > 0)
+  const locationOptions = [
+    { value: '', label: 'Select location...' },
+    ...locations.map(loc => ({ value: loc.id, label: loc.name })),
+  ]
 
   return (
-    <div className="flex-1 overflow-y-auto">
-      {/* Header */}
-      <div className="border-b border-neutral-200 bg-white px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/tasks/receives">
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-xl font-semibold text-neutral-900">New Receive</h1>
-              <p className="text-sm text-neutral-500">Create a standalone receive for returns or adjustments</p>
-            </div>
+    <TaskFormShell
+      backHref="/tasks/receives"
+      title="New Receive"
+      subtitle={sourceType === 'customer_return' ? 'Returns or adjustments' : 'Stock adjustment'}
+      headerAction={
+        <Button onClick={handleSubmit} disabled={isSubmitting}>
+          {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          Create Receive
+        </Button>
+      }
+      errorBanner={
+        error ? (
+          <div className="flex items-center gap-2 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+            <AlertTriangle className="h-4 w-4 shrink-0" />
+            <span className="min-w-0 flex-1">{error}</span>
           </div>
-          <div className="flex items-center gap-2">
-            <Link href="/tasks/receives">
-              <Button type="button" variant="outline">
-                Cancel
-              </Button>
-            </Link>
-            <Button onClick={handleSubmit} disabled={isSubmitting}>
-              {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-              Create Receive
-            </Button>
+        ) : null
+      }
+      footer={
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+          <div className="flex items-center gap-3">
+            {isFormValid ? (
+              <div className="flex items-center gap-1.5 text-green-600">
+                <CheckCircle className="h-4 w-4" />
+                <span className="text-sm font-medium">Ready to create</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5 text-amber-600">
+                <AlertTriangle className="h-4 w-4" />
+                <span className="text-sm">
+                  {sourceType === 'customer_return' ? 'Add items and set return reason' : 'Add at least one item'}
+                </span>
+              </div>
+            )}
           </div>
+          <Button onClick={handleSubmit} disabled={isSubmitting}>
+            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Create Receive
+          </Button>
         </div>
-      </div>
+      }
+    >
+      <div className="mx-auto max-w-2xl space-y-6">
+        {/* 1. Status */}
+        {!isFormValid && (
+          <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
+            <AlertTriangle className="h-4 w-4 shrink-0" />
+            <span>
+              {sourceType === 'customer_return'
+                ? 'Add at least one item and set return reason for each'
+                : 'Add at least one item to this adjustment'}
+            </span>
+          </div>
+        )}
+        {isFormValid && (
+          <div className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 p-3 text-sm text-green-700">
+            <CheckCircle className="h-4 w-4 shrink-0" />
+            <span>Ready to create receive</span>
+          </div>
+        )}
 
-      {/* Error message at top */}
-      {error && (
-        <div className="mx-6 mt-4 rounded-lg bg-red-50 p-4 text-sm text-red-700">
-          {error}
-        </div>
-      )}
-
-      {/* Content */}
-      <div className="p-6">
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Receive Type */}
+        {/* 2. Receive Type */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -533,10 +565,44 @@ export function NewReceiveClient({ locations }: NewReceiveClientProps) {
               </CardContent>
             </Card>
 
-            {/* Notes Card */}
+        {/* 3. Receive Details */}
             <Card>
-              <CardHeader>
-                <CardTitle>Notes</CardTitle>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <Calendar className="h-4 w-4" />
+                  Receive Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <label className="block text-xs font-medium text-neutral-500 mb-1">Received Date (optional)</label>
+                  <Input type="date" value={receivedDate} onChange={(e) => setReceivedDate(e.target.value)} className="h-9" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-neutral-500 mb-1">Delivery Note #</label>
+                  <Input value={deliveryNoteNumber} onChange={(e) => setDeliveryNoteNumber(e.target.value)} placeholder="Optional" className="h-9" />
+                </div>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-500 mb-1">Carrier</label>
+                    <Input value={carrier} onChange={(e) => setCarrier(e.target.value)} placeholder="Optional" className="h-9" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-500 mb-1">Tracking #</label>
+                    <Input value={trackingNumber} onChange={(e) => setTrackingNumber(e.target.value)} placeholder="Optional" className="h-9" />
+                  </div>
+                </div>
+                <Select id="receive-location" label="Default location (optional)" placeholder="Select location..." options={locationOptions} value={defaultLocationId} onChange={(e) => setDefaultLocationId(e.target.value)} className="h-9" />
+              </CardContent>
+            </Card>
+
+        {/* 4. Notes (last) */}
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base flex items-center gap-2">
+                  <FileText className="h-4 w-4" />
+                  Notes
+                </CardTitle>
               </CardHeader>
               <CardContent>
                 <textarea
@@ -544,160 +610,11 @@ export function NewReceiveClient({ locations }: NewReceiveClientProps) {
                   onChange={(e) => setNotes(e.target.value)}
                   placeholder="Add receiving notes..."
                   rows={3}
-                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm resize-none focus:border-neutral-400 focus:outline-none"
+                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm resize-none focus:border-primary focus:ring-1 focus:ring-primary focus:outline-none"
                 />
               </CardContent>
             </Card>
-          </div>
-
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Receive Details */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Calendar className="h-4 w-4" />
-                  Receive Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <dl className="space-y-3 text-sm">
-                  {/* Received Date (optional, default today) */}
-                  <div className="flex justify-between">
-                    <dt className="text-neutral-500">Received Date <span className="text-neutral-400 font-normal">(optional)</span></dt>
-                    <dd className="font-medium text-neutral-900">
-                      <input
-                        type="date"
-                        value={receivedDate}
-                        onChange={(e) => setReceivedDate(e.target.value)}
-                        className="rounded border border-neutral-200 px-2 py-0.5 text-sm focus:border-neutral-400 focus:outline-none"
-                      />
-                    </dd>
-                  </div>
-
-                  {/* Delivery Note */}
-                  <div className="flex justify-between">
-                    <dt className="text-neutral-500">Delivery Note #</dt>
-                    <dd className="font-medium text-neutral-900">
-                      <input
-                        type="text"
-                        value={deliveryNoteNumber}
-                        onChange={(e) => setDeliveryNoteNumber(e.target.value)}
-                        placeholder="—"
-                        className="w-32 text-right rounded border border-neutral-200 px-2 py-0.5 text-sm focus:border-neutral-400 focus:outline-none"
-                      />
-                    </dd>
-                  </div>
-
-                  {/* Carrier */}
-                  <div className="flex justify-between">
-                    <dt className="text-neutral-500 flex items-center gap-1">
-                      <Truck className="h-3 w-3" />
-                      Carrier
-                    </dt>
-                    <dd className="font-medium text-neutral-900">
-                      <input
-                        type="text"
-                        value={carrier}
-                        onChange={(e) => setCarrier(e.target.value)}
-                        placeholder="—"
-                        className="w-32 text-right rounded border border-neutral-200 px-2 py-0.5 text-sm focus:border-neutral-400 focus:outline-none"
-                      />
-                    </dd>
-                  </div>
-
-                  {/* Tracking Number */}
-                  <div className="flex justify-between">
-                    <dt className="text-neutral-500">Tracking #</dt>
-                    <dd className="font-medium text-neutral-900">
-                      <input
-                        type="text"
-                        value={trackingNumber}
-                        onChange={(e) => setTrackingNumber(e.target.value)}
-                        placeholder="—"
-                        className="w-32 text-right rounded border border-neutral-200 px-2 py-0.5 text-sm focus:border-neutral-400 focus:outline-none"
-                      />
-                    </dd>
-                  </div>
-
-                  {/* Default Location (optional) */}
-                  <div className="flex justify-between items-start gap-2">
-                    <dt className="text-neutral-500 flex flex-col gap-0.5">
-                      <span className="flex items-center gap-1">
-                        <MapPin className="h-3 w-3" />
-                        Location <span className="text-neutral-400 font-normal">(optional)</span>
-                      </span>
-                      <span className="text-xs text-neutral-400">Can set per item after creating</span>
-                    </dt>
-                    <dd className="font-medium text-neutral-900 shrink-0">
-                      <select
-                        value={defaultLocationId}
-                        onChange={(e) => setDefaultLocationId(e.target.value)}
-                        className="w-32 text-right rounded border border-neutral-200 px-2 py-0.5 text-sm focus:border-neutral-400 focus:outline-none"
-                      >
-                        <option value="">Select...</option>
-                        {locations.map(loc => (
-                          <option key={loc.id} value={loc.id}>{loc.name}</option>
-                        ))}
-                      </select>
-                    </dd>
-                  </div>
-                </dl>
-              </CardContent>
-            </Card>
-
-            {/* Receive Type Info */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <SourceIcon className="h-4 w-4" />
-                  Receive Type
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-3">
-                  <div className={`rounded-lg p-2 ${
-                    sourceType === 'customer_return'
-                      ? 'bg-purple-100 text-purple-600'
-                      : 'bg-blue-100 text-blue-600'
-                  }`}>
-                    <SourceIcon className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-neutral-900">
-                      {sourceType === 'customer_return' ? 'Customer Return' : 'Stock Adjustment'}
-                    </p>
-                    <p className="text-sm text-neutral-500">
-                      {sourceType === 'customer_return'
-                        ? 'Items returned by customers'
-                        : 'Manual stock corrections'}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Info Card */}
-            <Card>
-              <CardContent className="py-4">
-                <div className="flex items-start gap-3">
-                  <div className="rounded-lg bg-blue-100 p-2">
-                    <Package className="h-5 w-5 text-blue-600" />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-neutral-900">What happens next?</h3>
-                    <p className="mt-1 text-sm text-neutral-600">
-                      {sourceType === 'customer_return'
-                        ? 'After creating, you can add more items or complete the receive to update stock levels.'
-                        : 'After creating, you can add items from your inventory. Complete the receive to update stock levels.'}
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
       </div>
-    </div>
+    </TaskFormShell>
   )
 }

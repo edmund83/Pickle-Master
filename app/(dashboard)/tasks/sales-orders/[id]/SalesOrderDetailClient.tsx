@@ -48,6 +48,7 @@ import {
   searchInventoryItemsForSO,
   setSalesOrderItemTax,
 } from '@/app/actions/sales-orders'
+import { createInvoiceFromSO } from '@/app/actions/invoices'
 import { createCustomer, type CreateCustomerInput } from '@/app/actions/customers'
 import type { SalesOrderWithDetails, TeamMember, Customer, Location } from './page'
 import { BarcodeScanner } from '@/components/scanner/BarcodeScanner'
@@ -55,6 +56,7 @@ import type { ScanResult } from '@/lib/scanner/useBarcodeScanner'
 import { ChatterPanel } from '@/components/chatter'
 import { CustomerFormDialog } from '@/components/partners/customers/CustomerFormDialog'
 import { ItemThumbnail } from '@/components/ui/item-thumbnail'
+import { Select } from '@/components/ui/select'
 import { useFeedback } from '@/components/feedback/FeedbackProvider'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { TaxRateDropdown } from '@/components/tax/TaxRateSelector'
@@ -145,6 +147,8 @@ export function SalesOrderDetailClient({
 
   // Same as Ship To state
   const [sameAsShipTo, setSameAsShipTo] = useState(false)
+  // When false, use customer's shipping address (summary); when true, show full ship-to form
+  const [useDifferentShipTo, setUseDifferentShipTo] = useState(true)
 
   // Menu state
   const [showMoreMenu, setShowMoreMenu] = useState(false)
@@ -173,6 +177,7 @@ export function SalesOrderDetailClient({
   const [isDirty, setIsDirty] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const saveTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const performSaveRef = useRef<() => void>(() => {})
 
   // Confirmation dialog state
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
@@ -234,6 +239,31 @@ export function SalesOrderDetailClient({
   const performSave = useCallback(async () => {
     if (!isDirty) return
 
+    const selectedCustomer = customers.find(c => c.id === customerId)
+    const customerHasShipping = selectedCustomer && (selectedCustomer.shipping_address_line1 || selectedCustomer.shipping_city || selectedCustomer.shipping_country)
+    const useCustomerShipTo = !useDifferentShipTo && customerHasShipping
+    const shipTo = useCustomerShipTo && selectedCustomer
+      ? {
+          ship_to_name: selectedCustomer.name || null,
+          ship_to_address1: selectedCustomer.shipping_address_line1 || null,
+          ship_to_address2: selectedCustomer.shipping_address_line2 || null,
+          ship_to_city: selectedCustomer.shipping_city || null,
+          ship_to_state: selectedCustomer.shipping_state || null,
+          ship_to_postal_code: selectedCustomer.shipping_postal_code || null,
+          ship_to_country: selectedCustomer.shipping_country || null,
+          ship_to_phone: selectedCustomer.phone || null,
+        }
+      : {
+          ship_to_name: shipToName || null,
+          ship_to_address1: shipToAddress1 || null,
+          ship_to_address2: shipToAddress2 || null,
+          ship_to_city: shipToCity || null,
+          ship_to_state: shipToState || null,
+          ship_to_postal_code: shipToPostalCode || null,
+          ship_to_country: shipToCountry || null,
+          ship_to_phone: shipToPhone || null,
+        }
+
     setIsSaving(true)
     try {
       const updates: Record<string, string | null> = {
@@ -246,14 +276,7 @@ export function SalesOrderDetailClient({
         customer_notes: customerNotes || null,
         source_location_id: sourceLocationId || null,
         customer_id: customerId || null,
-        ship_to_name: shipToName || null,
-        ship_to_address1: shipToAddress1 || null,
-        ship_to_address2: shipToAddress2 || null,
-        ship_to_city: shipToCity || null,
-        ship_to_state: shipToState || null,
-        ship_to_postal_code: shipToPostalCode || null,
-        ship_to_country: shipToCountry || null,
-        ship_to_phone: shipToPhone || null,
+        ...shipTo,
         bill_to_name: billToName || null,
         bill_to_address1: billToAddress1 || null,
         bill_to_address2: billToAddress2 || null,
@@ -274,12 +297,17 @@ export function SalesOrderDetailClient({
       setIsSaving(false)
     }
   }, [
-    isDirty, salesOrder.id, router, feedback,
+    isDirty, salesOrder.id, router, feedback, customers, customerId, useDifferentShipTo,
     orderNumber, orderDate, requestedDate, promisedDate, priority,
-    internalNotes, customerNotes, sourceLocationId, customerId,
+    internalNotes, customerNotes, sourceLocationId,
     shipToName, shipToAddress1, shipToAddress2, shipToCity, shipToState, shipToPostalCode, shipToCountry, shipToPhone,
     billToName, billToAddress1, billToAddress2, billToCity, billToState, billToPostalCode, billToCountry
   ])
+
+  // Keep ref in sync so the debounce timer always calls the latest version
+  useEffect(() => {
+    performSaveRef.current = performSave
+  }, [performSave])
 
   // Trigger debounced save when any field changes
   const scheduleSave = useCallback(() => {
@@ -288,9 +316,9 @@ export function SalesOrderDetailClient({
       clearTimeout(saveTimerRef.current)
     }
     saveTimerRef.current = setTimeout(() => {
-      performSave()
+      performSaveRef.current()
     }, 1500)
-  }, [performSave])
+  }, [])
 
   // Cleanup timer on unmount
   useEffect(() => {
@@ -300,6 +328,18 @@ export function SalesOrderDetailClient({
       }
     }
   }, [])
+
+  // When loading a draft with a customer whose shipping matches saved ship-to, show summary
+  useEffect(() => {
+    if (!salesOrder.customer_id || !customers.length) return
+    const c = customers.find(x => x.id === salesOrder.customer_id)
+    if (!c || !(c.shipping_address_line1 || c.shipping_city || c.shipping_country)) return
+    const match =
+      (salesOrder.ship_to_address1 || null) === (c.shipping_address_line1 || null) &&
+      (salesOrder.ship_to_city || null) === (c.shipping_city || null) &&
+      (salesOrder.ship_to_country || null) === (c.shipping_country || null)
+    if (match) setUseDifferentShipTo(false)
+  }, [salesOrder.id, salesOrder.customer_id, salesOrder.ship_to_address1, salesOrder.ship_to_city, salesOrder.ship_to_country, customers])
 
   // Save immediately on certain actions
   async function saveFieldImmediate(field: string, value: string | null) {
@@ -350,6 +390,10 @@ export function SalesOrderDetailClient({
         setBillToState(customer.billing_state || '')
         setBillToPostalCode(customer.billing_postal_code || '')
         setBillToCountry(customer.billing_country || '')
+
+        setUseDifferentShipTo(false)
+      } else {
+        setUseDifferentShipTo(true)
       }
 
       await saveFieldImmediate('customer', customer.id)
@@ -575,6 +619,24 @@ export function SalesOrderDetailClient({
     await handleStatusChange('cancelled')
   }
 
+  const canCreateInvoice = ['shipped', 'delivered', 'completed', 'partial_shipped'].includes(status)
+
+  async function handleCreateInvoice() {
+    if (!canCreateInvoice) return
+    setActionLoading('create-invoice')
+    setError(null)
+    const result = await createInvoiceFromSO(salesOrder.id)
+    if (result.success && result.invoice_id) {
+      feedback.success(`Invoice ${result.display_id || result.invoice_id} created`)
+      router.push(`/tasks/invoices/${result.invoice_id}`)
+      return
+    }
+    const errorMsg = result.error || 'Failed to create invoice'
+    setError(errorMsg)
+    feedback.error(errorMsg)
+    setActionLoading(null)
+  }
+
   async function handleDownloadPDF() {
     if (!canDownloadPdf) return
     setActionLoading('download-pdf')
@@ -608,6 +670,43 @@ export function SalesOrderDetailClient({
   const isValid = customerId && salesOrder.items.length > 0
   const missingFields: string[] = []
   if (!customerId) missingFields.push('Customer')
+
+  const selectedCustomer = customers.find(c => c.id === customerId)
+  const customerHasShippingAddress = selectedCustomer && Boolean(selectedCustomer.shipping_address_line1 || selectedCustomer.shipping_city || selectedCustomer.shipping_country)
+  const showShipToSummaryOnly = customerHasShippingAddress && !useDifferentShipTo
+
+  function useCustomerShipToAddress() {
+    if (!selectedCustomer) return
+    const useShipping = !!selectedCustomer.shipping_address_line1
+    setShipToName(selectedCustomer.name || '')
+    setShipToAddress1(useShipping ? selectedCustomer.shipping_address_line1 || '' : selectedCustomer.billing_address_line1 || '')
+    setShipToAddress2(useShipping ? selectedCustomer.shipping_address_line2 || '' : selectedCustomer.billing_address_line2 || '')
+    setShipToCity(useShipping ? selectedCustomer.shipping_city || '' : selectedCustomer.billing_city || '')
+    setShipToState(useShipping ? selectedCustomer.shipping_state || '' : selectedCustomer.billing_state || '')
+    setShipToPostalCode(useShipping ? selectedCustomer.shipping_postal_code || '' : selectedCustomer.billing_postal_code || '')
+    setShipToCountry(useShipping ? selectedCustomer.shipping_country || '' : selectedCustomer.billing_country || '')
+    setShipToPhone(selectedCustomer.phone || '')
+    setUseDifferentShipTo(false)
+    scheduleSave()
+  }
+
+  const countryOptions = [
+    { value: 'Malaysia', label: 'Malaysia' },
+    { value: 'Singapore', label: 'Singapore' },
+    { value: 'Indonesia', label: 'Indonesia' },
+    { value: 'Thailand', label: 'Thailand' },
+    { value: 'Vietnam', label: 'Vietnam' },
+    { value: 'Philippines', label: 'Philippines' },
+    { value: 'United States', label: 'United States' },
+    { value: 'United Kingdom', label: 'United Kingdom' },
+    { value: 'Australia', label: 'Australia' },
+  ]
+  const prioritySelectOptions = [
+    { value: 'low', label: 'Low' },
+    { value: 'normal', label: 'Normal' },
+    { value: 'high', label: 'High' },
+    { value: 'urgent', label: 'Urgent' },
+  ]
 
   // Draft Mode UI - Two Column Layout
   if (isDraft || (isSubmitted && canEdit)) {
@@ -715,12 +814,27 @@ export function SalesOrderDetailClient({
           </div>
         )}
 
-        {/* Two Column Layout */}
+        {/* Single column layout (consistent with Delivery Order, Invoice, Receive) */}
         <div className="p-6">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            {/* Left Column - Customer + Items */}
-            <div className="lg:col-span-2 space-y-4">
-              {/* Customer Card */}
+          <div className="mx-auto max-w-2xl space-y-6">
+            {/* 1. Status */}
+            {!isValid && missingFields.length > 0 && (
+              <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 p-3 text-sm text-amber-700">
+                <AlertTriangle className="h-4 w-4 shrink-0" />
+                <span>
+                  {!customerId ? 'Select a customer' : 'Add at least one item'}
+                  {salesOrder.items.length === 0 && ' (at least 1 item required)'}
+                </span>
+              </div>
+            )}
+            {isValid && (
+              <div className="flex items-center gap-2 rounded-xl border border-green-200 bg-green-50 p-3 text-sm text-green-700">
+                <CheckCircle className="h-4 w-4 shrink-0" />
+                <span>Ready to submit</span>
+              </div>
+            )}
+
+            {/* 2. Customer */}
               <Card className={`border-2 shadow-md ${!customerId ? 'border-amber-200 bg-gradient-to-br from-white to-amber-50/30' : 'border-primary/10 bg-gradient-to-br from-white to-primary/5'}`}>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base flex items-center gap-2">
@@ -761,6 +875,7 @@ export function SalesOrderDetailClient({
                           setCustomerEmail('')
                           setCustomerPhone('')
                           setCustomerSearchQuery('')
+                          setUseDifferentShipTo(true)
                           saveFieldImmediate('customer', '')
                         }}
                         className="p-1.5 text-neutral-400 hover:text-neutral-600 hover:bg-neutral-200 rounded-lg transition-colors"
@@ -1039,148 +1154,114 @@ export function SalesOrderDetailClient({
                   )}
                 </CardContent>
               </Card>
-            </div>
 
-            {/* Right Column - Options */}
-            <div className="space-y-4">
-              {/* Validation Alert */}
-              {!isValid && missingFields.length > 0 && (
-                <div className="flex items-start gap-2 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3">
-                  <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium text-amber-800">Required to submit:</p>
-                    <p className="text-sm text-amber-700">{missingFields.join(', ')}</p>
-                    {salesOrder.items.length === 0 && (
-                      <p className="text-sm text-amber-700">At least 1 item</p>
+            {/* 4. Delivery address — default is customer address; show form only when "Use a different delivery address" */}
+              <section className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <MapPin className="h-4 w-4 shrink-0 text-neutral-500" aria-hidden />
+                  <h3 className="text-sm font-medium text-neutral-900">Delivery address</h3>
+                </div>
+                {showShipToSummaryOnly ? (
+                  <>
+                    <div className="rounded-lg border border-neutral-200 bg-neutral-50/80 px-4 py-3 text-sm text-neutral-700">
+                      <p className="font-medium text-neutral-900">{selectedCustomer?.name}</p>
+                      <p className="mt-0.5">
+                        {[selectedCustomer?.shipping_address_line1, selectedCustomer?.shipping_address_line2].filter(Boolean).join(', ')}
+                      </p>
+                      <p className="mt-0.5">
+                        {[selectedCustomer?.shipping_city, selectedCustomer?.shipping_state, selectedCustomer?.shipping_postal_code].filter(Boolean).join(', ')}
+                        {selectedCustomer?.shipping_country ? ` ${selectedCustomer.shipping_country}` : ''}
+                      </p>
+                      {selectedCustomer?.phone && (
+                        <p className="mt-1 text-neutral-600">Phone: {selectedCustomer.phone}</p>
+                      )}
+                    </div>
+                    <Button type="button" variant="outline" size="sm" onClick={() => setUseDifferentShipTo(true)}>
+                      Use a different delivery address
+                    </Button>
+                  </>
+                ) : (
+                  <div className="grid grid-cols-1 gap-3">
+                    {customerHasShippingAddress && (
+                      <Button type="button" variant="outline" size="sm" onClick={useCustomerShipToAddress} className="w-full">
+                        Use customer address
+                      </Button>
                     )}
-                  </div>
-                </div>
-              )}
-
-              {/* Priority & Dates */}
-              <Card>
-                <CardContent className="py-4 space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-                      <Flag className="h-4 w-4 inline mr-1.5" />
-                      Priority
-                    </label>
-                    <select
-                      value={priority}
-                      onChange={(e) => { setPriority(e.target.value); scheduleSave() }}
-                      className="w-full rounded-lg border border-neutral-200 px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
-                    >
-                      <option value="low">Low</option>
-                      <option value="normal">Normal</option>
-                      <option value="high">High</option>
-                      <option value="urgent">Urgent</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-                      <Calendar className="h-4 w-4 inline mr-1.5" />
-                      Requested Date
-                    </label>
                     <input
-                      type="date"
-                      value={requestedDate}
-                      onChange={(e) => { setRequestedDate(e.target.value); scheduleSave() }}
-                      className="w-full rounded-lg border border-neutral-200 px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                      type="text"
+                      value={shipToName}
+                      onChange={(e) => { setShipToName(e.target.value); scheduleSave() }}
+                      placeholder="Name"
+                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                    />
+                    <input
+                      type="text"
+                      value={shipToAddress1}
+                      onChange={(e) => { setShipToAddress1(e.target.value); scheduleSave() }}
+                      placeholder="Address"
+                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                    />
+                    <input
+                      type="text"
+                      value={shipToAddress2}
+                      onChange={(e) => { setShipToAddress2(e.target.value); scheduleSave() }}
+                      placeholder="Apt, suite (optional)"
+                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                    />
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="text"
+                        value={shipToCity}
+                        onChange={(e) => { setShipToCity(e.target.value); scheduleSave() }}
+                        placeholder="City"
+                        className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                      />
+                      <input
+                        type="text"
+                        value={shipToState}
+                        onChange={(e) => { setShipToState(e.target.value); scheduleSave() }}
+                        placeholder="State"
+                        className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="text"
+                        value={shipToPostalCode}
+                        onChange={(e) => { setShipToPostalCode(e.target.value); scheduleSave() }}
+                        placeholder="Postal Code"
+                        className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                      />
+                      <Select
+                        id="so-ship-country"
+                        label="Country"
+                        placeholder="Select country"
+                        options={countryOptions}
+                        value={shipToCountry}
+                        onChange={(e) => { setShipToCountry(e.target.value); scheduleSave() }}
+                        className="h-9"
+                      />
+                    </div>
+                    <input
+                      type="text"
+                      value={shipToPhone}
+                      onChange={(e) => { setShipToPhone(e.target.value); scheduleSave() }}
+                      placeholder="Phone"
+                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
                     />
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-                      Promised Date
-                    </label>
-                    <input
-                      type="date"
-                      value={promisedDate}
-                      onChange={(e) => { setPromisedDate(e.target.value); scheduleSave() }}
-                      className="w-full rounded-lg border border-neutral-200 px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
+                )}
+              </section>
 
-              {/* Ship To Section */}
+            {/* 5. Billing address */}
               <CollapsibleSection
-                title="Ship To"
-                icon={MapPin}
-                defaultExpanded={Boolean(shipToName || shipToAddress1)}
-                hasContent={Boolean(shipToName || shipToAddress1)}
-              >
-                <div className="grid grid-cols-1 gap-3">
-                  <input
-                    type="text"
-                    value={shipToName}
-                    onChange={(e) => { setShipToName(e.target.value); scheduleSave() }}
-                    placeholder="Name"
-                    className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                  />
-                  <input
-                    type="text"
-                    value={shipToAddress1}
-                    onChange={(e) => { setShipToAddress1(e.target.value); scheduleSave() }}
-                    placeholder="Address"
-                    className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                  />
-                  <input
-                    type="text"
-                    value={shipToAddress2}
-                    onChange={(e) => { setShipToAddress2(e.target.value); scheduleSave() }}
-                    placeholder="Apt, suite (optional)"
-                    className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                  />
-                  <div className="grid grid-cols-2 gap-2">
-                    <input
-                      type="text"
-                      value={shipToCity}
-                      onChange={(e) => { setShipToCity(e.target.value); scheduleSave() }}
-                      placeholder="City"
-                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                    />
-                    <input
-                      type="text"
-                      value={shipToState}
-                      onChange={(e) => { setShipToState(e.target.value); scheduleSave() }}
-                      placeholder="State"
-                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <input
-                      type="text"
-                      value={shipToPostalCode}
-                      onChange={(e) => { setShipToPostalCode(e.target.value); scheduleSave() }}
-                      placeholder="Postal Code"
-                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                    />
-                    <input
-                      type="text"
-                      value={shipToCountry}
-                      onChange={(e) => { setShipToCountry(e.target.value); scheduleSave() }}
-                      placeholder="Country"
-                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                    />
-                  </div>
-                  <input
-                    type="text"
-                    value={shipToPhone}
-                    onChange={(e) => { setShipToPhone(e.target.value); scheduleSave() }}
-                    placeholder="Phone"
-                    className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                  />
-                </div>
-              </CollapsibleSection>
-
-              {/* Bill To Section */}
-              <CollapsibleSection
-                title="Bill To"
+                title="Billing address"
                 icon={FileText}
                 defaultExpanded={false}
                 hasContent={Boolean(billToName || billToAddress1)}
               >
                 <div className="space-y-3">
+                  <p className="text-xs text-neutral-500 mb-1">Same as delivery unless you need an invoice sent elsewhere.</p>
                   <label className="flex items-center gap-2 text-sm text-neutral-600 cursor-pointer">
                     <input
                       type="checkbox"
@@ -1188,7 +1269,7 @@ export function SalesOrderDetailClient({
                       onChange={(e) => handleSameAsShipTo(e.target.checked)}
                       className="rounded border-neutral-300 text-primary focus:ring-primary"
                     />
-                    Same as Ship To
+                    Same as delivery address
                   </label>
 
                   {!sameAsShipTo && (
@@ -1228,36 +1309,55 @@ export function SalesOrderDetailClient({
                 </div>
               </CollapsibleSection>
 
-              {/* Notes Section */}
-              <CollapsibleSection
-                title="Notes"
-                icon={FileText}
-                defaultExpanded={Boolean(internalNotes || customerNotes)}
-                hasContent={Boolean(internalNotes || customerNotes)}
-              >
-                <div className="space-y-3">
+            {/* 6. When do they need it? — one Delivery by date (promised_date); more options for requested date & priority */}
+              <Card>
+                <CardContent className="py-4 space-y-4">
                   <div>
-                    <label className="block text-xs font-medium text-neutral-500 mb-1">Internal Notes</label>
-                    <textarea
-                      value={internalNotes}
-                      onChange={(e) => { setInternalNotes(e.target.value); scheduleSave() }}
-                      placeholder="Notes for internal use..."
-                      rows={2}
-                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm resize-none"
+                    <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                      <Calendar className="h-4 w-4 inline mr-1.5" />
+                      Delivery by
+                    </label>
+                    <input
+                      type="date"
+                      value={promisedDate}
+                      onChange={(e) => {
+                        const v = e.target.value
+                        setPromisedDate(v)
+                        setRequestedDate(v)
+                        scheduleSave()
+                      }}
+                      className="w-full rounded-lg border border-neutral-200 px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
                     />
+                    <p className="text-xs text-neutral-500 mt-1">When the order should be delivered (used for pick list)</p>
                   </div>
-                  <div>
-                    <label className="block text-xs font-medium text-neutral-500 mb-1">Customer Notes</label>
-                    <textarea
-                      value={customerNotes}
-                      onChange={(e) => { setCustomerNotes(e.target.value); scheduleSave() }}
-                      placeholder="Notes visible to customer..."
-                      rows={2}
-                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm resize-none"
-                    />
-                  </div>
-                </div>
-              </CollapsibleSection>
+                  <CollapsibleSection
+                    title="More options"
+                    icon={Clock}
+                    defaultExpanded={false}
+                    hasContent={Boolean(requestedDate !== promisedDate || priority !== 'normal')}
+                  >
+                    <div className="space-y-4 pt-1">
+                      <div>
+                        <label className="block text-sm font-medium text-neutral-700 mb-1.5">Requested date</label>
+                        <input
+                          type="date"
+                          value={requestedDate}
+                          onChange={(e) => { setRequestedDate(e.target.value); scheduleSave() }}
+                          className="w-full rounded-lg border border-neutral-200 px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                        />
+                      </div>
+                      <Select
+                        id="so-priority"
+                        label="Priority"
+                        options={prioritySelectOptions}
+                        value={priority}
+                        onChange={(e) => { setPriority(e.target.value); scheduleSave() }}
+                        className="h-9"
+                      />
+                    </div>
+                  </CollapsibleSection>
+                </CardContent>
+              </Card>
 
               {/* Save Status */}
               {canEdit && (isDirty || isSaving) && (
@@ -1286,12 +1386,44 @@ export function SalesOrderDetailClient({
                 </div>
               )}
 
+              {/* Notes (last) */}
+              <CollapsibleSection
+                title="Notes"
+                icon={FileText}
+                defaultExpanded={Boolean(internalNotes || customerNotes)}
+                hasContent={Boolean(internalNotes || customerNotes)}
+              >
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-500 mb-1">Internal Notes</label>
+                    <textarea
+                      value={internalNotes}
+                      onChange={(e) => { setInternalNotes(e.target.value); scheduleSave() }}
+                      onBlur={() => isDirty && performSave()}
+                      placeholder="Notes for internal use..."
+                      rows={2}
+                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm resize-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-500 mb-1">Customer Notes</label>
+                    <textarea
+                      value={customerNotes}
+                      onChange={(e) => { setCustomerNotes(e.target.value); scheduleSave() }}
+                      onBlur={() => isDirty && performSave()}
+                      placeholder="Notes visible to customer..."
+                      rows={2}
+                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm resize-none"
+                    />
+                  </div>
+                </div>
+              </CollapsibleSection>
+
               {/* Metadata */}
               <div className="text-xs text-neutral-500 space-y-1 px-1">
                 <p>Created by: {createdByName || 'Unknown'}</p>
                 <p>Last updated: <FormattedShortDate date={salesOrder.updated_at || salesOrder.created_at || new Date().toISOString()} /></p>
               </div>
-            </div>
           </div>
         </div>
 
@@ -1441,6 +1573,20 @@ export function SalesOrderDetailClient({
                   View Pick List
                 </Button>
               </Link>
+            )}
+
+            {canCreateInvoice && (
+              <Button
+                onClick={handleCreateInvoice}
+                disabled={actionLoading !== null}
+              >
+                {actionLoading === 'create-invoice' ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <FileText className="mr-2 h-4 w-4" />
+                )}
+                Create Invoice
+              </Button>
             )}
 
             {status === 'cancelled' && (
@@ -1691,13 +1837,13 @@ export function SalesOrderDetailClient({
               </CardContent>
             </Card>
 
-            {/* Ship To Address */}
+            {/* Delivery address */}
             {salesOrder.ship_to_name && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <MapPin className="h-4 w-4" />
-                    Ship To
+                    Delivery address
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -1719,6 +1865,33 @@ export function SalesOrderDetailClient({
                         {salesOrder.ship_to_phone}
                       </p>
                     )}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Billing address */}
+            {(salesOrder.bill_to_name || salesOrder.bill_to_address1) && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="h-4 w-4" />
+                    Billing address
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-sm text-neutral-700 space-y-1">
+                    {salesOrder.bill_to_name && <p className="font-medium">{salesOrder.bill_to_name}</p>}
+                    {salesOrder.bill_to_address1 && <p>{salesOrder.bill_to_address1}</p>}
+                    {salesOrder.bill_to_address2 && <p>{salesOrder.bill_to_address2}</p>}
+                    <p>
+                      {[
+                        salesOrder.bill_to_city,
+                        salesOrder.bill_to_state,
+                        salesOrder.bill_to_postal_code
+                      ].filter(Boolean).join(', ')}
+                    </p>
+                    {salesOrder.bill_to_country && <p>{salesOrder.bill_to_country}</p>}
                   </div>
                 </CardContent>
               </Card>

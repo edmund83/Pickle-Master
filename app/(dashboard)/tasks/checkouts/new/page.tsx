@@ -65,6 +65,8 @@ export default function NewCheckoutPage() {
   const [assigneeId, setAssigneeId] = useState('')
   const [assigneeName, setAssigneeName] = useState('')
   const [dueDate, setDueDate] = useState('')
+  const [minDate, setMinDate] = useState<string | undefined>(undefined)
+  useEffect(() => setMinDate(new Date().toISOString().split('T')[0]), [])
   const [notes, setNotes] = useState('')
 
   // Assignee options
@@ -687,7 +689,7 @@ export default function NewCheckoutPage() {
                   type="date"
                   value={dueDate}
                   onChange={(e) => setDueDate(e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
+                  min={minDate}
                 />
               </div>
 

@@ -30,9 +30,13 @@ export function LiveProgressIndicator({
   isLive = false,
   className,
 }: LiveProgressIndicatorProps) {
-  const [lastRefresh, setLastRefresh] = useState(new Date())
+  const [lastRefresh, setLastRefresh] = useState<Date | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const { formatTime } = useFormatting()
+
+  useEffect(() => {
+    setLastRefresh(new Date())
+  }, [])
 
   const percent = totalItems > 0 ? Math.round((countedItems / totalItems) * 100) : 0
 
@@ -57,7 +61,7 @@ export function LiveProgressIndicator({
 
   // Get active counters (last activity within 5 minutes)
   const activeCounters = teamProgress.filter((tp) => {
-    if (!tp.lastActivity) return false
+    if (!tp.lastActivity || lastRefresh == null) return false
     const fiveMinutesAgo = new Date(lastRefresh.getTime() - 5 * 60 * 1000)
     return new Date(tp.lastActivity) > fiveMinutesAgo
   })
@@ -179,7 +183,7 @@ export function LiveProgressIndicator({
 
       {/* Last Updated */}
       <p className="text-xs text-neutral-400 mt-3 text-center">
-        Last updated: {formatTime(lastRefresh)}
+        Last updated: {lastRefresh != null ? formatTime(lastRefresh) : '—'}
       </p>
     </div>
   )

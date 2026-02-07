@@ -58,10 +58,17 @@ import { useFeedback } from '@/components/feedback/FeedbackProvider'
 import { ConfirmDialog } from '@/components/ui/confirm-dialog'
 import { buildCompanyBranding, downloadPdfBlob, fetchImageDataUrl, generatePurchaseOrderPDF } from '@/lib/documents/pdf-generator'
 
+interface Location {
+  id: string
+  name: string
+  type: string
+}
+
 interface PurchaseOrderDetailClientProps {
   purchaseOrder: PurchaseOrderWithDetails
   teamMembers: TeamMember[]
   vendors: Vendor[]
+  locations: Location[]
   createdByName: string | null
   currentUserId: string | null
 }
@@ -80,6 +87,7 @@ export function PurchaseOrderDetailClient({
   purchaseOrder,
   teamMembers,
   vendors,
+  locations,
   createdByName,
   currentUserId
 }: PurchaseOrderDetailClientProps) {
@@ -126,6 +134,8 @@ export function PurchaseOrderDetailClient({
 
   // Same as Ship To state
   const [sameAsShipTo, setSameAsShipTo] = useState(false)
+  // When false, show vendor address as delivery summary; when true, show full delivery form
+  const [useDifferentShipTo, setUseDifferentShipTo] = useState(true)
 
   // Menu state
   const [showMoreMenu, setShowMoreMenu] = useState(false)
@@ -155,10 +165,18 @@ export function PurchaseOrderDetailClient({
   const [isDirty, setIsDirty] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const saveTimerRef = useRef<NodeJS.Timeout | null>(null)
+  const performSaveRef = useRef<() => void>(() => {})
 
   // Confirmation dialog state
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+  // Create Receive modal – optional receive options
+  const [showCreateReceiveModal, setShowCreateReceiveModal] = useState(false)
+  const [receiveDeliveryNote, setReceiveDeliveryNote] = useState('')
+  const [receiveCarrier, setReceiveCarrier] = useState('')
+  const [receiveTracking, setReceiveTracking] = useState('')
+  const [receiveDefaultLocationId, setReceiveDefaultLocationId] = useState('')
+  const [receiveNotes, setReceiveNotes] = useState('')
 
   const status = purchaseOrder.status || 'draft'
   const isDraft = status === 'draft'
@@ -254,6 +272,11 @@ export function PurchaseOrderDetailClient({
     billToName, billToAddress1, billToAddress2, billToCity, billToState, billToPostalCode, billToCountry
   ])
 
+  // Keep ref in sync so the debounce timer always calls the latest version
+  useEffect(() => {
+    performSaveRef.current = performSave
+  }, [performSave])
+
   // Trigger debounced save when any field changes
   const scheduleSave = useCallback(() => {
     setIsDirty(true)
@@ -261,9 +284,9 @@ export function PurchaseOrderDetailClient({
       clearTimeout(saveTimerRef.current)
     }
     saveTimerRef.current = setTimeout(() => {
-      performSave()
+      performSaveRef.current()
     }, 1500) // Save after 1.5s of no changes
-  }, [performSave])
+  }, [])
 
   // Cleanup timer on unmount
   useEffect(() => {
@@ -295,6 +318,23 @@ export function PurchaseOrderDetailClient({
     }
   }
 
+  const selectedVendor = vendorId ? vendors.find(v => v.id === vendorId) : null
+  const vendorHasAddress = selectedVendor && (selectedVendor.address_line1 || selectedVendor.city || selectedVendor.country)
+  const showShipToSummaryOnly = vendorHasAddress && !useDifferentShipTo
+
+  function useVendorAddress() {
+    if (!selectedVendor) return
+    setShipToName(selectedVendor.name || '')
+    setShipToAddress1(selectedVendor.address_line1 || '')
+    setShipToAddress2(selectedVendor.address_line2 || '')
+    setShipToCity(selectedVendor.city || '')
+    setShipToState(selectedVendor.state || '')
+    setShipToPostalCode(selectedVendor.postal_code || '')
+    setShipToCountry(selectedVendor.country || '')
+    setUseDifferentShipTo(false)
+    scheduleSave()
+  }
+
   async function handleVendorSelect(selectedVendorId: string) {
     const vendor = vendors.find(v => v.id === selectedVendorId)
     if (vendor) {
@@ -303,6 +343,18 @@ export function PurchaseOrderDetailClient({
       setVendorEmail(vendor.email || '')
       setVendorPhone(vendor.phone || '')
       setVendorPaymentTerms(vendor.payment_terms || '')
+      if (vendor.address_line1 || vendor.city || vendor.country) {
+        setShipToName(vendor.name || '')
+        setShipToAddress1(vendor.address_line1 || '')
+        setShipToAddress2(vendor.address_line2 || '')
+        setShipToCity(vendor.city || '')
+        setShipToState(vendor.state || '')
+        setShipToPostalCode(vendor.postal_code || '')
+        setShipToCountry(vendor.country || '')
+        setUseDifferentShipTo(false)
+      } else {
+        setUseDifferentShipTo(true)
+      }
       await saveFieldImmediate('vendor', vendor.id)
     }
   }
@@ -501,13 +553,32 @@ export function PurchaseOrderDetailClient({
     await handleStatusChange('cancelled')
   }
 
-  async function handleCreateReceive() {
+  async function handleCreateReceive(opts?: {
+    delivery_note_number?: string
+    carrier?: string
+    tracking_number?: string
+    default_location_id?: string
+    notes?: string
+  }) {
     setActionLoading('create-receive')
     setError(null)
 
-    const result = await createReceive({ purchase_order_id: purchaseOrder.id })
+    const result = await createReceive({
+      purchase_order_id: purchaseOrder.id,
+      delivery_note_number: opts?.delivery_note_number || null,
+      carrier: opts?.carrier || null,
+      tracking_number: opts?.tracking_number || null,
+      default_location_id: opts?.default_location_id || null,
+      notes: opts?.notes || null
+    })
 
     if (result.success && result.receive_id) {
+      setShowCreateReceiveModal(false)
+      setReceiveDeliveryNote('')
+      setReceiveCarrier('')
+      setReceiveTracking('')
+      setReceiveDefaultLocationId('')
+      setReceiveNotes('')
       feedback.success('Receive created')
       router.push(`/tasks/receives/${result.receive_id}`)
     } else {
@@ -516,6 +587,11 @@ export function PurchaseOrderDetailClient({
       feedback.error(errorMsg)
       setActionLoading(null)
     }
+  }
+
+  function openCreateReceiveModal() {
+    setReceiveNotes(purchaseOrder.notes || '')
+    setShowCreateReceiveModal(true)
   }
 
   async function handleDownloadPDF() {
@@ -634,12 +710,24 @@ export function PurchaseOrderDetailClient({
           </div>
         )}
 
-        {/* Two Column Layout */}
+        {/* Single column layout - same UX as SO/DO/Invoice */}
         <div className="p-6">
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            {/* Left Column - Vendor + Items (2/3 width on desktop) */}
-            <div className="lg:col-span-2 space-y-4">
-              {/* Vendor Card - First and prominent */}
+          <div className="mx-auto max-w-2xl space-y-6">
+            {/* Validation */}
+            {!isValid && missingFields.length > 0 && (
+              <div className="flex items-start gap-2 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3">
+                <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
+                <div>
+                  <p className="text-sm font-medium text-amber-800">Required to submit:</p>
+                  <p className="text-sm text-amber-700">{missingFields.join(', ')}</p>
+                  {purchaseOrder.items.length === 0 && (
+                    <p className="text-sm text-amber-700">At least 1 item</p>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Vendor Card */}
               <Card className={`border-2 shadow-md ${!vendorId ? 'border-amber-200 bg-gradient-to-br from-white to-amber-50/30' : 'border-primary/10 bg-gradient-to-br from-white to-primary/5'}`}>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-base flex items-center gap-2">
@@ -931,230 +1019,243 @@ export function PurchaseOrderDetailClient({
                   )}
                 </CardContent>
               </Card>
-            </div>
 
-            {/* Right Column - Addresses & Options (1/3 width on desktop) */}
-            <div className="space-y-4">
-              {/* Validation Alert */}
-              {!isValid && missingFields.length > 0 && (
-                <div className="flex items-start gap-2 rounded-lg bg-amber-50 border border-amber-200 px-4 py-3">
-                  <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <p className="text-sm font-medium text-amber-800">Required to submit:</p>
-                    <p className="text-sm text-amber-700">{missingFields.join(', ')}</p>
-                    {purchaseOrder.items.length === 0 && (
-                      <p className="text-sm text-amber-700">At least 1 item</p>
+            {/* Delivery address (Ship To) - vendor default when available */}
+            <CollapsibleSection
+              title="Delivery address"
+              icon={MapPin}
+              defaultExpanded={Boolean(!showShipToSummaryOnly && (shipToName || shipToAddress1))}
+              hasContent={Boolean(shipToName || shipToAddress1 || showShipToSummaryOnly)}
+            >
+              {showShipToSummaryOnly ? (
+                <div className="space-y-3">
+                  <div className="rounded-lg bg-neutral-50 border border-neutral-200 px-3 py-2.5 text-sm text-neutral-700">
+                    <p className="font-medium text-neutral-900">{shipToName || selectedVendor?.name}</p>
+                    {shipToAddress1 && <p>{shipToAddress1}</p>}
+                    {shipToAddress2 && <p>{shipToAddress2}</p>}
+                    {[shipToCity, shipToState, shipToPostalCode, shipToCountry].filter(Boolean).length > 0 && (
+                      <p>{[shipToCity, shipToState, shipToPostalCode, shipToCountry].filter(Boolean).join(', ')}</p>
                     )}
                   </div>
+                  <button
+                    type="button"
+                    onClick={() => setUseDifferentShipTo(true)}
+                    className="text-sm text-primary hover:underline"
+                  >
+                    Use a different delivery address
+                  </button>
                 </div>
-              )}
-
-              {/* Ship To Section */}
-              <CollapsibleSection
-                title="Ship To"
-                icon={MapPin}
-                defaultExpanded={Boolean(shipToName || shipToAddress1)}
-                hasContent={Boolean(shipToName || shipToAddress1)}
-              >
-                <div className="grid grid-cols-1 gap-3">
-                  <div>
-                    <label className="block text-xs font-medium text-neutral-500 mb-1">Name</label>
-                    <input
-                      type="text"
-                      value={shipToName}
-                      onChange={(e) => { setShipToName(e.target.value); scheduleSave() }}
-                      placeholder="Enter name"
-                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-medium text-neutral-500 mb-1">Address</label>
-                    <input
-                      type="text"
-                      value={shipToAddress1}
-                      onChange={(e) => { setShipToAddress1(e.target.value); scheduleSave() }}
-                      placeholder="Street address"
-                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                    />
-                  </div>
-                  <input
-                    type="text"
-                    value={shipToAddress2}
-                    onChange={(e) => { setShipToAddress2(e.target.value); scheduleSave() }}
-                    placeholder="Apt, suite, unit (optional)"
-                    className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                  />
-                  <div className="grid grid-cols-2 gap-2">
-                    <input
-                      type="text"
-                      value={shipToCity}
-                      onChange={(e) => { setShipToCity(e.target.value); scheduleSave() }}
-                      placeholder="City"
-                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                    />
-                    <input
-                      type="text"
-                      value={shipToState}
-                      onChange={(e) => { setShipToState(e.target.value); scheduleSave() }}
-                      placeholder="State"
-                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-2">
-                    <input
-                      type="text"
-                      value={shipToPostalCode}
-                      onChange={(e) => { setShipToPostalCode(e.target.value); scheduleSave() }}
-                      placeholder="Postal Code"
-                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                    />
-                    <select
-                      value={shipToCountry}
-                      onChange={(e) => { setShipToCountry(e.target.value); scheduleSave() }}
-                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                    >
-                      <option value="">Country</option>
-                      <option value="Malaysia">Malaysia</option>
-                      <option value="Singapore">Singapore</option>
-                      <option value="Indonesia">Indonesia</option>
-                      <option value="Thailand">Thailand</option>
-                      <option value="Philippines">Philippines</option>
-                      <option value="Vietnam">Vietnam</option>
-                      <option value="United States">United States</option>
-                      <option value="United Kingdom">United Kingdom</option>
-                      <option value="Australia">Australia</option>
-                    </select>
-                  </div>
-                </div>
-              </CollapsibleSection>
-
-              {/* Bill To Section */}
-              <CollapsibleSection
-                title="Bill To"
-                icon={FileText}
-                defaultExpanded={false}
-                hasContent={Boolean(billToName || billToAddress1)}
-              >
+              ) : (
                 <div className="space-y-3">
-                  <label className="flex items-center gap-2 text-sm text-neutral-600 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      checked={sameAsShipTo}
-                      onChange={(e) => handleSameAsShipTo(e.target.checked)}
-                      className="rounded border-neutral-300 text-primary focus:ring-primary"
-                    />
-                    Same as Ship To
-                  </label>
-
-                  {sameAsShipTo ? (
-                    <div className="rounded-lg bg-neutral-50 border border-neutral-200 px-3 py-2 text-sm text-neutral-600">
-                      <p className="font-medium text-neutral-700">{billToName || 'No name provided'}</p>
-                      {billToAddress1 && <p>{billToAddress1}</p>}
-                      {[billToCity, billToState, billToPostalCode].filter(Boolean).length > 0 && (
-                        <p>{[billToCity, billToState, billToPostalCode].filter(Boolean).join(', ')}</p>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="space-y-3">
-                      <input
-                        type="text"
-                        value={billToName}
-                        onChange={(e) => { setBillToName(e.target.value); scheduleSave() }}
-                        placeholder="Name"
-                        className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                      />
-                      <input
-                        type="text"
-                        value={billToAddress1}
-                        onChange={(e) => { setBillToAddress1(e.target.value); scheduleSave() }}
-                        placeholder="Address"
-                        className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                      />
-                      <div className="grid grid-cols-2 gap-2">
-                        <input
-                          type="text"
-                          value={billToCity}
-                          onChange={(e) => { setBillToCity(e.target.value); scheduleSave() }}
-                          placeholder="City"
-                          className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                        />
-                        <input
-                          type="text"
-                          value={billToPostalCode}
-                          onChange={(e) => { setBillToPostalCode(e.target.value); scheduleSave() }}
-                          placeholder="Postal Code"
-                          className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </CollapsibleSection>
-
-              {/* Expected Date */}
-              <Card>
-                <CardContent className="py-4">
-                  <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-                    <Calendar className="h-4 w-4 inline mr-1.5" />
-                    Expected Date
-                  </label>
-                  <input
-                    type="date"
-                    value={expectedDate}
-                    onChange={(e) => { setExpectedDate(e.target.value); scheduleSave() }}
-                    className="w-full rounded-lg border border-neutral-200 px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
-                  />
-                </CardContent>
-              </Card>
-
-              {/* Notes Section */}
-              <CollapsibleSection
-                title="Notes"
-                icon={FileText}
-                defaultExpanded={Boolean(notes)}
-                hasContent={Boolean(notes)}
-              >
-                <textarea
-                  value={notes}
-                  onChange={(e) => { setNotes(e.target.value); scheduleSave() }}
-                  placeholder="Message to vendor..."
-                  rows={3}
-                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm resize-none"
-                />
-              </CollapsibleSection>
-
-              {/* Save Status Indicator */}
-              {isDraft && (isDirty || isSaving) && (
-                <div className="flex items-center justify-between px-1 py-2 text-xs">
-                  {isSaving ? (
-                    <span className="flex items-center gap-1.5 text-blue-600">
-                      <Loader2 className="h-3 w-3 animate-spin" />
-                      Saving...
-                    </span>
-                  ) : isDirty ? (
-                    <span className="flex items-center gap-1.5 text-amber-600">
-                      <Clock className="h-3 w-3" />
-                      Unsaved changes
-                    </span>
-                  ) : null}
-                  {isDirty && !isSaving && (
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={performSave}
-                      className="h-6 text-xs"
+                  {vendorHasAddress && (
+                    <button
+                      type="button"
+                      onClick={useVendorAddress}
+                      className="text-sm text-primary hover:underline flex items-center gap-1"
                     >
-                      Save now
-                    </Button>
+                      Use vendor address
+                    </button>
                   )}
+                  <div className="grid grid-cols-1 gap-3">
+                    <div>
+                      <label className="block text-xs font-medium text-neutral-500 mb-1">Name</label>
+                      <input
+                        type="text"
+                        value={shipToName}
+                        onChange={(e) => { setShipToName(e.target.value); scheduleSave() }}
+                        placeholder="Enter name"
+                        className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-neutral-500 mb-1">Address</label>
+                      <input
+                        type="text"
+                        value={shipToAddress1}
+                        onChange={(e) => { setShipToAddress1(e.target.value); scheduleSave() }}
+                        placeholder="Street address"
+                        className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                      />
+                    </div>
+                    <input
+                      type="text"
+                      value={shipToAddress2}
+                      onChange={(e) => { setShipToAddress2(e.target.value); scheduleSave() }}
+                      placeholder="Apt, suite, unit (optional)"
+                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                    />
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="text"
+                        value={shipToCity}
+                        onChange={(e) => { setShipToCity(e.target.value); scheduleSave() }}
+                        placeholder="City"
+                        className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                      />
+                      <input
+                        type="text"
+                        value={shipToState}
+                        onChange={(e) => { setShipToState(e.target.value); scheduleSave() }}
+                        placeholder="State"
+                        className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                      />
+                    </div>
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="text"
+                        value={shipToPostalCode}
+                        onChange={(e) => { setShipToPostalCode(e.target.value); scheduleSave() }}
+                        placeholder="Postal Code"
+                        className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                      />
+                      <select
+                        value={shipToCountry}
+                        onChange={(e) => { setShipToCountry(e.target.value); scheduleSave() }}
+                        className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                      >
+                        <option value="">Country</option>
+                        <option value="Malaysia">Malaysia</option>
+                        <option value="Singapore">Singapore</option>
+                        <option value="Indonesia">Indonesia</option>
+                        <option value="Thailand">Thailand</option>
+                        <option value="Philippines">Philippines</option>
+                        <option value="Vietnam">Vietnam</option>
+                        <option value="United States">United States</option>
+                        <option value="United Kingdom">United Kingdom</option>
+                        <option value="Australia">Australia</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
               )}
+            </CollapsibleSection>
 
-              {/* Metadata */}
-              <div className="text-xs text-neutral-500 space-y-1 px-1">
-                <p>Created by: {createdByName || 'Unknown'}</p>
-                <p>Last updated: <FormattedShortDate date={purchaseOrder.updated_at || purchaseOrder.created_at || new Date().toISOString()} /></p>
+            {/* Billing address (Bill To) */}
+            <CollapsibleSection
+              title="Billing address"
+              icon={FileText}
+              defaultExpanded={false}
+              hasContent={Boolean(billToName || billToAddress1)}
+            >
+              <div className="space-y-3">
+                <label className="flex items-center gap-2 text-sm text-neutral-600 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={sameAsShipTo}
+                    onChange={(e) => handleSameAsShipTo(e.target.checked)}
+                    className="rounded border-neutral-300 text-primary focus:ring-primary"
+                  />
+                  Same as delivery address
+                </label>
+
+                {sameAsShipTo ? (
+                  <div className="rounded-lg bg-neutral-50 border border-neutral-200 px-3 py-2 text-sm text-neutral-600">
+                    <p className="font-medium text-neutral-700">{billToName || 'No name provided'}</p>
+                    {billToAddress1 && <p>{billToAddress1}</p>}
+                    {[billToCity, billToState, billToPostalCode].filter(Boolean).length > 0 && (
+                      <p>{[billToCity, billToState, billToPostalCode].filter(Boolean).join(', ')}</p>
+                    )}
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <input
+                      type="text"
+                      value={billToName}
+                      onChange={(e) => { setBillToName(e.target.value); scheduleSave() }}
+                      placeholder="Name"
+                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                    />
+                    <input
+                      type="text"
+                      value={billToAddress1}
+                      onChange={(e) => { setBillToAddress1(e.target.value); scheduleSave() }}
+                      placeholder="Address"
+                      className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                    />
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="text"
+                        value={billToCity}
+                        onChange={(e) => { setBillToCity(e.target.value); scheduleSave() }}
+                        placeholder="City"
+                        className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                      />
+                      <input
+                        type="text"
+                        value={billToPostalCode}
+                        onChange={(e) => { setBillToPostalCode(e.target.value); scheduleSave() }}
+                        placeholder="Postal Code"
+                        className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
+            </CollapsibleSection>
+
+            {/* Expected Date */}
+            <Card>
+              <CardContent className="py-4">
+                <label className="block text-sm font-medium text-neutral-700 mb-1.5">
+                  <Calendar className="h-4 w-4 inline mr-1.5" />
+                  Expected Date
+                </label>
+                <input
+                  type="date"
+                  value={expectedDate}
+                  onChange={(e) => { setExpectedDate(e.target.value); scheduleSave() }}
+                  className="w-full rounded-lg border border-neutral-200 px-3 py-2.5 text-sm focus:border-primary focus:ring-1 focus:ring-primary"
+                />
+              </CardContent>
+            </Card>
+
+            {/* Notes - last before save/metadata */}
+            <CollapsibleSection
+              title="Notes"
+              icon={FileText}
+              defaultExpanded={Boolean(notes)}
+              hasContent={Boolean(notes)}
+            >
+              <textarea
+                value={notes}
+                onChange={(e) => { setNotes(e.target.value); scheduleSave() }}
+                placeholder="Message to vendor..."
+                rows={3}
+                className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm resize-none"
+              />
+            </CollapsibleSection>
+
+            {/* Save Status Indicator */}
+            {isDraft && (isDirty || isSaving) && (
+              <div className="flex items-center justify-between px-1 py-2 text-xs">
+                {isSaving ? (
+                  <span className="flex items-center gap-1.5 text-blue-600">
+                    <Loader2 className="h-3 w-3 animate-spin" />
+                    Saving...
+                  </span>
+                ) : isDirty ? (
+                  <span className="flex items-center gap-1.5 text-amber-600">
+                    <Clock className="h-3 w-3" />
+                    Unsaved changes
+                  </span>
+                ) : null}
+                {isDirty && !isSaving && (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={performSave}
+                    className="h-6 text-xs"
+                  >
+                    Save now
+                  </Button>
+                )}
+              </div>
+            )}
+
+            {/* Metadata */}
+            <div className="text-xs text-neutral-500 space-y-1 px-1">
+              <p>Created by: {createdByName || 'Unknown'}</p>
+              <p>Last updated: <FormattedShortDate date={purchaseOrder.updated_at || purchaseOrder.created_at || new Date().toISOString()} /></p>
             </div>
           </div>
         </div>
@@ -1287,7 +1388,7 @@ export function PurchaseOrderDetailClient({
 
             {canReceive && (
               <Button
-                onClick={handleCreateReceive}
+                onClick={openCreateReceiveModal}
                 disabled={actionLoading !== null}
               >
                 {actionLoading === 'create-receive' ? (
@@ -1336,10 +1437,8 @@ export function PurchaseOrderDetailClient({
       )}
 
       <div className="p-6">
-        <div className="grid gap-6 lg:grid-cols-3">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Order Items */}
+        <div className="mx-auto max-w-2xl space-y-6">
+          {/* Order Items */}
             <Card>
               <CardHeader>
                 <CardTitle>Order Items ({purchaseOrder.items.length})</CardTitle>
@@ -1417,22 +1516,19 @@ export function PurchaseOrderDetailClient({
               </CardContent>
             </Card>
 
-            {/* Notes */}
-            {purchaseOrder.notes && (
-              <Card>
-                <CardHeader>
-                  <CardTitle>Notes</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-neutral-700 whitespace-pre-wrap">{purchaseOrder.notes}</p>
-                </CardContent>
-              </Card>
-            )}
-          </div>
+          {/* Notes */}
+          {purchaseOrder.notes && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Notes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-neutral-700 whitespace-pre-wrap">{purchaseOrder.notes}</p>
+              </CardContent>
+            </Card>
+          )}
 
-          {/* Sidebar */}
-          <div className="space-y-6">
-            {/* Vendor Info */}
+          {/* Vendor Info */}
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -1535,13 +1631,13 @@ export function PurchaseOrderDetailClient({
               </CardContent>
             </Card>
 
-            {/* Ship To Address */}
+            {/* Delivery address */}
             {purchaseOrder.ship_to_name && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <MapPin className="h-4 w-4" />
-                    Ship To
+                    Delivery address
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -1562,13 +1658,13 @@ export function PurchaseOrderDetailClient({
               </Card>
             )}
 
-            {/* Bill To Address */}
+            {/* Billing address */}
             {purchaseOrder.bill_to_name && (
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
                     <FileText className="h-4 w-4" />
-                    Bill To
+                    Billing address
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -1588,7 +1684,6 @@ export function PurchaseOrderDetailClient({
                 </CardContent>
               </Card>
             )}
-          </div>
         </div>
 
         {/* Chatter Panel */}
@@ -1623,6 +1718,109 @@ export function PurchaseOrderDetailClient({
         confirmLabel="Cancel Order"
         variant="warning"
       />
+
+      {/* Create Receive modal – optional receive options */}
+      {showCreateReceiveModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="bg-white rounded-xl shadow-xl w-full max-w-md max-h-[90vh] overflow-y-auto">
+            <div className="border-b border-neutral-200 px-4 py-3 flex items-center justify-between sticky top-0 bg-white">
+              <h2 className="text-lg font-semibold text-neutral-900">Create Receive</h2>
+              <button
+                type="button"
+                onClick={() => setShowCreateReceiveModal(false)}
+                disabled={actionLoading === 'create-receive'}
+                className="p-1.5 text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 rounded-lg"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-4 space-y-4">
+              <p className="text-sm text-neutral-600">
+                Optionally fill in delivery details below. You can also edit them on the receive page after creation.
+              </p>
+              <div>
+                <label className="block text-xs font-medium text-neutral-500 mb-1">Delivery note #</label>
+                <input
+                  type="text"
+                  value={receiveDeliveryNote}
+                  onChange={(e) => setReceiveDeliveryNote(e.target.value)}
+                  placeholder="Supplier delivery note ref"
+                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-neutral-500 mb-1">Carrier</label>
+                <input
+                  type="text"
+                  value={receiveCarrier}
+                  onChange={(e) => setReceiveCarrier(e.target.value)}
+                  placeholder="e.g. DHL, FedEx"
+                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-neutral-500 mb-1">Tracking #</label>
+                <input
+                  type="text"
+                  value={receiveTracking}
+                  onChange={(e) => setReceiveTracking(e.target.value)}
+                  placeholder="Shipment tracking number"
+                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-neutral-500 mb-1">Default folder</label>
+                <select
+                  value={receiveDefaultLocationId}
+                  onChange={(e) => setReceiveDefaultLocationId(e.target.value)}
+                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm"
+                >
+                  <option value="">Select...</option>
+                  {locations.map((loc) => (
+                    <option key={loc.id} value={loc.id}>{loc.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-neutral-500 mb-1">Notes</label>
+                <textarea
+                  value={receiveNotes}
+                  onChange={(e) => setReceiveNotes(e.target.value)}
+                  placeholder="Receiving notes..."
+                  rows={2}
+                  className="w-full rounded-lg border border-neutral-200 px-3 py-2 text-sm resize-none"
+                />
+              </div>
+            </div>
+            <div className="border-t border-neutral-200 px-4 py-3 flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowCreateReceiveModal(false)}
+                disabled={actionLoading === 'create-receive'}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => handleCreateReceive({
+                  delivery_note_number: receiveDeliveryNote.trim() || undefined,
+                  carrier: receiveCarrier.trim() || undefined,
+                  tracking_number: receiveTracking.trim() || undefined,
+                  default_location_id: receiveDefaultLocationId || undefined,
+                  notes: receiveNotes.trim() || undefined
+                })}
+                disabled={actionLoading === 'create-receive'}
+              >
+                {actionLoading === 'create-receive' ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <Package className="mr-2 h-4 w-4" />
+                )}
+                Create Receive
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
