@@ -18,7 +18,7 @@ import {
   requeueSyncingChanges,
   resetFailedChanges,
 } from '@/lib/offline/db'
-import type { PendingChange, QuantityAdjustPayload } from '@/lib/offline/types'
+import type { PendingChange, QuantityAdjustPayload, CheckoutPayload, CheckinPayload } from '@/lib/offline/types'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/lib/stores/auth-store'
 
@@ -209,11 +209,34 @@ export function useOfflineSync(options: UseOfflineSyncOptions = {}) {
           break
         }
 
-        case 'checkout':
-        case 'checkin':
-          // TODO: Implement checkout/checkin sync
-          console.log('Sync not implemented for:', change.type)
+        case 'checkout': {
+          const payload = change.payload as CheckoutPayload
+          const { checkoutItem } = await import('@/app/actions/checkouts')
+          const quantity = typeof payload.quantity === 'number' ? payload.quantity : 1
+          const result = await checkoutItem(
+            payload.item_id,
+            quantity,
+            payload.assigned_to_name,
+            payload.notes,
+            payload.due_date,
+            payload.assigned_to_type,
+            payload.assigned_to_id
+          )
+          if (!result.success) throw new Error(result.error || 'Checkout sync failed')
           break
+        }
+
+        case 'checkin': {
+          const payload = change.payload as CheckinPayload
+          const { returnItem } = await import('@/app/actions/checkouts')
+          const result = await returnItem(
+            payload.checkout_id,
+            payload.notes,
+            payload.condition
+          )
+          if (!result.success) throw new Error(result.error || 'Check-in sync failed')
+          break
+        }
 
         default:
           console.warn('Unknown change type:', change.type)

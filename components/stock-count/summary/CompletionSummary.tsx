@@ -17,6 +17,15 @@ import { cn } from '@/lib/utils'
 import { AdjustmentConfirmation } from './AdjustmentConfirmation'
 import { completeStockCount } from '@/app/actions/stock-counts'
 import type { StockCountItemWithDetails } from '@/app/actions/stock-counts'
+import { useFormatting } from '@/hooks/useFormatting'
+import { useTenantCompanyDetails, useTenantName, useTenantLogoUrl } from '@/contexts/TenantSettingsContext'
+import { useFeedback } from '@/components/feedback/FeedbackProvider'
+import {
+  buildCompanyBranding,
+  downloadPdfBlob,
+  fetchImageDataUrl,
+  generateStockCountCompletionPDF,
+} from '@/lib/documents/pdf-generator'
 
 interface StockCount {
   id: string
@@ -37,9 +46,15 @@ export function CompletionSummary({
   onBack,
 }: CompletionSummaryProps) {
   const router = useRouter()
+  const { formatCurrency, formatShortDate } = useFormatting()
+  const tenantName = useTenantName()
+  const tenantLogoUrl = useTenantLogoUrl()
+  const companyDetails = useTenantCompanyDetails()
+  const feedback = useFeedback()
   const [applyAdjustments, setApplyAdjustments] = useState(true)
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [isCompleting, setIsCompleting] = useState(false)
+  const [isExportingPdf, setIsExportingPdf] = useState(false)
 
   // Calculate stats
   const stats = useMemo(() => {
@@ -96,10 +111,40 @@ export function CompletionSummary({
     }
   }
 
-  // Handle export PDF (placeholder)
-  const handleExportPDF = () => {
-    // TODO: Implement PDF export
-    alert('PDF export coming soon!')
+  const handleExportPDF = async () => {
+    setIsExportingPdf(true)
+    try {
+      const logoDataUrl = tenantLogoUrl ? await fetchImageDataUrl(tenantLogoUrl) : null
+      const branding = buildCompanyBranding(tenantName, logoDataUrl, companyDetails)
+      const pdfBlob = generateStockCountCompletionPDF(
+        {
+          stockCount: {
+            display_id: stockCount.display_id,
+            name: stockCount.name,
+            status: stockCount.status,
+          },
+          items: items.map((i) => ({
+            item_name: i.item_name,
+            item_sku: i.item_sku,
+            expected_quantity: i.expected_quantity,
+            counted_quantity: i.counted_quantity,
+            variance: i.variance,
+            status: i.status,
+          })),
+          stats,
+        },
+        { formatCurrency, formatDate: formatShortDate, formatShortDate },
+        branding
+      )
+      const baseName = stockCount.display_id || stockCount.name || 'stock-count'
+      const safeName = String(baseName).replace(/\s+/g, '-').toLowerCase()
+      downloadPdfBlob(pdfBlob, `stock-count-completion-${safeName}.pdf`)
+    } catch (err) {
+      console.error('Failed to generate stock count PDF:', err)
+      feedback.error('Failed to generate PDF')
+    } finally {
+      setIsExportingPdf(false)
+    }
   }
 
   return (
@@ -309,9 +354,14 @@ export function CompletionSummary({
           <Button
             variant="outline"
             onClick={handleExportPDF}
+            disabled={isExportingPdf}
             className="flex-1"
           >
-            <FileText className="mr-2 h-4 w-4" />
+            {isExportingPdf ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <FileText className="mr-2 h-4 w-4" />
+            )}
             Export PDF
           </Button>
           <Button

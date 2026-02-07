@@ -664,6 +664,39 @@ async function dispatchChatterNotifications(
         }
     }
 
-    // TODO: Send email notifications for those who opted in
-    // This would use the existing email infrastructure (Resend)
+    // Send email notifications for mentioned users and followers who opted in
+    const emailUserIds = [
+        ...mentionedUserIds,
+        ...(followers || [] as FollowerRow[])
+            .filter((f: FollowerRow) => f.notify_email && !mentionedSet.has(f.user_id))
+            .map((f: FollowerRow) => f.user_id)
+    ]
+    const uniqueEmailUserIds = [...new Set(emailUserIds)]
+
+    if (uniqueEmailUserIds.length > 0) {
+        const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || 'https://stockzip.app').replace(/\/$/, '')
+        const activityPath = getEntityPath(entityType, entityId)
+        const activityUrl = `${baseUrl}${activityPath}`
+
+        const { data: profilesWithEmail } = await (supabase as any)
+            .from('profiles')
+            .select('id, email')
+            .in('id', uniqueEmailUserIds)
+            .not('email', 'is', null)
+
+        const sendChatterNotificationEmail = (await import('@/app/actions/email')).sendChatterNotificationEmail
+
+        for (const row of profilesWithEmail || []) {
+            const isMention = mentionedSet.has(row.id)
+            const subject = isMention
+                ? `${authorName} mentioned you in a comment on ${entityName}`
+                : `New comment on ${entityName} by ${authorName}`
+            const body = isMention
+                ? `You were mentioned in a comment on ${entityName}.`
+                : `New comment on ${entityName}.`
+            sendChatterNotificationEmail(row.email, subject, body, activityUrl).catch((err) =>
+                console.error('Chatter email send failed:', err)
+            )
+        }
+    }
 }

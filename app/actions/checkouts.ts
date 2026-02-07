@@ -30,6 +30,17 @@ const checkoutItemSchema = z.object({
     dueDate: optionalDateStringSchema,
 })
 
+const checkoutFromLotSchema = z.object({
+    itemId: z.string().uuid(),
+    lotId: z.string().uuid(),
+    quantity: quantitySchema,
+    assigneeType: z.enum(['person', 'job', 'location', 'contact']).optional(),
+    assigneeId: z.string().uuid().optional(),
+    assigneeName: z.string().min(1).max(255),
+    notes: z.string().max(2000).optional(),
+    dueDate: optionalDateStringSchema,
+})
+
 const returnConditionSchema = z.enum(['good', 'damaged', 'needs_repair', 'lost'])
 
 const returnItemSchema = z.object({
@@ -93,6 +104,74 @@ export async function checkoutItem(
 
     if (error) {
         console.error('Checkout error:', error)
+        return { success: false, error: error.message }
+    }
+
+    if (data && !data.success) {
+        return { success: false, error: data.error || 'Checkout failed' }
+    }
+
+    revalidatePath(`/inventory/${validatedInput.itemId}`)
+    return { success: true }
+}
+
+/**
+ * Checkout from a specific lot (batch). Deducts from that lot and creates checkout.
+ * Use when user has selected a specific batch in BorrowOut / lot-expiry flow.
+ */
+export async function checkoutItemFromLot(
+    itemId: string,
+    lotId: string,
+    quantity: number,
+    assigneeName: string,
+    notes?: string,
+    dueDate?: string,
+    assigneeType?: 'person' | 'job' | 'location' | 'contact',
+    assigneeId?: string
+): Promise<CheckoutResult> {
+    const authResult = await getAuthContext()
+    if (!authResult.success) return { success: false, error: authResult.error }
+    const { context } = authResult
+
+    const permResult = requireWritePermission(context)
+    if (!permResult.success) return { success: false, error: permResult.error }
+
+    const validation = validateInput(checkoutFromLotSchema, {
+        itemId,
+        lotId,
+        quantity,
+        assigneeType,
+        assigneeId,
+        assigneeName,
+        notes,
+        dueDate,
+    })
+    if (!validation.success) return { success: false, error: validation.error }
+    const validatedInput = validation.data
+
+    const itemCheck = await verifyRelatedTenantOwnership(
+        'inventory_items',
+        validatedInput.itemId,
+        context.tenantId,
+        'Inventory item'
+    )
+    if (!itemCheck.success) return { success: false, error: itemCheck.error }
+
+    const supabase = await createClient()
+
+    const { data, error } = await (supabase as any).rpc('perform_checkout_from_lot', {
+        p_item_id: validatedInput.itemId,
+        p_lot_id: validatedInput.lotId,
+        p_quantity: validatedInput.quantity,
+        p_assignee_type: validatedInput.assigneeType || 'person',
+        p_assignee_id: validatedInput.assigneeId || null,
+        p_assignee_name: validatedInput.assigneeName,
+        p_due_date: validatedInput.dueDate || null,
+        p_notes: validatedInput.notes || null,
+    })
+
+    if (error) {
+        console.error('Checkout from lot error:', error)
         return { success: false, error: error.message }
     }
 

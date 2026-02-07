@@ -280,10 +280,10 @@ async function handlePaymentFailed(
 ) {
   const customerId = invoice.customer as string
 
-  // Find tenant by Stripe customer ID
+  // Find tenant by Stripe customer ID (need name for email)
   const { data: tenant, error: findError } = await supabaseAdmin
     .from('tenants')
-    .select('id')
+    .select('id, name')
     .eq('stripe_customer_id', customerId)
     .single()
 
@@ -296,7 +296,41 @@ async function handlePaymentFailed(
   // Stripe will handle retry logic
   console.log(`Payment failed for tenant ${tenant.id}, invoice: ${invoice.id}`)
 
-  // TODO: Send email notification about failed payment
+  // Send email to tenant contact (owner first, then any profile); do not throw on failure
+  try {
+    const { data: owner } = await supabaseAdmin
+      .from('profiles')
+      .select('email')
+      .eq('tenant_id', tenant.id)
+      .eq('role', 'owner')
+      .not('email', 'is', null)
+      .limit(1)
+      .maybeSingle()
+
+    let toEmail: string | null = owner?.email ?? null
+    if (!toEmail) {
+      const { data: anyProfile } = await supabaseAdmin
+        .from('profiles')
+        .select('email')
+        .eq('tenant_id', tenant.id)
+        .not('email', 'is', null)
+        .limit(1)
+        .maybeSingle()
+      toEmail = anyProfile?.email ?? null
+    }
+
+    if (toEmail) {
+      const baseUrl = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, '') || 'https://stockzip.app'
+      const billingUrl = `${baseUrl}/settings/billing`
+      const { sendPaymentFailedEmail } = await import('@/app/actions/email')
+      await sendPaymentFailedEmail(toEmail, tenant.name ?? null, billingUrl)
+    } else {
+      console.warn(`No contact email for tenant ${tenant.id}, skipping payment failed email`)
+    }
+  } catch (err) {
+    console.error('Failed to send payment failed email:', err)
+    // Do not throw - webhook must succeed so Stripe doesn't keep retrying
+  }
 }
 
 /**

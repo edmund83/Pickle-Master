@@ -581,6 +581,81 @@ export function generatePurchaseOrderPDF(
   return pdf.output('blob') as Blob
 }
 
+export interface StockCountCompletionPdfData {
+  stockCount: {
+    display_id: string | null
+    name: string | null
+    status: string
+  }
+  items: Array<{
+    item_name: string
+    item_sku: string | null
+    expected_quantity: number
+    counted_quantity: number | null
+    variance: number | null
+    status: string
+  }>
+  stats: {
+    total: number
+    counted: number
+    pending: number
+    completionPercent: number
+    totalNegative: number
+    totalPositive: number
+    netVariance: number
+    varianceCount: number
+  }
+}
+
+export function generateStockCountCompletionPDF(
+  data: StockCountCompletionPdfData,
+  formatters: PdfFormatters,
+  branding?: PdfBranding
+): Blob {
+  const pdf = createDocument()
+  const meta = [
+    { label: 'Status', value: formatStatus(data.stockCount.status) },
+    { label: 'Completion', value: `${data.stats.completionPercent}%` },
+    { label: 'Counted', value: `${data.stats.counted} / ${data.stats.total}` },
+  ]
+
+  let y = drawHeader(
+    pdf,
+    'Stock Count Completion',
+    data.stockCount.display_id || data.stockCount.name,
+    meta,
+    branding
+  )
+
+  y = drawSectionTitle(pdf, 'Summary', y)
+  const summaryLines = [
+    `Items counted: ${data.stats.counted} of ${data.stats.total}`,
+    `Pending: ${data.stats.pending}`,
+    `Items with variance: ${data.stats.varianceCount}`,
+    `Total negative variance: ${data.stats.totalNegative}`,
+    `Total positive variance: ${data.stats.totalPositive}`,
+    `Net variance: ${data.stats.netVariance}`,
+  ]
+  y = drawTextLines(pdf, summaryLines, y) + SECTION_GAP
+
+  y = drawSectionTitle(pdf, 'Line Items', y)
+  y = drawTable(
+    pdf,
+    [
+      { label: 'Item', width: 3, wrap: true, value: (row) => safeText(row.item_name) },
+      { label: 'SKU', width: 1.5, value: (row) => safeText(row.item_sku) },
+      { label: 'Expected', width: 1, align: 'center', value: (row) => String(row.expected_quantity) },
+      { label: 'Counted', width: 1, align: 'center', value: (row) => row.counted_quantity != null ? String(row.counted_quantity) : '-' },
+      { label: 'Variance', width: 1.5, align: 'right', value: (row) => row.variance != null ? String(row.variance) : '-' },
+      { label: 'Status', width: 1, value: (row) => formatStatus(row.status) },
+    ],
+    data.items,
+    y
+  )
+
+  return pdf.output('blob') as Blob
+}
+
 export interface PickListPdfData {
   pick_list: {
     display_id: string | null

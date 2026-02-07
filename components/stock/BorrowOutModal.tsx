@@ -26,7 +26,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { cn } from '@/lib/utils'
 import { useFormatting } from '@/hooks/useFormatting'
-import { checkoutItem, checkoutWithSerials } from '@/app/actions/checkouts'
+import { checkoutItem, checkoutItemFromLot, checkoutWithSerials } from '@/app/actions/checkouts'
 import { createContact } from '@/app/actions/contacts'
 
 interface Batch {
@@ -360,20 +360,30 @@ export function BorrowOutModal({
           throw new Error(result.error || 'Checkout failed')
         }
       } else if (isBatch) {
-        // Batch checkout - use standard checkout with FIFO RPC
-        // TODO: Implement batch-aware checkout RPC
-        const result = await checkoutItem(
-          itemId,
-          quantity,
-          selectedAssignee.name,
-          notes || undefined,
-          dueDate || undefined,
-          selectedAssignee.type,
-          selectedAssignee.id
-        )
-
-        if (!result.success) {
-          throw new Error(result.error || 'Checkout failed')
+        // Batch checkout: from specific lot when manual batch selected, else FIFO via standard checkout
+        if (selectedMode === 'manual' && selectedBatchId) {
+          const result = await checkoutItemFromLot(
+            itemId,
+            selectedBatchId,
+            quantity,
+            selectedAssignee.name,
+            notes || undefined,
+            dueDate || undefined,
+            selectedAssignee.type,
+            selectedAssignee.id
+          )
+          if (!result.success) throw new Error(result.error || 'Checkout failed')
+        } else {
+          const result = await checkoutItem(
+            itemId,
+            quantity,
+            selectedAssignee.name,
+            notes || undefined,
+            dueDate || undefined,
+            selectedAssignee.type,
+            selectedAssignee.id
+          )
+          if (!result.success) throw new Error(result.error || 'Checkout failed')
         }
       } else {
         // Non-tracked checkout

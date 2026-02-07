@@ -254,3 +254,103 @@ export async function sendAdminBugReportNotification(
         return { success: false, error: 'Failed to send admin notification' }
     }
 }
+
+/**
+ * Send payment failed notification to tenant contact.
+ * Called from Stripe webhook - no auth context required.
+ */
+export async function sendPaymentFailedEmail(
+    to: string,
+    tenantName: string | null,
+    billingUrl?: string | null
+): Promise<EmailResult> {
+    if (!resend) {
+        console.warn('⚠️ Payment failed email skipped: Resend not configured')
+        return { success: false, error: 'Email not configured' }
+    }
+
+    try {
+        const safeName = tenantName ? escapeHtml(tenantName) : 'your account'
+        const billingLink = billingUrl && billingUrl.trim()
+            ? `<p><a href="${escapeHtml(billingUrl.trim())}" style="color: #2563eb; font-weight: 600;">Update payment method</a></p>`
+            : '<p>Please update your payment method in <strong>Settings → Billing</strong> to avoid service interruption.</p>'
+
+        const { error } = await resend.emails.send({
+            from: process.env.SMTP_FROM || 'StockZip <noreply@stockzip.com>',
+            to: [to],
+            subject: 'Action required: payment failed for your StockZip subscription',
+            html: `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+                    <h1 style="color: #dc2626;">Payment Failed</h1>
+                    <p>We were unable to process the payment for <strong>${safeName}</strong>.</p>
+
+                    <div style="background-color: #fef2f2; padding: 20px; border-radius: 8px; border: 1px solid #fecaca; margin: 20px 0;">
+                        <p style="margin: 0;">Please update your payment method so we can retry the charge. Stripe will automatically retry failed payments.</p>
+                    </div>
+
+                    ${billingLink}
+
+                    <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;" />
+                    <p style="font-size: 12px; color: #6b7280;">
+                        Sent automatically by StockZip. If you have questions, contact support.
+                    </p>
+                </div>
+            `
+        })
+
+        if (error) {
+            console.error('Payment failed email error:', error)
+            return { success: false, error: error.message }
+        }
+
+        console.log(`📧 Payment failed email sent to ${to} for tenant ${tenantName ?? 'unknown'}`)
+        return { success: true }
+    } catch (err) {
+        console.error('Payment failed email exception:', err)
+        return { success: false, error: 'Failed to send payment failed email' }
+    }
+}
+
+/**
+ * Send chatter notification email (mention or new comment).
+ * Called from chatter action - no auth context required for the send itself.
+ */
+export async function sendChatterNotificationEmail(
+    to: string,
+    subject: string,
+    body: string,
+    activityUrl: string
+): Promise<EmailResult> {
+    if (!resend) {
+        return { success: false, error: 'Email not configured' }
+    }
+
+    try {
+        const safeSubject = escapeHtml(subject)
+        const safeBody = escapeHtml(body).replace(/\n/g, '<br/>')
+        const safeUrl = activityUrl.trim()
+
+        const { error } = await resend.emails.send({
+            from: process.env.SMTP_FROM || 'StockZip <noreply@stockzip.com>',
+            to: [to],
+            subject: safeSubject,
+            html: `
+                <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto;">
+                    <p>${safeBody}</p>
+                    <p><a href="${safeUrl}" style="color: #2563eb; font-weight: 600;">View in StockZip</a></p>
+                    <hr style="margin: 30px 0; border: none; border-top: 1px solid #e5e7eb;" />
+                    <p style="font-size: 12px; color: #6b7280;">Sent by StockZip</p>
+                </div>
+            `
+        })
+
+        if (error) {
+            console.error('Chatter email error:', error)
+            return { success: false, error: error.message }
+        }
+        return { success: true }
+    } catch (err) {
+        console.error('Chatter email exception:', err)
+        return { success: false, error: 'Failed to send chatter email' }
+    }
+}
